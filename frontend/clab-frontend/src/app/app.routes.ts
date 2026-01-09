@@ -1,16 +1,17 @@
 import { Routes } from '@angular/router';
-import { Login } from './auth/login/login';
-import { Dashboard } from './dashboard/dashboard';
-import { Reservar } from './reservar/reservar';
-import { Horarios } from './horarios/horarios';
-import { Reportar } from './reportar/reportar';
-import { Notificaciones } from './notificaciones/notificaciones';
+import { DashboardComponent } from './dashboard/dashboard';
+import { ReservarComponent } from './reservar/reservar';
+import { HorariosComponent } from './horarios/horarios';
+import { ReportarComponent } from './reportar/reportar';
+import { NotificacionesComponent } from './notificaciones/notificaciones';
+import { LoginComponent } from './auth/login/login';
 
 export const routes: Routes = [
-  { path: '', component: Login },
-  { path: 'dashboard', component: Dashboard },
-  { path: 'reservar', component: Reservar },
-  { path: 'horarios', component: Horarios },
-  { path: 'reportar', component: Reportar },
-  { path: 'notificaciones', component: Notificaciones },
+  { path: '', component: LoginComponent },
+  { path: 'dashboard', component: DashboardComponent },
+  { path: 'reservar', component: ReservarComponent },
+  { path: 'horarios', component: HorariosComponent },
+  { path: 'reportar', component: ReportarComponent },
+  { path: 'notificaciones', component: NotificacionesComponent },
+  { path: '**', redirectTo: 'dashboard' }
 ];

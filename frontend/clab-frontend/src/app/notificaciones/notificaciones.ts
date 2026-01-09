@@ -12,6 +12,6 @@ import { CommonModule } from '@angular/common';
   </div>`,
   styles:[`.item{background:#dff0d8;margin:6px;padding:8px;border-radius:6px}`]
 })
-export class Notificaciones {
+export class NotificacionesComponent {
   notas=['Nueva falla detectada','Reporte resuelto'];
 }

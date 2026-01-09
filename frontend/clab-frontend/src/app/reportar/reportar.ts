@@ -15,6 +15,6 @@ import { FormsModule } from '@angular/forms';
   </div>`,
   styles:[`.card{max-width:380px;margin:40px auto}`]
 })
-export class Reportar {
+export class ReportarComponent {
   enviar(){ alert('Reporte enviado'); }
 }

@@ -1,10 +1,11 @@
 .login-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #1f7a1f, #145214);
+  background: linear-gradient(135deg, #37bf5e, #1e5e32);
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 20px;
+  box-sizing: border-box;
 }
 .logo-link {
   display: block;

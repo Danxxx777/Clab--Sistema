@@ -1,14 +1,15 @@
-<div class="dashboard-container">
+<div class="dashboard-page">
+  <button class="logout-btn" (click)="logout()">Cerrar sesión</button>
+
   <div class="dashboard-card">
+    <h1 class="title">BIENVENIDO</h1>
 
-    <h1>BIENVENIDO</h1>
-
-    <div class="menu-grid">
-      <button class="menu-btn">Reservar Laboratorio</button>
-      <button class="menu-btn">Horarios Reservados</button>
-      <button class="menu-btn">Reportar Fallas</button>
-      <button class="menu-btn">Notificaciones</button>
+    <div class="actions">
+      <button (click)="goTo('reservar')">Reservar Laboratorio</button>
+      <button (click)="goTo('horarios')">Horarios Reservados</button>
+      <button (click)="goTo('reportar')">Reportar Fallas</button>
+      <button (click)="goTo('notificaciones')">Notificaciones</button>
     </div>
-
   </div>
+
 </div>

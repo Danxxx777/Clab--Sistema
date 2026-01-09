@@ -9,7 +9,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './reservar.html',
   styleUrls: ['./reservar.scss']
 })
-export class Reservar {
+export class ReservarComponent {
   laboratorio='Lab A'; fecha=''; hora='07:30-10:30';
   guardar(){ alert(`Reserva: ${this.laboratorio} ${this.fecha} ${this.hora}`); }
 }

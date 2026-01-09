@@ -6,9 +6,16 @@
   <component name="ChangeListManager">
     <list default="true" id="4b4673f2-f146-40e9-a21d-5a9aca5664a9" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/clab-frontend/src/app/app.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/clab-frontend/src/app/app.config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/clab-frontend/src/app/app.html" beforeDir="false" afterPath="$PROJECT_DIR$/clab-frontend/src/app/app.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/clab-frontend/src/app/app.routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/clab-frontend/src/app/app.routes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clab-frontend/src/app/auth/login/login.scss" beforeDir="false" afterPath="$PROJECT_DIR$/clab-frontend/src/app/auth/login/login.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clab-frontend/src/app/auth/login/login.ts" beforeDir="false" afterPath="$PROJECT_DIR$/clab-frontend/src/app/auth/login/login.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clab-frontend/src/app/dashboard/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/clab-frontend/src/app/dashboard/dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clab-frontend/src/app/dashboard/dashboard.scss" beforeDir="false" afterPath="$PROJECT_DIR$/clab-frontend/src/app/dashboard/dashboard.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clab-frontend/src/app/dashboard/dashboard.ts" beforeDir="false" afterPath="$PROJECT_DIR$/clab-frontend/src/app/dashboard/dashboard.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clab-frontend/src/app/horarios/horarios.ts" beforeDir="false" afterPath="$PROJECT_DIR$/clab-frontend/src/app/horarios/horarios.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clab-frontend/src/app/notificaciones/notificaciones.ts" beforeDir="false" afterPath="$PROJECT_DIR$/clab-frontend/src/app/notificaciones/notificaciones.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clab-frontend/src/app/reportar/reportar.ts" beforeDir="false" afterPath="$PROJECT_DIR$/clab-frontend/src/app/reportar/reportar.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clab-frontend/src/app/reservar/reservar.ts" beforeDir="false" afterPath="$PROJECT_DIR$/clab-frontend/src/app/reservar/reservar.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -67,7 +74,7 @@
       <option name="presentableId" value="Default" />
       <updated>1767849741197</updated>
       <workItem from="1767849742769" duration="677000" />
-      <workItem from="1767854286092" duration="8188000" />
+      <workItem from="1767854286092" duration="12851000" />
     </task>
     <servers />
   </component>
