@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4b4673f2-f146-40e9-a21d-5a9aca5664a9" name="Changes" comment="" />
+    <list default="true" id="4b4673f2-f146-40e9-a21d-5a9aca5664a9" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clab-frontend/src/app/app.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/clab-frontend/src/app/app.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clab-frontend/src/app/app.html" beforeDir="false" afterPath="$PROJECT_DIR$/clab-frontend/src/app/app.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clab-frontend/src/app/app.routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/clab-frontend/src/app/app.routes.ts" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,9 +18,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 7
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
   <component name="ProjectId" id="37xfekWx1dUuUQTmbuoBW1HO7of" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -25,6 +30,8 @@
   "keyToString": {
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
     "git-widget-placeholder": "main",
     "javascript.nodejs.core.library.configured.version": "24.11.1",
@@ -40,6 +47,7 @@
     "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "settings.nodejs",
     "to.speed.mode.migration.done": "true",
+    "ts.external.directory.path": "C:\\Users\\BYRONDANIELLOORMENDO\\Documents\\clab-sistema\\frontend\\clab-frontend\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -59,6 +67,7 @@
       <option name="presentableId" value="Default" />
       <updated>1767849741197</updated>
       <workItem from="1767849742769" duration="677000" />
+      <workItem from="1767854286092" duration="8188000" />
     </task>
     <servers />
   </component>

@@ -1,0 +1,63 @@
+.dashboard-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #dff2e1, #ccebd6);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 80px 20px 20px;
+}
+
+.dashboard-card {
+  background-color: #f0fff4;
+  width: 100%;
+  max-width: 720px;
+  padding: 45px 35px;
+  border-radius: 22px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
+  text-align: center;
+  border: 2px solid #b7e4c7;
+}
+
+
+/* Título */
+.dashboard-card h1 {
+  color: #1b4332;
+  margin-bottom: 35px;
+  font-size: 30px;
+  letter-spacing: 1.5px;
+}
+
+/* Grid de botones */
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+}
+
+/* Botones */
+.menu-btn {
+  background-color: #52b788;
+  color: #ffffff;
+  border: none;
+  padding: 18px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+}
+
+/* Hover elegante */
+.menu-btn:hover {
+  background-color: #40916c;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .menu-grid {
+    grid-template-columns: 1fr;
+  }
+}
