@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -9,14 +10,17 @@ import { Router } from '@angular/router';
 })
 export class DashboardComponent {
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private auth: AuthService
+  ) {}
 
   goTo(path: string) {
     this.router.navigate(['/' + path]);
   }
 
   logout() {
-    // aquí luego irá la limpieza de sesión
-    this.router.navigate(['/']); // vuelve al login
+    this.auth.logout();
+    this.router.navigate(['/']);
   }
 }

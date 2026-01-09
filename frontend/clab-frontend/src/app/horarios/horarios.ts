@@ -1,17 +1,19 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-horarios',
   standalone: true,
   imports: [CommonModule],
-  template: `
-  <div class="list">
-    <h2>HORARIOS RESERVADOS</h2>
-    <div *ngFor="let h of horarios" class="item">{{h}}</div>
-  </div>`,
-  styles:[`.list{padding:20px}.item{background:#e6f4e6;margin:6px;paadding:8px;border-radius:6px}`]
+  templateUrl: './horarios.html',
+  styleUrls: ['./horarios.scss']
 })
 export class HorariosComponent {
-  horarios=['Lab A - Lun 07:30-10:30','Lab B - Mar 10:30-12:30'];
+
+  constructor(private router: Router) {}
+
+  volver() {
+    this.router.navigate(['/dashboard']);
+  }
 }

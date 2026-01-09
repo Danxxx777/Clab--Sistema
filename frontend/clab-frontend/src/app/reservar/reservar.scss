@@ -1,3 +1,95 @@
-.card{max-width:380px;margin:40px auto;background:#f1f1f1;padding:20px;border-radius:12px}
-label{font-weight:bold} select,input,button{width:100%;margin:6px 0;padding:8px}
-button{background:#1f7a1f;color:#fff;border:0;border-radius:8px}
+.reservar-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1f7a44, #2e9d5b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.reservar-card {
+  background: #ecfff2;
+  width: 100%;
+  max-width: 420px;
+  padding: 35px 30px;
+  border-radius: 22px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+}
+
+.title {
+  text-align: center;
+  font-size: 26px;
+  margin-bottom: 30px;
+  color: #1f5f3a;
+  letter-spacing: 1px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #1f5f3a;
+}
+
+.form-group input,
+.form-group select {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #bcdcc8;
+  font-size: 14px;
+  outline: none;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #2e9d5b;
+  box-shadow: 0 0 0 2px rgba(46, 157, 91, 0.2);
+}
+
+.btn-primary {
+  margin-top: 20px;
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #2e9d5b, #23804a);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  transition: all 0.25s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, #35b66a, #2a8f57);
+}
+
+.back-btn {
+  position: absolute;
+  top: 24px;
+  left: 32px;
+
+  background: transparent;
+  color: #eafaf0;
+  border: 2px solid #eafaf0;
+  padding: 6px 16px;
+  border-radius: 18px;
+  font-weight: 600;
+  cursor: pointer;
+
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.back-btn:hover {
+  background: #eafaf0;
+  color: #1f7a44;
+}

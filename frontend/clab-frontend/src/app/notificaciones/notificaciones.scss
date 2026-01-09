@@ -1,0 +1,113 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1f7a44, #2e9d5b);
+  padding: 30px;
+}
+.back-btn {
+  position: absolute;
+  top: 25px;
+  left: 25px;
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: 2px solid white;
+  background: transparent;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.card {
+  background: #ecfff2;
+  width: 100%;
+  max-width: 750px;
+  padding: 45px;
+  border-radius: 22px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
+}
+
+.card h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #1f5f3a;
+  letter-spacing: 2px;
+}
+
+.notification {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px;
+  border-radius: 16px;
+  margin-bottom: 18px;
+  position: relative;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.notification:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.2);
+}
+
+.icon {
+  font-size: 28px;
+}
+
+.content {
+  flex: 1;
+}
+
+.content strong {
+  display: block;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.content span {
+  display: block;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.content small {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.notification.success {
+  background: #d4f5dc;
+  color: #1f7a44;
+}
+
+.notification.info {
+  background: #e6f2ff;
+  color: #1f4f7a;
+}
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.badge.new {
+  background: #27ae60;
+  color: white;
+}
+
+.badge.done {
+  background: #3498db;
+  color: white;
+}

@@ -1,15 +1,45 @@
-<div class="dashboard-page">
-  <button class="logout-btn" (click)="logout()">Cerrar sesión</button>
+<button class="logout" (click)="logout()">Cerrar sesión</button>
 
-  <div class="dashboard-card">
-    <h1 class="title">BIENVENIDO</h1>
+<div class="page">
+  <div class="card">
 
-    <div class="actions">
-      <button (click)="goTo('reservar')">Reservar Laboratorio</button>
-      <button (click)="goTo('horarios')">Horarios Reservados</button>
-      <button (click)="goTo('reportar')">Reportar Fallas</button>
-      <button (click)="goTo('notificaciones')">Notificaciones</button>
+    <h1 class="title">MENÚ CLAB</h1>
+
+    <div class="menu-list">
+
+      <div class="menu-item" (click)="goTo('reservar')">
+        <span class="icon">🧪</span>
+        <div class="text">
+          <strong>Reservar Laboratorio</strong>
+          <p>Crear una nueva reserva</p>
+        </div>
+      </div>
+
+      <div class="menu-item" (click)="goTo('horarios')">
+        <span class="icon">📅</span>
+        <div class="text">
+          <strong>Horarios Reservados</strong>
+          <p>Ver reservas activas</p>
+        </div>
+      </div>
+
+      <div class="menu-item warning" (click)="goTo('reportar')">
+        <span class="icon">⚠️</span>
+        <div class="text">
+          <strong>Reportar Fallas</strong>
+          <p>Notificar problemas técnicos</p>
+        </div>
+      </div>
+
+      <div class="menu-item info" (click)="goTo('notificaciones')">
+        <span class="icon">🔔</span>
+        <div class="text">
+          <strong>Notificaciones</strong>
+          <p>Mensajes del sistema</p>
+        </div>
+      </div>
+
     </div>
-  </div>
 
+  </div>
 </div>

@@ -1,0 +1,72 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1f7a44, #2e9d5b);
+  padding: 40px 0;
+}
+
+.calendar-card {
+  background: #ecfff2;
+  max-width: 1100px;
+  margin: 80px auto 0 auto;
+  padding: 40px;
+  border-radius: 22px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+}
+.volver {
+  position: fixed;
+  top: 25px;
+  left: 25px;
+  background: transparent;
+  border: 2px solid #ffffff;
+  color: #ffffff;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.volver:hover {
+  background: #ffffff;
+  color: #1f7a44;
+}
+
+.table-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.calendar {
+  width: 100%;
+  max-width: 1000px;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+.calendar th {
+  background: #2e9d5b;
+  color: white;
+  padding: 16px;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.calendar td {
+  padding: 18px 12px;
+  border: 1px solid #cfe8d6;
+  font-size: 14px;
+}
+
+.reserved {
+  background: linear-gradient(135deg, #2e9d5b, #23804a);
+  color: white;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .calendar {
+    font-size: 13px;
+  }
+}

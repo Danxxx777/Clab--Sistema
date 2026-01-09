@@ -1,1 +1,37 @@
-<p>horarios works!</p>
+<div class="calendar-card">
+  <h2>HORARIOS RESERVADOS</h2>
+  <button class="volver" (click)="volver()">← Volver</button>
+
+  <div class="table-wrapper">
+    <table class="calendar">
+      <thead>
+      <tr>
+        <th>Horario</th>
+        <th>Lunes</th>
+        <th>Martes</th>
+        <th>Miércoles</th>
+        <th>Jueves</th>
+        <th>Viernes</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td>07:30 - 10:30</td>
+        <td class="reserved">Lab A</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>10:30 - 12:30</td>
+        <td></td>
+        <td class="reserved">Lab B</td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
