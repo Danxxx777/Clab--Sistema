@@ -5,6 +5,14 @@
   align-items: center;
   justify-content: center;
 }
+.backend-status {
+  background: #f3f6ff;
+  border-left: 5px solid #4f46e5;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  font-size: 14px;
+}
 
 .logout {
   position: fixed;

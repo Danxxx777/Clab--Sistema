@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
+import { TestService } from '../services/test.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -8,12 +9,30 @@ import { AuthService } from '../auth/auth.service';
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.scss']
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
+
+  mensajeBackend = '';
 
   constructor(
     private router: Router,
-    private auth: AuthService
+    private auth: AuthService,
+    private testService: TestService
   ) {}
+
+  ngOnInit(): void {
+    console.log('Dashboard iniciado');
+
+    this.testService.getTest().subscribe({
+      next: (res) => {
+        console.log('Respuesta backend:', res);
+        this.mensajeBackend = res;
+      },
+      error: (err) => {
+        console.error('Error backend:', err);
+        this.mensajeBackend = 'No se pudo conectar con el backend';
+      }
+    });
+  }
 
   goTo(path: string) {
     this.router.navigate(['/' + path]);
