@@ -5,13 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4b4673f2-f146-40e9-a21d-5a9aca5664a9" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/clab-frontend/src/app/services/test.service.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/clab-frontend/src/app/app.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/clab-frontend/src/app/app.config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/clab-frontend/src/app/auth/login/login.scss" beforeDir="false" afterPath="$PROJECT_DIR$/clab-frontend/src/app/auth/login/login.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/clab-frontend/src/app/dashboard/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/clab-frontend/src/app/dashboard/dashboard.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/clab-frontend/src/app/dashboard/dashboard.scss" beforeDir="false" afterPath="$PROJECT_DIR$/clab-frontend/src/app/dashboard/dashboard.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/clab-frontend/src/app/dashboard/dashboard.ts" beforeDir="false" afterPath="$PROJECT_DIR$/clab-frontend/src/app/dashboard/dashboard.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -81,7 +75,7 @@
       <workItem from="1768265816043" duration="1412000" />
       <workItem from="1768270151053" duration="595000" />
       <workItem from="1768272301454" duration="35000" />
-      <workItem from="1768276565776" duration="1284000" />
+      <workItem from="1768276565776" duration="2247000" />
     </task>
     <servers />
   </component>
