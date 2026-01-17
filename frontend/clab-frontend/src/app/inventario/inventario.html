@@ -1,0 +1,56 @@
+<div class="equipos-page">
+  <button class="back-btn" (click)="volver()">Volver</button>
+
+  <div class="equipos-container">
+    <div class="equipos-header">
+      <h1>Gestión de Inventario de Equipos</h1>
+      <div class="header-actions">
+        <button class="btn-agregar" (click)="agregarEquipo()">
+          Agregar Equipo
+        </button>
+      </div>
+    </div>
+
+    <div class="equipos-table-container">
+      <div class="table-wrapper">
+        <table class="equipos-table">
+          <thead>
+          <tr>
+            <th>NOMBRE</th>
+            <th>NO. SERIE</th>
+            <th>ESTADO</th>
+            <th>UBICACIÓN</th>
+            <th>RESPONSABLE</th>
+            <th>ACCIONES</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let equipo of equipos">
+            <td>{{equipo.nombre}}</td>
+            <td>{{equipo.noSerie}}</td>
+            <td>
+                <span class="estado-badge" [ngClass]="equipo.estado.toLowerCase()">
+                  {{equipo.estado}}
+                </span>
+            </td>
+            <td>{{equipo.ubicacion}}</td>
+            <td>{{equipo.responsable}}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-edit" (click)="editar(equipo)" title="Editar">✏️</button>
+                <button class="btn-delete" (click)="eliminar(equipo)" title="Eliminar">🗑️</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="equipos.length === 0">
+            <td colspan="6" class="empty-state">
+              <div class="empty-icon">💻</div>
+              <p>No hay equipos registrados</p>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
