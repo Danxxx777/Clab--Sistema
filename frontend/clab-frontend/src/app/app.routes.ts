@@ -6,6 +6,7 @@ import { ReservarComponent } from './reservar/reservar';
 import { HorariosComponent } from './horarios/horarios';
 import { ReportarComponent } from './reportar/reportar';
 import { NotificacionesComponent } from './notificaciones/notificaciones';
+import { InventarioComponent } from './inventario/inventario';
 
 import { authGuard } from './auth/auth.guard';
 
@@ -25,6 +26,12 @@ export const routes: Routes = [
   {
     path: 'horarios',
     component: HorariosComponent,
+    canActivate: [authGuard]
+  },
+
+  {
+    path: 'equipos',
+    component: InventarioComponent,
     canActivate: [authGuard]
   },
   {
