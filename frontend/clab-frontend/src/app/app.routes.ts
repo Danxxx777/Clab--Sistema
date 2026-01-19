@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 
-import { LoginComponent } from './auth/login/login';
+import { LoginComponent } from './login/login';
 import { DashboardComponent } from './dashboard/dashboard';
 import { ReservarComponent } from './reservar/reservar';
 import { HorariosComponent } from './horarios/horarios';
