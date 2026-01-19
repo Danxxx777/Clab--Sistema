@@ -7,17 +7,14 @@ import { AuthService } from '../auth.service';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule
-  ],
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.html',
   styleUrls: ['./login.scss']
 })
 export class LoginComponent {
-
   username = '';
   password = '';
+  errorMessage = '';
 
   constructor(
     private router: Router,
@@ -25,8 +22,20 @@ export class LoginComponent {
   ) {}
 
   login() {
-    this.auth.login();
-    //alert('✅ Inicio de sesión exitoso');
-    this.router.navigate(['/dashboard']);
+    this.errorMessage = '';
+    if (!this.username.trim() || !this.password.trim()) {
+      this.errorMessage = 'Debe completar usuario y contraseña.';
+      return;
+    }
+
+    const user = this.username.trim();
+    const pass = this.password.trim();
+
+    if (user === 'admin' && pass === '1234') {
+      this.auth.login();
+      this.router.navigate(['/dashboard']);
+    } else {
+      this.errorMessage = 'Usuario o contraseña incorrectos.';
+    }
   }
 }
