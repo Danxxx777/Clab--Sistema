@@ -7,6 +7,7 @@
   padding: 20px;
   box-sizing: border-box;
 }
+
 .logo-link {
   display: block;
   text-align: center;
@@ -37,6 +38,13 @@
 .icon-lock {
   font-size: 40px;
   margin-bottom: 6px;
+}
+
+.error {
+  color: #c62828;
+  font-size: 13px;
+  margin-bottom: 12px;
+  font-weight: 700;
 }
 
 h2 {

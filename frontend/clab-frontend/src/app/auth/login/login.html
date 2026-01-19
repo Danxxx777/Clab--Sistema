@@ -14,6 +14,7 @@
 
     <h2>BIENVENIDO A CLAB</h2>
     <p>Ingrese sus credenciales para ingresar al sistema</p>
+    <p class="error" *ngIf="errorMessage"> {{ errorMessage }}</p>
 
     <form (ngSubmit)="login()">
       <div class="form-group">
