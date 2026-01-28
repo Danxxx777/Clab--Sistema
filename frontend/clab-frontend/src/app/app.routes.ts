@@ -7,6 +7,7 @@ import { HorariosComponent } from './horarios/horarios';
 import { ReportarComponent } from './reportar/reportar';
 import { NotificacionesComponent } from './notificaciones/notificaciones';
 import { InventarioComponent } from './inventario/inventario';
+import { BloqueosComponent } from './bloqueos/bloqueos';
 
 import { authGuard } from './auth/auth.guard';
 
@@ -44,6 +45,12 @@ export const routes: Routes = [
     component: NotificacionesComponent,
     canActivate: [authGuard]
   },
-
+  {
+    path: 'bloqueos',
+    component: BloqueosComponent,
+    canActivate: [authGuard]
+  },
   { path: '**', redirectTo: 'dashboard' }
+
+
 ];
