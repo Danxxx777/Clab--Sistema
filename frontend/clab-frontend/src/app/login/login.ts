@@ -14,6 +14,7 @@ import { AuthService } from '../auth/auth.service';
 export class LoginComponent {
   username = '';
   password = '';
+  recordarme = false; // ← AGREGAR ESTA LÍNEA
   errorMessage = '';
 
   constructor(

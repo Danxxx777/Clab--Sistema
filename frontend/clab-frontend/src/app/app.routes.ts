@@ -8,7 +8,7 @@ import { ReportarComponent } from './reportar/reportar';
 import { NotificacionesComponent } from './notificaciones/notificaciones';
 import { InventarioComponent } from './inventario/inventario';
 import { BloqueosComponent } from './bloqueos/bloqueos';
-
+import { InformesComponent } from './informes/informes';
 import { authGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
@@ -50,7 +50,11 @@ export const routes: Routes = [
     component: BloqueosComponent,
     canActivate: [authGuard]
   },
+  {
+    path: 'informes',
+    component: InformesComponent,
+    canActivate: [authGuard]
+  },
   { path: '**', redirectTo: 'dashboard' }
-
 
 ];

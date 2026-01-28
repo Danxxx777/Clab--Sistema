@@ -1,46 +1,101 @@
-<div class="login-container">
-  <div class="login-card">
-    <a
-      href="https://www.uteq.edu.ec"
-      target="_blank"
-      class="logo-link"
-    >
-      <img
-        src="/LogoUTEQ.png"
-        alt="Logo UTEQ"
-        class="logo-universidad"
-      />
-    </a>
+<div class="login-page">
+  <div class="login-container">
 
-    <h2>BIENVENIDO A CLAB</h2>
-    <p>Ingrese sus credenciales para ingresar al sistema</p>
-    <p class="error" *ngIf="errorMessage"> {{ errorMessage }}</p>
+    <div class="login-left">
+      <div class="brand-content">
 
-    <form (ngSubmit)="login()">
-      <div class="form-group">
-        <label>Usuario</label>
-        <input
-          type="text"
-          [(ngModel)]="username"
-          name="username"
-          placeholder="Ingrese su nombre de usuario"
-          required
-        />
+        <div class="logo">
+
+          <h1>CLAB</h1>
+        </div>
+        <h2>Sistema de Gestión de Laboratorios</h2>
+        <a href="https://www.uteq.edu.ec"
+           target="_blank"
+           class="logo-link"
+        >
+          <img
+            src="/LogoUTEQ.png"
+            alt="Logo UTEQ"
+            class="logo-universidad"
+          />
+        </a>
+        <p class="tagline">
+          Administra reservas, equipos y reportes de manera eficiente y profesional
+        </p>
+        <div class="features">
+          <div class="feature-item">
+            <span class="feature-icon">✓</span>
+            <span>Gestión de Reservas</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">✓</span>
+            <span>Control de Inventario</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">✓</span>
+            <span>Reportes en Tiempo Real</span>
+          </div>
+        </div>
       </div>
+    </div>
 
-      <div class="form-group">
-        <label>Contraseña</label>
-        <input
-          type="password"
-          [(ngModel)]="password"
-          name="password"
-          placeholder="Ingrese su contraseña"
-          required
-        />
+    <div class="login-right">
+      <div class="login-form-container">
+        <div class="form-header">
+          <h2>Bienvenido</h2>
+          <p>Ingresa tus credenciales para acceder al sistema</p>
+        </div>
+
+        <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
+        <form class="login-form" (ngSubmit)="login()">
+          <div class="form-group">
+            <label for="username">
+              <span class="label-icon">👤</span>
+              Usuario
+            </label>
+            <input
+              type="text"
+              id="username"
+              [(ngModel)]="username"
+              name="username"
+              placeholder="Ingresa tu usuario"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="password">
+              <span class="label-icon">🔒</span>
+              Contraseña
+            </label>
+            <input
+              type="password"
+              id="password"
+              [(ngModel)]="password"
+              name="password"
+              placeholder="Ingresa tu contraseña"
+              required
+            >
+          </div>
+
+          <div class="form-options">
+            <label class="checkbox-container">
+              <input type="checkbox" [(ngModel)]="recordarme" name="recordarme">
+              <span class="checkmark"></span>
+              Recordarme
+            </label>
+            <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
+          </div>
+
+          <button type="submit" class="btn-login">
+            Iniciar Sesión
+          </button>
+        </form>
+
+        <div class="form-footer">
+          <p>¿Necesitas ayuda? <a href="#">Contacta soporte técnico</a></p>
+        </div>
       </div>
-
-      <button type="submit">Iniciar sesión</button>
-    </form>
-
+    </div>
   </div>
 </div>
