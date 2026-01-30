@@ -14,7 +14,7 @@ import java.time.LocalDate;
                 @UniqueConstraint(columnNames = {"id_reserva", "id_bloqueo"})
         }
 )
-public class C_ReservaAfectadaBloqueo {
+public class ReservaAfectadaBloqueo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IdReservaAfectada")
@@ -32,10 +32,10 @@ public class C_ReservaAfectadaBloqueo {
     // Muchas filas -> una reserva
     @ManyToOne
     @JoinColumn(name = "IdReserva", nullable = false)
-    private C_Reserva reserva;
+    private Reserva reserva;
 
     // Muchas filas -> un bloqueo
     @ManyToOne
     @JoinColumn(name = "IdBloqueo", nullable = false)
-    private C_BloqueoLab bloqueo;
+    private BloqueoLab bloqueo;
 }

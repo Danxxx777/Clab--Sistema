@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class C_Usuario {
+public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IdUsuario")
@@ -46,14 +46,14 @@ public class C_Usuario {
     // Muchos usuarios -> una institución
     @ManyToOne
     @JoinColumn(name = "IdInstitucion", nullable = false)
-    private C_Institucion institucion;
+    private Institucion institucion;
 
     // Foto de perfil (opcional)
     @ManyToOne
     @JoinColumn(name = "IdFoto")
-    private C_Foto foto;
+    private Foto foto;
 
     // Roles del usuario
     @OneToMany(mappedBy = "usuario")
-    private List<C_UsuarioRol> roles;
+    private List<UsuarioRol> roles;
 }

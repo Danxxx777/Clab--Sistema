@@ -2,22 +2,22 @@ package com.clab.clabbackend.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.util.List;
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class C_Rol {
+public class RolBD {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdRol")
-    private Integer idRol;
+    @Column(name = "IdRolBd")
+    private Integer idRolBd;
 
-    @Column(name = "NombreRol", length = 50, nullable = false, unique = true)
-    private String nombreRol;
+    @Column(name = "NombreRolBd", length = 50, nullable = false, unique = true)
+    private String nombreRolBd;
 
     @Column(name = "Descripcion", length = 200)
     private String descripcion;
@@ -25,7 +25,6 @@ public class C_Rol {
     @Column(name = "FechaCreacion", nullable = false)
     private LocalDate fechaCreacion;
 
-    // Un rol -> muchos usuarios (vía tabla puente)
-    @OneToMany(mappedBy = "rol")
-    private List<C_UsuarioRol> usuarios;
+    @OneToMany(mappedBy = "rolBd")
+    private List<UsuarioRolBD> usuarios;
 }

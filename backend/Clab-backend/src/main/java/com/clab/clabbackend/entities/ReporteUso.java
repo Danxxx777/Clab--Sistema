@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class C_ReporteUso {
+public class ReporteUso {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IdReporteUso")
@@ -42,25 +42,25 @@ public class C_ReporteUso {
     // Reporte por laboratorio
     @ManyToOne
     @JoinColumn(name = "IdLaboratorio", nullable = false)
-    private C_Laboratorio laboratorio;
+    private Laboratorio laboratorio;
 
     // Reporte por periodo
     @ManyToOne
     @JoinColumn(name = "IdPeriodo", nullable = false)
-    private C_PeriodoAcademico periodo;
+    private PeriodoAcademico periodo;
 
     // Docente con mayor uso
     @ManyToOne
     @JoinColumn(name = "DocenteMayorso", nullable = false)
-    private C_Usuario docenteMayorUso;
+    private Usuario docenteMayorUso;
 
     // Asignatura con mayor uso
     @ManyToOne
     @JoinColumn(name = "AsignaturaMayorUso", nullable = false)
-    private C_Asignatura asignaturaMayorUso;
+    private Asignatura asignaturaMayorUso;
 
     // Usuario que genera el reporte
     @ManyToOne
     @JoinColumn(name = "IdUsuarioGen", nullable = false)
-    private C_Usuario usuarioGenera;
+    private Usuario usuarioGenera;
 }

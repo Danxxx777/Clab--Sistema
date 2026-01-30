@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class C_Auditoria {
+public class Auditoria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IdAuditoria")
@@ -33,5 +33,5 @@ public class C_Auditoria {
     // Muchas auditorías -> un usuario
     @ManyToOne
     @JoinColumn(name = "IdUsuario", nullable = false)
-    private C_Usuario usuario;
+    private Usuario usuario;
 }

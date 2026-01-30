@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class C_UsuarioBD {
+public class UsuarioBD {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IdUsuarioBd")
@@ -26,5 +26,5 @@ public class C_UsuarioBD {
     // 1 a 1 con usuario del sistema
     @OneToOne
     @JoinColumn(name = "id_usuario", nullable = false, unique = true)
-    private C_Usuario usuario;
+    private Usuario usuario;
 }

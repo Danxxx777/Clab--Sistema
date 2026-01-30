@@ -2,7 +2,7 @@ package com.clab.clabbackend.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.beans.ConstructorProperties;
+
 import java.util.List;
 
 @Getter
@@ -10,7 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class C_Institucion {
+public class Institucion {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     @Column(name = "IDInstitucion")
@@ -39,17 +39,17 @@ public class C_Institucion {
 
     // 1 Institución -> muchos Usuarios
     @OneToMany(mappedBy = "institucion")
-    private List<C_Usuario> usuarios;
+    private List<Usuario> usuarios;
 
     // 1 Institución -> muchos Laboratorios
     @OneToMany(mappedBy = "institucion")
-    private List<C_Laboratorio> laboratorios;
+    private List<Laboratorio> laboratorios;
 
     // 1 Institución -> muchas Carreras
     @OneToMany(mappedBy = "institucion")
-    private List<C_Carrera> carreras;
+    private List<Carrera> carreras;
 
     // 1 Institución -> muchas Fotos (tabla puente)
     @OneToMany(mappedBy = "institucion")
-    private List<C_Institucion_Foto> fotos;
+    private List<InstitucionFoto> fotos;
 }

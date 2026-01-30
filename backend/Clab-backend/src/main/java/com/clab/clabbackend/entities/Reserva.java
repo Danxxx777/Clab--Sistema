@@ -10,7 +10,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class C_Reserva {
+public class Reserva {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IdReserva")
@@ -55,29 +55,29 @@ public class C_Reserva {
     // Muchas reservas -> un laboratorio
     @ManyToOne
     @JoinColumn(name = "IdLaboratorio", nullable = false)
-    private C_Laboratorio laboratorio;
+    private Laboratorio laboratorio;
 
     // Muchas reservas -> usuario solicitante
     @ManyToOne
     @JoinColumn(name = "IdUsuario", nullable = false)
-    private C_Usuario usuario;
+    private Usuario usuario;
 
     // Muchas reservas -> periodo
     @ManyToOne
     @JoinColumn(name = "IdPeriodo", nullable = false)
-    private C_PeriodoAcademico periodo;
+    private PeriodoAcademico periodo;
 
     // Muchas reservas -> horario académico
     @ManyToOne
     @JoinColumn(name = "IdHorarioAcademico", nullable = false)
-    private C_HorarioAcademico horarioAcademico;
+    private HorarioAcademico horarioAcademico;
 
     // Usuario que cancela (opcional)
     @ManyToOne
     @JoinColumn(name = "IdUsuarioCancela")
-    private C_Usuario usuarioCancela;
+    private Usuario usuarioCancela;
 
     @ManyToOne
     @JoinColumn(name = "IdAsignatura")
-    private C_Asignatura asignatura;
+    private Asignatura asignatura;
 }

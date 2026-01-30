@@ -9,7 +9,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class C_Asignatura {
+public class Asignatura {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IdAsignatura")
@@ -33,11 +33,11 @@ public class C_Asignatura {
     // Muchas asignaturas -> una carrera
     @ManyToOne
     @JoinColumn(name = "Id_Carrera", nullable = false)
-    private C_Carrera carrera;
+    private Carrera carrera;
 
     // Una asignatura -> muchos horarios académicos
     @OneToMany(mappedBy = "asignatura")
-    private List<C_HorarioAcademico> horarios;
+    private List<HorarioAcademico> horarios;
 
 }
 

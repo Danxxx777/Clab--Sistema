@@ -10,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class C_PeriodoAcademico {
+public class PeriodoAcademico {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IdPeriodo")
@@ -30,13 +30,13 @@ public class C_PeriodoAcademico {
 
     // Un periodo -> muchos horarios académicos
     @OneToMany(mappedBy = "periodo")
-    private List<C_HorarioAcademico> horarios;
+    private List<HorarioAcademico> horarios;
 
     // Un periodo -> muchas reservas
     @OneToMany(mappedBy = "periodo")
-    private List<C_Reserva> reservas;
+    private List<Reserva> reservas;
 
     // Un periodo -> muchos reportes de uso
     @OneToMany(mappedBy = "periodo")
-    private List<C_ReporteUso> reportesUso;
+    private List<ReporteUso> reportesUso;
 }

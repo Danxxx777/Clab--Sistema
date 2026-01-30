@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class C_SeguimientoReporte {
+public class SeguimientoReporte {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IdSeguimiento")
@@ -33,10 +33,10 @@ public class C_SeguimientoReporte {
     // Muchos seguimientos -> un reporte
     @ManyToOne
     @JoinColumn(name = "IdReporte", nullable = false)
-    private C_ReporteFallas reporte;
+    private ReporteFallas reporte;
 
     // Usuario que realiza la acción
     @ManyToOne
     @JoinColumn(name = "IdUsuario", nullable = false)
-    private C_Usuario usuario;
+    private Usuario usuario;
 }
