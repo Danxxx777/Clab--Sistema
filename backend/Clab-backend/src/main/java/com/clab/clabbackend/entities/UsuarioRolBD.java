@@ -1,5 +1,6 @@
 package com.clab.clabbackend.entities;
 
+
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -9,25 +10,23 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class C_UsuarioRol {
+public class UsuarioRolBD {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdUsuarioRol")
-    private Integer idUsuarioRol;
-
-    // Muchas filas -> un usuario
-    @ManyToOne
-    @JoinColumn(name = "IdUsuario", nullable = false)
-    private C_Usuario usuario;
-
-    // Muchas filas -> un rol
-    @ManyToOne
-    @JoinColumn(name = "IdRol", nullable = false)
-    private C_Rol rol;
+    @Column(name = "IdUsuarioRolBd")
+    private Integer idUsuarioRolBd;
 
     @Column(name = "FechaAsignacion", nullable = false)
     private LocalDate fechaAsignacion;
 
     @Column(name = "Vigente", nullable = false)
     private Boolean vigente;
+
+    @ManyToOne
+    @JoinColumn(name = "IdUsuarioBd", nullable = false)
+    private UsuarioBD usuarioBd;
+
+    @ManyToOne
+    @JoinColumn(name = "IdRolBd", nullable = false)
+    private RolBD rolBd;
 }

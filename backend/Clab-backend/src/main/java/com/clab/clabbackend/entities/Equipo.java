@@ -10,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class C_Equipo {
+public class Equipo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IdEquipo")
@@ -49,18 +49,18 @@ public class C_Equipo {
     // Muchos equipos -> un laboratorio
     @ManyToOne
     @JoinColumn(name = "id_laboratorio", nullable = false)
-    private C_Laboratorio laboratorio;
+    private Laboratorio laboratorio;
 
     // Usuario responsable del equipo
     @ManyToOne
     @JoinColumn(name = "IdUsuario", nullable = false)
-    private C_Usuario usuario;
+    private Usuario usuario;
 
     // Fotos del equipo (tabla puente)
     @OneToMany(mappedBy = "equipo")
-    private List<C_Equipo_Foto> fotos;
+    private List<EquipoFoto> fotos;
 
     // Reportes de falla del equipo
     @OneToMany(mappedBy = "equipo")
-    private List<C_ReporteFallas> reportes;
+    private List<ReporteFallas> reportes;
 }

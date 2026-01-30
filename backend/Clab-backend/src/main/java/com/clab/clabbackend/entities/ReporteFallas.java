@@ -10,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class C_ReporteFallas {
+public class ReporteFallas {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IdReporte")
@@ -43,19 +43,19 @@ public class C_ReporteFallas {
     // Muchos reportes -> un equipo
     @ManyToOne
     @JoinColumn(name = "IdEquipo", nullable = false)
-    private C_Equipo equipo;
+    private Equipo equipo;
 
     // Muchos reportes -> un laboratorio
     @ManyToOne
     @JoinColumn(name = "IdLaboratorio", nullable = false)
-    private C_Laboratorio laboratorio;
+    private Laboratorio laboratorio;
 
     // Usuario que reporta la falla
     @ManyToOne
     @JoinColumn(name = "IdUsuario", nullable = false)
-    private C_Usuario usuario;
+    private Usuario usuario;
 
     // Seguimientos del reporte
     @OneToMany(mappedBy = "reporte")
-    private List<C_SeguimientoReporte> seguimientos;
+    private List<SeguimientoReporte> seguimientos;
 }

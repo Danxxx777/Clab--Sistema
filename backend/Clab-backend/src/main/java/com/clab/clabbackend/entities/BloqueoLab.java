@@ -10,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class C_BloqueoLab {
+public class BloqueoLab {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IdBloqueo")
@@ -37,14 +37,14 @@ public class C_BloqueoLab {
     // Muchos bloqueos -> un laboratorio
     @ManyToOne
     @JoinColumn(name = "IdLaboratorio", nullable = false)
-    private C_Laboratorio laboratorio;
+    private Laboratorio laboratorio;
 
     // Usuario que crea el bloqueo
     @ManyToOne
     @JoinColumn(name = "IdUsuario", nullable = false)
-    private C_Usuario usuario;
+    private Usuario usuario;
 
     // Un bloqueo -> muchas reservas afectadas
     @OneToMany(mappedBy = "bloqueo")
-    private List<C_ReservaAfectadaBloqueo> reservasAfectadas;
+    private List<ReservaAfectadaBloqueo> reservasAfectadas;
 }

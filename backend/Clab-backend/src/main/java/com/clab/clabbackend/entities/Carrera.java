@@ -9,7 +9,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class C_Carrera {
+public class Carrera {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IdCarrera")
@@ -27,14 +27,14 @@ public class C_Carrera {
     // Muchas carreras -> una institución
     @ManyToOne
     @JoinColumn(name = "IdInstitucion", nullable = false)
-    private C_Institucion institucion;
+    private Institucion institucion;
 
     // Coordinador de la carrera (opcional)
     @ManyToOne
     @JoinColumn(name = "IdCoordinador")
-    private C_Usuario coordinador;
+    private Usuario coordinador;
 
     // Una carrera -> muchas asignaturas
     @OneToMany(mappedBy = "carrera")
-    private List<C_Asignatura> asignaturas;
+    private List<Asignatura> asignaturas;
 }

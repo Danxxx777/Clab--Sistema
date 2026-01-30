@@ -13,7 +13,7 @@ import lombok.*;
                 @UniqueConstraint(columnNames = {"IdInstitucion", "IdFoto"})
         }
 )
-public class C_Institucion_Foto {
+public class InstitucionFoto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IdInstitucionFoto")
@@ -22,10 +22,10 @@ public class C_Institucion_Foto {
     // Muchas filas -> una institución
     @ManyToOne
     @JoinColumn(name = "IdInstitucion", nullable = false)
-    private C_Institucion institucion;
+    private Institucion institucion;
 
     // Muchas filas -> una foto
     @ManyToOne
     @JoinColumn(name = "IdFoto", nullable = false)
-    private C_Foto foto;
+    private Foto foto;
 }

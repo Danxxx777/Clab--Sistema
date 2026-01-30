@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class C_Notificacion {
+public class Notificacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IdNotificacion")
@@ -39,6 +39,6 @@ public class C_Notificacion {
     // Muchas notificaciones -> un usuario
     @ManyToOne
     @JoinColumn(name = "IdUsuario", nullable = false)
-    private C_Usuario usuario;
+    private Usuario usuario;
 }
 

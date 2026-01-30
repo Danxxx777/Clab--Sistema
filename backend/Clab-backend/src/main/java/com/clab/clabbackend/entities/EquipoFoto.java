@@ -10,22 +10,22 @@ import lombok.*;
 @Entity
 @Table(
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"IdLaboratorio", "IdFoto"})
+                @UniqueConstraint(columnNames = {"IdEquipo", "IdFoto"})
         }
 )
-public class C_Laboratorio_Foto {
+public class EquipoFoto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdLaboratorioFoto")
-    private Integer idLaboratorioFoto;
+    @Column(name = "IdEquipoFoto")
+    private Integer idEquipoFoto;
 
-    // Muchas filas -> un laboratorio
+    // Muchas filas -> un equipo
     @ManyToOne
-    @JoinColumn(name = "IdLaboratorio", nullable = false)
-    private C_Laboratorio laboratorio;
+    @JoinColumn(name = "IdEquipo", nullable = false)
+    private Equipo equipo;
 
     // Muchas filas -> una foto
     @ManyToOne
     @JoinColumn(name = "IdFoto", nullable = false)
-    private C_Foto foto;
+    private Foto foto;
 }

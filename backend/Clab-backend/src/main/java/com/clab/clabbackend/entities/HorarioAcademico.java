@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class C_HorarioAcademico {
+public class HorarioAcademico {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IdHorario")
@@ -41,19 +41,19 @@ public class C_HorarioAcademico {
     // Muchos horarios -> un periodo
     @ManyToOne
     @JoinColumn(name = "IdPeriodo", nullable = false)
-    private C_PeriodoAcademico periodo;
+    private PeriodoAcademico periodo;
 
     // Muchos horarios -> una asignatura
     @ManyToOne
     @JoinColumn(name = "IdAsignatura", nullable = false)
-    private C_Asignatura asignatura;
+    private Asignatura asignatura;
 
     // Muchos horarios -> un docente (usuario)
     @ManyToOne
     @JoinColumn(name = "IdDocente", nullable = false)
-    private C_Usuario docente;
+    private Usuario docente;
 
     // Un horario -> muchas reservas
     @OneToMany(mappedBy = "horarioAcademico")
-    private List<C_Reserva> reservas;
+    private List<Reserva> reservas;
 }
