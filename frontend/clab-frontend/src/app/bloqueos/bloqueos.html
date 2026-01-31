@@ -1,0 +1,53 @@
+<div class="bloqueos-page">
+  <button class="back-btn" (click)="volver()">Volver</button>
+
+  <div class="bloqueos-container">
+    <div class="bloqueos-header">
+      <h1>Bloqueos por Actividades Institucionales</h1>
+      <div class="header-actions">
+        <button class="btn-crear" (click)="crearBloqueo()">
+          Crear Bloqueo
+        </button>
+      </div>
+    </div>
+
+    <div class="bloqueos-table-container">
+      <div class="table-wrapper">
+        <table class="bloqueos-table">
+          <thead>
+          <tr>
+            <th>LABORATORIO</th>
+            <th>FECHA INICIO</th>
+            <th>FECHA FIN</th>
+            <th>HORARIO</th>
+            <th>MOTIVO</th>
+            <th>ACCIONES</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let bloqueo of bloqueos">
+            <td>{{bloqueo.laboratorio}}</td>
+            <td>{{bloqueo.fechaInicio}}</td>
+            <td>{{bloqueo.fechaFin}}</td>
+            <td>{{bloqueo.horario}}</td>
+            <td>{{bloqueo.motivo}}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-edit" (click)="editar(bloqueo)" title="Editar">✏️</button>
+                <button class="btn-lock" (click)="ver(bloqueo)" title="Ver detalles">🔒</button>
+                <button class="btn-delete" (click)="eliminar(bloqueo)" title="Eliminar">🗑️</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="bloqueos.length === 0">
+            <td colspan="6" class="empty-state">
+              <div class="empty-icon">🔒</div>
+              <p>No hay bloqueos registrados</p>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

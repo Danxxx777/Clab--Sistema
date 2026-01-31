@@ -1,95 +1,463 @@
-.reservar-page {
+.reservas-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #1f7a44, #2e9d5b);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  box-sizing: border-box;
-}
+  background: linear-gradient(135deg, #0d5a2e 0%, #1f7a44 50%, #2e9d5b 100%);
+  padding: 100px 20px 40px 20px;
+  position: relative;
 
-.reservar-card {
-  background: #ecfff2;
-  width: 100%;
-  max-width: 420px;
-  padding: 35px 30px;
-  border-radius: 22px;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
-}
-
-.title {
-  text-align: center;
-  font-size: 26px;
-  margin-bottom: 30px;
-  color: #1f5f3a;
-  letter-spacing: 1px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 18px;
-}
-
-.form-group label {
-  margin-bottom: 6px;
-  font-weight: 600;
-  color: #1f5f3a;
-}
-
-.form-group input,
-.form-group select {
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid #bcdcc8;
-  font-size: 14px;
-  outline: none;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-  border-color: #2e9d5b;
-  box-shadow: 0 0 0 2px rgba(46, 157, 91, 0.2);
-}
-
-.btn-primary {
-  margin-top: 20px;
-  width: 100%;
-  padding: 14px;
-  border-radius: 14px;
-  border: none;
-  background: linear-gradient(135deg, #2e9d5b, #23804a);
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-  transition: all 0.25s ease;
-}
-
-.btn-primary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.3);
-  background: linear-gradient(135deg, #35b66a, #2a8f57);
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+      radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.06) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.04) 0%, transparent 50%);
+    pointer-events: none;
+  }
 }
 
 .back-btn {
-  position: absolute;
-  top: 24px;
-  left: 32px;
-
-  background: transparent;
-  color: #eafaf0;
-  border: 2px solid #eafaf0;
-  padding: 6px 16px;
-  border-radius: 18px;
-  font-weight: 600;
+  position: fixed;
+  top: 25px;
+  left: 25px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  color: #ffffff;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 10px 24px;
+  border-radius: 25px;
+  font-weight: 700;
+  font-size: 14px;
   cursor: pointer;
-
   transition: all 0.3s ease;
-  z-index: 10;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &::before {
+    content: '←';
+    font-size: 18px;
+    transition: transform 0.3s ease;
+  }
+
+  &:hover {
+    background: #ffffff;
+    color: #1f7a44;
+    border-color: #ffffff;
+    transform: translateX(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+
+    &::before {
+      transform: translateX(-3px);
+    }
+  }
+
+  &:active {
+    transform: translateX(-2px) scale(0.98);
+  }
 }
 
-.back-btn:hover {
-  background: #eafaf0;
-  color: #1f7a44;
+.reservas-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.reservas-header {
+  background: rgba(255, 255, 255, 0.98);
+  padding: 32px 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  animation: fadeInDown 0.5s ease-out;
+
+  h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #0d5a2e;
+    margin: 0;
+    letter-spacing: -0.5px;
+  }
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-import {
+  background: linear-gradient(135deg, #27ae60, #229954);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(39, 174, 96, 0.3);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &::before {
+    content: '📥';
+    font-size: 16px;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(39, 174, 96, 0.4);
+    background: linear-gradient(135deg, #229954, #1e8449);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.btn-nueva {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(52, 152, 219, 0.3);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &::before {
+    content: '+';
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+    background: linear-gradient(135deg, #2980b9, #21618c);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.reservas-table-container {
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f3f5;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #27ae60;
+    border-radius: 4px;
+
+    &:hover {
+      background: #229954;
+    }
+  }
+}
+
+.reservas-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+
+    th {
+      padding: 18px 16px;
+      text-align: left;
+      color: white;
+      font-weight: 700;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+
+      &:first-child {
+        padding-left: 24px;
+      }
+
+      &:last-child {
+        padding-right: 24px;
+        text-align: center;
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid #e9ecef;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: #f8f9fa;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      td {
+        padding: 18px 16px;
+        color: #2c3e50;
+        font-size: 14px;
+        font-weight: 500;
+
+        &:first-child {
+          padding-left: 24px;
+          font-weight: 600;
+          color: #0d5a2e;
+        }
+
+        &:last-child {
+          padding-right: 24px;
+          text-align: center;
+        }
+      }
+    }
+  }
+}
+
+.estado-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &.confirmada {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  &.pendiente {
+    background: #fff3cd;
+    color: #856404;
+  }
+
+  &.cancelada {
+    background: #f8d7da;
+    color: #721c24;
+  }
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+
+  button {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+
+    &.btn-edit {
+      background: #e3f2fd;
+      color: #1976d2;
+
+      &:hover {
+        background: #1976d2;
+        color: white;
+        transform: scale(1.1);
+      }
+    }
+
+    &.btn-delete {
+      background: #ffebee;
+      color: #c62828;
+
+      &:hover {
+        background: #c62828;
+        color: white;
+        transform: scale(1.1);
+      }
+    }
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+
+  .empty-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.3;
+  }
+
+  p {
+    color: #7f8c8d;
+    font-size: 16px;
+    margin: 0;
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive
+@media (max-width: 1024px) {
+  .reservas-header {
+    padding: 24px 28px;
+
+    h1 {
+      font-size: 24px;
+    }
+  }
+
+  .header-actions {
+    width: 100%;
+
+    button {
+      flex: 1;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .reservas-page {
+    padding: 80px 15px 20px 15px;
+  }
+
+  .back-btn {
+    padding: 8px 18px;
+    font-size: 13px;
+  }
+
+  .reservas-header {
+    padding: 20px;
+
+    h1 {
+      font-size: 22px;
+    }
+  }
+
+  .btn-import,
+  .btn-nueva {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+
+  .reservas-table {
+    font-size: 13px;
+
+    thead th {
+      padding: 14px 12px;
+      font-size: 12px;
+    }
+
+    tbody td {
+      padding: 14px 12px;
+    }
+  }
+
+  .action-buttons button {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .back-btn {
+    top: 15px;
+    left: 15px;
+    padding: 7px 14px;
+    font-size: 12px;
+  }
+
+  .reservas-header {
+    padding: 18px;
+
+    h1 {
+      font-size: 20px;
+    }
+  }
+
+  .header-actions {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
+
+  .reservas-table {
+    thead th,
+    tbody td {
+      padding: 12px 10px;
+
+      &:first-child {
+        padding-left: 16px;
+      }
+
+      &:last-child {
+        padding-right: 16px;
+      }
+    }
+  }
+
+  .estado-badge {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
 }

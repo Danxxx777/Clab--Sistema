@@ -5,10 +5,6 @@
 
     <h1 class="title">MENÚ CLAB</h1>
 
-    <div class="backend-status">
-      <strong>Estado del sistema:</strong>
-      <p>{{ mensajeBackend }}</p>
-    </div>
 
 
     <div class="menu-list">
@@ -29,6 +25,15 @@
         </div>
       </div>
 
+      <!-- NUEVO: Agregar este item para Equipos -->
+      <div class="menu-item info" (click)="goTo('equipos')">
+        <span class="icon">💻</span>
+        <div class="text">
+          <strong>Equipos</strong>
+          <p>Gestión de inventario</p>
+        </div>
+      </div>
+
       <div class="menu-item warning" (click)="goTo('reportar')">
         <span class="icon">⚠️</span>
         <div class="text">
@@ -45,6 +50,13 @@
         </div>
       </div>
 
+      <div class="menu-item warning" (click)="goTo('bloqueos')">
+        <span class="icon">🔒</span>
+        <div class="text">
+          <strong>Bloqueos</strong>
+          <p>Actividades institucionales</p>
+        </div>
+      </div>
     </div>
 
   </div>
