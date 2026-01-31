@@ -1,4 +1,4 @@
-.reportes-page {
+.bloqueos-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #0d5a2e 0%, #1f7a44 50%, #2e9d5b 100%);
   padding: 100px 20px 40px 20px;
@@ -60,14 +60,14 @@
   }
 }
 
-.reportes-container {
+.bloqueos-container {
   max-width: 1400px;
   margin: 0 auto;
   position: relative;
   z-index: 1;
 }
 
-.reportes-header {
+.bloqueos-header {
   background: rgba(255, 255, 255, 0.98);
   padding: 32px 40px;
   border-radius: 20px;
@@ -95,29 +95,38 @@
   flex-wrap: wrap;
 }
 
-.filter-estado {
-  padding: 12px 20px;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
+.btn-crear {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 14px;
+  font-weight: 700;
   font-size: 14px;
-  font-weight: 600;
-  color: #2c3e50;
-  background: white;
   cursor: pointer;
+  box-shadow: 0 6px 16px rgba(231, 76, 60, 0.3);
   transition: all 0.3s ease;
-  outline: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 
-  &:hover {
-    border-color: #c0392b;
+  &::before {
+    content: '🔒';
+    font-size: 16px;
   }
 
-  &:focus {
-    border-color: #c0392b;
-    box-shadow: 0 0 0 4px rgba(192, 57, 43, 0.1);
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
+    background: linear-gradient(135deg, #c0392b, #a93226);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 }
 
-.reportes-table-container {
+.bloqueos-table-container {
   background: rgba(255, 255, 255, 0.98);
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
@@ -137,21 +146,21 @@
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #c0392b;
+    background: #8e44ad;
     border-radius: 4px;
 
     &:hover {
-      background: #a93226;
+      background: #7d3c98;
     }
   }
 }
 
-.reportes-table {
+.bloqueos-table {
   width: 100%;
   border-collapse: collapse;
 
   thead {
-    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
 
     th {
       padding: 18px 16px;
@@ -180,7 +189,7 @@
       transition: background-color 0.2s ease;
 
       &:hover {
-        background-color: #fff5f5;
+        background-color: #f9f5ff;
       }
 
       &:last-child {
@@ -195,8 +204,8 @@
 
         &:first-child {
           padding-left: 24px;
-          font-weight: 700;
-          color: #c0392b;
+          font-weight: 600;
+          color: #8e44ad;
         }
 
         &:last-child {
@@ -205,31 +214,6 @@
         }
       }
     }
-  }
-}
-
-.estado-badge {
-  display: inline-block;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-
-  &.pendiente {
-    background: #f8d7da;
-    color: #721c24;
-  }
-
-  &.en-proceso {
-    background: #fff3cd;
-    color: #856404;
-  }
-
-  &.resuelto {
-    background: #d4edda;
-    color: #155724;
   }
 }
 
@@ -261,12 +245,23 @@
       }
     }
 
-    &.btn-view {
+    &.btn-lock {
       background: #f3e5f5;
       color: #7b1fa2;
 
       &:hover {
         background: #7b1fa2;
+        color: white;
+        transform: scale(1.1);
+      }
+    }
+
+    &.btn-delete {
+      background: #ffebee;
+      color: #c62828;
+
+      &:hover {
+        background: #c62828;
         color: white;
         transform: scale(1.1);
       }
@@ -314,7 +309,7 @@
 }
 
 @media (max-width: 1024px) {
-  .reportes-header {
+  .bloqueos-header {
     padding: 24px 28px;
 
     h1 {
@@ -325,14 +320,14 @@
   .header-actions {
     width: 100%;
 
-    .filter-estado {
+    button {
       flex: 1;
     }
   }
 }
 
 @media (max-width: 768px) {
-  .reportes-page {
+  .bloqueos-page {
     padding: 80px 15px 20px 15px;
   }
 
@@ -341,7 +336,7 @@
     font-size: 13px;
   }
 
-  .reportes-header {
+  .bloqueos-header {
     padding: 20px;
 
     h1 {
@@ -349,12 +344,12 @@
     }
   }
 
-  .filter-estado {
-    padding: 10px 18px;
+  .btn-crear {
+    padding: 10px 20px;
     font-size: 13px;
   }
 
-  .reportes-table {
+  .bloqueos-table {
     font-size: 13px;
 
     thead th {
@@ -382,7 +377,7 @@
     font-size: 12px;
   }
 
-  .reportes-header {
+  .bloqueos-header {
     padding: 18px;
 
     h1 {
@@ -393,12 +388,12 @@
   .header-actions {
     flex-direction: column;
 
-    .filter-estado {
+    button {
       width: 100%;
     }
   }
 
-  .reportes-table {
+  .bloqueos-table {
     thead th,
     tbody td {
       padding: 12px 10px;
@@ -411,10 +406,5 @@
         padding-right: 16px;
       }
     }
-  }
-
-  .estado-badge {
-    padding: 4px 10px;
-    font-size: 11px;
   }
 }
