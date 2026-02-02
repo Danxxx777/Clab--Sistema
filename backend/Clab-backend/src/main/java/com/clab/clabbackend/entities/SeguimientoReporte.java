@@ -9,34 +9,33 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "i_seguimiento_reporte", schema = "inventario")
 public class SeguimientoReporte {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdSeguimiento")
+    @Column(name = "id_seguimiento")
     private Integer idSeguimiento;
 
-    @Column(name = "EstadoAnterior", length = 50)
-    private String estadoAnterior;
-
-    @Column(name = "EstadoNuevo", length = 50)
-    private String estadoNuevo;
-
-    @Column(name = "Motivo", length = 100)
-    private String motivo;
-
-    @Column(name = "AccionEealizada", length = 100)
-    private String accionRealizada;
-
-    @Column(name = "FechaSeguimiento", nullable = false)
-    private LocalDate fechaSeguimiento;
-
-    // Muchos seguimientos -> un reporte
-    @ManyToOne
-    @JoinColumn(name = "IdReporte", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_reporte", nullable = false)
     private ReporteFallas reporte;
 
-    // Usuario que realiza la acción
-    @ManyToOne
-    @JoinColumn(name = "IdUsuario", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
+
+    @Column(name = "estado_anterior", length = 50)
+    private String estadoAnterior;
+
+    @Column(name = "estado_nuevo", length = 50)
+    private String estadoNuevo;
+
+    @Column(name = "motivo", length = 100)
+    private String motivo;
+
+    @Column(name = "accion_realizada", length = 100)
+    private String accionRealizada;
+
+    @Column(name = "fecha_seguimiento", nullable = false)
+    private LocalDate fechaSeguimiento;
 }

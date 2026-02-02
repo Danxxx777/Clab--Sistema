@@ -10,74 +10,71 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "r_reserva", schema = "reservas")
 public class Reserva {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdReserva")
+    @Column(name = "id_reserva")
     private Integer idReserva;
 
-    @Column(name = "TipoReserva", length = 50)
-    private String tipoReserva;
-
-    @Column(name = "FechaReserva", nullable = false)
-    private LocalDate fechaReserva;
-
-    @Column(name = "HoraInicio", nullable = false)
-    private LocalTime horaInicio;
-
-    @Column(name = "HoraFin", nullable = false)
-    private LocalTime horaFin;
-
-    @Column(name = "Motivo", length = 200, nullable = false)
-    private String motivo;
-
-    @Column(name = "NumeroEstudiantes")
-    private Integer numeroEstudiantes;
-
-    @Column(name = "Estado", nullable = false, length = 15)
-    private String estado;
-
-    @Column(name = "Descripcion", length = 200)
-    private String descripcion;
-
-    @Column(name = "FechaSolicitud", nullable = false)
-    private LocalDate fechaSolicitud;
-
-    @Column(name = "FechaConfirmacion")
-    private LocalDate fechaConfirmacion;
-
-    @Column(name = "FechaCancelacion")
-    private LocalDate fechaCancelacion;
-
-    @Column(name = "MotivoCancelacion", length = 200)
-    private String motivoCancelacion;
-
-    // Muchas reservas -> un laboratorio
-    @ManyToOne
-    @JoinColumn(name = "IdLaboratorio", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "cod_laboratorio", nullable = false)
     private Laboratorio laboratorio;
 
-    // Muchas reservas -> usuario solicitante
-    @ManyToOne
-    @JoinColumn(name = "IdUsuario", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
-    // Muchas reservas -> periodo
-    @ManyToOne
-    @JoinColumn(name = "IdPeriodo", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_periodo", nullable = false)
     private PeriodoAcademico periodo;
 
-    // Muchas reservas -> horario académico
-    @ManyToOne
-    @JoinColumn(name = "IdHorarioAcademico", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_horario_academico", nullable = false)
     private HorarioAcademico horarioAcademico;
 
-    // Usuario que cancela (opcional)
     @ManyToOne
-    @JoinColumn(name = "IdUsuarioCancela")
-    private Usuario usuarioCancela;
+    @JoinColumn(name = "id_asignatura")
+    private Asignatura asignatura;
 
     @ManyToOne
-    @JoinColumn(name = "IdAsignatura")
-    private Asignatura asignatura;
+    @JoinColumn(name = "id_tipo_reserva")
+    private TipoReserva tipoReserva;
+
+    @Column(name = "fecha_reserva", nullable = false)
+    private LocalDate fechaReserva;
+
+    @Column(name = "hora_inicio", nullable = false)
+    private LocalTime horaInicio;
+
+    @Column(name = "hora_fin", nullable = false)
+    private LocalTime horaFin;
+
+    @Column(name = "motivo", length = 200, nullable = false)
+    private String motivo;
+
+    @Column(name = "numero_estudiantes")
+    private Integer numeroEstudiantes;
+
+    @Column(name = "estado", length = 15, nullable = false)
+    private String estado;
+
+    @Column(name = "descripcion", length = 200)
+    private String descripcion;
+
+    @Column(name = "fecha_solicitud", nullable = false)
+    private LocalDate fechaSolicitud;
+
+    @Column(name = "fecha_confirmacion")
+    private LocalDate fechaConfirmacion;
+
+    @Column(name = "fecha_cancelacion")
+    private LocalDate fechaCancelacion;
+
+    @Column(name = "motivo_cancelacion", length = 200)
+    private String motivoCancelacion;
+
+    @ManyToOne
+    @JoinColumn(name = "id_usuario_cancela")
+    private Usuario usuarioCancela;
 }

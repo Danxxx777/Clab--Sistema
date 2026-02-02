@@ -2,7 +2,6 @@ package com.clab.clabbackend.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.util.List;
 import java.time.LocalDate;
 
 @Getter
@@ -10,18 +9,25 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "u_rol", schema = "usuarios")
-public class Rol {
+@Table(name = "o_facultad", schema = "organizacion")
+public class Facultad {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_rol")
-    private Integer idRol;
+    @Column(name = "id_facultad")
+    private Integer idFacultad;
 
-    @Column(name = "nombre_rol", length = 50, nullable = false)
-    private String nombreRol;
+    @Column(name = "nombre", length = 150, nullable = false)
+    private String nombre;
 
     @Column(name = "descripcion", length = 200)
     private String descripcion;
+
+    @Column(name = "estado", length = 15, nullable = false)
+    private String estado;
+
+    @ManyToOne
+    @JoinColumn(name = "id_decano")
+    private Usuario decano;
 
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDate fechaCreacion;

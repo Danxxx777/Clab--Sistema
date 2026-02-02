@@ -10,41 +10,36 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "l_bloqueo_lab", schema = "laboratorios")
 public class BloqueoLab {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdBloqueo")
+    @Column(name = "id_bloqueo")
     private Integer idBloqueo;
 
-    @Column(name = "TipoBloqueo", nullable = false, length = 50)
-    private String tipoBloqueo;
-
-    @Column(name = "Motivo", length = 200, nullable = false)
-    private String motivo;
-
-    @Column(name = "FechaInicio", nullable = false)
-    private LocalDate fechaInicio;
-
-    @Column(name = "FechaFin", nullable = false)
-    private LocalDate fechaFin;
-
-    @Column(name = "AfectaReservaExistentes", nullable = false)
-    private Boolean afectaReservasExistentes;
-
-    @Column(name = "Estado", nullable = false, length = 15)
-    private String estado;
-
-    // Muchos bloqueos -> un laboratorio
-    @ManyToOne
-    @JoinColumn(name = "IdLaboratorio", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "cod_laboratorio", nullable = false)
     private Laboratorio laboratorio;
 
-    // Usuario que crea el bloqueo
-    @ManyToOne
-    @JoinColumn(name = "IdUsuario", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
-    // Un bloqueo -> muchas reservas afectadas
-    @OneToMany(mappedBy = "bloqueo")
-    private List<ReservaAfectadaBloqueo> reservasAfectadas;
+    @Column(name = "tipo_bloqueo", length = 15, nullable = false)
+    private String tipoBloqueo;
+
+    @Column(name = "motivo", length = 200, nullable = false)
+    private String motivo;
+
+    @Column(name = "fecha_inicio", nullable = false)
+    private LocalDate fechaInicio;
+
+    @Column(name = "fecha_fin", nullable = false)
+    private LocalDate fechaFin;
+
+    @Column(name = "afecta_reservas_existentes", nullable = false)
+    private Boolean afectaReservasExistentes;
+
+    @Column(name = "estado", length = 15, nullable = false)
+    private String estado;
 }
