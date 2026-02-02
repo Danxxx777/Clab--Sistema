@@ -12,19 +12,20 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "r_foto", schema = "recursos")
 public class Foto {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(name = "IdFoto")
+    @Column(name = "id_foto")
     private Integer idFoto;
 
-    @Column(name = "FechaSubida")
+    @Column(name = "fecha_subida")
     private LocalDate fechaSubida;
 
     @Lob
-    @Column(name = "FotoBinario", nullable = false)
+    @Column(name = "foto_binario", nullable = false)
     private byte[] fotoBinario;
 
-    @Column(name = "Estado", length = 15)
+    @Column(name = "estado", length = 15)
     private String estado;
 }

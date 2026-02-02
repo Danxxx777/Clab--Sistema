@@ -9,29 +9,29 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "u_auditoria", schema = "usuarios")
 public class Auditoria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdAuditoria")
+    @Column(name = "id_auditoria")
     private Integer idAuditoria;
 
-    @Column(name = "TablaAfectada", length = 50, nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_usuario", nullable = false)
+    private Usuario usuario;
+
+    @Column(name = "tabla_afectada", length = 50, nullable = false)
     private String tablaAfectada;
 
     @Column(name = "id_registro_afectado", nullable = false)
     private Integer idRegistroAfectado;
 
-    @Column(name = "Accion", length = 15, nullable = false)
+    @Column(name = "accion", length = 15, nullable = false)
     private String accion;
 
-    @Column(name = "Descripcion", length = 200)
+    @Column(name = "descripcion", length = 200)
     private String descripcion;
 
-    @Column(name = "FechaHora", nullable = false)
+    @Column(name = "fecha_hora", nullable = false)
     private LocalDateTime fechaHora;
-
-    // Muchas auditorías -> un usuario
-    @ManyToOne
-    @JoinColumn(name = "IdUsuario", nullable = false)
-    private Usuario usuario;
 }
