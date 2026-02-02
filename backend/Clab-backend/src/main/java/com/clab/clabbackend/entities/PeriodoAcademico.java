@@ -32,4 +32,3 @@ public class PeriodoAcademico {
     @Column(name = "estado", length = 15, nullable = false)
     private String estado;
 }
-//xd

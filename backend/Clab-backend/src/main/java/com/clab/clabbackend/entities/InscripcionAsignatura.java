@@ -30,4 +30,3 @@ public class InscripcionAsignatura {
     @Column(name = "estado", length = 15)
     private String estado;
 }
-//xd

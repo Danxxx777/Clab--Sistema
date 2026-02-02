@@ -28,4 +28,3 @@ public class UsuarioBD {
     @Column(name = "estado_user_bd", nullable = false,  length = 15)
     private String estadoUserBd;
 }
-//xd
