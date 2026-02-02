@@ -1,10 +1,475 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Title</title>
-</head>
-<body>
+<nav class="navbar">
+  <div class="nav-container">
+    <div class="logo">
+      <span>🔬</span>
+      <span> CLAB </span>
+    </div>
 
-</body>
-</html>
+    <button class="logout" (click)="volver()">Volver</button>
+  </div>
+</nav>
+
+
+<div class="laboratorios-page">
+
+
+  <div class="laboratorios-container">
+    <div class="laboratorios-header">
+      <h1>Gestión de Laboratorios</h1>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-container">
+      <div class="tabs-header">
+        <button class="tab-button"
+                [class.active]="tabActiva === 0"
+                (click)="cambiarTab(0)">
+          Laboratorios
+        </button>
+        <button class="tab-button"
+                [class.active]="tabActiva === 1"
+                (click)="cambiarTab(1)">
+          Sedes
+        </button>
+        <button class="tab-button"
+                [class.active]="tabActiva === 2"
+                (click)="cambiarTab(2)">
+          Encargados
+        </button>
+      </div>
+
+      <!-- TAB 1: LABORATORIOS -->
+      <div class="tab-content" *ngIf="tabActiva === 0">
+        <div class="search-section">
+          <div class="search-box">
+            <input type="text"
+                   [(ngModel)]="busquedaLaboratorios"
+                   (input)="filtrarLaboratorios()"
+                   placeholder="Buscar laboratorios...">
+            <span class="search-icon">🔍</span>
+          </div>
+          <button class="btn-agregar" (click)="abrirModal('laboratorio')">
+            Agregar Laboratorio
+          </button>
+        </div>
+
+        <div class="table-container">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+              <tr>
+                <th>CÓDIGO</th>
+                <th>NOMBRE</th>
+                <th>SEDE</th>
+                <th>CAPACIDAD</th>
+                <th>ENCARGADO</th>
+                <th>ESTADO</th>
+                <th>ACCIONES</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let lab of laboratoriosFiltrados; let i = index">
+                <td>{{lab.codigo}}</td>
+                <td>{{lab.nombre}}</td>
+                <td>{{lab.sede}}</td>
+                <td>{{lab.capacidad}} personas</td>
+                <td>{{lab.encargado}}</td>
+                <td>
+                    <span class="estado-badge" [ngClass]="lab.estado.toLowerCase()">
+                      {{lab.estado}}
+                    </span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn-view" (click)="verDetalle(lab)" title="Ver">Ver</button>
+                    <button class="btn-edit" (click)="editarLaboratorio(lab, i)" title="Editar">Editar</button>
+                    <button class="btn-delete" (click)="eliminarLaboratorio(lab, i)" title="Eliminar">Eliminar</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="laboratoriosFiltrados.length === 0">
+                <td colspan="7" class="empty-state">
+                  <div class="empty-icon">🔬</div>
+                  <p>No hay laboratorios registrados</p>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: SEDES -->
+      <div class="tab-content" *ngIf="tabActiva === 1">
+        <div class="search-section">
+          <div class="search-box">
+            <input type="text"
+                   [(ngModel)]="busquedaSedes"
+                   (input)="filtrarSedes()"
+                   placeholder="Buscar sedes...">
+            <span class="search-icon">🔍</span>
+          </div>
+          <button class="btn-agregar" (click)="abrirModal('sede')">
+            Agregar Sede
+          </button>
+        </div>
+
+        <div class="table-container">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+              <tr>
+                <th>CÓDIGO</th>
+                <th>NOMBRE</th>
+                <th>DIRECCIÓN</th>
+                <th>CIUDAD</th>
+                <th>TELÉFONO</th>
+                <th>ESTADO</th>
+                <th>ACCIONES</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let sede of sedesFiltradas; let i = index">
+                <td>{{sede.codigo}}</td>
+                <td>{{sede.nombre}}</td>
+                <td>{{sede.direccion}}</td>
+                <td>{{sede.ciudad}}</td>
+                <td>{{sede.telefono}}</td>
+                <td>
+                    <span class="estado-badge" [ngClass]="sede.estado.toLowerCase()">
+                      {{sede.estado}}
+                    </span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn-view" (click)="verDetalle(sede)" title="Ver"> Ver </button>
+                    <button class="btn-edit" (click)="editarSede(sede, i)" title="Editar"> Editar</button>
+                    <button class="btn-delete" (click)="eliminarSede(sede, i)" title="Eliminar">🗑 Eliminar</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="sedesFiltradas.length === 0">
+                <td colspan="7" class="empty-state">
+                  <div class="empty-icon">🏢</div>
+                  <p>No hay sedes registradas</p>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: ENCARGADOS -->
+      <div class="tab-content" *ngIf="tabActiva === 2">
+        <div class="search-section">
+          <div class="search-box">
+            <input type="text"
+                   [(ngModel)]="busquedaEncargados"
+                   (input)="filtrarEncargados()"
+                   placeholder="Buscar encargados...">
+            <span class="search-icon">🔍</span>
+          </div>
+          <button class="btn-agregar" (click)="abrirModal('encargado')">
+            Agregar Encargado
+          </button>
+        </div>
+
+        <div class="table-container">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>NOMBRE</th>
+                <th>EMAIL</th>
+                <th>TELÉFONO</th>
+                <th>LABORATORIO ASIGNADO</th>
+                <th>ESTADO</th>
+                <th>ACCIONES</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let encargado of encargadosFiltrados; let i = index">
+                <td>{{encargado.id}}</td>
+                <td>{{encargado.nombre}}</td>
+                <td>{{encargado.email}}</td>
+                <td>{{encargado.telefono}}</td>
+                <td>{{encargado.laboratorioAsignado}}</td>
+                <td>
+                    <span class="estado-badge" [ngClass]="encargado.estado.toLowerCase()">
+                      {{encargado.estado}}
+                    </span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn-view" (click)="verDetalle(encargado)" title="Ver">Ver</button>
+                    <button class="btn-edit" (click)="editarEncargado(encargado, i)" title="Editar">Editar</button>
+                    <button class="btn-delete" (click)="eliminarEncargado(encargado, i)" title="Eliminar">Eliminar</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="encargadosFiltrados.length === 0">
+                <td colspan="7" class="empty-state">
+                  <div class="empty-icon">👤</div>
+                  <p>No hay encargados registrados</p>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PARA LABORATORIOS -->
+<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'laboratorio'" (click)="cerrarModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ modoEdicion ? 'Editar Laboratorio' : 'Agregar Nuevo Laboratorio' }}</h2>
+      <button class="btn-close" (click)="cerrarModal()">×</button>
+    </div>
+
+    <div class="modal-form">
+      <div class="form-grid">
+        <!-- Código -->
+        <div class="form-group">
+          <label>Código <span class="required">*</span></label>
+          <input type="text"
+                 [(ngModel)]="formularioLab.codigo"
+                 placeholder="Ej: LAB-001"
+                 [disabled]="modoEdicion">
+        </div>
+
+        <!-- Nombre -->
+        <div class="form-group">
+          <label>Nombre del Laboratorio <span class="required">*</span></label>
+          <input type="text"
+                 [(ngModel)]="formularioLab.nombre"
+                 placeholder="Ej: Laboratorio de Química">
+        </div>
+
+        <!-- Sede -->
+        <div class="form-group">
+          <label>Sede <span class="required">*</span></label>
+          <select [(ngModel)]="formularioLab.sede">
+            <option value="">Seleccione una sede</option>
+            <option value="Sede Central">Sede Central</option>
+            <option value="Sede Norte">Sede Norte</option>
+            <option value="Sede Sur">Sede Sur</option>
+          </select>
+        </div>
+
+        <!-- Capacidad -->
+        <div class="form-group">
+          <label>Capacidad <span class="required">*</span></label>
+          <input type="number"
+                 [(ngModel)]="formularioLab.capacidad"
+                 placeholder="Ej: 30"
+                 min="1">
+        </div>
+
+        <!-- Encargado -->
+        <div class="form-group">
+          <label>Encargado <span class="required">*</span></label>
+          <select [(ngModel)]="formularioLab.encargado">
+            <option value="">Seleccione un encargado</option>
+            <option value="Dr. Juan Pérez">Dr. Juan Pérez</option>
+            <option value="Dra. María García">Dra. María García</option>
+            <option value="Dr. Carlos Ruiz">Dr. Carlos Ruiz</option>
+            <option value="Ing. Ana Martínez">Ing. Ana Martínez</option>
+          </select>
+        </div>
+
+        <!-- Estado -->
+        <div class="form-group">
+          <label>Estado <span class="required">*</span></label>
+          <select [(ngModel)]="formularioLab.estado">
+            <option value="">Seleccione un estado</option>
+            <option value="Activo">Activo</option>
+            <option value="Inactivo">Inactivo</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="cerrarModal()">
+          Cancelar
+        </button>
+        <button type="button" class="btn-save" (click)="guardarLaboratorio()">
+          {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PARA SEDES -->
+<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'sede'" (click)="cerrarModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ modoEdicion ? 'Editar Sede' : 'Agregar Nueva Sede' }}</h2>
+      <button class="btn-close" (click)="cerrarModal()">×</button>
+    </div>
+
+    <div class="modal-form">
+      <div class="form-grid">
+        <!-- Código -->
+        <div class="form-group">
+          <label>Código <span class="required">*</span></label>
+          <input type="text"
+                 [(ngModel)]="formularioSede.codigo"
+                 placeholder="Ej: SED-001"
+                 [disabled]="modoEdicion">
+        </div>
+
+        <!-- Nombre -->
+        <div class="form-group">
+          <label>Nombre de la Sede <span class="required">*</span></label>
+          <input type="text"
+                 [(ngModel)]="formularioSede.nombre"
+                 placeholder="Ej: Sede Central">
+        </div>
+
+        <!-- Dirección -->
+        <div class="form-group">
+          <label>Dirección <span class="required">*</span></label>
+          <input type="text"
+                 [(ngModel)]="formularioSede.direccion"
+                 placeholder="Ej: Av. Principal 123">
+        </div>
+
+        <!-- Ciudad -->
+        <div class="form-group">
+          <label>Ciudad <span class="required">*</span></label>
+          <input type="text"
+                 [(ngModel)]="formularioSede.ciudad"
+                 placeholder="Ej: Guayaquil">
+        </div>
+
+        <!-- Teléfono -->
+        <div class="form-group">
+          <label>Teléfono <span class="required">*</span></label>
+          <input type="tel"
+                 [(ngModel)]="formularioSede.telefono"
+                 placeholder="Ej: (04) 234-5678">
+        </div>
+
+        <!-- Estado -->
+        <div class="form-group">
+          <label>Estado <span class="required">*</span></label>
+          <select [(ngModel)]="formularioSede.estado">
+            <option value="">Seleccione un estado</option>
+            <option value="Activa">Activa</option>
+            <option value="Inactiva">Inactiva</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="cerrarModal()">
+          Cancelar
+        </button>
+        <button type="button" class="btn-save" (click)="guardarSede()">
+          {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PARA ENCARGADOS -->
+<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'encargado'" (click)="cerrarModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ modoEdicion ? 'Editar Encargado' : 'Agregar Nuevo Encargado' }}</h2>
+      <button class="btn-close" (click)="cerrarModal()">×</button>
+    </div>
+
+    <div class="modal-form">
+      <div class="form-grid">
+        <!-- ID -->
+        <div class="form-group">
+          <label>ID <span class="required">*</span></label>
+          <input type="text"
+                 [(ngModel)]="formularioEnc.id"
+                 placeholder="Ej: ENC-001"
+                 [disabled]="modoEdicion">
+        </div>
+
+        <!-- Nombre -->
+        <div class="form-group">
+          <label>Nombre Completo <span class="required">*</span></label>
+          <input type="text"
+                 [(ngModel)]="formularioEnc.nombre"
+                 placeholder="Ej: Dr. Juan Pérez">
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label>Email <span class="required">*</span></label>
+          <input type="email"
+                 [(ngModel)]="formularioEnc.email"
+                 placeholder="Ej: juan.perez@email.com">
+        </div>
+
+        <!-- Teléfono -->
+        <div class="form-group">
+          <label>Teléfono <span class="required">*</span></label>
+          <input type="tel"
+                 [(ngModel)]="formularioEnc.telefono"
+                 placeholder="Ej: (04) 987-6543">
+        </div>
+
+        <!-- Laboratorio Asignado -->
+        <div class="form-group">
+          <label>Laboratorio Asignado <span class="required">*</span></label>
+          <select [(ngModel)]="formularioEnc.laboratorioAsignado">
+            <option value="">Seleccione un laboratorio</option>
+            <option value="Lab. Química">Lab. Química</option>
+            <option value="Lab. Física">Lab. Física</option>
+            <option value="Lab. Biología">Lab. Biología</option>
+            <option value="Lab. Informática">Lab. Informática</option>
+          </select>
+        </div>
+
+        <!-- Estado -->
+        <div class="form-group">
+          <label>Estado <span class="required">*</span></label>
+          <select [(ngModel)]="formularioEnc.estado">
+            <option value="">Seleccione un estado</option>
+            <option value="Activo">Activo</option>
+            <option value="Inactivo">Inactivo</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="cerrarModal()">
+          Cancelar
+        </button>
+        <button type="button" class="btn-save" (click)="guardarEncargado()">
+          {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE CONFIRMACIÓN DE ELIMINACIÓN -->
+<div class="modal-overlay" *ngIf="mostrarConfirmarEliminar" (click)="cerrarModalConfirmar()">
+  <div class="modal-confirm-container" (click)="$event.stopPropagation()">
+    <div class="confirm-icon">⚠️</div>
+    <h2>¿Estás seguro?</h2>
+    <p>
+      Estás a punto de eliminar <strong>{{itemParaEliminar?.nombre || itemParaEliminar?.codigo}}</strong>.
+      Esta acción no se puede deshacer.
+    </p>
+    <div class="confirm-actions">
+      <button class="btn-cancel" (click)="cerrarModalConfirmar()">Cancelar</button>
+      <button class="btn-delete-confirm" (click)="confirmarEliminacion()">Sí, Eliminar</button>
+    </div>
+  </div>
+</div>
