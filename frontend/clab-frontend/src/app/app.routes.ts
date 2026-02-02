@@ -25,6 +25,11 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'inventario',
+    component: InventarioComponent,
+    canActivate: [authGuard]
+  },
+  {
     path: 'horarios',
     component: HorariosComponent,
     canActivate: [authGuard]
