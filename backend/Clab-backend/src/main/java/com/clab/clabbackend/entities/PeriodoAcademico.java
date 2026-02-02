@@ -10,33 +10,25 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "a_periodo_academico", schema = "academico")
 public class PeriodoAcademico {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdPeriodo")
+    @Column(name = "id_periodo")
     private Integer idPeriodo;
 
-    @Column(name = "NombrePeriodo", length = 50, nullable = false)
+    @Column(name = "nombre_periodo", length = 50, nullable = false)
     private String nombrePeriodo;
 
-    @Column(name = "FechaInicio", nullable = false)
+    @Column(name = "fecha_inicio", nullable = false)
     private LocalDate fechaInicio;
 
-    @Column(name = "FechaFin", nullable = false)
+    @Column(name = "fecha_fin", nullable = false)
     private LocalDate fechaFin;
 
-    @Column(name = "FechaCreacion", nullable = false)
+    @Column(name = "fecha_creacion", nullable = false)
     private LocalDate fechaCreacion;
 
-    // Un periodo -> muchos horarios académicos
-    @OneToMany(mappedBy = "periodo")
-    private List<HorarioAcademico> horarios;
-
-    // Un periodo -> muchas reservas
-    @OneToMany(mappedBy = "periodo")
-    private List<Reserva> reservas;
-
-    // Un periodo -> muchos reportes de uso
-    @OneToMany(mappedBy = "periodo")
-    private List<ReporteUso> reportesUso;
+    @Column(name = "estado", length = 15, nullable = false)
+    private String estado;
 }

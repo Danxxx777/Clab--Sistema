@@ -10,57 +10,49 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "i_equipo", schema = "inventario")
 public class Equipo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdEquipo")
+    @Column(name = "id_equipo")
     private Integer idEquipo;
 
-    @Column(name = "NumeroSerie", length = 50, nullable = false, unique = true)
+    @Column(name = "numero_serie", length = 50, nullable = false)
     private String numeroSerie;
 
-    @Column(name = "Nombre", length = 100, nullable = false)
-    private String nombre;
+    @Column(name = "nombre_equipo", length = 100, nullable = false)
+    private String nombreEquipo;
 
-    @Column(name = "Marca", length = 50, nullable = false)
+    @Column(name = "marca", length = 50, nullable = false)
     private String marca;
 
-    @Column(name = "Modelo", length = 50, nullable = false)
+    @Column(name = "modelo", length = 50, nullable = false)
     private String modelo;
 
-    @Column(name = "TipoEquipo", nullable = false)
-    private String tipoEquipo;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_tipo_equipo", nullable = false)
+    private TipoEquipo tipoEquipo;
 
-    @Column(nullable = false, length = 15)
+    @Column(name = "estado", length = 15, nullable = false)
     private String estado;
 
-    @Column(name = "UbicacionFisica", length = 100)
+    @Column(name = "ubicacion_fisica", length = 100)
     private String ubicacionFisica;
 
-    @Column(name = "FechaAdquisicion", nullable = false)
-    private LocalDate fechaAdquisicion;
-
-    @Column(name = "FechaRegistro", nullable = false)
-    private LocalDate fechaRegistro;
-
-    @Column(name = "UltimaRevision", nullable = false)
-    private LocalDate ultimaRevision;
-
-    // Muchos equipos -> un laboratorio
-    @ManyToOne
-    @JoinColumn(name = "id_laboratorio", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "cod_laboratorio", nullable = false)
     private Laboratorio laboratorio;
 
-    // Usuario responsable del equipo
-    @ManyToOne
-    @JoinColumn(name = "IdUsuario", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
-    // Fotos del equipo (tabla puente)
-    @OneToMany(mappedBy = "equipo")
-    private List<EquipoFoto> fotos;
+    @Column(name = "fecha_adquisicion", nullable = false)
+    private LocalDate fechaAdquisicion;
 
-    // Reportes de falla del equipo
-    @OneToMany(mappedBy = "equipo")
-    private List<ReporteFallas> reportes;
+    @Column(name = "fecha_registro", nullable = false)
+    private LocalDate fechaRegistro;
+
+    @Column(name = "ultimo_reporte", nullable = false)
+    private LocalDate ultimoReporte;
 }

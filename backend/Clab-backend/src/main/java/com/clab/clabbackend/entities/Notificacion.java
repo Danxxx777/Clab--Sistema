@@ -9,36 +9,37 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "n_notificacion", schema = "notificaciones")
 public class Notificacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdNotificacion")
+    @Column(name = "id_notificacion")
     private Integer idNotificacion;
 
-    @Column(name = "TipoNotificacion", nullable = false,  length = 50)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_usuario", nullable = false)
+    private Usuario usuario;
+
+    @Column(name = "tipo_notificacion", length = 15, nullable = false)
     private String tipoNotificacion;
 
-    @Column(name = "Asunto", length = 200, nullable = false)
+    @Column(name = "asunto", length = 200, nullable = false)
     private String asunto;
 
-    @Column(name = "Mensaje", length = 100)
+    @Lob
+    @Column(name = "mensaje")
     private String mensaje;
 
-    @Column(name = "Canal", length = 50, nullable = false)
+    @Column(name = "canal", length = 50, nullable = false)
     private String canal;
 
-    @Column(nullable = false,  length = 15, name = "Estado")
+    @Column(name = "estado", length = 15, nullable = false)
     private String estado;
 
-    @Column(name = "FechaCreacion", nullable = false)
+    @Column(name = "fecha_creacion", nullable = false)
     private LocalDate fechaCreacion;
 
-    @Column(name = "FechaEnvio")
+    @Column(name = "fecha_envio")
     private LocalDate fechaEnvio;
-
-    // Muchas notificaciones -> un usuario
-    @ManyToOne
-    @JoinColumn(name = "IdUsuario", nullable = false)
-    private Usuario usuario;
 }
 

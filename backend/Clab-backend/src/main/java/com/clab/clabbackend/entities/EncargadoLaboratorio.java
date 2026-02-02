@@ -9,22 +9,20 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "u_usuario_rol", schema = "usuarios")
-public class UsuarioRol {
+@Table(name = "l_encargado_laboratorio", schema = "laboratorios")
+public class EncargadoLaboratorio {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_usuario_rol")
-    private Integer idUsuarioRol;
+    @Column(name = "id_encargado_laboratorio")
+    private Integer idEncargadoLaboratorio;
 
-    // Muchas filas -> un usuario
-    @ManyToOne
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "cod_laboratorio", nullable = false)
+    private Laboratorio laboratorio;
+
+    @ManyToOne(optional = false)
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
-
-    // Muchas filas -> un rol
-    @ManyToOne
-    @JoinColumn(name = "id_rol", nullable = false)
-    private Rol rol;
 
     @Column(name = "fecha_asignacion", nullable = false)
     private LocalDate fechaAsignacion;

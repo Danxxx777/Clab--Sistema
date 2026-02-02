@@ -9,33 +9,27 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"id_reserva", "id_bloqueo"})
-        }
-)
+@Table(name = "r_reserva_afectada_bloqueo", schema = "reservas")
 public class ReservaAfectadaBloqueo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdReservaAfectada")
+    @Column(name = "id_reserva_afectada")
     private Integer idReservaAfectada;
 
-    @Column(name = "NotificacionEnviada", nullable = false)
-    private Boolean notificacionEnviada;
-
-    @Column(name = "FechaNotificacion")
-    private LocalDate fechaNotificacion;
-
-    @Column(name = "AccionTomada", nullable = false,  length = 100)
-    private String accionTomada;
-
-    // Muchas filas -> una reserva
-    @ManyToOne
-    @JoinColumn(name = "IdReserva", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_reserva", nullable = false)
     private Reserva reserva;
 
-    // Muchas filas -> un bloqueo
-    @ManyToOne
-    @JoinColumn(name = "IdBloqueo", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_bloqueo", nullable = false)
     private BloqueoLab bloqueo;
+
+    @Column(name = "notificacion_enviada", nullable = false)
+    private Boolean notificacionEnviada;
+
+    @Column(name = "fecha_notificacion")
+    private LocalDate fechaNotificacion;
+
+    @Column(name = "accion_tomada", length = 15, nullable = false)
+    private String accionTomada;
 }
