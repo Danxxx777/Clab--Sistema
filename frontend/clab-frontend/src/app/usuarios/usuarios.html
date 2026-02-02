@@ -1,10 +1,195 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Title</title>
-</head>
-<body>
+<!-- HEADER DE PÁGINA -->
+<div class="page-header">
+  <div class="page-header-content">
+    <div class="page-title-section">
+      <h1 class="page-title">Gestión de Usuarios</h1>
+      <p class="page-subtitle">
+        Administra usuarios, roles y permisos del sistema
+      </p>
+    </div>
 
-</body>
-</html>
+    <div class="page-stats">
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-primary">👥</div>
+        <div class="stat-info">
+          <div class="stat-label">Total Usuarios</div>
+          <div class="stat-value">{{ totalUsuarios }}</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-success">✓</div>
+        <div class="stat-info">
+          <div class="stat-label">Activos</div>
+          <div class="stat-value">{{ usuariosActivos }}</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-warning">⏸</div>
+        <div class="stat-info">
+          <div class="stat-label">Inactivos</div>
+          <div class="stat-value">{{ usuariosInactivos }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="toolbar-search">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Buscar por nombre, email o identidad"
+        [(ngModel)]="filtros.busqueda"
+        (input)="aplicarFiltros()"
+      />
+      <button
+        *ngIf="filtros.busqueda"
+        class="search-clear"
+        (click)="limpiarBusqueda()"
+      >
+        ✕
+      </button>
+    </div>
+  </div>
+
+  <div class="toolbar-actions">
+    <select
+      class="filter-select"
+      [(ngModel)]="filtros.estado"
+      (change)="aplicarFiltros()"
+    >
+      <option value="">Todos los estados</option>
+      <option value="Activo">Activo</option>
+      <option value="Inactivo">Inactivo</option>
+    </select>
+
+    <button class="btn btn-secondary" (click)="exportarUsuarios()">
+      <span class="btn-icon">📥</span>
+      Exportar
+    </button>
+
+    <button class="btn btn-primary" (click)="abrirModalNuevo()">
+      <span class="btn-icon">➕</span>
+      Nuevo Usuario
+    </button>
+  </div>
+</div>
+
+<!-- TABLA -->
+<div class="table-container" *ngIf="!cargando && usuariosFiltrados.length">
+  <table class="data-table">
+    <thead>
+    <tr>
+      <th>Usuario</th>
+      <th>Identidad</th>
+      <th>Rol</th>
+      <th>Estado</th>
+      <th>Fecha Registro</th>
+      <th class="text-center">Acciones</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr *ngFor="let u of usuariosFiltrados">
+      <!-- USUARIO -->
+      <td>
+        <div class="user-cell">
+          <div class="user-avatar">
+            {{ obtenerIniciales(u.nombres, u.apellidos) }}
+          </div>
+          <div class="user-info">
+            <div class="user-name">
+              {{ u.nombres }} {{ u.apellidos }}
+            </div>
+            <div class="user-email">{{ u.email }}</div>
+          </div>
+        </div>
+      </td>
+
+      <!-- IDENTIDAD -->
+      <td>
+        <span class="text-mono">{{ u.identidad }}</span>
+      </td>
+
+      <!-- ROL -->
+      <td>
+          <span class="badge badge-role">
+            {{ u.rol }}
+          </span>
+      </td>
+
+      <!-- ESTADO -->
+      <td>
+          <span
+            class="badge"
+            [class.badge-success]="u.estado === 'Activo'"
+            [class.badge-inactive]="u.estado === 'Inactivo'"
+          >
+            {{ u.estado }}
+          </span>
+      </td>
+
+      <!-- FECHA -->
+      <td>
+          <span class="text-secondary">
+            {{ u.fechaRegistro | date:'dd/MM/yyyy' }}
+          </span>
+      </td>
+
+      <!-- ACCIONES -->
+      <td>
+        <div class="actions-cell">
+          <button
+            class="icon-btn icon-btn-view"
+            title="Ver"
+            (click)="verUsuario(u)"
+          >
+            👁
+          </button>
+
+          <button
+            class="icon-btn icon-btn-edit"
+            title="Editar"
+            (click)="editarUsuario(u)"
+          >
+            ✏️
+          </button>
+
+          <button
+            class="icon-btn icon-btn-delete"
+            title="Eliminar"
+            (click)="eliminarUsuario(u)"
+          >
+            🗑️
+          </button>
+        </div>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ESTADO VACÍO -->
+<div class="empty-state" *ngIf="!cargando && !usuariosFiltrados.length">
+  <div class="empty-state-icon">👥</div>
+  <h3 class="empty-state-title">No hay usuarios</h3>
+  <p class="empty-state-message">
+    Aún no se han registrado usuarios en el sistema.
+  </p>
+  <button class="btn btn-primary" (click)="abrirModalNuevo()">
+    <span class="btn-icon">➕</span>
+    Crear Usuario
+  </button>
+</div>
+
+<!-- LOADING -->
+<div class="loading-container" *ngIf="cargando">
+  <div class="spinner"></div>
+  <p>Cargando usuarios...</p>
+</div>
