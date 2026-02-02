@@ -40,3 +40,6 @@ export class LoginComponent {
     }
   }
 }
+
+export class Login {
+}

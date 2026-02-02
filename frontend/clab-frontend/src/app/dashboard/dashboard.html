@@ -1,14 +1,24 @@
-<button class="logout" (click)="logout()">Cerrar sesión</button>
+
+<nav class="navbar">
+  <div class="nav-container">
+    <div class="logo">
+      <span>🔬</span>
+      <span>MENÚ CLAB</span>
+    </div>
+
+    <button class="logout" (click)="logout()">Cerrar sesión</button>
+  </div>
+</nav>
+
 
 <div class="page">
   <div class="card">
 
-    <h1 class="title">MENÚ CLAB</h1>
-
-
-
     <div class="menu-list">
 
+
+
+      <!--
       <div class="menu-item" (click)="goTo('reservar')">
         <span class="icon">ℹ️</span>
         <div class="text">
@@ -25,7 +35,7 @@
         </div>
       </div>
 
-      <!-- NUEVO: Agregar este item para Equipos -->
+
       <div class="menu-item info" (click)="goTo('equipos')">
         <span class="icon">💻</span>
         <div class="text">
@@ -55,6 +65,117 @@
         <div class="text">
           <strong>Bloqueos</strong>
           <p>Actividades institucionales</p>
+        </div>
+      </div>
+      -->
+
+
+
+      <!-- Módulo 1: Usuarios -->
+      <div class="menu-item" (click)="usuario('usuarios')">
+        <span class="icon">👥</span>
+        <div class="text">
+          <strong>Usuarios</strong>
+          <p>Gestión de usuarios, roles y permisos del sistema</p>
+        </div>
+      </div>
+
+      <!-- Módulo 2: Laboratorios -->
+      <div class="menu-item" (click)="laboratorios('laboratorios')">
+        <span class="icon">🔬</span>
+        <div class="text">
+          <strong>Laboratorios</strong>
+          <p>Administrar laboratorios, sedes y encargados</p>
+        </div>
+      </div>
+
+      <!-- Módulo 3: Equipos -->
+      <div class="menu-item info" (click)="equipos('equipos')">
+        <span class="icon">💻</span>
+        <div class="text">
+          <strong>Equipos</strong>
+          <p>Control de equipos, tipos y ubicaciones</p>
+        </div>
+      </div>
+
+      <!-- Módulo 4: Reservas -->
+      <div class="menu-item" (click)="reservas('reservas')">
+        <span class="icon">📅</span>
+        <div class="text">
+          <strong>Reservas</strong>
+          <p>Gestión de reservas y disponibilidad</p>
+        </div>
+      </div>
+
+      <!-- Módulo 5: Académico -->
+      <div class="menu-item" (click)="academico('academico')">
+        <span class="icon">🎓</span>
+        <div class="text">
+          <strong>Académico</strong>
+          <p>Períodos, carreras, asignaturas y horarios</p>
+        </div>
+      </div>
+
+      <!-- Módulo 6: Estudiantes -->
+      <div class="menu-item" (click)="estudiantes('estudiantes')">
+        <span class="icon">📚</span>
+        <div class="text">
+          <strong>Estudiantes</strong>
+          <p>Registro de estudiantes, matrículas e inscripciones</p>
+        </div>
+      </div>
+
+      <!-- Módulo 7: Asistencia -->
+      <div class="menu-item " (click)="asistencia('asistencia')">
+        <span class="icon">✅</span>
+        <div class="text">
+          <strong>Asistencia</strong>
+          <p>Control de asistencia en laboratorios</p>
+        </div>
+      </div>
+
+      <!-- Módulo 8: Reportes de Fallas -->
+      <div class="menu-item " (click)="fallas('fallas')">
+        <span class="icon">⚠️</span>
+        <div class="text">
+          <strong>Reportes de Fallas</strong>
+          <p>Gestión de fallas y seguimiento de equipos</p>
+        </div>
+      </div>
+
+      <!-- Módulo 9: Bloqueos -->
+      <div class="menu-item " (click)="bloqueos('bloqueos')">
+        <span class="icon">🚫</span>
+        <div class="text">
+          <strong>Bloqueos</strong>
+          <p>Bloqueos de laboratorios y gestión de conflictos</p>
+        </div>
+      </div>
+
+      <!-- Módulo 10: Notificaciones -->
+      <div class="menu-item " (click)="notificaciones('notificaciones')">
+        <span class="icon">🔔</span>
+        <div class="text">
+          <strong>Notificaciones</strong>
+          <p>Centro de notificaciones y alertas</p>
+        </div>
+      </div>
+
+      <!-- Módulo 11: Reportes de Uso -->
+      <div class="menu-item" (click)="reportesuso('reportesuso')">
+        <span class="icon">📊</span>
+        <div class="text">
+          <strong>Reportes de Uso</strong>
+          <p>Estadísticas y análisis de uso de laboratorios</p>
+        </div>
+      </div>
+
+      <!-- Módulo 12: Auditoría -->
+      <div class="menu-item" (click)="auditoria('auditoria')">
+        <span class="icon">🔍</span>
+        <div class="text">
+          <strong>Auditoría</strong>
+          <p>Registro de acciones y trazabilidad del sistema</p>
         </div>
       </div>
     </div>
