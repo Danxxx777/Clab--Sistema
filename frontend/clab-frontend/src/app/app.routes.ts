@@ -9,8 +9,8 @@ import { NotificacionesComponent } from './notificaciones/notificaciones';
 import { InventarioComponent } from './inventario/inventario';
 import { BloqueosComponent } from './bloqueos/bloqueos';
 import { InformesComponent } from './informes/informes';
+import { AcademicoComponent } from './academico/academico';
 import { authGuard } from './auth/auth.guard';
-import {UsuariosComponent} from './usuarios/usuarios';
 
 export const routes: Routes = [
 
@@ -62,9 +62,9 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: 'usuarios',
-    component: UsuariosComponent,
-    providers: [],
+    path: 'academico',
+    component: AcademicoComponent,
+    canActivate: [authGuard]
   },
   { path: '**', redirectTo: 'dashboard' }
 
