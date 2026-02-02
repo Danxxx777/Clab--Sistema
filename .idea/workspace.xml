@@ -5,28 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b087287b-70e9-4966-ba49-eb82c55fc8cc" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/academico/academico.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/academico/academico.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/academico/academico.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/asistencia/aistencia.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/asistencia/asistencia.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/asistencia/asistencia.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/auditoria/auditoria.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/auditoria/auditoria.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/auditoria/auditoria.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/estudiantes/estudiantes.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/estudiantes/estudiantes.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/estudiantes/estudiantes.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/laboratorio/laboratorio.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/laboratorio/laboratorio.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/laboratorio/laboratorio.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/reporteFallas/reporteFallas.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/reporteFallas/reporteFallas.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/reporteFallas/reporteFallas.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/usuarios/usuarios.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/usuarios/usuarios.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/usuarios/usuarios.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/clab-frontend/src/app/app.routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/app.routes.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,7 +23,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="Fifo" />
+        <entry key="$PROJECT_DIR$" value="Michi" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -76,7 +55,7 @@
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "Birom",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
     "node.js.detected.package.eslint": "true",
@@ -86,7 +65,7 @@
     "nodejs_package_manager_path": "npm",
     "npm.start.executor": "Run",
     "to.speed.mode.migration.done": "true",
-    "ts.external.directory.path": "C:\\Users\\BYRONDANIELLOORMENDO\\Desktop\\App Web Proyecto\\Clab-Sistemaa\\frontend\\clab-frontend\\node_modules\\typescript\\lib",
+    "ts.external.directory.path": "C:\\Users\\BYRONDANIELLOORMENDO\\Desktop\\App Web Proyecto\\Clab - Sistema\\frontend\\clab-frontend\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>

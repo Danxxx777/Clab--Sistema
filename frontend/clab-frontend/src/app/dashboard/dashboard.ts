@@ -90,6 +90,7 @@ export class DashboardComponent implements OnInit {
   }
 
   protected usuario(usuarios: string) {
-
+    console.log('Navegando a usuarios');
+    this.router.navigate(['usuarios']);
   }
 }
