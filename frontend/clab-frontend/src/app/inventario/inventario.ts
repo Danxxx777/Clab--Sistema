@@ -12,20 +12,16 @@ import {FormsModule} from '@angular/forms';
 })
 export class InventarioComponent {
 
-  // Variable para mostrar/ocultar el modal
   mostrarModal = false;
 
-  // Variable para saber si estamos editando o agregando
   modoEdicion = false;
 
-  // Índice del equipo que estamos editando
   equipoEditandoIndex = -1;
   //
   mostrarConfirmarEliminar= false;
   equipoParaEliminar: any = null;
   indexParaEliminar: number= -1;
 
-  // Lista de equipos de EJEMPLO
   equipos = [
     {
       nombre: 'Computadora Dell',
@@ -55,7 +51,6 @@ export class InventarioComponent {
     }
   ];
 
-  // Datos del formulario
   formulario = {
     nombre: '',
     tipoEquipo: '',
@@ -72,19 +67,16 @@ export class InventarioComponent {
 
   constructor(private router: Router) {}
 
-  // Abre el modal para AGREGAR
   abrirModal() {
     this.modoEdicion = false;
     this.limpiarFormulario();
     this.mostrarModal = true;
   }
 
-  // Abre el modal para EDITAR
   editarEquipo(equipo: any, index: number) {
     this.modoEdicion = true;
     this.equipoEditandoIndex = index;
 
-    // Cargar los datos del equipo en el formulario
     this.formulario = {
       nombre: equipo.nombre,
       tipoEquipo: equipo.tipoEquipo,
@@ -106,7 +98,7 @@ export class InventarioComponent {
   eliminarEquipo(equipo: any, index: number) {
     this.equipoParaEliminar = equipo;
     this.indexParaEliminar = index;
-    this.mostrarConfirmarEliminar = true; // Abrimos el modal personalizado
+    this.mostrarConfirmarEliminar = true;
   }
 
 
@@ -114,7 +106,6 @@ export class InventarioComponent {
     if (this.indexParaEliminar !== -1) {
       this.equipos.splice(this.indexParaEliminar, 1);
       this.cerrarModalConfirmar();
-      // Opcional: una notificación pequeña en lugar de un alert
     }
   }
 
@@ -124,14 +115,11 @@ export class InventarioComponent {
     this.indexParaEliminar = -1;
   }
 
-  // Guardar (agregar o editar)
   guardarEquipo() {
     if (this.modoEdicion) {
-      // EDITAR: Actualizar el equipo existente
       this.equipos[this.equipoEditandoIndex] = { ...this.formulario };
       alert('Equipo actualizado correctamente');
     } else {
-      // AGREGAR: Añadir nuevo equipo
       this.equipos.push({ ...this.formulario });
       alert('Equipo agregado correctamente');
     }
@@ -139,13 +127,11 @@ export class InventarioComponent {
     this.cerrarModal();
   }
 
-  // Cierra el modal
   cerrarModal() {
     this.mostrarModal = false;
     this.limpiarFormulario();
   }
 
-  // Limpia el formulario
   limpiarFormulario() {
     this.formulario = {
       nombre: '',
@@ -162,7 +148,6 @@ export class InventarioComponent {
     };
   }
 
-  // Vuelve al dashboard
   volver() {
     this.router.navigate(['/dashboard']);
   }
