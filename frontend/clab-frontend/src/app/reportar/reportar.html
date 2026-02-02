@@ -1,21 +1,63 @@
-<div class="page">
-  <button class="btn-volver" (click)="volver()">← Volver</button>
+<div class="reportes-page">
+  <button class="back-btn" (click)="volver()">Volver</button>
 
-  <div class="card">
-
-    <h2>REPORTAR FALLAS</h2>
-
-    <div class="form-group">
-      <label>Equipo</label>
-      <input type="text" placeholder="Ej: PC Lab A">
+  <div class="reportes-container">
+    <div class="reportes-header">
+      <h1>Gestión de Reportes de Fallas</h1>
+      <div class="header-actions">
+        <select class="filter-estado" [(ngModel)]="filtroEstado" (change)="filtrarReportes()">
+          <option value="">Todos los estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="en proceso">En Proceso</option>
+          <option value="resuelto">Resuelto</option>
+        </select>
+      </div>
     </div>
 
-    <div class="form-group">
-      <label>Descripción</label>
-      <textarea placeholder="Describa la falla encontrada"></textarea>
+    <div class="reportes-table-container">
+      <div class="table-wrapper">
+        <table class="reportes-table">
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>LABORATORIO</th>
+            <th>EQUIPO</th>
+            <th>PROBLEMA</th>
+            <th>RESPONSABLE</th>
+            <th>ESTADO</th>
+            <th>FECHA</th>
+            <th>ACCIONES</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let reporte of reportesFiltrados">
+            <td>{{reporte.id}}</td>
+            <td>{{reporte.laboratorio}}</td>
+            <td>{{reporte.equipo}}</td>
+            <td>{{reporte.problema}}</td>
+            <td>{{reporte.responsable}}</td>
+            <td>
+                <span class="estado-badge" [ngClass]="getEstadoClass(reporte.estado)">
+                  {{reporte.estado}}
+                </span>
+            </td>
+            <td>{{reporte.fecha}}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-edit" (click)="editar(reporte)" title="Editar">✏️</button>
+                <button class="btn-view" (click)="ver(reporte)" title="Ver detalles">👁️</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="reportesFiltrados.length === 0">
+            <td colspan="8" class="empty-state">
+              <div class="empty-icon">⚠️</div>
+              <p>No hay reportes de fallas registrados</p>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-
-    <button class="btn-enviar">Enviar reporte</button>
-
   </div>
 </div>
