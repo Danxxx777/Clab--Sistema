@@ -85,8 +85,8 @@ export class DashboardComponent implements OnInit {
   }
 
 
-  protected laboratorios(laboratorios: string) {
-
+  protected laboratorios(_: string) {
+    this.router.navigate(['laboratorios']);
   }
 
   protected usuario(usuarios: string) {
