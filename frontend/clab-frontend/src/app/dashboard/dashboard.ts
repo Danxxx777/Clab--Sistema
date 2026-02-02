@@ -35,7 +35,8 @@ export class DashboardComponent implements OnInit {
   }
 
   goTo(path: string) {
-    this.router.navigate(['/' + path]);
+    console.log('Navegando a:', path);
+    this.router.navigate([path]);
   }
 
   logout() {
@@ -79,9 +80,10 @@ export class DashboardComponent implements OnInit {
 
   }
 
-  protected equipos(equipos: string) {
-
+  protected equipos(_: string) {
+    this.router.navigate(['equipos']);
   }
+
 
   protected laboratorios(laboratorios: string) {
 
