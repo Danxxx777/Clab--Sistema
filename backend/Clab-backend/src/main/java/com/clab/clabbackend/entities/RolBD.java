@@ -10,21 +10,19 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "u_rol_bd", schema = "usuarios")
 public class RolBD {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdRolBd")
+    @Column(name = "id_rol_bd")
     private Integer idRolBd;
 
-    @Column(name = "NombreRolBd", length = 50, nullable = false, unique = true)
+    @Column(name = "nombre_rol_bd", length = 50, nullable = false)
     private String nombreRolBd;
 
-    @Column(name = "Descripcion", length = 200)
+    @Column(name = "descripcion", length = 200)
     private String descripcion;
 
-    @Column(name = "FechaCreacion", nullable = false)
+    @Column(name = "fecha_creacion", nullable = false)
     private LocalDate fechaCreacion;
-
-    @OneToMany(mappedBy = "rolBd")
-    private List<UsuarioRolBD> usuarios;
 }

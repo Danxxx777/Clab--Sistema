@@ -8,23 +8,23 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "u_usuario_bd", schema = "usuarios")
 public class UsuarioBD {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdUsuarioBd")
+    @Column(name = "id_usuario_bd")
     private Integer idUsuarioBd;
 
-    @Column(name = "UsuarioBd", length = 100, nullable = false, unique = true)
+    @OneToOne(optional = false)
+    @JoinColumn(name = "id_usuario", nullable = false)
+    private Usuario usuario;
+
+    @Column(name = "usuario_bd", length = 100, nullable = false)
     private String usuarioBd;
 
-    @Column(name = "ContrasenaBd", length = 100, nullable = false)
+    @Column(name = "contrasena_bd", length = 100, nullable = false)
     private String contrasenaBd;
 
-    @Column(name = "Activo", nullable = false)
-    private Boolean activo;
-
-    // 1 a 1 con usuario del sistema
-    @OneToOne
-    @JoinColumn(name = "id_usuario", nullable = false, unique = true)
-    private Usuario usuario;
+    @Column(name = "estado_user_bd", nullable = false,  length = 15)
+    private String estadoUserBd;
 }

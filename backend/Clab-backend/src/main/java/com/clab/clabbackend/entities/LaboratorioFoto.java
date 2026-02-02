@@ -8,24 +8,18 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"IdLaboratorio", "IdFoto"})
-        }
-)
+@Table(name = "l_laboratorio_foto", schema = "laboratorios")
 public class LaboratorioFoto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdLaboratorioFoto")
+    @Column(name = "id_laboratorio_foto")
     private Integer idLaboratorioFoto;
 
-    // Muchas filas -> un laboratorio
-    @ManyToOne
-    @JoinColumn(name = "IdLaboratorio", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "cod_laboratorio", nullable = false)
     private Laboratorio laboratorio;
 
-    // Muchas filas -> una foto
-    @ManyToOne
-    @JoinColumn(name = "IdFoto", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_foto", nullable = false)
     private Foto foto;
 }
