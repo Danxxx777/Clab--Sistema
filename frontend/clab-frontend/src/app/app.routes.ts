@@ -9,7 +9,6 @@ import { NotificacionesComponent } from './notificaciones/notificaciones';
 import { InventarioComponent } from './inventario/inventario';
 import { BloqueosComponent } from './bloqueos/bloqueos';
 import { InformesComponent } from './informes/informes';
-import { AcademicoComponent } from './academico/academico';
 import { authGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
@@ -59,11 +58,6 @@ export const routes: Routes = [
   {
     path: 'informes',
     component: InformesComponent,
-    canActivate: [authGuard]
-  },
-  {
-    path: 'academico',
-    component: AcademicoComponent,
     canActivate: [authGuard]
   },
   { path: '**', redirectTo: 'dashboard' }

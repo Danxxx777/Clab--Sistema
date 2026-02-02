@@ -73,7 +73,7 @@ export class DashboardComponent implements OnInit {
   }
 
   protected academico(academico: string) {
-
+    this.router.navigate(['academico']);
   }
 
   protected reservas(reservas: string) {
