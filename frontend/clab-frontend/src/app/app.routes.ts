@@ -10,6 +10,7 @@ import { InventarioComponent } from './inventario/inventario';
 import { BloqueosComponent } from './bloqueos/bloqueos';
 import { InformesComponent } from './informes/informes';
 import { authGuard } from './auth/auth.guard';
+import {UsuariosComponent} from './usuarios/usuarios';
 
 export const routes: Routes = [
 
@@ -59,6 +60,11 @@ export const routes: Routes = [
     path: 'informes',
     component: InformesComponent,
     canActivate: [authGuard]
+  },
+  {
+    path: 'usuarios',
+    component: UsuariosComponent,
+    providers: [],
   },
   { path: '**', redirectTo: 'dashboard' }
 
