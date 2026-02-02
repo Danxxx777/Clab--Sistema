@@ -11,6 +11,7 @@ interface Bloqueo {
   motivo: string;
 }
 
+// @ts-ignore
 @Component({
   selector: 'app-bloqueos',
   standalone: true,
