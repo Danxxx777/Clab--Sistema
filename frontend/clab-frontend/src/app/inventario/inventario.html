@@ -5,7 +5,7 @@
     <div class="equipos-header">
       <h1>Gestión de Inventario de Equipos</h1>
       <div class="header-actions">
-        <button class="btn-agregar" (click)="agregarEquipo()">
+        <button class="btn-agregar" (click)="abrirModal()">
           Agregar Equipo
         </button>
       </div>
@@ -17,33 +17,37 @@
           <thead>
           <tr>
             <th>NOMBRE</th>
+            <th>TIPO</th>
+            <th>MARCA</th>
             <th>NO. SERIE</th>
             <th>ESTADO</th>
-            <th>UBICACIÓN</th>
+            <th>LABORATORIO</th>
             <th>RESPONSABLE</th>
             <th>ACCIONES</th>
           </tr>
           </thead>
           <tbody>
-          <tr *ngFor="let equipo of equipos">
+          <tr *ngFor="let equipo of equipos; let i = index">
             <td>{{equipo.nombre}}</td>
+            <td>{{equipo.tipoEquipo}}</td>
+            <td>{{equipo.marca}}</td>
             <td>{{equipo.noSerie}}</td>
             <td>
                 <span class="estado-badge" [ngClass]="equipo.estado.toLowerCase()">
                   {{equipo.estado}}
                 </span>
             </td>
-            <td>{{equipo.ubicacion}}</td>
+            <td>{{equipo.laboratorio}}</td>
             <td>{{equipo.responsable}}</td>
             <td>
               <div class="action-buttons">
-                <button class="btn-edit" (click)="editar(equipo)" title="Editar">✏️</button>
-                <button class="btn-delete" (click)="eliminar(equipo)" title="Eliminar">🗑️</button>
+                <button class="btn-edit" (click)="editarEquipo(equipo, i)" title="Editar">✏️</button>
+                <button class="btn-delete" (click)="eliminarEquipo(equipo, i)" title="Eliminar">🗑️</button>
               </div>
             </td>
           </tr>
           <tr *ngIf="equipos.length === 0">
-            <td colspan="6" class="empty-state">
+            <td colspan="8" class="empty-state">
               <div class="empty-icon">💻</div>
               <p>No hay equipos registrados</p>
             </td>
@@ -51,6 +55,151 @@
           </tbody>
         </table>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PARA AGREGAR/EDITAR EQUIPO -->
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ modoEdicion ? 'Editar Equipo' : 'Agregar Nuevo Equipo' }}</h2>
+      <button class="btn-close" (click)="cerrarModal()">×</button>
+    </div>
+
+    <div class="modal-form">
+      <div class="form-grid">
+
+        <!-- Nombre del Equipo -->
+        <div class="form-group">
+          <label>Nombre del Equipo <span class="required">*</span></label>
+          <input type="text"
+                 [(ngModel)]="formulario.nombre"
+                 placeholder="Ej: Computadora Dell Optiplex">
+        </div>
+
+        <!-- Tipo de Equipo -->
+        <div class="form-group">
+          <label>Tipo de Equipo <span class="required">*</span></label>
+          <select [(ngModel)]="formulario.tipoEquipo">
+            <option value="">Seleccione un tipo</option>
+            <option value="Computadora">Computadora</option>
+            <option value="Laptop">Laptop</option>
+            <option value="Impresora">Impresora</option>
+            <option value="Proyector">Proyector</option>
+            <option value="Switch">Switch</option>
+            <option value="Router">Router</option>
+            <option value="Microscopio">Microscopio</option>
+          </select>
+        </div>
+
+        <!-- Marca -->
+        <div class="form-group">
+          <label>Marca <span class="required">*</span></label>
+          <select [(ngModel)]="formulario.marca">
+            <option value="">Seleccione una marca</option>
+            <option value="Dell">Dell</option>
+            <option value="HP">HP</option>
+            <option value="Lenovo">Lenovo</option>
+            <option value="Asus">Asus</option>
+            <option value="Epson">Epson</option>
+            <option value="Canon">Canon</option>
+            <option value="Leica">Leica</option>
+          </select>
+        </div>
+
+        <!-- Modelo -->
+        <div class="form-group">
+          <label>Modelo <span class="required">*</span></label>
+          <input type="text"
+                 [(ngModel)]="formulario.modelo"
+                 placeholder="Ej: Optiplex 7090">
+        </div>
+
+        <!-- Número de Serie -->
+        <div class="form-group">
+          <label>Número de Serie <span class="required">*</span></label>
+          <input type="text"
+                 [(ngModel)]="formulario.noSerie"
+                 placeholder="Ej: D1001-XYZ123">
+        </div>
+
+        <!-- Estado -->
+        <div class="form-group">
+          <label>Estado <span class="required">*</span></label>
+          <select [(ngModel)]="formulario.estado">
+            <option value="">Seleccione un estado</option>
+            <option value="OPERATIVO">Operativo</option>
+            <option value="MANTENIMIENTO">Mantenimiento</option>
+            <option value="FUERA">Fuera de Servicio</option>
+          </select>
+        </div>
+
+        <!-- Fecha de Adquisición -->
+        <div class="form-group">
+          <label>Fecha de Adquisición <span class="required">*</span></label>
+          <input type="date" [(ngModel)]="formulario.fechaAdquisicion">
+        </div>
+
+        <!-- Última Revisión -->
+        <div class="form-group">
+          <label>Última Revisión</label>
+          <input type="date" [(ngModel)]="formulario.ultimaRevision">
+        </div>
+
+        <!-- Laboratorio -->
+        <div class="form-group">
+          <label>Laboratorio Asignado <span class="required">*</span></label>
+          <select [(ngModel)]="formulario.laboratorio">
+            <option value="">Seleccione un laboratorio</option>
+            <option value="Lab Comp A">Lab Comp A</option>
+            <option value="Lab Comp B">Lab Comp B</option>
+            <option value="Lab Biología">Lab Biología</option>
+            <option value="Lab Química">Lab Química</option>
+          </select>
+        </div>
+
+        <!-- Ubicación Física -->
+        <div class="form-group">
+          <label>Ubicación Física <span class="required">*</span></label>
+          <input type="text"
+                 [(ngModel)]="formulario.ubicacionFisica"
+                 placeholder="Ej: Edificio A - Piso 2">
+        </div>
+
+        <!-- Responsable -->
+        <div class="form-group">
+          <label>Responsable <span class="required">*</span></label>
+          <input type="text"
+                 [(ngModel)]="formulario.responsable"
+                 placeholder="Ej: Dr. García">
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="cerrarModal()">
+          Cancelar
+        </button>
+        <button type="button" class="btn-save" (click)="guardarEquipo()">
+          {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarConfirmarEliminar" (click)="cerrarModalConfirmar()">
+  <div class="modal-confirm-container" (click)="$event.stopPropagation()">
+    <div class="confirm-icon"></div>
+    <h2>¿Estás seguro?</h2>
+    <p>
+      Estás a punto de eliminar el equipo <strong>{{equipoParaEliminar?.nombre}}</strong>.
+      Esta acción no se puede deshacer.
+    </p>
+    <div class="confirm-actions">
+      <button class="btn-cancel" (click)="cerrarModalConfirmar()">Cancelar</button>
+      <button class="btn-delete-confirm" (click)="confirmarEliminacion()">Sí, Eliminar</button>
     </div>
   </div>
 </div>

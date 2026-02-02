@@ -42,4 +42,52 @@ export class DashboardComponent implements OnInit {
     this.auth.logout();
     this.router.navigate(['/']);
   }
+
+  protected auditoria(auditoria: string) {
+
+  }
+
+  protected reportesuso(reportesuso: string) {
+
+  }
+
+  protected notificaciones(notificaciones: string) {
+
+  }
+
+  protected bloqueos(bloqueos: string) {
+
+  }
+
+  protected fallas(fallas: string) {
+
+  }
+
+  protected asistencia(asistencia: string) {
+
+  }
+
+  protected estudiantes(estudiantes: string) {
+
+  }
+
+  protected academico(academico: string) {
+
+  }
+
+  protected reservas(reservas: string) {
+
+  }
+
+  protected equipos(equipos: string) {
+
+  }
+
+  protected laboratorios(laboratorios: string) {
+
+  }
+
+  protected usuario(usuarios: string) {
+
+  }
 }
