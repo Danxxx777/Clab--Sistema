@@ -42,4 +42,4 @@ public class Notificacion {
     @Column(name = "fecha_envio")
     private LocalDate fechaEnvio;
 }
-
+//xd

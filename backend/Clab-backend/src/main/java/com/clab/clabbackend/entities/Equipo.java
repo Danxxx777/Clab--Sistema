@@ -56,3 +56,4 @@ public class Equipo {
     @Column(name = "ultimo_reporte", nullable = false)
     private LocalDate ultimoReporte;
 }
+//xd

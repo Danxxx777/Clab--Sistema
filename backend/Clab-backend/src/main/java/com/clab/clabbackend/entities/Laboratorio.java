@@ -37,3 +37,4 @@ public class Laboratorio {
     @JoinColumn(name = "id_sede", nullable = false)
     private Sede sede;
 }
+//xd

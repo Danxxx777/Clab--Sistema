@@ -35,3 +35,4 @@ public class Auditoria {
     @Column(name = "fecha_hora", nullable = false)
     private LocalDateTime fechaHora;
 }
+//xd

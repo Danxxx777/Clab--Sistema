@@ -53,3 +53,4 @@ public class ReporteFallas {
     @Column(name = "requiere_seguimiento", nullable = false)
     private Boolean requiereSeguimiento;
 }
+//xd

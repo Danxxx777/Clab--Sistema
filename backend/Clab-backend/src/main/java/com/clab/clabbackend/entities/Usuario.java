@@ -49,3 +49,4 @@ public class Usuario {
     @JoinColumn(name = "id_foto")
     private Foto foto;
 }
+//xd

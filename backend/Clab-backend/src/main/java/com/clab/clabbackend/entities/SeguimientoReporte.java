@@ -39,3 +39,4 @@ public class SeguimientoReporte {
     @Column(name = "fecha_seguimiento", nullable = false)
     private LocalDate fechaSeguimiento;
 }
+//xd

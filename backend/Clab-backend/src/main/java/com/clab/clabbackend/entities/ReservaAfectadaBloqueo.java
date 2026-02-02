@@ -33,3 +33,4 @@ public class ReservaAfectadaBloqueo {
     @Column(name = "accion_tomada", length = 15, nullable = false)
     private String accionTomada;
 }
+//xd

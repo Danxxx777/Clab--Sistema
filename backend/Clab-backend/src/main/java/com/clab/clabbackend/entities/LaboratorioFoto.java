@@ -23,3 +23,4 @@ public class LaboratorioFoto {
     @JoinColumn(name = "id_foto", nullable = false)
     private Foto foto;
 }
+//xd

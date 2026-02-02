@@ -78,3 +78,4 @@ public class Reserva {
     @JoinColumn(name = "id_usuario_cancela")
     private Usuario usuarioCancela;
 }
+//xd

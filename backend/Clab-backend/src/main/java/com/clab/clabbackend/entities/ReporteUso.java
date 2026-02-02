@@ -62,3 +62,4 @@ public class ReporteUso {
     @JoinColumn(name = "id_usuario_gen", nullable = false)
     private Usuario usuarioGenera;
 }
+//xd

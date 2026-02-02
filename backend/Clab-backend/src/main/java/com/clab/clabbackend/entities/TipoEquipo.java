@@ -22,3 +22,4 @@ public class TipoEquipo {
     @Column(name = "descripcion", length = 200)
     private String descripcion;
 }
+//xd

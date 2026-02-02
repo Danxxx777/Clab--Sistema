@@ -30,3 +30,4 @@ public class Carrera {
     @Column(name = "estado", length = 15, nullable = false)
     private String estado;
 }
+//xd

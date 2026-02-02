@@ -26,4 +26,4 @@ public class Rol {
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDate fechaCreacion;
 }
-
+//xd

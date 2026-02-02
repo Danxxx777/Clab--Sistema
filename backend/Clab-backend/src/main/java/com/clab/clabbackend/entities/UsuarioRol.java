@@ -32,3 +32,4 @@ public class UsuarioRol {
     @Column(name = "vigente", nullable = false)
     private Boolean vigente;
 }
+//xd
