@@ -2,6 +2,8 @@ package com.clab.clabbackend.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
@@ -9,58 +11,54 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "r_reporte_uso", schema = "reportes")
 public class ReporteUso {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdReporteUso")
+    @Column(name = "id_reporte_uso")
     private Integer idReporteUso;
 
-    @Column(name = "FechaUso", nullable = false)
-    private LocalDate fechaUso;
-
-    @Column(name = "FechaInicioPeriodo", nullable = false)
-    private LocalDate fechaInicioPeriodo;
-
-    @Column(name = "FechaFinPeriodo", nullable = false)
-    private LocalDate fechaFinPeriodo;
-
-    @Column(name = "TotalHorasReservadas", columnDefinition = "decimal(10,2)")
-    private Double totalHorasReservadas;
-
-    @Column(name = "TotalHorasUtilizadas", columnDefinition = "decimal(10,2)")
-    private Double totalHorasUtilizadas;
-
-    @Column(name = "TotalReservas")
-    private Integer totalReservas;
-
-    @Column(name = "ReservasCompletadas")
-    private Integer reservasCompletadas;
-
-    @Column(name = "ReservasCanceladas")
-    private Integer reservasCanceladas;
-
-    // Reporte por laboratorio
-    @ManyToOne
-    @JoinColumn(name = "IdLaboratorio", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "cod_laboratorio", nullable = false)
     private Laboratorio laboratorio;
 
-    // Reporte por periodo
-    @ManyToOne
-    @JoinColumn(name = "IdPeriodo", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_periodo", nullable = false)
     private PeriodoAcademico periodo;
 
-    // Docente con mayor uso
-    @ManyToOne
-    @JoinColumn(name = "DocenteMayorso", nullable = false)
+    @Column(name = "fecha_uso", nullable = false)
+    private LocalDate fechaUso;
+
+    @Column(name = "fecha_inicio_periodo", nullable = false)
+    private LocalDate fechaInicioPeriodo;
+
+    @Column(name = "fecha_fin_periodo", nullable = false)
+    private LocalDate fechaFinPeriodo;
+
+    @Column(name = "total_horas_reservadas", precision = 10, scale = 2)
+    private BigDecimal totalHorasReservadas;
+
+    @Column(name = "total_horas_utilizadas", precision = 10, scale = 2)
+    private BigDecimal totalHorasUtilizadas;
+
+    @Column(name = "total_reservas")
+    private Integer totalReservas;
+
+    @Column(name = "reservas_completadas")
+    private Integer reservasCompletadas;
+
+    @Column(name = "reservas_canceladas")
+    private Integer reservasCanceladas;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "docente_mayor_uso", nullable = false)
     private Usuario docenteMayorUso;
 
-    // Asignatura con mayor uso
-    @ManyToOne
-    @JoinColumn(name = "AsignaturaMayorUso", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "asignatura_mayor_uso", nullable = false)
     private Asignatura asignaturaMayorUso;
 
-    // Usuario que genera el reporte
-    @ManyToOne
-    @JoinColumn(name = "IdUsuarioGen", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_usuario_gen", nullable = false)
     private Usuario usuarioGenera;
 }

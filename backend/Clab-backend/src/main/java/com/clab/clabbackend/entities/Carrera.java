@@ -9,32 +9,24 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "a_carrera", schema = "academico")
 public class Carrera {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdCarrera")
+    @Column(name = "id_carrera")
     private Integer idCarrera;
 
-    @Column(name = "Nombre", length = 150, nullable = false)
-    private String nombre;
+    @Column(name = "nombre_carrera", length = 150, nullable = false)
+    private String nombreCarrera;
 
-    @Column(name = "Facultad", length = 100)
-    private String facultad;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_facultad", nullable = false)
+    private Facultad facultad;
 
-    @Column(name = "Estado", nullable = false, length = 15)
-    private String estado;
-
-    // Muchas carreras -> una institución
     @ManyToOne
-    @JoinColumn(name = "IdInstitucion", nullable = false)
-    private Institucion institucion;
-
-    // Coordinador de la carrera (opcional)
-    @ManyToOne
-    @JoinColumn(name = "IdCoordinador")
+    @JoinColumn(name = "id_coordinador")
     private Usuario coordinador;
 
-    // Una carrera -> muchas asignaturas
-    @OneToMany(mappedBy = "carrera")
-    private List<Asignatura> asignaturas;
+    @Column(name = "estado", length = 15, nullable = false)
+    private String estado;
 }
