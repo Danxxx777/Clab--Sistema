@@ -35,11 +35,62 @@ export class DashboardComponent implements OnInit {
   }
 
   goTo(path: string) {
-    this.router.navigate(['/' + path]);
+    console.log('Navegando a:', path);
+    this.router.navigate([path]);
   }
 
   logout() {
     this.auth.logout();
     this.router.navigate(['/']);
+  }
+
+  protected auditoria(auditoria: string) {
+
+  }
+
+  protected reportesuso(reportesuso: string) {
+
+  }
+
+  protected notificaciones(notificaciones: string) {
+
+  }
+
+  protected bloqueos(bloqueos: string) {
+
+  }
+
+  protected fallas(fallas: string) {
+
+  }
+
+  protected asistencia(asistencia: string) {
+
+  }
+
+  protected estudiantes(estudiantes: string) {
+
+  }
+
+  protected academico(academico: string) {
+    this.router.navigate(['academico']);
+  }
+
+  protected reservas(reservas: string) {
+
+  }
+
+  protected equipos(_: string) {
+    this.router.navigate(['equipos']);
+  }
+
+
+  protected laboratorios(_: string) {
+    this.router.navigate(['laboratorios']);
+  }
+
+  protected usuario(usuarios: string) {
+    console.log('Navegando a usuarios');
+    this.router.navigate(['usuarios']);
   }
 }

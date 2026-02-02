@@ -4,142 +4,62 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b087287b-70e9-4966-ba49-eb82c55fc8cc" name="Changes" comment="No se xd">
-      <change afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Asistencia.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/EncargadoLaboratorio.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Estudiante.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Facultad.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/InscripcionAsignatura.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Matricula.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Sede.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/TipoEquipo.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/TipoReserva.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Asignatura.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Asignatura.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Auditoria.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Auditoria.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/BloqueoLab.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/BloqueoLab.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Carrera.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Carrera.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Equipo.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Equipo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/EquipoFoto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/EquipoFoto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Foto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Foto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/HorarioAcademico.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/HorarioAcademico.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Institucion.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/InstitucionFoto.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Laboratorio.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Laboratorio.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/LaboratorioFoto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/LaboratorioFoto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Notificacion.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Notificacion.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/PeriodoAcademico.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/PeriodoAcademico.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/ReporteFallas.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/ReporteFallas.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/ReporteUso.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/ReporteUso.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Reserva.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Reserva.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/ReservaAfectadaBloqueo.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/ReservaAfectadaBloqueo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Rol.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Rol.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/RolBD.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/RolBD.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/SeguimientoReporte.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/SeguimientoReporte.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Usuario.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/Usuario.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/UsuarioBD.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/UsuarioBD.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/UsuarioRol.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/UsuarioRol.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/UsuarioRolBD.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/UsuarioRolBD.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/java/com/clab/clabbackend/entities/UsuarioRolId.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Clab-backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Clab-backend/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/clab-frontend/src/app/login/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/app/login/login.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/clab-frontend/src/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/index.html" afterDir="false" />
+    <list default="true" id="b087287b-70e9-4966-ba49-eb82c55fc8cc" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/frontend/clab-frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/clab-frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/clab-frontend/src/main.server.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/clab-frontend/src/main.server.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Class" />
-      </list>
-    </option>
-  </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="feature/auth" />
+        <entry key="$PROJECT_DIR$" value="main" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory">{
-  &quot;lastFilter&quot;: {
-    &quot;state&quot;: &quot;OPEN&quot;,
-    &quot;assignee&quot;: &quot;lzambranot6-sys&quot;
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "lzambranot6-sys"
   }
-}</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/Danxxx777/Clab--Sistema.git&quot;,
-    &quot;accountId&quot;: &quot;3f5b563c-808b-43e9-872e-83a4b9a5441f&quot;
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/Danxxx777/Clab--Sistema.git",
+    "accountId": "3f5b563c-808b-43e9-872e-83a4b9a5441f"
   }
-}</component>
-  <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 5
-}</component>
+}]]></component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 5
+}]]></component>
   <component name="ProjectId" id="390JhPH2wk8kGzsf9qrWhC3ewZH" />
-  <component name="ProjectLevelVcsManager">
-    <ConfirmationsSetting value="2" id="Add" />
-  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
-    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
-    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
-    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;Spring Boot.ClabBackendApplication.executor&quot;: &quot;Run&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;Leo&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;npm.start.executor&quot;: &quot;Run&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;SDKs&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\Usuario\\Documents\\ProyectoCLAB\\frontend\\clab-frontend\\node_modules\\typescript\\lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "feature/auth",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "to.speed.mode.migration.done": "true",
+    "ts.external.directory.path": "C:\\Users\\Usuario\\Documents\\ProyectoCLAB\\frontend\\clab-frontend\\node_modules\\typescript\\lib",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
-  <component name="RunManager" selected="Spring Boot.ClabBackendApplication">
-    <configuration name="ClabBackendApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
-      <module name="clab-backend" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.clab.clabbackend.ClabBackendApplication" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="start" type="js.build_tools.npm" nameIsGenerated="true">
-      <package-json value="$PROJECT_DIR$/frontend/clab-frontend/package.json" />
-      <command value="run" />
-      <scripts>
-        <script value="start" />
-      </scripts>
-      <node-interpreter value="project" />
-      <envs />
-      <method v="2" />
-    </configuration>
-    <list>
-      <item itemvalue="npm.start" />
-      <item itemvalue="Spring Boot.ClabBackendApplication" />
-    </list>
-  </component>
+}]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -155,31 +75,11 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1769827173139</updated>
-      <workItem from="1769827174337" duration="3035000" />
-      <workItem from="1769868389675" duration="119000" />
-      <workItem from="1769878367435" duration="5912000" />
-      <workItem from="1769910604712" duration="5635000" />
-      <workItem from="1769965391390" duration="7670000" />
-      <workItem from="1769999117742" duration="3419000" />
-      <workItem from="1770012033773" duration="2035000" />
-      <workItem from="1770054341451" duration="12058000" />
+      <workItem from="1769827174337" duration="806000" />
     </task>
-    <task id="LOCAL-00001" summary="No se xd">
-      <option name="closed" value="true" />
-      <created>1769828098754</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1769828098754</updated>
-    </task>
-    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
-  </component>
-  <component name="VcsManagerConfiguration">
-    <MESSAGE value="No se xd" />
-    <option name="LAST_COMMIT_MESSAGE" value="No se xd" />
   </component>
 </project>

@@ -1,0 +1,795 @@
+<div class="academico-container">
+
+
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">
+        <span class="logo-icon">🧪</span>
+        <span class="logo-text">CLAB</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn-volver" (click)="goToDashboard()">Volver</button>
+    </div>
+  </div>
+
+
+  <div class="page-title-section">
+    <h1>🎓 Gestión Académica</h1>
+  </div>
+
+
+  <div class="tabs-container">
+    <div class="tabs">
+      <button
+        class="tab"
+        [class.active]="tabActiva === 0"
+        (click)="cambiarTab(0)">
+        Períodos
+      </button>
+      <button
+        class="tab"
+        [class.active]="tabActiva === 1"
+        (click)="cambiarTab(1)">
+        Carreras
+      </button>
+      <button
+        class="tab"
+        [class.active]="tabActiva === 2"
+        (click)="cambiarTab(2)">
+        Asignaturas
+      </button>
+      <button
+        class="tab"
+        [class.active]="tabActiva === 3"
+        (click)="cambiarTab(3)">
+        Estudiantes
+      </button>
+      <button
+        class="tab"
+        [class.active]="tabActiva === 4"
+        (click)="cambiarTab(4)">
+        Horarios
+      </button>
+    </div>
+  </div>
+
+
+  <div class="content-wrapper">
+
+
+    <div class="tab-content" *ngIf="tabActiva === 0">
+      <div class="toolbar">
+        <div class="search-container">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            class="search-input"
+            [(ngModel)]="busquedaPeriodos"
+            (input)="filtrarPeriodos()"
+            placeholder="Buscar períodos...">
+        </div>
+        <button class="btn-agregar" (click)="agregarNuevo(0)">
+          Agregar Período
+        </button>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th>NOMBRE</th>
+            <th>FECHA INICIO</th>
+            <th>FECHA FIN</th>
+            <th>ESTADO</th>
+            <th>ACCIONES</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let periodo of periodosFiltrados; let i = index">
+            <td><strong>{{periodo.nombre}}</strong></td>
+            <td>{{periodo.fechaInicio}}</td>
+            <td>{{periodo.fechaFin}}</td>
+            <td>
+                <span
+                  class="badge"
+                  [class.badge-activo]="periodo.estado === 'ACTIVO'"
+                  [class.badge-inactivo]="periodo.estado === 'INACTIVO'">
+                  {{periodo.estado}}
+                </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-action btn-ver" (click)="verDetalle(periodo, 'periodo')">Ver</button>
+                <button class="btn-action btn-editar" (click)="editar(periodo, i, 'periodo')">Editar</button>
+                <button class="btn-action btn-eliminar" (click)="eliminar(periodo, i, 'periodo')">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="periodosFiltrados.length === 0">
+            <td colspan="5" class="empty-message">No se encontraron períodos</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+    <div class="tab-content" *ngIf="tabActiva === 1">
+      <div class="toolbar">
+        <div class="search-container">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            class="search-input"
+            [(ngModel)]="busquedaCarreras"
+            (input)="filtrarCarreras()"
+            placeholder="Buscar carreras...">
+        </div>
+        <button class="btn-agregar" (click)="agregarNuevo(1)">
+          Agregar Carrera
+        </button>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th>NOMBRE</th>
+            <th>FACULTAD</th>
+            <th>ESTADO</th>
+            <th>ACCIONES</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let carrera of carrerasFiltradas; let i = index">
+            <td><strong>{{carrera.nombre}}</strong></td>
+            <td>{{carrera.facultad}}</td>
+            <td>
+                <span
+                  class="badge"
+                  [class.badge-activo]="carrera.estado === 'ACTIVA'"
+                  [class.badge-inactivo]="carrera.estado === 'INACTIVA'">
+                  {{carrera.estado}}
+                </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-action btn-ver" (click)="verDetalle(carrera, 'carrera')">Ver</button>
+                <button class="btn-action btn-editar" (click)="editar(carrera, i, 'carrera')">Editar</button>
+                <button class="btn-action btn-eliminar" (click)="eliminar(carrera, i, 'carrera')">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="carrerasFiltradas.length === 0">
+            <td colspan="4" class="empty-message">No se encontraron carreras</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+    <div class="tab-content" *ngIf="tabActiva === 2">
+      <div class="toolbar">
+        <div class="search-container">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            class="search-input"
+            [(ngModel)]="busquedaAsignaturas"
+            (input)="filtrarAsignaturas()"
+            placeholder="Buscar asignaturas...">
+        </div>
+        <button class="btn-agregar" (click)="agregarNuevo(2)">
+          Agregar Asignatura
+        </button>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th>NOMBRE</th>
+            <th>CARRERA</th>
+            <th>NIVEL</th>
+            <th>HORAS</th>
+            <th>LABORATORIO</th>
+            <th>ESTADO</th>
+            <th>ACCIONES</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let asignatura of asignaturasFiltradas; let i = index">
+            <td><strong>{{asignatura.nombre}}</strong></td>
+            <td>{{asignatura.carrera}}</td>
+            <td>Nivel {{asignatura.nivel}}</td>
+            <td>{{asignatura.horasSemanales}} hrs/sem</td>
+            <td>
+                <span [ngClass]="asignatura.requiereLaboratorio === 'SI' ? 'lab-si' : 'lab-no'">
+                  {{asignatura.requiereLaboratorio === 'SI' ? '🔬 Sí' : '📘 No'}}
+                </span>
+            </td>
+            <td>
+                <span
+                  class="badge"
+                  [class.badge-activo]="asignatura.estado === 'ACTIVA'"
+                  [class.badge-inactivo]="asignatura.estado === 'INACTIVA'">
+                  {{asignatura.estado}}
+                </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-action btn-ver" (click)="verDetalle(asignatura, 'asignatura')">Ver</button>
+                <button class="btn-action btn-editar" (click)="editar(asignatura, i, 'asignatura')">Editar</button>
+                <button class="btn-action btn-eliminar" (click)="eliminar(asignatura, i, 'asignatura')">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="asignaturasFiltradas.length === 0">
+            <td colspan="7" class="empty-message">No se encontraron asignaturas</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+    <div class="tab-content" *ngIf="tabActiva === 3">
+      <div class="toolbar">
+        <div class="search-container">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            class="search-input"
+            [(ngModel)]="busquedaEstudiantes"
+            (input)="filtrarEstudiantes()"
+            placeholder="Buscar estudiantes...">
+        </div>
+        <button class="btn-agregar" (click)="agregarNuevo(3)">
+          Agregar Estudiante
+        </button>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th>IDENTIDAD</th>
+            <th>NOMBRES</th>
+            <th>APELLIDOS</th>
+            <th>EMAIL</th>
+            <th>CARRERA</th>
+            <th>ESTADO</th>
+            <th>ACCIONES</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let estudiante of estudiantesFiltrados; let i = index">
+            <td>
+              <strong>{{estudiante.identidad}}</strong><br>
+              <small>{{estudiante.tipoIdentidad}}</small>
+            </td>
+            <td>{{estudiante.nombres}}</td>
+            <td>{{estudiante.apellidos}}</td>
+            <td>{{estudiante.email}}</td>
+            <td>{{estudiante.carrera}}</td>
+            <td>
+                <span
+                  class="badge"
+                  [class.badge-activo]="estudiante.estado === 'ACTIVO'"
+                  [class.badge-inactivo]="estudiante.estado === 'INACTIVO'">
+                  {{estudiante.estado}}
+                </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-action btn-ver" (click)="verDetalle(estudiante, 'estudiante')">Ver</button>
+                <button class="btn-action btn-editar" (click)="editar(estudiante, i, 'estudiante')">Editar</button>
+                <button class="btn-action btn-eliminar" (click)="eliminar(estudiante, i, 'estudiante')">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="estudiantesFiltrados.length === 0">
+            <td colspan="7" class="empty-message">No se encontraron estudiantes</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+    <div class="tab-content" *ngIf="tabActiva === 4">
+      <div class="toolbar">
+        <div class="search-container">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            class="search-input"
+            [(ngModel)]="busquedaHorarios"
+            (input)="filtrarHorarios()"
+            placeholder="Buscar horarios...">
+        </div>
+        <button class="btn-agregar" (click)="agregarNuevo(4)">
+          Agregar Horario
+        </button>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th>PERÍODO</th>
+            <th>ASIGNATURA</th>
+            <th>DOCENTE</th>
+            <th>DÍA</th>
+            <th>HORARIO</th>
+            <th>ESTUDIANTES</th>
+            <th>ACCIONES</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let horario of horariosFiltrados; let i = index">
+            <td><strong>{{horario.periodo}}</strong></td>
+            <td>{{horario.asignatura}}</td>
+            <td>{{horario.docente}}</td>
+            <td>{{horario.diaSemana}}</td>
+            <td>{{horario.horaInicio}} - {{horario.horaFin}}</td>
+            <td>{{horario.numeroEstudiantes}} estudiantes</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-action btn-ver" (click)="verDetalle(horario, 'horario')">Ver</button>
+                <button class="btn-action btn-editar" (click)="editar(horario, i, 'horario')">Editar</button>
+                <button class="btn-action btn-eliminar" (click)="eliminar(horario, i, 'horario')">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="horariosFiltrados.length === 0">
+            <td colspan="7" class="empty-message">No se encontraron horarios</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>{{modoEdicion ? 'Editar ' + getTipoTexto() : 'Agregar Nuevo ' + getTipoTexto()}}</h2>
+      <button class="btn-close" (click)="cerrarModal()">×</button>
+    </div>
+
+    <div class="modal-body">
+
+
+      <div *ngIf="tipoEdicion === 'periodo'">
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label>Nombre del Período <span class="required">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="formularioPeriodo.nombre" placeholder="Ej: Semestre I 2024">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Fecha de Inicio <span class="required">*</span></label>
+            <input type="date" class="form-control" [(ngModel)]="formularioPeriodo.fechaInicio">
+          </div>
+          <div class="form-group">
+            <label>Fecha de Fin <span class="required">*</span></label>
+            <input type="date" class="form-control" [(ngModel)]="formularioPeriodo.fechaFin">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Estado</label>
+            <select class="form-control" [(ngModel)]="formularioPeriodo.estado">
+              <option value="ACTIVO">Activo</option>
+              <option value="INACTIVO">Inactivo</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+
+      <div *ngIf="tipoEdicion === 'carrera'">
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label>Nombre de la Carrera <span class="required">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="formularioCarrera.nombre" placeholder="Ej: Ingeniería de Sistemas">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Facultad <span class="required">*</span></label>
+            <select class="form-control" [(ngModel)]="formularioCarrera.facultad">
+              <option value="">Seleccione facultad</option>
+              <option *ngFor="let facultad of facultades" [value]="facultad">{{facultad}}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Estado</label>
+            <select class="form-control" [(ngModel)]="formularioCarrera.estado">
+              <option value="ACTIVA">Activa</option>
+              <option value="INACTIVA">Inactiva</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+
+      <div *ngIf="tipoEdicion === 'asignatura'">
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label>Nombre de la Asignatura <span class="required">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="formularioAsignatura.nombre" placeholder="Ej: Programación I">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Carrera <span class="required">*</span></label>
+            <select class="form-control" [(ngModel)]="formularioAsignatura.carrera">
+              <option value="">Seleccione carrera</option>
+              <option *ngFor="let carrera of carreras" [value]="carrera.nombre">{{carrera.nombre}}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Nivel <span class="required">*</span></label>
+            <select class="form-control" [(ngModel)]="formularioAsignatura.nivel">
+              <option value="">Seleccione nivel</option>
+              <option *ngFor="let nivel of [1,2,3,4,5,6,7,8,9,10]" [value]="nivel">Nivel {{nivel}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Horas Semanales <span class="required">*</span></label>
+            <input type="number" class="form-control" [(ngModel)]="formularioAsignatura.horasSemanales" min="1" max="20" placeholder="Ej: 4">
+          </div>
+          <div class="form-group">
+            <label>Requiere Laboratorio</label>
+            <select class="form-control" [(ngModel)]="formularioAsignatura.requiereLaboratorio">
+              <option value="SI">Sí</option>
+              <option value="NO">No</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Estado</label>
+            <select class="form-control" [(ngModel)]="formularioAsignatura.estado">
+              <option value="ACTIVA">Activa</option>
+              <option value="INACTIVA">Inactiva</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+
+      <div *ngIf="tipoEdicion === 'estudiante'">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tipo de Identidad <span class="required">*</span></label>
+            <select class="form-control" [(ngModel)]="formularioEstudiante.tipoIdentidad">
+              <option value="">Seleccione tipo</option>
+              <option value="DNI">DNI</option>
+              <option value="PASAPORTE">Pasaporte</option>
+              <option value="LICENCIA">Licencia</option>
+              <option value="OTRO">Otro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Número de Identidad <span class="required">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="formularioEstudiante.identidad" placeholder="Ej: 0801-1990-12345">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombres <span class="required">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="formularioEstudiante.nombres" placeholder="Ej: Juan Carlos">
+          </div>
+          <div class="form-group">
+            <label>Apellidos <span class="required">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="formularioEstudiante.apellidos" placeholder="Ej: Pérez López">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label>Email <span class="required">*</span></label>
+            <input type="email" class="form-control" [(ngModel)]="formularioEstudiante.email" placeholder="Ej: estudiante@universidad.edu">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Carrera <span class="required">*</span></label>
+            <select class="form-control" [(ngModel)]="formularioEstudiante.carrera">
+              <option value="">Seleccione carrera</option>
+              <option *ngFor="let carrera of carreras" [value]="carrera.nombre">{{carrera.nombre}}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Estado</label>
+            <select class="form-control" [(ngModel)]="formularioEstudiante.estado">
+              <option value="ACTIVO">Activo</option>
+              <option value="INACTIVO">Inactivo</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+
+      <div *ngIf="tipoEdicion === 'horario'">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Período Académico <span class="required">*</span></label>
+            <select class="form-control" [(ngModel)]="formularioHorario.periodo">
+              <option value="">Seleccione período</option>
+              <option *ngFor="let periodo of periodos" [value]="periodo.nombre">{{periodo.nombre}}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Asignatura <span class="required">*</span></label>
+            <select class="form-control" [(ngModel)]="formularioHorario.asignatura">
+              <option value="">Seleccione asignatura</option>
+              <option *ngFor="let asignatura of asignaturas" [value]="asignatura.nombre">{{asignatura.nombre}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Docente <span class="required">*</span></label>
+            <select class="form-control" [(ngModel)]="formularioHorario.docente">
+              <option value="">Seleccione docente</option>
+              <option *ngFor="let docente of docentes" [value]="docente">{{docente}}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Día de la Semana <span class="required">*</span></label>
+            <select class="form-control" [(ngModel)]="formularioHorario.diaSemana">
+              <option value="">Seleccione día</option>
+              <option value="LUNES">Lunes</option>
+              <option value="MARTES">Martes</option>
+              <option value="MIÉRCOLES">Miércoles</option>
+              <option value="JUEVES">Jueves</option>
+              <option value="VIERNES">Viernes</option>
+              <option value="SÁBADO">Sábado</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Hora de Inicio <span class="required">*</span></label>
+            <select class="form-control" [(ngModel)]="formularioHorario.horaInicio">
+              <option value="">Seleccione hora</option>
+              <option *ngFor="let hora of horas" [value]="hora">{{hora}}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Hora de Fin <span class="required">*</span></label>
+            <select class="form-control" [(ngModel)]="formularioHorario.horaFin">
+              <option value="">Seleccione hora</option>
+              <option *ngFor="let hora of horas" [value]="hora">{{hora}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Número de Estudiantes <span class="required">*</span></label>
+            <input type="number" class="form-control" [(ngModel)]="formularioHorario.numeroEstudiantes" min="1" max="100" placeholder="Ej: 30">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+      <button class="btn-guardar" (click)="guardar()">Guardar</button>
+    </div>
+
+  </div>
+</div>
+
+
+
+<div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'periodo'" (click)="cerrarDetalle()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>📅 Detalles del Período</h2>
+      <button class="btn-close" (click)="cerrarDetalle()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="detalle-grid">
+        <div class="detalle-item full-width">
+          <label>Nombre del Período</label>
+          <span class="detalle-valor">{{itemDetalle.nombre}}</span>
+        </div>
+        <div class="detalle-item">
+          <label>Fecha de Inicio</label>
+          <span class="detalle-valor">{{itemDetalle.fechaInicio}}</span>
+        </div>
+        <div class="detalle-item">
+          <label>Fecha de Fin</label>
+          <span class="detalle-valor">{{itemDetalle.fechaFin}}</span>
+        </div>
+        <div class="detalle-item">
+          <label>Estado</label>
+          <span class="badge" [class.badge-activo]="itemDetalle.estado === 'ACTIVO'" [class.badge-inactivo]="itemDetalle.estado === 'INACTIVO'">
+            {{itemDetalle.estado}}
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarDetalle()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'carrera'" (click)="cerrarDetalle()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>📚 Detalles de la Carrera</h2>
+      <button class="btn-close" (click)="cerrarDetalle()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="detalle-grid">
+        <div class="detalle-item full-width">
+          <label>Nombre de la Carrera</label>
+          <span class="detalle-valor">{{itemDetalle.nombre}}</span>
+        </div>
+        <div class="detalle-item">
+          <label>Facultad</label>
+          <span class="detalle-valor">{{itemDetalle.facultad}}</span>
+        </div>
+        <div class="detalle-item">
+          <label>Estado</label>
+          <span class="badge" [class.badge-activo]="itemDetalle.estado === 'ACTIVA'" [class.badge-inactivo]="itemDetalle.estado === 'INACTIVA'">
+            {{itemDetalle.estado}}
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarDetalle()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'asignatura'" (click)="cerrarDetalle()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>📖 Detalles de la Asignatura</h2>
+      <button class="btn-close" (click)="cerrarDetalle()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="detalle-grid">
+        <div class="detalle-item full-width">
+          <label>Nombre de la Asignatura</label>
+          <span class="detalle-valor">{{itemDetalle.nombre}}</span>
+        </div>
+        <div class="detalle-item">
+          <label>Carrera</label>
+          <span class="detalle-valor">{{itemDetalle.carrera}}</span>
+        </div>
+        <div class="detalle-item">
+          <label>Nivel</label>
+          <span class="detalle-valor">Nivel {{itemDetalle.nivel}}</span>
+        </div>
+        <div class="detalle-item">
+          <label>Horas Semanales</label>
+          <span class="detalle-valor">{{itemDetalle.horasSemanales}} hrs/sem</span>
+        </div>
+        <div class="detalle-item">
+          <label>Requiere Laboratorio</label>
+          <span [ngClass]="itemDetalle.requiereLaboratorio === 'SI' ? 'lab-si' : 'lab-no'">
+            {{itemDetalle.requiereLaboratorio === 'SI' ? '🔬 Sí' : '📘 No'}}
+          </span>
+        </div>
+        <div class="detalle-item">
+          <label>Estado</label>
+          <span class="badge" [class.badge-activo]="itemDetalle.estado === 'ACTIVA'" [class.badge-inactivo]="itemDetalle.estado === 'INACTIVA'">
+            {{itemDetalle.estado}}
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarDetalle()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'estudiante'" (click)="cerrarDetalle()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>👨‍🎓 Detalles del Estudiante</h2>
+      <button class="btn-close" (click)="cerrarDetalle()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="detalle-grid">
+        <div class="detalle-item">
+          <label>Tipo de Identidad</label>
+          <span class="detalle-valor">{{itemDetalle.tipoIdentidad}}</span>
+        </div>
+        <div class="detalle-item">
+          <label>Número de Identidad</label>
+          <span class="detalle-valor">{{itemDetalle.identidad}}</span>
+        </div>
+        <div class="detalle-item">
+          <label>Nombres</label>
+          <span class="detalle-valor">{{itemDetalle.nombres}}</span>
+        </div>
+        <div class="detalle-item">
+          <label>Apellidos</label>
+          <span class="detalle-valor">{{itemDetalle.apellidos}}</span>
+        </div>
+        <div class="detalle-item full-width">
+          <label>Email</label>
+          <span class="detalle-valor">{{itemDetalle.email}}</span>
+        </div>
+        <div class="detalle-item">
+          <label>Carrera</label>
+          <span class="detalle-valor">{{itemDetalle.carrera}}</span>
+        </div>
+        <div class="detalle-item">
+          <label>Estado</label>
+          <span class="badge" [class.badge-activo]="itemDetalle.estado === 'ACTIVO'" [class.badge-inactivo]="itemDetalle.estado === 'INACTIVO'">
+            {{itemDetalle.estado}}
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarDetalle()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'horario'" (click)="cerrarDetalle()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>⏰ Detalles del Horario</h2>
+      <button class="btn-close" (click)="cerrarDetalle()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="detalle-grid">
+        <div class="detalle-item">
+          <label>Período Académico</label>
+          <span class="detalle-valor">{{itemDetalle.periodo}}</span>
+        </div>
+        <div class="detalle-item">
+          <label>Asignatura</label>
+          <span class="detalle-valor">{{itemDetalle.asignatura}}</span>
+        </div>
+        <div class="detalle-item full-width">
+          <label>Docente</label>
+          <span class="detalle-valor">{{itemDetalle.docente}}</span>
+        </div>
+        <div class="detalle-item">
+          <label>Día de la Semana</label>
+          <span class="detalle-valor">{{itemDetalle.diaSemana}}</span>
+        </div>
+        <div class="detalle-item">
+          <label>Horario</label>
+          <span class="detalle-valor">{{itemDetalle.horaInicio}} - {{itemDetalle.horaFin}}</span>
+        </div>
+        <div class="detalle-item">
+          <label>Número de Estudiantes</label>
+          <span class="detalle-valor">{{itemDetalle.numeroEstudiantes}} estudiantes</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarDetalle()">Cerrar</button>
+    </div>
+  </div>
+</div>
