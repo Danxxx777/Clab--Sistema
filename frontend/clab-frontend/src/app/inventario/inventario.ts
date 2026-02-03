@@ -249,7 +249,7 @@ export class InventarioComponent {
     }
   }
 
-
+// cha madre loco
   agregarNuevo(): void {
     switch (this.tabActiva) {
       case 'equipos':

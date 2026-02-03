@@ -517,7 +517,7 @@ export class AcademicoComponent implements OnInit {
   goToDashboard() {
     this.router.navigate(['/dashboard']);
   }
-
+//cha madre loco
   logout() {
     this.router.navigate(['/']);
   }
