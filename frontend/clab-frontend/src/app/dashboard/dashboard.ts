@@ -69,7 +69,7 @@ export class DashboardComponent implements OnInit {
   }
 
   protected estudiantes(estudiantes: string) {
-
+    this.router.navigate(['estudiantes']);
   }
 
   protected academico(academico: string) {
@@ -93,4 +93,5 @@ export class DashboardComponent implements OnInit {
     console.log('Navegando a usuarios');
     this.router.navigate(['usuarios']);
   }
+
 }
