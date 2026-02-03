@@ -137,19 +137,15 @@
               </thead>
               <tbody>
               <tr *ngFor="let sede of sedesFiltradas; let i = index">
-                <td>{{sede.id_sede}}</td>
+                <td>{{sede.idSede}}</td>
                 <td>{{sede.nombre}}</td>
                 <td>{{sede.direccion}}</td>
                 <td>{{sede.telefono}}</td>
                 <td>{{sede.email}}</td>
-                <td>
-                  <span class="estado-badge" [ngClass]="getEstadoBadgeClass(sede.estado)">
-                    {{sede.estado}}
-                  </span>
-                </td>
+                <td>{{ sede.estado }}</td>
                 <td>
                   <div class="action-buttons">
-                    <button class="btn-view" (click)="verDetalle(sede)" title="Ver">Ver</button>
+                    <button class="btn-view" (click)="verDetalle(sede)" title="Verr">Ver</button>
                     <button class="btn-edit" (click)="editarSede(sede, i)" title="Editar">Editar</button>
                     <button class="btn-delete" (click)="eliminarSede(sede, i)" title="Eliminar">Eliminar</button>
                   </div>
@@ -275,7 +271,7 @@
           <label>Sede <span class="required">*</span></label>
           <select [(ngModel)]="formularioLab.id_sede">
             <option [value]="0">Seleccione una sede</option>
-            <option *ngFor="let sede of sedes" [value]="sede.id_sede">
+            <option *ngFor="let sede of sedes" [value]="sede.idSede">
               {{sede.nombre}}
             </option>
           </select>
