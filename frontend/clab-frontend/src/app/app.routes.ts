@@ -14,6 +14,7 @@ import { AcademicoComponent } from './academico/academico';
 import { EstudiantesComponent} from './estudiantes/estudiantes';
 
 import { authGuard } from './auth/auth.guard';
+import {UsuariosComponent} from './usuarios/usuarios';
 
 export const routes: Routes = [
 
@@ -77,6 +78,11 @@ export const routes: Routes = [
   {
     path: 'academico',
     component: AcademicoComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'usuarios',
+    component: UsuariosComponent,
     canActivate: [authGuard]
   },
   { path: '**', redirectTo: 'dashboard' }
