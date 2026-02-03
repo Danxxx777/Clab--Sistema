@@ -14,7 +14,7 @@ export class AcademicoComponent implements OnInit {
 
   tabActiva = 0;
 
-  // Datos de ejemplo
+
   periodos = [
     { nombre: 'Semestre I 2024', fechaInicio: '2024-01-15', fechaFin: '2024-06-20', estado: 'ACTIVO' },
     { nombre: 'Semestre II 2023', fechaInicio: '2023-08-01', fechaFin: '2023-12-20', estado: 'INACTIVO' },
@@ -53,32 +53,32 @@ export class AcademicoComponent implements OnInit {
     { periodo: '2024-II', asignatura: 'Contabilidad General', docente: 'Lic. Pedro Gómez', diaSemana: 'MARTES', horaInicio: '16:00', horaFin: '18:00', numeroEstudiantes: 32 }
   ];
 
-  // Datos filtrados
+
   periodosFiltrados = [...this.periodos];
   carrerasFiltradas = [...this.carreras];
   asignaturasFiltradas = [...this.asignaturas];
   facultadesFiltradas = [...this.facultadesData];
   horariosFiltrados = [...this.horarios];
 
-  // Búsquedas
+
   busquedaPeriodos = '';
   busquedaCarreras = '';
   busquedaAsignaturas = '';
   busquedaFacultades = '';
   busquedaHorarios = '';
 
-  // Modal
+
   mostrarModal = false;
   modoEdicion = false;
   tipoEdicion = '';
   indiceEdicion = -1;
 
-  // Modal de detalle
+
   mostrarDetalle = false;
   tipoDetalle = '';
   itemDetalle: any = {};
 
-  // Formularios
+
   formularioPeriodo = {
     nombre: '',
     fechaInicio: '',
@@ -119,7 +119,7 @@ export class AcademicoComponent implements OnInit {
     numeroEstudiantes: 30
   };
 
-  // Listas para selectores
+
   decanos = [
     'Dr. Carlos Rodríguez',
     'Dra. Laura Fernández',
@@ -152,7 +152,7 @@ export class AcademicoComponent implements OnInit {
     console.log('Módulo Académico cargado');
   }
 
-  // Métodos de navegación
+
   cambiarTab(tabIndex: number) {
     this.tabActiva = tabIndex;
   }
@@ -179,7 +179,7 @@ export class AcademicoComponent implements OnInit {
     }
   }
 
-  // Métodos de filtrado
+
   filtrarPeriodos() {
     const busqueda = this.busquedaPeriodos.toLowerCase();
     this.periodosFiltrados = this.periodos.filter(periodo =>
@@ -226,7 +226,7 @@ export class AcademicoComponent implements OnInit {
     );
   }
 
-  // Métodos CRUD
+
   agregarNuevo(tabIndex: number) {
     this.modoEdicion = false;
     this.indiceEdicion = -1;
@@ -382,7 +382,7 @@ export class AcademicoComponent implements OnInit {
           return false;
         }
         if (new Date(this.formularioPeriodo.fechaInicio) >= new Date(this.formularioPeriodo.fechaFin)) {
-          alert('La fecha de inicio debe ser anterior a la fecha de fin');
+          alert('La fecha de inicio debe ser anterior a la fecha de fin.');
           return false;
         }
         break;

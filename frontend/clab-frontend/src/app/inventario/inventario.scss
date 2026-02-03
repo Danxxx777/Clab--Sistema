@@ -1,4 +1,4 @@
-// Variables de color
+
 $color-primario: #2d7d51;
 $color-secundario: #27ae60;
 $color-fondo: #f5f7fa;
@@ -24,7 +24,7 @@ $color-eliminar: #e74c3c;
   padding-bottom: 40px;
 }
 
-/* ===== HEADER ===== */
+
 .header {
   background: linear-gradient(135deg, $color-primario 0%, darken($color-primario, 10%) 100%);
   padding: 20px 40px;
@@ -76,7 +76,7 @@ $color-eliminar: #e74c3c;
   }
 }
 
-/* ===== TÍTULO DE PÁGINA ===== */
+
 .page-title-section {
   background: $color-primario;
   padding: 30px 40px;
@@ -90,7 +90,7 @@ $color-eliminar: #e74c3c;
   }
 }
 
-/* ===== TABS ===== */
+
 .tabs-container {
   background: white;
   border-bottom: 1px solid $color-borde;
@@ -127,7 +127,7 @@ $color-eliminar: #e74c3c;
   }
 }
 
-/* ===== CONTENIDO PRINCIPAL ===== */
+
 .content-wrapper {
   max-width: 1400px;
   margin: 30px auto;
@@ -138,7 +138,7 @@ $color-eliminar: #e74c3c;
   animation: fadeIn 0.3s ease;
 }
 
-/* ===== TOOLBAR ===== */
+
 .toolbar {
   display: flex;
   justify-content: space-between;
@@ -201,7 +201,7 @@ $color-eliminar: #e74c3c;
   }
 }
 
-/* ===== TABLA ===== */
+
 .table-container {
   background: white;
   border-radius: 12px;
@@ -262,7 +262,7 @@ $color-eliminar: #e74c3c;
   }
 }
 
-/* ===== IMAGEN EN TABLA ===== */
+
 .table-image {
   width: 60px;
   height: 60px;
@@ -278,7 +278,7 @@ $color-eliminar: #e74c3c;
   }
 }
 
-/* ===== BADGES ===== */
+
 .badge {
   display: inline-block;
   padding: 6px 14px;
@@ -299,7 +299,7 @@ $color-eliminar: #e74c3c;
   }
 }
 
-/* ===== BOTONES DE ACCIÓN ===== */
+
 .action-buttons {
   display: flex;
   gap: 8px;
@@ -352,7 +352,7 @@ $color-eliminar: #e74c3c;
   }
 }
 
-/* ===== MODAL ===== */
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -499,7 +499,7 @@ $color-eliminar: #e74c3c;
   }
 }
 
-/* ===== FORMULARIO ===== */
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -565,7 +565,7 @@ $color-eliminar: #e74c3c;
   }
 }
 
-/* ===== SUBIDA DE IMAGEN ===== */
+
 .image-upload-container {
   margin-top: 8px;
 }
@@ -655,7 +655,7 @@ $color-eliminar: #e74c3c;
   }
 }
 
-/* ===== MODAL DE DETALLE ===== */
+
 .modal-detalle {
   max-width: 700px;
 }
@@ -729,7 +729,7 @@ $color-eliminar: #e74c3c;
   }
 }
 
-/* ===== ANIMACIONES ===== */
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -750,7 +750,7 @@ $color-eliminar: #e74c3c;
   }
 }
 
-/* ===== RESPONSIVE ===== */
+
 @media (max-width: 768px) {
   .header {
     padding: 16px 20px;

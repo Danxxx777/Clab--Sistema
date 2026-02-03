@@ -53,7 +53,7 @@
 
   <div class="content-wrapper">
 
-    <!-- TAB PERÍODOS -->
+
     <div class="tab-content" *ngIf="tabActiva === 0">
       <div class="toolbar">
         <div class="search-container">
@@ -110,7 +110,7 @@
       </div>
     </div>
 
-    <!-- TAB CARRERAS -->
+
     <div class="tab-content" *ngIf="tabActiva === 1">
       <div class="toolbar">
         <div class="search-container">
@@ -165,7 +165,7 @@
       </div>
     </div>
 
-    <!-- TAB ASIGNATURAS -->
+
     <div class="tab-content" *ngIf="tabActiva === 2">
       <div class="toolbar">
         <div class="search-container">
@@ -230,7 +230,7 @@
       </div>
     </div>
 
-    <!-- TAB FACULTADES -->
+
     <div class="tab-content" *ngIf="tabActiva === 3">
       <div class="toolbar">
         <div class="search-container">
@@ -287,7 +287,7 @@
       </div>
     </div>
 
-    <!-- TAB HORARIOS -->
+
     <div class="tab-content" *ngIf="tabActiva === 4">
       <div class="toolbar">
         <div class="search-container">
@@ -344,7 +344,7 @@
   </div>
 </div>
 
-<!-- MODAL PARA AGREGAR/EDITAR -->
+
 <div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
   <div class="modal" (click)="$event.stopPropagation()">
 
@@ -355,7 +355,7 @@
 
     <div class="modal-body">
 
-      <!-- FORMULARIO PERÍODOS -->
+
       <div *ngIf="tipoEdicion === 'periodo'">
         <div class="form-row">
           <div class="form-group full-width">
@@ -384,7 +384,7 @@
         </div>
       </div>
 
-      <!-- FORMULARIO CARRERAS -->
+
       <div *ngIf="tipoEdicion === 'carrera'">
         <div class="form-row">
           <div class="form-group full-width">
@@ -410,7 +410,7 @@
         </div>
       </div>
 
-      <!-- FORMULARIO ASIGNATURAS -->
+
       <div *ngIf="tipoEdicion === 'asignatura'">
         <div class="form-row">
           <div class="form-group full-width">
@@ -458,7 +458,7 @@
         </div>
       </div>
 
-      <!-- FORMULARIO FACULTADES -->
+
       <div *ngIf="tipoEdicion === 'facultad'">
         <div class="form-row">
           <div class="form-group full-width">
@@ -496,7 +496,7 @@
         </div>
       </div>
 
-      <!-- FORMULARIO HORARIOS -->
+
       <div *ngIf="tipoEdicion === 'horario'">
         <div class="form-row">
           <div class="form-group">
@@ -569,8 +569,8 @@
   </div>
 </div>
 
-<!-- MODALES DE DETALLE -->
-<!-- Modal Detalle Período -->
+
+
 <div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'periodo'" (click)="cerrarDetalle()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -605,7 +605,7 @@
   </div>
 </div>
 
-<!-- Modal Detalle Carrera -->
+
 <div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'carrera'" (click)="cerrarDetalle()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -636,7 +636,7 @@
   </div>
 </div>
 
-<!-- Modal Detalle Asignatura -->
+
 <div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'asignatura'" (click)="cerrarDetalle()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -681,7 +681,7 @@
   </div>
 </div>
 
-<!-- Modal Detalle Facultad -->
+
 <div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'facultad'" (click)="cerrarDetalle()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -720,7 +720,7 @@
   </div>
 </div>
 
-<!-- Modal Detalle Horario -->
+
 <div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'horario'" (click)="cerrarDetalle()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
