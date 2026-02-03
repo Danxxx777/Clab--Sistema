@@ -1,195 +1,346 @@
-<!-- HEADER DE PÁGINA -->
-<div class="page-header">
-  <div class="page-header-content">
-    <div class="page-title-section">
-      <h1 class="page-title">Gestión de Usuarios</h1>
-      <p class="page-subtitle">
-        Administra usuarios, roles y permisos del sistema
-      </p>
+<nav class="navbar">
+  <div class="nav-container">
+    <div class="logo">
+      <span>🔬</span>
+      <span>CLAB</span>
     </div>
 
-    <div class="page-stats">
-      <div class="stat-card">
-        <div class="stat-icon stat-icon-primary">👥</div>
-        <div class="stat-info">
-          <div class="stat-label">Total Usuarios</div>
-          <div class="stat-value">{{ totalUsuarios }}</div>
-        </div>
+    <div class="user-info">
+      <div class="avatar">JP</div>
+      <div class="user-text">
+        <strong>Juan Pérez</strong>
+        <small>Administrador</small>
       </div>
-
-      <div class="stat-card">
-        <div class="stat-icon stat-icon-success">✓</div>
-        <div class="stat-info">
-          <div class="stat-label">Activos</div>
-          <div class="stat-value">{{ usuariosActivos }}</div>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon stat-icon-warning">⏸</div>
-        <div class="stat-info">
-          <div class="stat-label">Inactivos</div>
-          <div class="stat-value">{{ usuariosInactivos }}</div>
-        </div>
-      </div>
+      <button class="logout">Cerrar sesión</button>
     </div>
   </div>
-</div>
+</nav>
 
-<!-- TOOLBAR -->
-<div class="toolbar">
-  <div class="toolbar-search">
-    <div class="search-box">
-      <span class="search-icon">🔍</span>
-      <input
-        type="text"
-        class="search-input"
-        placeholder="Buscar por nombre, email o identidad"
-        [(ngModel)]="filtros.busqueda"
-        (input)="aplicarFiltros()"
-      />
-      <button
-        *ngIf="filtros.busqueda"
-        class="search-clear"
-        (click)="limpiarBusqueda()"
-      >
-        ✕
-      </button>
+
+<div class="usuarios-page">
+  <div class="usuarios-container">
+
+
+    <div class="usuarios-header">
+      <h1>Gestión de Usuarios</h1>
+      <p>Administra usuarios, roles y permisos del sistema</p>
     </div>
-  </div>
 
-  <div class="toolbar-actions">
-    <select
-      class="filter-select"
-      [(ngModel)]="filtros.estado"
-      (change)="aplicarFiltros()"
-    >
-      <option value="">Todos los estados</option>
-      <option value="Activo">Activo</option>
-      <option value="Inactivo">Inactivo</option>
-    </select>
+    <div class="tabs-header">
+      <button class="tab-button" [class.active]="tabActiva === 0" (click)="cambiarTab(0)">Usuarios</button>
+      <button class="tab-button" [class.active]="tabActiva === 1" (click)="cambiarTab(1)">Roles</button>
+      <button class="tab-button" [class.active]="tabActiva === 2" (click)="cambiarTab(2)">Permisos</button>
+      <button class="tab-button" [class.active]="tabActiva === 3" (click)="cambiarTab(3)">Auditoría</button>
+    </div>
 
-    <button class="btn btn-secondary" (click)="exportarUsuarios()">
-      <span class="btn-icon">📥</span>
-      Exportar
-    </button>
+    <div *ngIf="tabActiva === 0">
 
-    <button class="btn btn-primary" (click)="abrirModalNuevo()">
-      <span class="btn-icon">➕</span>
-      Nuevo Usuario
-    </button>
-  </div>
-</div>
+      <div class="filters">
+        <input
+          type="text"
+          [(ngModel)]="busqueda"
+          (input)="filtrarUsuarios()"
+          placeholder="Buscar por nombre, email o identidad">
 
-<!-- TABLA -->
-<div class="table-container" *ngIf="!cargando && usuariosFiltrados.length">
-  <table class="data-table">
-    <thead>
-    <tr>
-      <th>Usuario</th>
-      <th>Identidad</th>
-      <th>Rol</th>
-      <th>Estado</th>
-      <th>Fecha Registro</th>
-      <th class="text-center">Acciones</th>
-    </tr>
-    </thead>
+        <select [(ngModel)]="filtroEstado" (change)="filtrarUsuarios()">
+          <option value="Todos">Todos los estados</option>
+          <option value="Activo">Activo</option>
+          <option value="Inactivo">Inactivo</option>
+        </select>
 
-    <tbody>
-    <tr *ngFor="let u of usuariosFiltrados">
-      <!-- USUARIO -->
-      <td>
-        <div class="user-cell">
-          <div class="user-avatar">
-            {{ obtenerIniciales(u.nombres, u.apellidos) }}
-          </div>
-          <div class="user-info">
-            <div class="user-name">
-              {{ u.nombres }} {{ u.apellidos }}
+        <select [(ngModel)]="filtroRol" (change)="filtrarUsuarios()">
+          <option value="Todos">Todos los roles</option>
+          <option *ngFor="let r of roles" [value]="r.nombre">
+            {{ r.nombre }}
+          </option>
+        </select>
+
+        <button class="btn-export" (click)="registrarAuditoria('Exportar usuarios','Usuarios')">
+          Exportar
+        </button>
+
+        <button class="btn-add" (click)="abrirModalUsuario('crear')">
+          + Nuevo Usuario
+        </button>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Identidad</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            <th>Fecha Registro</th>
+            <th>Acciones</th>
+          </tr>
+          </thead>
+
+          <tbody>
+          <tr *ngFor="let u of usuariosFiltrados">
+            <td>
+              <strong>{{ u.nombres }} {{ u.apellidos }}</strong>
+              <small>{{ u.email }}</small>
+            </td>
+            <td>{{ u.identidad }}</td>
+            <td><span class="rol-badge">{{ u.rol }}</span></td>
+            <td>
+                <span class="estado-badge" [ngClass]="getEstadoClass(u.estado)">
+                  {{ u.estado }}
+                </span>
+            </td>
+            <td>{{ u.fechaRegistro }}</td>
+            <td class="actions">
+              <button (click)="abrirModalUsuario('ver', u)">👁</button>
+              <button (click)="abrirModalUsuario('editar', u)">✏️</button>
+              <button (click)="eliminarUsuario(u)">🗑</button>
+            </td>
+          </tr>
+
+          <tr *ngIf="usuariosFiltrados.length === 0">
+            <td colspan="6" class="empty">No hay usuarios registrados</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+    <div *ngIf="tabActiva === 1">
+
+      <div class="filters">
+        <button class="btn-add" (click)="abrirModalRol('crear')">+ Nuevo Rol</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+          <tr>
+            <th>Rol</th>
+            <th>Descripción</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+          </thead>
+
+          <tbody>
+          <tr *ngFor="let r of roles">
+            <td><strong>{{ r.nombre }}</strong></td>
+            <td>{{ r.descripcion }}</td>
+            <td>
+                <span class="estado-badge" [ngClass]="r.estado === 'Activo' ? 'activo' : 'inactivo'">
+                  {{ r.estado }}
+                </span>
+            </td>
+            <td class="actions">
+              <button (click)="abrirModalRol('editar', r)">✏️</button>
+              <button (click)="eliminarRol(r)">🗑</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div *ngIf="tabActiva === 2">
+
+      <div class="filters">
+        <button class="btn-add" (click)="abrirModalPermiso('crear')">+ Nuevo Permiso</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+          <tr>
+            <th>Permiso</th>
+            <th>Módulo</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+          </thead>
+
+          <tbody>
+          <tr *ngFor="let p of permisos">
+            <td><strong>{{ p.nombre }}</strong></td>
+            <td>{{ p.modulo }}</td>
+            <td>
+                <span class="estado-badge" [ngClass]="p.estado === 'Activo' ? 'activo' : 'inactivo'">
+                  {{ p.estado }}
+                </span>
+            </td>
+            <td class="actions">
+              <button (click)="abrirModalPermiso('editar', p)">✏️</button>
+              <button (click)="eliminarPermiso(p)">🗑</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="modal-overlay" *ngIf="mostrarModalPermiso">
+      <div class="modal-container">
+
+        <div class="modal-header">
+          <h2>
+            {{ modoModal === 'crear' ? 'Nuevo Permiso' : 'Editar Permiso' }}
+          </h2>
+          <button class="btn-close" (click)="cerrarModalPermiso()">×</button>
+        </div>
+
+        <div class="modal-form">
+          <div class="form-grid">
+
+            <div class="form-group">
+              <label>Nombre del Permiso</label>
+              <input [(ngModel)]="permisoActual.nombre">
             </div>
-            <div class="user-email">{{ u.email }}</div>
+
+            <div class="form-group">
+              <label>Módulo</label>
+              <input [(ngModel)]="permisoActual.modulo">
+            </div>
+
+            <div class="form-group">
+              <label>Estado</label>
+              <select [(ngModel)]="permisoActual.estado">
+                <option value="Activo">Activo</option>
+                <option value="Inactivo">Inactivo</option>
+              </select>
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn-cancel" (click)="cerrarModalPermiso()">Cancelar</button>
+            <button class="btn-save" (click)="guardarPermiso()">Guardar</button>
           </div>
         </div>
-      </td>
 
-      <!-- IDENTIDAD -->
-      <td>
-        <span class="text-mono">{{ u.identidad }}</span>
-      </td>
+      </div>
+    </div>
 
-      <!-- ROL -->
-      <td>
-          <span class="badge badge-role">
-            {{ u.rol }}
-          </span>
-      </td>
 
-      <!-- ESTADO -->
-      <td>
-          <span
-            class="badge"
-            [class.badge-success]="u.estado === 'Activo'"
-            [class.badge-inactive]="u.estado === 'Inactivo'"
-          >
-            {{ u.estado }}
-          </span>
-      </td>
+    <div *ngIf="tabActiva === 3">
 
-      <!-- FECHA -->
-      <td>
-          <span class="text-secondary">
-            {{ u.fechaRegistro | date:'dd/MM/yyyy' }}
-          </span>
-      </td>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Acción</th>
+            <th>Módulo</th>
+            <th>Fecha</th>
+          </tr>
+          </thead>
 
-      <!-- ACCIONES -->
-      <td>
-        <div class="actions-cell">
-          <button
-            class="icon-btn icon-btn-view"
-            title="Ver"
-            (click)="verUsuario(u)"
-          >
-            👁
-          </button>
+          <tbody>
+          <tr *ngFor="let a of auditorias">
+            <td><strong>{{ a.usuario }}</strong></td>
+            <td>{{ a.accion }}</td>
+            <td>{{ a.modulo }}</td>
+            <td>{{ a.fecha }}</td>
+          </tr>
 
-          <button
-            class="icon-btn icon-btn-edit"
-            title="Editar"
-            (click)="editarUsuario(u)"
-          >
-            ✏️
-          </button>
+          <tr *ngIf="auditorias.length === 0">
+            <td colspan="4" class="empty">No hay registros de auditoría</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-          <button
-            class="icon-btn icon-btn-delete"
-            title="Eliminar"
-            (click)="eliminarUsuario(u)"
-          >
-            🗑️
-          </button>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalRol">
+  <div class="modal-container">
+
+    <div class="modal-header">
+      <h2>
+        {{ modoModal === 'crear' ? 'Nuevo Rol' : 'Editar Rol' }}
+      </h2>
+      <button class="btn-close" (click)="cerrarModalRol()">×</button>
+    </div>
+
+    <div class="modal-form">
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label>Nombre del Rol</label>
+          <input [(ngModel)]="rolActual.nombre">
         </div>
-      </td>
-    </tr>
-    </tbody>
-  </table>
+
+        <div class="form-group">
+          <label>Descripción</label>
+          <input [(ngModel)]="rolActual.descripcion">
+        </div>
+
+        <div class="form-group">
+          <label>Estado</label>
+          <select [(ngModel)]="rolActual.estado">
+            <option value="Activo">Activo</option>
+            <option value="Inactivo">Inactivo</option>
+          </select>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="cerrarModalRol()">Cancelar</button>
+        <button class="btn-save" (click)="guardarRol()">Guardar</button>
+      </div>
+    </div>
+
+  </div>
 </div>
 
-<!-- ESTADO VACÍO -->
-<div class="empty-state" *ngIf="!cargando && !usuariosFiltrados.length">
-  <div class="empty-state-icon">👥</div>
-  <h3 class="empty-state-title">No hay usuarios</h3>
-  <p class="empty-state-message">
-    Aún no se han registrado usuarios en el sistema.
-  </p>
-  <button class="btn btn-primary" (click)="abrirModalNuevo()">
-    <span class="btn-icon">➕</span>
-    Crear Usuario
-  </button>
-</div>
 
-<!-- LOADING -->
-<div class="loading-container" *ngIf="cargando">
-  <div class="spinner"></div>
-  <p>Cargando usuarios...</p>
+<div class="modal-overlay" *ngIf="mostrarModalUsuario">
+  <div class="modal-container">
+
+    <div class="modal-header">
+      <h2>
+        {{ modoModal === 'crear' ? 'Nuevo Usuario' :
+        modoModal === 'editar' ? 'Editar Usuario' : 'Detalle Usuario' }}
+      </h2>
+      <button class="btn-close" (click)="cerrarModalUsuario()">×</button>
+    </div>
+
+    <div class="modal-form">
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label>Nombres</label>
+          <input [(ngModel)]="usuarioActual.nombres" [disabled]="modoModal === 'ver'">
+        </div>
+
+        <div class="form-group">
+          <label>Apellidos</label>
+          <input [(ngModel)]="usuarioActual.apellidos" [disabled]="modoModal === 'ver'">
+        </div>
+
+        <div class="form-group">
+          <label>Email</label>
+          <input [(ngModel)]="usuarioActual.email" [disabled]="modoModal === 'ver'">
+        </div>
+
+        <div class="form-group">
+          <label>Rol</label>
+          <select [(ngModel)]="usuarioActual.rol" [disabled]="modoModal === 'ver'">
+            <option *ngFor="let r of roles" [value]="r.nombre">
+              {{ r.nombre }}
+            </option>
+          </select>
+        </div>
+
+      </div>
+
+      <div class="modal-footer" *ngIf="modoModal !== 'ver'">
+        <button class="btn-cancel" (click)="cerrarModalUsuario()">Cancelar</button>
+        <button class="btn-save" (click)="guardarUsuario()">Guardar</button>
+      </div>
+    </div>
+  </div>
 </div>
