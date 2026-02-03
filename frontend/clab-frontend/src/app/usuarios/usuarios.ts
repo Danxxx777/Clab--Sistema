@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 /* ===============================
    INTERFACES
@@ -47,13 +48,15 @@ interface Auditoria {
 export class UsuariosComponent implements OnInit {
 
   /* ===============================
-     TABS
+     CONSTRUCTOR
+  ================================ */
+  constructor(private router: Router) {}
+
+  /* ===============================
+     ESTADO GENERAL
   ================================ */
   tabActiva = 0;
 
-  /* ===============================
-     MODALES
-  ================================ */
   mostrarModalUsuario = false;
   mostrarModalRol = false;
   mostrarModalPermiso = false;
@@ -65,7 +68,7 @@ export class UsuariosComponent implements OnInit {
   permisoActual!: Permiso;
 
   /* ===============================
-     USUARIOS
+     DATA
   ================================ */
   usuarios: Usuario[] = [
     {
@@ -92,46 +95,47 @@ export class UsuariosComponent implements OnInit {
 
   usuariosFiltrados: Usuario[] = [];
 
-  busqueda = '';
-  filtroEstado = 'Todos';
-  filtroRol = 'Todos';
-
-  /* ===============================
-     ROLES
-  ================================ */
   roles: Rol[] = [
     { id: 1, nombre: 'Administrador', descripcion: 'Acceso total', estado: 'Activo' },
     { id: 2, nombre: 'Docente', descripcion: 'Gestión académica', estado: 'Activo' },
     { id: 3, nombre: 'Técnico', descripcion: 'Soporte técnico', estado: 'Activo' }
   ];
 
-  /* ===============================
-     PERMISOS
-  ================================ */
   permisos: Permiso[] = [
     { id: 1, nombre: 'Crear Usuario', modulo: 'Usuarios', estado: 'Activo' },
     { id: 2, nombre: 'Editar Usuario', modulo: 'Usuarios', estado: 'Activo' },
     { id: 3, nombre: 'Eliminar Usuario', modulo: 'Usuarios', estado: 'Activo' }
   ];
 
-  /* ===============================
-     AUDITORÍA
-  ================================ */
   auditorias: Auditoria[] = [];
 
+  /* ===============================
+     FILTROS
+  ================================ */
+  busqueda = '';
+  filtroEstado = 'Todos';
+  filtroRol = 'Todos';
+
+  /* ===============================
+     CICLO DE VIDA
+  ================================ */
   ngOnInit(): void {
     this.usuariosFiltrados = [...this.usuarios];
   }
 
   /* ===============================
-     TABS
+     NAVEGACIÓN
   ================================ */
+  volver(): void {
+    this.router.navigate(['/dashboard']);
+  }
+
   cambiarTab(index: number): void {
     this.tabActiva = index;
   }
 
   /* ===============================
-     FILTROS USUARIOS
+     USUARIOS
   ================================ */
   filtrarUsuarios(): void {
     const texto = this.busqueda.toLowerCase();
@@ -148,12 +152,8 @@ export class UsuariosComponent implements OnInit {
     return estado === 'Activo' ? 'activo' : 'inactivo';
   }
 
-  /* ===============================
-     MODAL USUARIO
-  ================================ */
-  abrirModalUsuario(modo: 'crear' | 'editar' | 'ver', u?: Usuario): void {
+  _toggleModalUsuario(modo: 'crear' | 'editar' | 'ver', u?: Usuario): void {
     this.modoModal = modo;
-
     this.usuarioActual = u
       ? { ...u }
       : {
@@ -166,8 +166,11 @@ export class UsuariosComponent implements OnInit {
         estado: 'Activo',
         fechaRegistro: new Date().toLocaleDateString()
       };
-
     this.mostrarModalUsuario = true;
+  }
+
+  abrirModalUsuario(modo: 'crear' | 'editar' | 'ver', u?: Usuario): void {
+    this._toggleModalUsuario(modo, u);
   }
 
   guardarUsuario(): void {
@@ -180,38 +183,29 @@ export class UsuariosComponent implements OnInit {
       this.usuarioActual.id = Date.now();
       this.usuarios.push(this.usuarioActual);
       this.registrarAuditoria('Crear usuario', 'Usuarios');
-    } else if (this.modoModal === 'editar') {
+    } else {
       const i = this.usuarios.findIndex(u => u.id === this.usuarioActual.id);
       if (i !== -1) this.usuarios[i] = this.usuarioActual;
       this.registrarAuditoria('Editar usuario', 'Usuarios');
     }
 
     this.filtrarUsuarios();
-    this.cerrarModalUsuario();
-  }
-
-  cerrarModalUsuario(): void {
     this.mostrarModalUsuario = false;
   }
 
   eliminarUsuario(u: Usuario): void {
     if (!confirm(`¿Eliminar al usuario ${u.nombres}?`)) return;
-
     this.usuarios = this.usuarios.filter(x => x.id !== u.id);
     this.filtrarUsuarios();
     this.registrarAuditoria('Eliminar usuario', 'Usuarios');
   }
 
   /* ===============================
-     MODAL ROL
+     ROLES
   ================================ */
   abrirModalRol(modo: 'crear' | 'editar', r?: Rol): void {
     this.modoModal = modo;
-
-    this.rolActual = r
-      ? { ...r }
-      : { id: 0, nombre: '', descripcion: '', estado: 'Activo' };
-
+    this.rolActual = r ? { ...r } : { id: 0, nombre: '', descripcion: '', estado: 'Activo' };
     this.mostrarModalRol = true;
   }
 
@@ -231,30 +225,21 @@ export class UsuariosComponent implements OnInit {
       this.registrarAuditoria('Editar rol', 'Roles');
     }
 
-    this.cerrarModalRol();
-  }
-
-  cerrarModalRol(): void {
     this.mostrarModalRol = false;
   }
 
   eliminarRol(r: Rol): void {
     if (!confirm(`¿Eliminar el rol ${r.nombre}?`)) return;
-
     this.roles = this.roles.filter(x => x.id !== r.id);
     this.registrarAuditoria('Eliminar rol', 'Roles');
   }
 
   /* ===============================
-     MODAL PERMISO
+     PERMISOS
   ================================ */
   abrirModalPermiso(modo: 'crear' | 'editar', p?: Permiso): void {
     this.modoModal = modo;
-
-    this.permisoActual = p
-      ? { ...p }
-      : { id: 0, nombre: '', modulo: '', estado: 'Activo' };
-
+    this.permisoActual = p ? { ...p } : { id: 0, nombre: '', modulo: '', estado: 'Activo' };
     this.mostrarModalPermiso = true;
   }
 
@@ -274,16 +259,11 @@ export class UsuariosComponent implements OnInit {
       this.registrarAuditoria('Editar permiso', 'Permisos');
     }
 
-    this.cerrarModalPermiso();
-  }
-
-  cerrarModalPermiso(): void {
     this.mostrarModalPermiso = false;
   }
 
   eliminarPermiso(p: Permiso): void {
     if (!confirm(`¿Eliminar permiso ${p.nombre}?`)) return;
-
     this.permisos = this.permisos.filter(x => x.id !== p.id);
     this.registrarAuditoria('Eliminar permiso', 'Permisos');
   }
@@ -299,4 +279,16 @@ export class UsuariosComponent implements OnInit {
       fecha: new Date().toLocaleString()
     });
   }
+  cerrarModalUsuario(): void {
+    this.mostrarModalUsuario = false;
+  }
+
+  cerrarModalRol(): void {
+    this.mostrarModalRol = false;
+  }
+
+  cerrarModalPermiso(): void {
+    this.mostrarModalPermiso = false;
+  }
+
 }
