@@ -1,13 +1,23 @@
 /* ===============================
-   NAVBAR
+   VARIABLES
+================================ */
+$verde-oscuro: #0d5a2e;
+$verde-medio: #1e8449;
+$verde-claro: #2ecc71;
+$gris-fondo: #f5f7fa;
+$gris-borde: #e0e0e0;
+$gris-texto: #555;
+
+/* ===============================
+   NAVBAR (NO SE TOCA FUNCIONAL)
 ================================ */
 .navbar {
-  background: linear-gradient(135deg, #0d5a2e, #1f7a44, #2e9d5b);
-  padding: 1rem 2rem;
-  border-radius: 0 0 18px 18px;
-  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
-  margin-bottom: 2rem;
+  background: linear-gradient(135deg, $verde-oscuro, #1f7a44);
+  padding: 16px 40px; // 🔽 antes estaba muy alto
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  margin-bottom: 0; // 🔴 importantísimo
 }
+
 
 .nav-container {
   display: flex;
@@ -18,7 +28,7 @@
 .logo {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: .5rem;
   font-size: 1.3rem;
   font-weight: 700;
   color: white;
@@ -27,7 +37,7 @@
 .user-info {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: .75rem;
   color: white;
 }
 
@@ -35,7 +45,7 @@
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: #2ecc71;
+  background: $verde-claro;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -46,94 +56,178 @@
   display: flex;
   flex-direction: column;
   line-height: 1.1;
-}
 
-.user-text small {
-  font-size: 0.75rem;
-  opacity: 0.85;
+  small {
+    font-size: .75rem;
+    opacity: .85;
+  }
 }
 
 .logout {
   margin-left: 1rem;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.3);
   color: white;
-  padding: 0.45rem 0.9rem;
+  padding: .45rem .9rem;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  transition: all 0.2s ease;
-}
+  transition: .2s;
 
-.logout:hover {
-  background: white;
-  color: #1f7a44;
-}
-
-/* ===============================
-   CONTENEDOR PRINCIPAL
-================================ */
-.usuarios-page {
-  padding: 2rem;
-}
-
-.usuarios-container {
-  margin: 0 auto;
-  max-width: 1400px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-  overflow: hidden;
+  &:hover {
+    background: white;
+    color: #1f7a44;
+  }
 }
 
 /* ===============================
-   HEADER
+   LAYOUT GENERAL
 ================================ */
 .usuarios-header {
-  padding: 2rem;
-  background: linear-gradient(135deg, #0d5a2e, #1f7a44, #2e9d5b);
+  background: #2f7d4f; /* MISMO verde de Inventario */
+  padding: 28px 40px;
   color: white;
+  box-shadow: inset 0 -1px rgba(255, 255, 255, 0.15);
+  margin: 0;
 
   h1 {
     margin: 0;
-    font-size: 2rem;
+    font-size: 28px;
+    font-weight: 700;
   }
 
   p {
-    margin-top: 0.5rem;
+    margin-top: 6px;
+    font-size: 14px;
     opacity: 0.9;
-    font-size: 0.95rem;
   }
 }
 
-/* ===============================
-   TABS
-================================ */
-.tabs-header {
+.usuarios-page {
+  background: $gris-fondo;
+  min-height: 100vh;
   display: flex;
-  border-bottom: 2px solid #e0e0e0;
+  flex-direction: column;
 }
 
-.tab-button {
-  flex: 1;
-  padding: 1.2rem;
+
+.usuarios-container {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.header {
+  display: none !important;
+}
+app-root {
+  display: block;
+}
+
+
+.page-title-section {
+  background: #2f7d4f;
+  padding: 28px 0;
+  color: white;
+  box-shadow: inset 0 -1px rgba(255, 255, 255, 0.15);
+  width: 100vw;
+  margin-right: calc(50% - 50vw);
+  margin-left: calc(49% - 50vw);
+
+
+  h1,
+  p {
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 40px;
+  }
+
+  h1 {
+    margin-top: 0;
+    margin-bottom: 4px;
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  p {
+    font-size: 14px;
+    opacity: 0.9;
+  }
+}
+
+
+/* ===============================
+   TABS (FULL WIDTH REAL)
+================================ */
+.tabs-header {
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.tabs-header .tab-button {
+  padding: 16px 28px;
   border: none;
-  background: none;
+  background: transparent;
   font-weight: 600;
-  cursor: pointer;
+  font-size: 14px;
   color: #666;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
   transition: all 0.25s ease;
 }
 
-.tab-button:hover {
-  background: rgba(30, 132, 73, 0.08);
-  color: #1e8449;
+.tabs-header .tab-button:hover {
+  color: $verde-medio;
 }
 
-.tab-button.active {
-  color: #1e8449;
-  border-bottom: 4px solid #1e8449;
-  background: rgba(30, 132, 73, 0.12);
+.tabs-header .tab-button.active {
+  color: $verde-medio;
+  border-bottom-color: $verde-medio;
+}
+
+.tabs-container {
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.tabs {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  padding: 0 40px;
+
+  .tab {
+    padding: 16px 28px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.25s ease;
+
+    &:hover {
+      color: $verde-medio;
+    }
+
+    &.active {
+      color: $verde-medio;
+      border-bottom-color: $verde-medio;
+    }
+  }
+}
+
+
+.content-wrapper {
+  max-width: 1400px;
+  margin: 24px auto 40px;
+  padding: 28px 40px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+
 }
 
 /* ===============================
@@ -143,25 +237,25 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1.5rem;
   flex-wrap: wrap;
-}
+  margin-bottom: 1.5rem;
 
-.filters input,
-.filters select {
-  height: 42px;
-  padding: 0 0.9rem;
-  border-radius: 8px;
-  border: 2px solid #e0e0e0;
-  font-size: 0.9rem;
-}
+  input,
+  select {
+    height: 42px;
+    padding: 0 0.9rem;
+    border-radius: 8px;
+    border: 2px solid $gris-borde;
+    font-size: 0.9rem;
+  }
 
-.filters input {
-  min-width: 260px;
+  input {
+    min-width: 260px;
+  }
 }
 
 .btn-add {
-  background: #1e8449;
+  background: $verde-medio;
   color: white;
   border: none;
   padding: 0.6rem 1.4rem;
@@ -169,10 +263,11 @@
   font-weight: 700;
   box-shadow: 0 6px 20px rgba(30, 132, 73, 0.4);
   transition: all 0.2s ease;
-}
+  cursor: pointer;
 
-.btn-add:hover {
-  transform: translateY(-2px);
+  &:hover {
+    transform: translateY(-2px);
+  }
 }
 
 .btn-export {
@@ -181,16 +276,17 @@
   padding: 0.6rem 1.1rem;
   border-radius: 8px;
   font-weight: 600;
+  cursor: pointer;
 }
 
 /* ===============================
    TABLA
 ================================ */
 .table-wrapper {
-  margin: 0 1.5rem 2rem;
   overflow-x: auto;
   border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid $gris-borde;
+  background: white;
 }
 
 table {
@@ -214,24 +310,24 @@ td {
   padding: 1rem;
   font-size: 0.9rem;
   vertical-align: middle;
+
+  strong {
+    display: block;
+  }
+
+  small {
+    display: block;
+    font-size: 0.75rem;
+    color: #777;
+  }
 }
 
 tbody tr {
   transition: all 0.2s ease;
-}
 
-tbody tr:hover {
-  background: rgba(30, 132, 73, 0.05);
-}
-
-td strong {
-  display: block;
-}
-
-td small {
-  display: block;
-  font-size: 0.75rem;
-  color: #777;
+  &:hover {
+    background: rgba(30, 132, 73, 0.05);
+  }
 }
 
 th:last-child,
@@ -247,16 +343,16 @@ td:last-child {
   border-radius: 20px;
   font-weight: 600;
   font-size: 0.75rem;
-}
 
-.estado-badge.activo {
-  background: #d4edda;
-  color: #155724;
-}
+  &.activo {
+    background: #d4edda;
+    color: #155724;
+  }
 
-.estado-badge.inactivo {
-  background: #f8d7da;
-  color: #721c24;
+  &.inactivo {
+    background: #f8d7da;
+    color: #721c24;
+  }
 }
 
 .rol-badge {
@@ -269,7 +365,7 @@ td:last-child {
 }
 
 /* ===============================
-   ACCIONES (ESTILO LABORATORIOS)
+   ACCIONES (VER / EDITAR / ELIMINAR)
 ================================ */
 .actions {
   display: flex;
@@ -316,7 +412,7 @@ td:last-child {
 }
 
 /* ===============================
-   MODAL (USUARIOS / ROLES / PERMISOS)
+   MODAL
 ================================ */
 .modal-overlay {
   position: fixed;
@@ -326,6 +422,7 @@ td:last-child {
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 20px;
 }
 
 .modal-container {
@@ -350,7 +447,7 @@ td:last-child {
 }
 
 .modal-header {
-  background: linear-gradient(135deg, #1e8449, #0d5a2e);
+  background: linear-gradient(135deg, $verde-medio, $verde-oscuro);
   color: white;
   padding: 1.5rem 2rem;
   display: flex;
@@ -379,22 +476,22 @@ td:last-child {
 .form-group {
   display: flex;
   flex-direction: column;
-}
 
-.form-group label {
-  font-weight: 600;
-  margin-bottom: 0.4rem;
-}
+  label {
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+  }
 
-.form-group input,
-.form-group select {
-  padding: 0.75rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-}
+  input,
+  select {
+    padding: 0.75rem;
+    border: 2px solid $gris-borde;
+    border-radius: 8px;
+  }
 
-.form-group input:disabled {
-  background: #f5f5f5;
+  input:disabled {
+    background: #f5f5f5;
+  }
 }
 
 /* ===============================
@@ -413,21 +510,49 @@ td:last-child {
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   font-weight: 700;
+  cursor: pointer;
 }
 
 .btn-save {
-  background: linear-gradient(135deg, #1e8449, #0d5a2e);
+  background: linear-gradient(135deg, $verde-medio, $verde-oscuro);
   color: white;
   border: none;
   padding: 0.75rem 2rem;
   border-radius: 8px;
   font-weight: 700;
+  cursor: pointer;
 }
 
 /* ===============================
    RESPONSIVE
 ================================ */
 @media (max-width: 768px) {
+  .navbar {
+    padding: 16px 20px;
+  }
+
+  .page-title-section {
+    padding: 24px 20px;
+
+    h1 {
+      font-size: 24px;
+    }
+  }
+
+  .tabs {
+    padding: 0 20px;
+    overflow-x: auto;
+
+    .tab {
+      padding: 14px 20px;
+      white-space: nowrap;
+    }
+  }
+
+  .content-wrapper {
+    padding: 20px;
+  }
+
   .filters {
     flex-direction: column;
     align-items: stretch;
@@ -435,9 +560,5 @@ td:last-child {
 
   .actions {
     flex-direction: column;
-  }
-
-  .table-wrapper {
-    margin: 0 1rem 1.5rem;
   }
 }
