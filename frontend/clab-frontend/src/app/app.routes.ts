@@ -11,6 +11,8 @@ import { BloqueosComponent } from './bloqueos/bloqueos';
 import { InformesComponent } from './informes/informes';
 import { LaboratoriosComponent } from './laboratorio/laboratorio';
 import { AcademicoComponent } from './academico/academico';
+import { EstudiantesComponent} from './estudiantes/estudiantes';
+
 import { authGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
@@ -34,6 +36,11 @@ export const routes: Routes = [
   {
     path: 'horarios',
     component: HorariosComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'estudiantes',
+    component: EstudiantesComponent,
     canActivate: [authGuard]
   },
 
