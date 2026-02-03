@@ -6,4 +6,4 @@ export interface Sedes {
   email: string;
   estado: string;
 }
-//XD
+
