@@ -1,6 +1,3 @@
-/* ===============================
-   VARIABLES
-================================ */
 $verde-oscuro: #0d5a2e;
 $verde-medio: #1e8449;
 $verde-claro: #2ecc71;
@@ -8,14 +5,36 @@ $gris-fondo: #f5f7fa;
 $gris-borde: #e0e0e0;
 $gris-texto: #555;
 
-/* ===============================
-   NAVBAR (NO SE TOCA FUNCIONAL)
-================================ */
+
 .navbar {
   background: linear-gradient(135deg, $verde-oscuro, #1f7a44);
-  padding: 16px 40px; // 🔽 antes estaba muy alto
+  padding: 16px 40px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  margin-bottom: 0; // 🔴 importantísimo
+  margin-bottom: 0;
+
+}
+.btn-volver {
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+  color: #ffffff;
+  border: none;
+  padding: 0.55rem 1.4rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(39, 174, 96, 0.35);
+  transition: all 0.25s ease;
+
+  &:hover {
+    background: linear-gradient(135deg, #27ae60, #1e8449);
+    box-shadow: 0 8px 20px rgba(39, 174, 96, 0.45);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
+  }
 }
 
 
@@ -80,11 +99,8 @@ $gris-texto: #555;
   }
 }
 
-/* ===============================
-   LAYOUT GENERAL
-================================ */
 .usuarios-header {
-  background: #2f7d4f; /* MISMO verde de Inventario */
+  background: #2f7d4f;
   padding: 28px 40px;
   color: white;
   box-shadow: inset 0 -1px rgba(255, 255, 255, 0.15);
@@ -126,14 +142,12 @@ app-root {
 
 
 .page-title-section {
-  background: #2f7d4f;
-  padding: 28px 0;
-  color: white;
-  box-shadow: inset 0 -1px rgba(255, 255, 255, 0.15);
-  width: 100vw;
-  margin-right: calc(50% - 50vw);
-  margin-left: calc(49% - 50vw);
-
+  background: #2d7d51;
+  padding: 1.5rem 2rem;
+  margin: 0;
+  border-radius: 0;
+  box-shadow: 0 10px 25px rgb(255, 255, 255);
+  color: #ffffff;
 
   h1,
   p {
@@ -156,10 +170,6 @@ app-root {
   }
 }
 
-
-/* ===============================
-   TABS (FULL WIDTH REAL)
-================================ */
 .tabs-header {
   background: white;
   border-bottom: 1px solid #e0e0e0;
@@ -230,9 +240,6 @@ app-root {
 
 }
 
-/* ===============================
-   FILTROS
-================================ */
 .filters {
   display: flex;
   align-items: center;
@@ -279,9 +286,6 @@ app-root {
   cursor: pointer;
 }
 
-/* ===============================
-   TABLA
-================================ */
 .table-wrapper {
   overflow-x: auto;
   border-radius: 8px;
@@ -335,9 +339,6 @@ td:last-child {
   text-align: center;
 }
 
-/* ===============================
-   BADGES
-================================ */
 .estado-badge {
   padding: 0.35rem 0.85rem;
   border-radius: 20px;
@@ -364,9 +365,6 @@ td:last-child {
   font-size: 0.75rem;
 }
 
-/* ===============================
-   ACCIONES (VER / EDITAR / ELIMINAR)
-================================ */
 .actions {
   display: flex;
   gap: 0.5rem;
@@ -402,18 +400,12 @@ td:last-child {
   transform: translateY(-2px);
 }
 
-/* ===============================
-   EMPTY
-================================ */
 .empty {
   text-align: center;
   padding: 2.5rem;
   color: #999;
 }
 
-/* ===============================
-   MODAL
-================================ */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -494,9 +486,6 @@ td:last-child {
   }
 }
 
-/* ===============================
-   MODAL FOOTER
-================================ */
 .modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -523,9 +512,6 @@ td:last-child {
   cursor: pointer;
 }
 
-/* ===============================
-   RESPONSIVE
-================================ */
 @media (max-width: 768px) {
   .navbar {
     padding: 16px 20px;
