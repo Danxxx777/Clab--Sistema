@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import {SedeService} from '../services/sede.service';
 
 
 
@@ -20,12 +21,12 @@ interface Laboratorio {
 }
 
 interface Sede {
-  id_sede: number;
+  idSede: number;
   nombre: string;
   direccion: string;
   telefono: string;
   email: string;
-  estado: 'Activa' | 'Inactiva';
+  estado: string;
 }
 
 interface EncargadoLaboratorio {
@@ -121,32 +122,7 @@ export class LaboratoriosComponent implements OnInit {
     }
   ];
 
-  sedes: Sede[] = [
-    {
-      id_sede: 1,
-      nombre: 'Sede Central',
-      direccion: 'Av. Principal 123',
-      telefono: '(04) 234-5678',
-      email: 'central@universidad.edu.ec',
-      estado: 'Activa'
-    },
-    {
-      id_sede: 2,
-      nombre: 'Sede Norte',
-      direccion: 'Calle Norte 456',
-      telefono: '(04) 345-6789',
-      email: 'norte@universidad.edu.ec',
-      estado: 'Activa'
-    },
-    {
-      id_sede: 3,
-      nombre: 'Sede Sur',
-      direccion: 'Av. Sur 789',
-      telefono: '(04) 456-7890',
-      email: 'sur@universidad.edu.ec',
-      estado: 'Activa'
-    }
-  ];
+  sedes: Sede[] = [];
 
   encargados: EncargadoLaboratorio[] = [
     {
@@ -226,12 +202,35 @@ export class LaboratoriosComponent implements OnInit {
 
   paginaActual: number = 1;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private sedeService: SedeService){
+  }
+
+  cargarSedes(): void {
+    this.sedeService.listar().subscribe({
+      next: (data) => {
+        this.sedes = data;
+        this.sedesFiltradas = [...data];
+      },
+      error: (err) => {
+        console.error('Error cargando sedes', err);
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.laboratoriosFiltrados = [...this.laboratorios];
     this.sedesFiltradas = [...this.sedes];
     this.encargadosFiltrados = [...this.encargados];
+    this.cargarSedes();
+  }
+
+  cambiarTab(index: number): void {
+    this.tabActiva = index;
+    this.paginaActual = 1;
+
+    if (index === 1 && this.sedes.length === 0) {
+      this.cargarSedes();
+    }
   }
 
   getFormularioLabVacio(): Laboratorio {
@@ -250,12 +249,12 @@ export class LaboratoriosComponent implements OnInit {
 
   getFormularioSedeVacio(): Sede {
     return {
-      id_sede: 0,
+      idSede: 0,
       nombre: '',
       direccion: '',
       telefono: '',
       email: '',
-      estado: 'Activa'
+      estado: ''
     };
   }
 
@@ -313,11 +312,6 @@ export class LaboratoriosComponent implements OnInit {
     this.router.navigate(['/dashboard']);
   }
 
-  cambiarTab(index: number): void {
-    this.tabActiva = index;
-    this.paginaActual = 1;
-  }
-
   filtrarLaboratorios(): void {
     const busqueda = this.busquedaLaboratorios.toLowerCase();
     this.laboratoriosFiltrados = this.laboratorios.filter(lab =>
@@ -332,7 +326,7 @@ export class LaboratoriosComponent implements OnInit {
   filtrarSedes(): void {
     const busqueda = this.busquedaSedes.toLowerCase();
     this.sedesFiltradas = this.sedes.filter(sede =>
-      sede.id_sede.toString().includes(busqueda) ||
+      sede.idSede.toString().includes(busqueda) ||
       sede.nombre.toLowerCase().includes(busqueda) ||
       sede.direccion.toLowerCase().includes(busqueda) ||
       sede.email.toLowerCase().includes(busqueda)
@@ -430,16 +424,38 @@ export class LaboratoriosComponent implements OnInit {
       return;
     }
 
-    if (this.modoEdicion) {
-      this.sedes[this.indiceEdicion] = { ...this.formularioSede };
-    } else {
-      this.formularioSede.id_sede = this.sedes.length + 1;
-      this.sedes.push({ ...this.formularioSede });
-    }
+    if(this.modoEdicion && this.formularioSede.idSede)
+    {
+      this.sedeService.editar(this.formularioSede.idSede, this.formularioSede)
+        .subscribe({next: (sedeActualizada) => {
+            this.sedes[this.indiceEdicion] = <Sede>sedeActualizada;
+            this.sedesFiltradas = [...this.sedes];
 
-    this.filtrarSedes();
-    this.cerrarModal();
-    alert(this.modoEdicion ? 'Sede actualizada exitosamente' : 'Sede agregada exitosamente');
+            this.cerrarModal();
+            alert('Sede actualizada correctamente');
+          },
+          error: (err) => {
+            console.error('Error al editar sede', err);
+            alert('Error al editar la sede');
+          }
+        });
+    }
+    else
+    {
+      this.sedeService.crear(this.formularioSede).subscribe({next:
+          (sedeCreada) => {
+          this.sedes.push(<Sede>sedeCreada);
+          this.sedesFiltradas = [...this.sedes];
+
+          this.cerrarModal();
+          alert('Sede creada exitosamente');
+        },
+        error: (err) => {
+          console.error('Error al crear sede', err);
+          alert('Error al crear la sede');
+        }
+      });
+    }
   }
 
   eliminarSede(sede: Sede, index: number): void {
