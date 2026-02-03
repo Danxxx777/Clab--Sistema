@@ -54,6 +54,7 @@
             <table class="data-table">
               <thead>
               <tr>
+                <th>FOTO</th>
                 <th>CÓDIGO</th>
                 <th>NOMBRE</th>
                 <th>UBICACIÓN</th>
@@ -67,6 +68,12 @@
               </thead>
               <tbody>
               <tr *ngFor="let lab of laboratoriosFiltrados; let i = index">
+                <td>
+                  <div class="table-image-container">
+                    <img *ngIf="lab.foto" [src]="lab.foto" alt="Laboratorio" class="table-image">
+                    <span *ngIf="!lab.foto" class="no-image">📷</span>
+                  </div>
+                </td>
                 <td>{{lab.cod_laboratorio}}</td>
                 <td>{{lab.nombre}}</td>
                 <td>{{lab.ubicacion}}</td>
@@ -88,7 +95,7 @@
                 </td>
               </tr>
               <tr *ngIf="laboratoriosFiltrados.length === 0">
-                <td colspan="9" class="empty-state">
+                <td colspan="10" class="empty-state">
                   <div class="empty-icon">🔬</div>
                   <p>No hay laboratorios registrados</p>
                 </td>
@@ -309,6 +316,37 @@
             [(ngModel)]="formularioLab.descripcion"
             placeholder="Descripción del laboratorio"
             rows="3"></textarea>
+        </div>
+
+        <!-- NUEVO: Campo de Foto -->
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label>Foto del Laboratorio</label>
+
+          <!-- Vista previa de la imagen -->
+          <div class="image-preview-container" *ngIf="formularioLab.foto">
+            <img [src]="formularioLab.foto" alt="Vista previa" class="image-preview">
+            <button type="button" class="btn-remove-image" (click)="eliminarFoto()">
+              ✕ Eliminar foto
+            </button>
+          </div>
+
+          <!-- Input para subir imagen -->
+          <div class="upload-container">
+            <input
+              type="file"
+              #fileInput
+              id="fileInput"
+              accept="image/*"
+              (change)="onFileSelected($event)"
+              style="display: none;">
+            <button
+              type="button"
+              class="btn-upload"
+              (click)="fileInput.click()">
+              📷 {{ formularioLab.foto ? 'Cambiar foto' : 'Subir foto' }}
+            </button>
+            <span class="upload-hint">Formatos: JPG, PNG, GIF (máx. 5MB)</span>
+          </div>
         </div>
       </div>
 

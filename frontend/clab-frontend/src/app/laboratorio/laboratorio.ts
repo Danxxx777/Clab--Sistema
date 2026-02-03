@@ -16,6 +16,7 @@ interface Laboratorio {
   id_sede: number;
   nombre_sede?: string;
   encargado_nombre?: string;
+  foto?: string; // Nueva propiedad para la URL o base64 de la imagen
 }
 
 interface Sede {
@@ -63,7 +64,8 @@ export class LaboratoriosComponent implements OnInit {
       estado_lab: 'Disponible',
       id_sede: 1,
       nombre_sede: 'Sede Central',
-      encargado_nombre: 'Dr. Juan Pérez'
+      encargado_nombre: 'Dr. Juan Pérez',
+      foto: ''
     },
     {
       cod_laboratorio: 2,
@@ -75,7 +77,8 @@ export class LaboratoriosComponent implements OnInit {
       estado_lab: 'Disponible',
       id_sede: 2,
       nombre_sede: 'Sede Norte',
-      encargado_nombre: 'Dra. María García'
+      encargado_nombre: 'Dra. María García',
+      foto: ''
     },
     {
       cod_laboratorio: 3,
@@ -87,7 +90,8 @@ export class LaboratoriosComponent implements OnInit {
       estado_lab: 'Mantenimiento',
       id_sede: 3,
       nombre_sede: 'Sede Sur',
-      encargado_nombre: 'Dr. Carlos Ruiz'
+      encargado_nombre: 'Dr. Carlos Ruiz',
+      foto: ''
     },
     {
       cod_laboratorio: 4,
@@ -99,7 +103,8 @@ export class LaboratoriosComponent implements OnInit {
       estado_lab: 'Disponible',
       id_sede: 1,
       nombre_sede: 'Sede Central',
-      encargado_nombre: 'Ing. Ana Martínez'
+      encargado_nombre: 'Ing. Ana Martínez',
+      foto: ''
     },
     {
       cod_laboratorio: 5,
@@ -111,7 +116,8 @@ export class LaboratoriosComponent implements OnInit {
       estado_lab: 'Disponible',
       id_sede: 2,
       nombre_sede: 'Sede Norte',
-      encargado_nombre: 'Ing. Roberto Silva'
+      encargado_nombre: 'Ing. Roberto Silva',
+      foto: ''
     }
   ];
 
@@ -237,7 +243,8 @@ export class LaboratoriosComponent implements OnInit {
       numero_equipos: 0,
       descripcion: '',
       estado_lab: 'Disponible',
-      id_sede: 0
+      id_sede: 0,
+      foto: '' // Agregar foto vacía
     };
   }
 
@@ -265,6 +272,41 @@ export class LaboratoriosComponent implements OnInit {
       email: '',
       telefono: ''
     };
+  }
+
+  // NUEVO: Método para manejar la carga de imagen
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      // Validar tipo de archivo
+      if (!file.type.startsWith('image/')) {
+        alert('Por favor seleccione un archivo de imagen válido (JPG, PNG, GIF)');
+        return;
+      }
+
+      // Validar tamaño (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('La imagen no debe superar los 5MB');
+        return;
+      }
+
+      // Convertir a base64
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.formularioLab.foto = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  // NUEVO: Método para eliminar la foto
+  eliminarFoto(): void {
+    this.formularioLab.foto = '';
+    // Resetear el input file
+    const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
   }
 
   volver(): void {
