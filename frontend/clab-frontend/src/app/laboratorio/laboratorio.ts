@@ -1,34 +1,44 @@
-import {Component, OnInit} from '@angular/core';
-import {Router} from '@angular/router';
-import {CommonModule} from '@angular/common';
-import {FormsModule} from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+
 
 
 interface Laboratorio {
-  codigo: string;
+  cod_laboratorio: number;
   nombre: string;
-  sede: string;
-  capacidad: number;
-  encargado: string;
-  estado: string;
+  ubicacion: string;
+  capacidad_estudiantes: number;
+  numero_equipos: number;
+  descripcion: string;
+  estado_lab: 'Disponible' | 'Mantenimiento' | 'Bloqueado';
+  id_sede: number;
+  nombre_sede?: string;
+  encargado_nombre?: string;
 }
 
 interface Sede {
-  codigo: string;
+  id_sede: number;
   nombre: string;
   direccion: string;
-  ciudad: string;
   telefono: string;
-  estado: string;
+  email: string;
+  estado: 'Activa' | 'Inactiva';
 }
 
-interface Encargado {
-  id: string;
-  nombre: string;
-  email: string;
-  telefono: string;
-  laboratorioAsignado: string;
-  estado: string;
+interface EncargadoLaboratorio {
+  id_encargado_laboratorio: number;
+  cod_laboratorio: number;
+  id_usuario: number;
+  fecha_asignacion: Date | string;
+  vigente: boolean;
+  identidad?: string;
+  nombres?: string;
+  apellidos?: string;
+  email?: string;
+  telefono?: string;
+  nombre_laboratorio?: string;
 }
 
 @Component({
@@ -39,146 +49,178 @@ interface Encargado {
   styleUrls: ['./laboratorio.scss']
 })
 export class LaboratoriosComponent implements OnInit {
-  // Control de tabs
+
   tabActiva: number = 0;
 
-  // Arrays de datos
   laboratorios: Laboratorio[] = [
     {
-      codigo: 'LAB-001',
+      cod_laboratorio: 1,
       nombre: 'Laboratorio de Química',
-      sede: 'Sede Central',
-      capacidad: 30,
-      encargado: 'Dr. Juan Pérez',
-      estado: 'Activo'
+      ubicacion: 'Edificio A, Piso 2',
+      capacidad_estudiantes: 30,
+      numero_equipos: 15,
+      descripcion: 'Laboratorio equipado con material de química básica',
+      estado_lab: 'Disponible',
+      id_sede: 1,
+      nombre_sede: 'Sede Central',
+      encargado_nombre: 'Dr. Juan Pérez'
     },
     {
-      codigo: 'LAB-002',
+      cod_laboratorio: 2,
       nombre: 'Laboratorio de Física',
-      sede: 'Sede Norte',
-      capacidad: 25,
-      encargado: 'Dra. María García',
-      estado: 'Activo'
+      ubicacion: 'Edificio B, Piso 1',
+      capacidad_estudiantes: 25,
+      numero_equipos: 12,
+      descripcion: 'Laboratorio de física experimental',
+      estado_lab: 'Disponible',
+      id_sede: 2,
+      nombre_sede: 'Sede Norte',
+      encargado_nombre: 'Dra. María García'
     },
     {
-      codigo: 'LAB-003',
+      cod_laboratorio: 3,
       nombre: 'Laboratorio de Biología',
-      sede: 'Sede Sur',
-      capacidad: 20,
-      encargado: 'Dr. Carlos Ruiz',
-      estado: 'Inactivo'
+      ubicacion: 'Edificio C, Piso 3',
+      capacidad_estudiantes: 20,
+      numero_equipos: 10,
+      descripcion: 'Laboratorio de biología y microbiología',
+      estado_lab: 'Mantenimiento',
+      id_sede: 3,
+      nombre_sede: 'Sede Sur',
+      encargado_nombre: 'Dr. Carlos Ruiz'
     },
     {
-      codigo: 'LAB-004',
+      cod_laboratorio: 4,
       nombre: 'Laboratorio de Informática',
-      sede: 'Sede Central',
-      capacidad: 40,
-      encargado: 'Ing. Ana Martínez',
-      estado: 'Activo'
+      ubicacion: 'Edificio D, Piso 1',
+      capacidad_estudiantes: 40,
+      numero_equipos: 30,
+      descripcion: 'Laboratorio con computadoras de última generación',
+      estado_lab: 'Disponible',
+      id_sede: 1,
+      nombre_sede: 'Sede Central',
+      encargado_nombre: 'Ing. Ana Martínez'
     },
     {
-      codigo: 'LAB-005',
+      cod_laboratorio: 5,
       nombre: 'Laboratorio de Electrónica',
-      sede: 'Sede Norte',
-      capacidad: 18,
-      encargado: 'Ing. Roberto Silva',
-      estado: 'Activo'
+      ubicacion: 'Edificio E, Piso 2',
+      capacidad_estudiantes: 18,
+      numero_equipos: 20,
+      descripcion: 'Laboratorio de electrónica y circuitos',
+      estado_lab: 'Disponible',
+      id_sede: 2,
+      nombre_sede: 'Sede Norte',
+      encargado_nombre: 'Ing. Roberto Silva'
     }
   ];
 
   sedes: Sede[] = [
     {
-      codigo: 'SED-001',
+      id_sede: 1,
       nombre: 'Sede Central',
       direccion: 'Av. Principal 123',
-      ciudad: 'Guayaquil',
       telefono: '(04) 234-5678',
+      email: 'central@universidad.edu.ec',
       estado: 'Activa'
     },
     {
-      codigo: 'SED-002',
+      id_sede: 2,
       nombre: 'Sede Norte',
       direccion: 'Calle Norte 456',
-      ciudad: 'Guayaquil',
       telefono: '(04) 345-6789',
+      email: 'norte@universidad.edu.ec',
       estado: 'Activa'
     },
     {
-      codigo: 'SED-003',
+      id_sede: 3,
       nombre: 'Sede Sur',
       direccion: 'Av. Sur 789',
-      ciudad: 'Guayaquil',
       telefono: '(04) 456-7890',
+      email: 'sur@universidad.edu.ec',
       estado: 'Activa'
     }
   ];
 
-  encargados: Encargado[] = [
+  encargados: EncargadoLaboratorio[] = [
     {
-      id: 'ENC-001',
-      nombre: 'Dr. Juan Pérez',
-      email: 'juan.perez@email.com',
+      id_encargado_laboratorio: 1,
+      cod_laboratorio: 1,
+      id_usuario: 5,
+      fecha_asignacion: '2024-01-15',
+      vigente: true,
+      identidad: '0912345678',
+      nombres: 'Juan',
+      apellidos: 'Pérez',
+      email: 'juan.perez@universidad.edu.ec',
       telefono: '(04) 987-6543',
-      laboratorioAsignado: 'Lab. Química',
-      estado: 'Activo'
+      nombre_laboratorio: 'Laboratorio de Química'
     },
     {
-      id: 'ENC-002',
-      nombre: 'Dra. María García',
-      email: 'maria.garcia@email.com',
+      id_encargado_laboratorio: 2,
+      cod_laboratorio: 2,
+      id_usuario: 6,
+      fecha_asignacion: '2024-02-10',
+      vigente: true,
+      identidad: '0923456789',
+      nombres: 'María',
+      apellidos: 'García',
+      email: 'maria.garcia@universidad.edu.ec',
       telefono: '(04) 876-5432',
-      laboratorioAsignado: 'Lab. Física',
-      estado: 'Activo'
+      nombre_laboratorio: 'Laboratorio de Física'
     },
     {
-      id: 'ENC-003',
-      nombre: 'Dr. Carlos Ruiz',
-      email: 'carlos.ruiz@email.com',
+      id_encargado_laboratorio: 3,
+      cod_laboratorio: 3,
+      id_usuario: 7,
+      fecha_asignacion: '2023-11-05',
+      vigente: false,
+      identidad: '0934567890',
+      nombres: 'Carlos',
+      apellidos: 'Ruiz',
+      email: 'carlos.ruiz@universidad.edu.ec',
       telefono: '(04) 765-4321',
-      laboratorioAsignado: 'Lab. Biología',
-      estado: 'Inactivo'
+      nombre_laboratorio: 'Laboratorio de Biología'
     },
     {
-      id: 'ENC-004',
-      nombre: 'Ing. Ana Martínez',
-      email: 'ana.martinez@email.com',
+      id_encargado_laboratorio: 4,
+      cod_laboratorio: 4,
+      id_usuario: 8,
+      fecha_asignacion: '2024-03-01',
+      vigente: true,
+      identidad: '0945678901',
+      nombres: 'Ana',
+      apellidos: 'Martínez',
+      email: 'ana.martinez@universidad.edu.ec',
       telefono: '(04) 654-3210',
-      laboratorioAsignado: 'Lab. Informática',
-      estado: 'Activo'
+      nombre_laboratorio: 'Laboratorio de Informática'
     }
   ];
 
-  // Arrays filtrados
   laboratoriosFiltrados: Laboratorio[] = [];
   sedesFiltradas: Sede[] = [];
-  encargadosFiltrados: Encargado[] = [];
+  encargadosFiltrados: EncargadoLaboratorio[] = [];
 
-  // Búsquedas
   busquedaLaboratorios: string = '';
   busquedaSedes: string = '';
   busquedaEncargados: string = '';
 
-  // Modales
   mostrarModal: boolean = false;
   tipoModal: 'laboratorio' | 'sede' | 'encargado' | null = null;
   modoEdicion: boolean = false;
   indiceEdicion: number = -1;
 
-  // Formularios
   formularioLab: Laboratorio = this.getFormularioLabVacio();
   formularioSede: Sede = this.getFormularioSedeVacio();
-  formularioEnc: Encargado = this.getFormularioEncVacio();
+  formularioEnc: EncargadoLaboratorio = this.getFormularioEncVacio();
 
-  // Modal de confirmación
   mostrarConfirmarEliminar: boolean = false;
   itemParaEliminar: any = null;
   indiceParaEliminar: number = -1;
 
-  // Paginación
   paginaActual: number = 1;
 
-  constructor(private router: Router) {
-  }
+  constructor(private router: Router) {}
 
   ngOnInit(): void {
     this.laboratoriosFiltrados = [...this.laboratorios];
@@ -186,42 +228,46 @@ export class LaboratoriosComponent implements OnInit {
     this.encargadosFiltrados = [...this.encargados];
   }
 
-  // Métodos auxiliares para formularios vacíos
   getFormularioLabVacio(): Laboratorio {
     return {
-      codigo: '',
+      cod_laboratorio: 0,
       nombre: '',
-      sede: '',
-      capacidad: 0,
-      encargado: '',
-      estado: ''
+      ubicacion: '',
+      capacidad_estudiantes: 0,
+      numero_equipos: 0,
+      descripcion: '',
+      estado_lab: 'Disponible',
+      id_sede: 0
     };
   }
 
   getFormularioSedeVacio(): Sede {
     return {
-      codigo: '',
+      id_sede: 0,
       nombre: '',
       direccion: '',
-      ciudad: '',
       telefono: '',
-      estado: ''
-    };
-  }
-
-  getFormularioEncVacio(): Encargado {
-    return {
-      id: '',
-      nombre: '',
       email: '',
-      telefono: '',
-      laboratorioAsignado: '',
-      estado: ''
+      estado: 'Activa'
     };
   }
 
-  // Navegación
-  volver() {
+  getFormularioEncVacio(): EncargadoLaboratorio {
+    return {
+      id_encargado_laboratorio: 0,
+      cod_laboratorio: 0,
+      id_usuario: 0,
+      fecha_asignacion: new Date().toISOString().split('T')[0],
+      vigente: true,
+      identidad: '',
+      nombres: '',
+      apellidos: '',
+      email: '',
+      telefono: ''
+    };
+  }
+
+  volver(): void {
     this.router.navigate(['/dashboard']);
   }
 
@@ -230,38 +276,38 @@ export class LaboratoriosComponent implements OnInit {
     this.paginaActual = 1;
   }
 
-  // Filtros
   filtrarLaboratorios(): void {
     const busqueda = this.busquedaLaboratorios.toLowerCase();
     this.laboratoriosFiltrados = this.laboratorios.filter(lab =>
-      lab.codigo.toLowerCase().includes(busqueda) ||
+      lab.cod_laboratorio.toString().includes(busqueda) ||
       lab.nombre.toLowerCase().includes(busqueda) ||
-      lab.sede.toLowerCase().includes(busqueda) ||
-      lab.encargado.toLowerCase().includes(busqueda)
+      lab.ubicacion.toLowerCase().includes(busqueda) ||
+      (lab.nombre_sede && lab.nombre_sede.toLowerCase().includes(busqueda)) ||
+      (lab.encargado_nombre && lab.encargado_nombre.toLowerCase().includes(busqueda))
     );
   }
 
   filtrarSedes(): void {
     const busqueda = this.busquedaSedes.toLowerCase();
     this.sedesFiltradas = this.sedes.filter(sede =>
-      sede.codigo.toLowerCase().includes(busqueda) ||
+      sede.id_sede.toString().includes(busqueda) ||
       sede.nombre.toLowerCase().includes(busqueda) ||
       sede.direccion.toLowerCase().includes(busqueda) ||
-      sede.ciudad.toLowerCase().includes(busqueda)
+      sede.email.toLowerCase().includes(busqueda)
     );
   }
 
   filtrarEncargados(): void {
     const busqueda = this.busquedaEncargados.toLowerCase();
     this.encargadosFiltrados = this.encargados.filter(enc =>
-      enc.id.toLowerCase().includes(busqueda) ||
-      enc.nombre.toLowerCase().includes(busqueda) ||
-      enc.email.toLowerCase().includes(busqueda) ||
-      enc.laboratorioAsignado.toLowerCase().includes(busqueda)
+      (enc.identidad && enc.identidad.includes(busqueda)) ||
+      (enc.nombres && enc.nombres.toLowerCase().includes(busqueda)) ||
+      (enc.apellidos && enc.apellidos.toLowerCase().includes(busqueda)) ||
+      (enc.email && enc.email.toLowerCase().includes(busqueda)) ||
+      (enc.nombre_laboratorio && enc.nombre_laboratorio.toLowerCase().includes(busqueda))
     );
   }
 
-  // Modales
   abrirModal(tipo: 'laboratorio' | 'sede' | 'encargado'): void {
     this.tipoModal = tipo;
     this.mostrarModal = true;
@@ -283,9 +329,8 @@ export class LaboratoriosComponent implements OnInit {
     this.formularioEnc = this.getFormularioEncVacio();
   }
 
-  // CRUD Laboratorios
   editarLaboratorio(lab: Laboratorio, index: number): void {
-    this.formularioLab = {...lab};
+    this.formularioLab = { ...lab };
     this.modoEdicion = true;
     this.indiceEdicion = index;
     this.tipoModal = 'laboratorio';
@@ -299,9 +344,9 @@ export class LaboratoriosComponent implements OnInit {
     }
 
     if (this.modoEdicion) {
-      this.laboratorios[this.indiceEdicion] = {...this.formularioLab};
+      this.laboratorios[this.indiceEdicion] = { ...this.formularioLab };
     } else {
-      this.laboratorios.push({...this.formularioLab});
+      this.laboratorios.push({ ...this.formularioLab });
     }
 
     this.filtrarLaboratorios();
@@ -318,18 +363,19 @@ export class LaboratoriosComponent implements OnInit {
 
   validarFormularioLab(): boolean {
     return !!(
-      this.formularioLab.codigo &&
+      this.formularioLab.cod_laboratorio > 0 &&
       this.formularioLab.nombre &&
-      this.formularioLab.sede &&
-      this.formularioLab.capacidad > 0 &&
-      this.formularioLab.encargado &&
-      this.formularioLab.estado
+      this.formularioLab.ubicacion &&
+      this.formularioLab.capacidad_estudiantes > 0 &&
+      this.formularioLab.numero_equipos >= 0 &&
+      this.formularioLab.descripcion &&
+      this.formularioLab.estado_lab &&
+      this.formularioLab.id_sede > 0
     );
   }
 
-  // CRUD Sedes
   editarSede(sede: Sede, index: number): void {
-    this.formularioSede = {...sede};
+    this.formularioSede = { ...sede };
     this.modoEdicion = true;
     this.indiceEdicion = index;
     this.tipoModal = 'sede';
@@ -343,9 +389,10 @@ export class LaboratoriosComponent implements OnInit {
     }
 
     if (this.modoEdicion) {
-      this.sedes[this.indiceEdicion] = {...this.formularioSede};
+      this.sedes[this.indiceEdicion] = { ...this.formularioSede };
     } else {
-      this.sedes.push({...this.formularioSede});
+      this.formularioSede.id_sede = this.sedes.length + 1;
+      this.sedes.push({ ...this.formularioSede });
     }
 
     this.filtrarSedes();
@@ -362,18 +409,16 @@ export class LaboratoriosComponent implements OnInit {
 
   validarFormularioSede(): boolean {
     return !!(
-      this.formularioSede.codigo &&
       this.formularioSede.nombre &&
       this.formularioSede.direccion &&
-      this.formularioSede.ciudad &&
       this.formularioSede.telefono &&
+      this.formularioSede.email &&
       this.formularioSede.estado
     );
   }
 
-  // CRUD Encargados
-  editarEncargado(enc: Encargado, index: number): void {
-    this.formularioEnc = {...enc};
+  editarEncargado(enc: EncargadoLaboratorio, index: number): void {
+    this.formularioEnc = { ...enc };
     this.modoEdicion = true;
     this.indiceEdicion = index;
     this.tipoModal = 'encargado';
@@ -387,9 +432,10 @@ export class LaboratoriosComponent implements OnInit {
     }
 
     if (this.modoEdicion) {
-      this.encargados[this.indiceEdicion] = {...this.formularioEnc};
+      this.encargados[this.indiceEdicion] = { ...this.formularioEnc };
     } else {
-      this.encargados.push({...this.formularioEnc});
+      this.formularioEnc.id_encargado_laboratorio = this.encargados.length + 1;
+      this.encargados.push({ ...this.formularioEnc });
     }
 
     this.filtrarEncargados();
@@ -397,7 +443,7 @@ export class LaboratoriosComponent implements OnInit {
     alert(this.modoEdicion ? 'Encargado actualizado exitosamente' : 'Encargado agregado exitosamente');
   }
 
-  eliminarEncargado(enc: Encargado, index: number): void {
+  eliminarEncargado(enc: EncargadoLaboratorio, index: number): void {
     this.itemParaEliminar = enc;
     this.indiceParaEliminar = index;
     this.tipoModal = 'encargado';
@@ -406,16 +452,15 @@ export class LaboratoriosComponent implements OnInit {
 
   validarFormularioEnc(): boolean {
     return !!(
-      this.formularioEnc.id &&
-      this.formularioEnc.nombre &&
+      this.formularioEnc.cod_laboratorio > 0 &&
+      this.formularioEnc.identidad &&
+      this.formularioEnc.nombres &&
+      this.formularioEnc.apellidos &&
       this.formularioEnc.email &&
-      this.formularioEnc.telefono &&
-      this.formularioEnc.laboratorioAsignado &&
-      this.formularioEnc.estado
+      this.formularioEnc.fecha_asignacion
     );
   }
 
-  // Confirmación de eliminación
   cerrarModalConfirmar(): void {
     this.mostrarConfirmarEliminar = false;
     this.itemParaEliminar = null;
@@ -438,13 +483,10 @@ export class LaboratoriosComponent implements OnInit {
     alert('Elemento eliminado exitosamente');
   }
 
-  // Ver detalle
   verDetalle(item: any): void {
     console.log('Ver detalle:', item);
-    // Implementar lógica para ver detalles
   }
 
-  // Paginación
   cambiarPagina(pagina: number | string): void {
     if (pagina === 'anterior' && this.paginaActual > 1) {
       this.paginaActual--;
@@ -453,5 +495,20 @@ export class LaboratoriosComponent implements OnInit {
     } else if (typeof pagina === 'number') {
       this.paginaActual = pagina;
     }
+  }
+
+  getNombreCompleto(nombres?: string, apellidos?: string): string {
+    return `${nombres || ''} ${apellidos || ''}`.trim();
+  }
+
+  getEstadoBadgeClass(estado: string): string {
+    const estadoLower = estado.toLowerCase();
+    if (estadoLower === 'disponible' || estadoLower === 'activa' || estadoLower === 'activo') {
+      return 'activo';
+    }
+    if (estadoLower === 'mantenimiento') {
+      return 'mantenimiento';
+    }
+    return 'inactivo';
   }
 }
