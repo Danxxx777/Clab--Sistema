@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
-// Interfaces para tipado fuerte
+
 interface Equipo {
   id: number;
   nombre: string;
@@ -54,12 +54,12 @@ interface Responsable {
   styleUrls: ['./inventario.scss']
 })
 export class InventarioComponent {
-  // Variables para pestañas
+
   tabActiva: 'equipos' | 'tipos' | 'marcas' = 'equipos';
   vista: 'grid' | 'list' = 'grid';
   formTabActiva: 'datos' | 'ubicacion' | 'imagen' = 'datos';
 
-  // Datos de ejemplo para equipos
+
   equipos: Equipo[] = [
     {
       id: 1,
@@ -126,7 +126,7 @@ export class InventarioComponent {
   tiposFiltrados: TipoEquipo[] = [...this.tiposEquipo];
   busquedaTipos = '';
 
-  // Datos para marcas
+
   marcas: Marca[] = [
     { id: 1, nombre: 'Dell', descripcion: 'Fabricante de computadoras y hardware', equipos: 3 },
     { id: 2, nombre: 'HP', descripcion: 'Hewlett-Packard Company', equipos: 2 },
@@ -138,7 +138,7 @@ export class InventarioComponent {
   marcasFiltradas: Marca[] = [...this.marcas];
   busquedaMarcas = '';
 
-  // Datos para selects
+
   laboratorios: Laboratorio[] = [
     { id: 1, nombre: 'Lab Comp A' },
     { id: 2, nombre: 'Lab Comp B' },
@@ -158,7 +158,7 @@ export class InventarioComponent {
 
   iconos = ['💻', '🖥️', '💾', '🖨️', '📽️', '🔬', '🔭', '⚗️', '📡', '🔌', '🔋', '⌨️'];
 
-  // Variables modales equipos
+
   mostrarModalEquipo = false;
   modoEdicionEquipo = false;
   equipoEditandoId: number | null = null;
@@ -180,7 +180,7 @@ export class InventarioComponent {
     descripcion: ''
   };
 
-  // Variables modales tipos
+
   mostrarModalTipo = false;
   modoEdicionTipo = false;
   tipoEditandoId: number | null = null;
@@ -193,7 +193,7 @@ export class InventarioComponent {
     equipos: 0
   };
 
-  // Variables modales marcas
+
   mostrarModalMarca = false;
   modoEdicionMarca = false;
   marcaEditandoId: number | null = null;
@@ -205,7 +205,7 @@ export class InventarioComponent {
     equipos: 0
   };
 
-  // Variables para detalles
+
   mostrarDetalleEquipo = false;
   equipoSeleccionado: Equipo = {
     id: 0,
@@ -224,14 +224,14 @@ export class InventarioComponent {
     descripcion: ''
   };
 
-  // Variables confirmación eliminar
+
   mostrarConfirmarEliminar = false;
   itemParaEliminar: Equipo | TipoEquipo | Marca | null = null;
   tipoEliminacion: 'equipo' | 'tipo' | 'marca' = 'equipo';
 
   constructor(private router: Router) {}
 
-  // Métodos para pestañas
+
   cambiarTab(tab: 'equipos' | 'tipos' | 'marcas'): void {
     this.tabActiva = tab;
   }
@@ -249,9 +249,9 @@ export class InventarioComponent {
     }
   }
 
-  // Métodos de navegación
-  agregarNuevo(tab?: string): void {
-    switch(this.tabActiva) {
+// cha madre loco
+  agregarNuevo(): void {
+    switch (this.tabActiva) {
       case 'equipos':
         this.abrirModalEquipo();
         break;
@@ -263,6 +263,7 @@ export class InventarioComponent {
         break;
     }
   }
+
 
   volver(): void {
     this.router.navigate(['/dashboard']);
@@ -297,7 +298,7 @@ export class InventarioComponent {
     );
   }
 
-  // Métodos para equipos
+
   abrirModalEquipo(): void {
     this.modoEdicionEquipo = false;
     this.equipoEditandoId = null;
@@ -421,7 +422,7 @@ export class InventarioComponent {
     return camposRequeridos.every(campo => campo && campo.toString().trim() !== '');
   }
 
-  // Métodos para tipos de equipo
+
   abrirModalTipo(): void {
     this.modoEdicionTipo = false;
     this.tipoEditandoId = null;
@@ -477,7 +478,7 @@ export class InventarioComponent {
     };
   }
 
-  // Métodos para marcas
+
   abrirModalMarca(): void {
     this.modoEdicionMarca = false;
     this.marcaEditandoId = null;
@@ -532,7 +533,7 @@ export class InventarioComponent {
     };
   }
 
-  // Métodos para formulario tabs
+
   cambiarFormTab(direccion: 'prev' | 'next'): void {
     const tabs: ('datos' | 'ubicacion' | 'imagen')[] = ['datos', 'ubicacion', 'imagen'];
     const currentIndex = tabs.indexOf(this.formTabActiva);
@@ -544,7 +545,7 @@ export class InventarioComponent {
     }
   }
 
-  // Métodos para archivos
+
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
@@ -579,7 +580,7 @@ export class InventarioComponent {
     return tipo?.icono || '🏷️';
   }
 
-  // Métodos para modales
+
   cerrarModalEquipo(): void {
     this.mostrarModalEquipo = false;
     this.limpiarFormularioEquipo();
