@@ -432,7 +432,7 @@ export class LaboratoriosComponent implements OnInit {
             this.sedesFiltradas = [...this.sedes];
 
             this.cerrarModal();
-            alert('Sede actualizada exitosamente');
+            alert('Sede actualizada correctamente');
           },
           error: (err) => {
             console.error('Error al editar sede', err);
