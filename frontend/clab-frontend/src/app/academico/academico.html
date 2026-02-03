@@ -1,10 +1,9 @@
 <div class="academico-container">
 
-
   <div class="header">
     <div class="header-left">
       <div class="logo">
-        <span class="logo-icon">🧪</span>
+        <span class="logo-icon"></span>
         <span class="logo-text">CLAB</span>
       </div>
     </div>
@@ -13,11 +12,9 @@
     </div>
   </div>
 
-
   <div class="page-title-section">
-    <h1>🎓 Gestión Académica</h1>
+    <h1> Gestión Académica</h1>
   </div>
-
 
   <div class="tabs-container">
     <div class="tabs">
@@ -43,7 +40,7 @@
         class="tab"
         [class.active]="tabActiva === 3"
         (click)="cambiarTab(3)">
-        Estudiantes
+        Facultades
       </button>
       <button
         class="tab"
@@ -54,10 +51,9 @@
     </div>
   </div>
 
-
   <div class="content-wrapper">
 
-
+    <!-- TAB PERÍODOS -->
     <div class="tab-content" *ngIf="tabActiva === 0">
       <div class="toolbar">
         <div class="search-container">
@@ -114,7 +110,7 @@
       </div>
     </div>
 
-
+    <!-- TAB CARRERAS -->
     <div class="tab-content" *ngIf="tabActiva === 1">
       <div class="toolbar">
         <div class="search-container">
@@ -169,7 +165,7 @@
       </div>
     </div>
 
-
+    <!-- TAB ASIGNATURAS -->
     <div class="tab-content" *ngIf="tabActiva === 2">
       <div class="toolbar">
         <div class="search-container">
@@ -234,7 +230,7 @@
       </div>
     </div>
 
-
+    <!-- TAB FACULTADES -->
     <div class="tab-content" *ngIf="tabActiva === 3">
       <div class="toolbar">
         <div class="search-container">
@@ -242,12 +238,12 @@
           <input
             type="text"
             class="search-input"
-            [(ngModel)]="busquedaEstudiantes"
-            (input)="filtrarEstudiantes()"
-            placeholder="Buscar estudiantes...">
+            [(ngModel)]="busquedaFacultades"
+            (input)="filtrarFacultades()"
+            placeholder="Buscar facultades...">
         </div>
         <button class="btn-agregar" (click)="agregarNuevo(3)">
-          Agregar Estudiante
+          Agregar Facultad
         </button>
       </div>
 
@@ -255,50 +251,43 @@
         <table class="data-table">
           <thead>
           <tr>
-            <th>IDENTIDAD</th>
-            <th>NOMBRES</th>
-            <th>APELLIDOS</th>
-            <th>EMAIL</th>
-            <th>CARRERA</th>
+            <th>NOMBRE</th>
+            <th>DECANO</th>
+            <th>FECHA CREACIÓN</th>
             <th>ESTADO</th>
             <th>ACCIONES</th>
           </tr>
           </thead>
           <tbody>
-          <tr *ngFor="let estudiante of estudiantesFiltrados; let i = index">
-            <td>
-              <strong>{{estudiante.identidad}}</strong><br>
-              <small>{{estudiante.tipoIdentidad}}</small>
-            </td>
-            <td>{{estudiante.nombres}}</td>
-            <td>{{estudiante.apellidos}}</td>
-            <td>{{estudiante.email}}</td>
-            <td>{{estudiante.carrera}}</td>
+          <tr *ngFor="let facultad of facultadesFiltradas; let i = index">
+            <td><strong>{{facultad.nombre}}</strong></td>
+            <td>{{facultad.decano}}</td>
+            <td>{{facultad.fechaCreacion}}</td>
             <td>
                 <span
                   class="badge"
-                  [class.badge-activo]="estudiante.estado === 'ACTIVO'"
-                  [class.badge-inactivo]="estudiante.estado === 'INACTIVO'">
-                  {{estudiante.estado}}
+                  [class.badge-activo]="facultad.estado === 'ACTIVO'"
+                  [class.badge-inactivo]="facultad.estado === 'INACTIVO'">
+                  {{facultad.estado}}
                 </span>
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn-action btn-ver" (click)="verDetalle(estudiante, 'estudiante')">Ver</button>
-                <button class="btn-action btn-editar" (click)="editar(estudiante, i, 'estudiante')">Editar</button>
-                <button class="btn-action btn-eliminar" (click)="eliminar(estudiante, i, 'estudiante')">Eliminar</button>
+                <button class="btn-action btn-ver" (click)="verDetalle(facultad, 'facultad')">Ver</button>
+                <button class="btn-action btn-editar" (click)="editar(facultad, i, 'facultad')">Editar</button>
+                <button class="btn-action btn-eliminar" (click)="eliminar(facultad, i, 'facultad')">Eliminar</button>
               </div>
             </td>
           </tr>
-          <tr *ngIf="estudiantesFiltrados.length === 0">
-            <td colspan="7" class="empty-message">No se encontraron estudiantes</td>
+          <tr *ngIf="facultadesFiltradas.length === 0">
+            <td colspan="5" class="empty-message">No se encontraron facultades</td>
           </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-
+    <!-- TAB HORARIOS -->
     <div class="tab-content" *ngIf="tabActiva === 4">
       <div class="toolbar">
         <div class="search-container">
@@ -355,7 +344,7 @@
   </div>
 </div>
 
-
+<!-- MODAL PARA AGREGAR/EDITAR -->
 <div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
   <div class="modal" (click)="$event.stopPropagation()">
 
@@ -366,7 +355,7 @@
 
     <div class="modal-body">
 
-
+      <!-- FORMULARIO PERÍODOS -->
       <div *ngIf="tipoEdicion === 'periodo'">
         <div class="form-row">
           <div class="form-group full-width">
@@ -395,7 +384,7 @@
         </div>
       </div>
 
-
+      <!-- FORMULARIO CARRERAS -->
       <div *ngIf="tipoEdicion === 'carrera'">
         <div class="form-row">
           <div class="form-group full-width">
@@ -408,7 +397,7 @@
             <label>Facultad <span class="required">*</span></label>
             <select class="form-control" [(ngModel)]="formularioCarrera.facultad">
               <option value="">Seleccione facultad</option>
-              <option *ngFor="let facultad of facultades" [value]="facultad">{{facultad}}</option>
+              <option *ngFor="let fac of facultadesData" [value]="fac.nombre">{{fac.nombre}}</option>
             </select>
           </div>
           <div class="form-group">
@@ -421,7 +410,7 @@
         </div>
       </div>
 
-
+      <!-- FORMULARIO ASIGNATURAS -->
       <div *ngIf="tipoEdicion === 'asignatura'">
         <div class="form-row">
           <div class="form-group full-width">
@@ -469,51 +458,37 @@
         </div>
       </div>
 
-
-      <div *ngIf="tipoEdicion === 'estudiante'">
+      <!-- FORMULARIO FACULTADES -->
+      <div *ngIf="tipoEdicion === 'facultad'">
         <div class="form-row">
-          <div class="form-group">
-            <label>Tipo de Identidad <span class="required">*</span></label>
-            <select class="form-control" [(ngModel)]="formularioEstudiante.tipoIdentidad">
-              <option value="">Seleccione tipo</option>
-              <option value="DNI">DNI</option>
-              <option value="PASAPORTE">Pasaporte</option>
-              <option value="LICENCIA">Licencia</option>
-              <option value="OTRO">Otro</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Número de Identidad <span class="required">*</span></label>
-            <input type="text" class="form-control" [(ngModel)]="formularioEstudiante.identidad" placeholder="Ej: 0801-1990-12345">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Nombres <span class="required">*</span></label>
-            <input type="text" class="form-control" [(ngModel)]="formularioEstudiante.nombres" placeholder="Ej: Juan Carlos">
-          </div>
-          <div class="form-group">
-            <label>Apellidos <span class="required">*</span></label>
-            <input type="text" class="form-control" [(ngModel)]="formularioEstudiante.apellidos" placeholder="Ej: Pérez López">
+          <div class="form-group full-width">
+            <label>Nombre de la Facultad <span class="required">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="formularioFacultad.nombre" placeholder="Ej: Facultad de Ingeniería">
           </div>
         </div>
         <div class="form-row">
           <div class="form-group full-width">
-            <label>Email <span class="required">*</span></label>
-            <input type="email" class="form-control" [(ngModel)]="formularioEstudiante.email" placeholder="Ej: estudiante@universidad.edu">
+            <label>Descripción</label>
+            <textarea class="form-control" [(ngModel)]="formularioFacultad.descripcion" rows="3" placeholder="Descripción de la facultad..."></textarea>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Carrera <span class="required">*</span></label>
-            <select class="form-control" [(ngModel)]="formularioEstudiante.carrera">
-              <option value="">Seleccione carrera</option>
-              <option *ngFor="let carrera of carreras" [value]="carrera.nombre">{{carrera.nombre}}</option>
+            <label>Decano <span class="required">*</span></label>
+            <select class="form-control" [(ngModel)]="formularioFacultad.decano">
+              <option value="">Seleccione decano</option>
+              <option *ngFor="let decano of decanos" [value]="decano">{{decano}}</option>
             </select>
           </div>
           <div class="form-group">
+            <label>Fecha de Creación <span class="required">*</span></label>
+            <input type="date" class="form-control" [(ngModel)]="formularioFacultad.fechaCreacion">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
             <label>Estado</label>
-            <select class="form-control" [(ngModel)]="formularioEstudiante.estado">
+            <select class="form-control" [(ngModel)]="formularioFacultad.estado">
               <option value="ACTIVO">Activo</option>
               <option value="INACTIVO">Inactivo</option>
             </select>
@@ -521,7 +496,7 @@
         </div>
       </div>
 
-
+      <!-- FORMULARIO HORARIOS -->
       <div *ngIf="tipoEdicion === 'horario'">
         <div class="form-row">
           <div class="form-group">
@@ -594,8 +569,8 @@
   </div>
 </div>
 
-
-
+<!-- MODALES DE DETALLE -->
+<!-- Modal Detalle Período -->
 <div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'periodo'" (click)="cerrarDetalle()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -630,7 +605,7 @@
   </div>
 </div>
 
-
+<!-- Modal Detalle Carrera -->
 <div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'carrera'" (click)="cerrarDetalle()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -661,7 +636,7 @@
   </div>
 </div>
 
-
+<!-- Modal Detalle Asignatura -->
 <div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'asignatura'" (click)="cerrarDetalle()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -706,38 +681,30 @@
   </div>
 </div>
 
-
-<div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'estudiante'" (click)="cerrarDetalle()">
+<!-- Modal Detalle Facultad -->
+<div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'facultad'" (click)="cerrarDetalle()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h2>👨‍🎓 Detalles del Estudiante</h2>
+      <h2>🏛️ Detalles de la Facultad</h2>
       <button class="btn-close" (click)="cerrarDetalle()">×</button>
     </div>
     <div class="modal-body">
       <div class="detalle-grid">
-        <div class="detalle-item">
-          <label>Tipo de Identidad</label>
-          <span class="detalle-valor">{{itemDetalle.tipoIdentidad}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Número de Identidad</label>
-          <span class="detalle-valor">{{itemDetalle.identidad}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Nombres</label>
-          <span class="detalle-valor">{{itemDetalle.nombres}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Apellidos</label>
-          <span class="detalle-valor">{{itemDetalle.apellidos}}</span>
-        </div>
         <div class="detalle-item full-width">
-          <label>Email</label>
-          <span class="detalle-valor">{{itemDetalle.email}}</span>
+          <label>Nombre de la Facultad</label>
+          <span class="detalle-valor">{{itemDetalle.nombre}}</span>
+        </div>
+        <div class="detalle-item full-width" *ngIf="itemDetalle.descripcion">
+          <label>Descripción</label>
+          <span class="detalle-valor">{{itemDetalle.descripcion}}</span>
         </div>
         <div class="detalle-item">
-          <label>Carrera</label>
-          <span class="detalle-valor">{{itemDetalle.carrera}}</span>
+          <label>Decano</label>
+          <span class="detalle-valor">{{itemDetalle.decano}}</span>
+        </div>
+        <div class="detalle-item">
+          <label>Fecha de Creación</label>
+          <span class="detalle-valor">{{itemDetalle.fechaCreacion}}</span>
         </div>
         <div class="detalle-item">
           <label>Estado</label>
@@ -753,7 +720,7 @@
   </div>
 </div>
 
-
+<!-- Modal Detalle Horario -->
 <div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'horario'" (click)="cerrarDetalle()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">

@@ -12,10 +12,9 @@ import { FormsModule } from '@angular/forms';
 })
 export class AcademicoComponent implements OnInit {
 
-
   tabActiva = 0;
 
-
+  // Datos de ejemplo
   periodos = [
     { nombre: 'Semestre I 2024', fechaInicio: '2024-01-15', fechaFin: '2024-06-20', estado: 'ACTIVO' },
     { nombre: 'Semestre II 2023', fechaInicio: '2023-08-01', fechaFin: '2023-12-20', estado: 'INACTIVO' },
@@ -23,12 +22,20 @@ export class AcademicoComponent implements OnInit {
     { nombre: 'Semestre II 2024', fechaInicio: '2024-08-01', fechaFin: '2024-12-20', estado: 'ACTIVO' }
   ];
 
+  facultadesData = [
+    { nombre: 'Facultad de Ingeniería', descripcion: 'Formación de profesionales en ingeniería con excelencia académica', decano: 'Dr. Carlos Rodríguez', fechaCreacion: '1995-03-15', estado: 'ACTIVO' },
+    { nombre: 'Facultad de Ciencias Médicas', descripcion: 'Educación médica de vanguardia y formación humanística', decano: 'Dra. Laura Fernández', fechaCreacion: '1980-09-20', estado: 'ACTIVO' },
+    { nombre: 'Facultad de Ciencias Económicas', descripcion: 'Líderes en administración y economía', decano: 'Lic. Pedro Gómez', fechaCreacion: '1992-06-10', estado: 'ACTIVO' },
+    { nombre: 'Facultad de Ciencias Jurídicas', descripcion: 'Formación integral en derecho y ciencias jurídicas', decano: 'Dr. Roberto Sánchez', fechaCreacion: '1988-11-05', estado: 'INACTIVO' },
+    { nombre: 'Facultad de Ciencias Sociales', descripcion: 'Estudio del comportamiento humano y social', decano: 'PhD. Julia Méndez', fechaCreacion: '2000-02-18', estado: 'ACTIVO' }
+  ];
+
   carreras = [
-    { nombre: 'Ingeniería de Sistemas', facultad: 'Ingeniería', estado: 'ACTIVA' },
-    { nombre: 'Medicina', facultad: 'Ciencias Médicas', estado: 'ACTIVA' },
-    { nombre: 'Administración de Empresas', facultad: 'Ciencias Económicas', estado: 'ACTIVA' },
-    { nombre: 'Derecho', facultad: 'Ciencias Jurídicas', estado: 'INACTIVA' },
-    { nombre: 'Psicología', facultad: 'Ciencias Sociales', estado: 'ACTIVA' }
+    { nombre: 'Ingeniería de Sistemas', facultad: 'Facultad de Ingeniería', estado: 'ACTIVA' },
+    { nombre: 'Medicina', facultad: 'Facultad de Ciencias Médicas', estado: 'ACTIVA' },
+    { nombre: 'Administración de Empresas', facultad: 'Facultad de Ciencias Económicas', estado: 'ACTIVA' },
+    { nombre: 'Derecho', facultad: 'Facultad de Ciencias Jurídicas', estado: 'INACTIVA' },
+    { nombre: 'Psicología', facultad: 'Facultad de Ciencias Sociales', estado: 'ACTIVA' }
   ];
 
   asignaturas = [
@@ -39,13 +46,6 @@ export class AcademicoComponent implements OnInit {
     { nombre: 'Derecho Civil', carrera: 'Derecho', nivel: 1, horasSemanales: 5, requiereLaboratorio: 'NO', estado: 'INACTIVA' }
   ];
 
-  estudiantes = [
-    { identidad: '0801-1990-12345', tipoIdentidad: 'DNI', nombres: 'Juan Carlos', apellidos: 'Pérez López', email: 'juan.perez@universidad.edu', carrera: 'Ingeniería de Sistemas', estado: 'ACTIVO' },
-    { identidad: '0801-1992-67890', tipoIdentidad: 'DNI', nombres: 'María José', apellidos: 'García Rodríguez', email: 'maria.garcia@universidad.edu', carrera: 'Medicina', estado: 'ACTIVO' },
-    { identidad: 'PAS-001234', tipoIdentidad: 'PASAPORTE', nombres: 'Carlos Andrés', apellidos: 'Martínez Sánchez', email: 'carlos.martinez@universidad.edu', carrera: 'Administración de Empresas', estado: 'INACTIVO' },
-    { identidad: '0801-1995-54321', tipoIdentidad: 'DNI', nombres: 'Ana Isabel', apellidos: 'Fernández Castro', email: 'ana.fernandez@universidad.edu', carrera: 'Psicología', estado: 'ACTIVO' }
-  ];
-
   horarios = [
     { periodo: '2024-I', asignatura: 'Programación I', docente: 'Dr. Carlos Rodríguez', diaSemana: 'LUNES', horaInicio: '08:00', horaFin: '10:00', numeroEstudiantes: 35 },
     { periodo: '2024-I', asignatura: 'Base de Datos', docente: 'Ing. Ana Martínez', diaSemana: 'MIÉRCOLES', horaInicio: '10:00', horaFin: '12:00', numeroEstudiantes: 28 },
@@ -53,32 +53,32 @@ export class AcademicoComponent implements OnInit {
     { periodo: '2024-II', asignatura: 'Contabilidad General', docente: 'Lic. Pedro Gómez', diaSemana: 'MARTES', horaInicio: '16:00', horaFin: '18:00', numeroEstudiantes: 32 }
   ];
 
-
+  // Datos filtrados
   periodosFiltrados = [...this.periodos];
   carrerasFiltradas = [...this.carreras];
   asignaturasFiltradas = [...this.asignaturas];
-  estudiantesFiltrados = [...this.estudiantes];
+  facultadesFiltradas = [...this.facultadesData];
   horariosFiltrados = [...this.horarios];
 
-
+  // Búsquedas
   busquedaPeriodos = '';
   busquedaCarreras = '';
   busquedaAsignaturas = '';
-  busquedaEstudiantes = '';
+  busquedaFacultades = '';
   busquedaHorarios = '';
 
-
+  // Modal
   mostrarModal = false;
   modoEdicion = false;
   tipoEdicion = '';
   indiceEdicion = -1;
 
-
+  // Modal de detalle
   mostrarDetalle = false;
   tipoDetalle = '';
   itemDetalle: any = {};
 
-
+  // Formularios
   formularioPeriodo = {
     nombre: '',
     fechaInicio: '',
@@ -101,13 +101,11 @@ export class AcademicoComponent implements OnInit {
     estado: 'ACTIVA'
   };
 
-  formularioEstudiante = {
-    tipoIdentidad: 'DNI',
-    identidad: '',
-    nombres: '',
-    apellidos: '',
-    email: '',
-    carrera: '',
+  formularioFacultad = {
+    nombre: '',
+    descripcion: '',
+    decano: '',
+    fechaCreacion: '',
     estado: 'ACTIVO'
   };
 
@@ -122,13 +120,15 @@ export class AcademicoComponent implements OnInit {
   };
 
   // Listas para selectores
-  facultades = [
-    'Ingeniería',
-    'Ciencias Médicas',
-    'Ciencias Económicas',
-    'Ciencias Jurídicas',
-    'Ciencias Sociales',
-    'Ciencias Básicas'
+  decanos = [
+    'Dr. Carlos Rodríguez',
+    'Dra. Laura Fernández',
+    'Lic. Pedro Gómez',
+    'MSc. Roberto Sánchez',
+    'PhD. Julia Méndez',
+    'Ing. Ana Martínez',
+    'Dr. Miguel Torres',
+    'Dra. Patricia López'
   ];
 
   docentes = [
@@ -162,7 +162,7 @@ export class AcademicoComponent implements OnInit {
       case 0: return 'Período';
       case 1: return 'Carrera';
       case 2: return 'Asignatura';
-      case 3: return 'Estudiante';
+      case 3: return 'Facultad';
       case 4: return 'Horario';
       default: return '';
     }
@@ -173,13 +173,13 @@ export class AcademicoComponent implements OnInit {
       case 'periodo': return 'Período Académico';
       case 'carrera': return 'Carrera';
       case 'asignatura': return 'Asignatura';
-      case 'estudiante': return 'Estudiante';
+      case 'facultad': return 'Facultad';
       case 'horario': return 'Horario';
       default: return '';
     }
   }
 
-
+  // Métodos de filtrado
   filtrarPeriodos() {
     const busqueda = this.busquedaPeriodos.toLowerCase();
     this.periodosFiltrados = this.periodos.filter(periodo =>
@@ -206,14 +206,13 @@ export class AcademicoComponent implements OnInit {
     );
   }
 
-  filtrarEstudiantes() {
-    const busqueda = this.busquedaEstudiantes.toLowerCase();
-    this.estudiantesFiltrados = this.estudiantes.filter(estudiante =>
-      estudiante.nombres.toLowerCase().includes(busqueda) ||
-      estudiante.apellidos.toLowerCase().includes(busqueda) ||
-      estudiante.identidad.toLowerCase().includes(busqueda) ||
-      estudiante.email.toLowerCase().includes(busqueda) ||
-      estudiante.carrera.toLowerCase().includes(busqueda)
+  filtrarFacultades() {
+    const busqueda = this.busquedaFacultades.toLowerCase();
+    this.facultadesFiltradas = this.facultadesData.filter(facultad =>
+      facultad.nombre.toLowerCase().includes(busqueda) ||
+      facultad.decano.toLowerCase().includes(busqueda) ||
+      (facultad.descripcion && facultad.descripcion.toLowerCase().includes(busqueda)) ||
+      facultad.estado.toLowerCase().includes(busqueda)
     );
   }
 
@@ -227,7 +226,7 @@ export class AcademicoComponent implements OnInit {
     );
   }
 
-
+  // Métodos CRUD
   agregarNuevo(tabIndex: number) {
     this.modoEdicion = false;
     this.indiceEdicion = -1;
@@ -236,7 +235,7 @@ export class AcademicoComponent implements OnInit {
       case 0: this.tipoEdicion = 'periodo'; break;
       case 1: this.tipoEdicion = 'carrera'; break;
       case 2: this.tipoEdicion = 'asignatura'; break;
-      case 3: this.tipoEdicion = 'estudiante'; break;
+      case 3: this.tipoEdicion = 'facultad'; break;
       case 4: this.tipoEdicion = 'horario'; break;
     }
 
@@ -271,8 +270,8 @@ export class AcademicoComponent implements OnInit {
       case 'asignatura':
         this.formularioAsignatura = { ...item };
         break;
-      case 'estudiante':
-        this.formularioEstudiante = { ...item };
+      case 'facultad':
+        this.formularioFacultad = { ...item };
         break;
       case 'horario':
         this.formularioHorario = { ...item };
@@ -283,7 +282,7 @@ export class AcademicoComponent implements OnInit {
   }
 
   eliminar(item: any, index: number, tipo: string) {
-    const confirmacion = confirm(`¿Está seguro que desea eliminar este ${tipo}?\n\n${item.nombre || item.identidad || item.asignatura}`);
+    const confirmacion = confirm(`¿Está seguro que desea eliminar este ${tipo}?\n\n${item.nombre || item.asignatura}`);
 
     if (confirmacion) {
       switch(tipo) {
@@ -299,9 +298,9 @@ export class AcademicoComponent implements OnInit {
           this.asignaturas.splice(index, 1);
           this.filtrarAsignaturas();
           break;
-        case 'estudiante':
-          this.estudiantes.splice(index, 1);
-          this.filtrarEstudiantes();
+        case 'facultad':
+          this.facultadesData.splice(index, 1);
+          this.filtrarFacultades();
           break;
         case 'horario':
           this.horarios.splice(index, 1);
@@ -346,14 +345,14 @@ export class AcademicoComponent implements OnInit {
         this.filtrarAsignaturas();
         break;
 
-      case 'estudiante':
-        const estudiante = { ...this.formularioEstudiante };
+      case 'facultad':
+        const facultad = { ...this.formularioFacultad };
         if (this.modoEdicion) {
-          this.estudiantes[this.indiceEdicion] = estudiante;
+          this.facultadesData[this.indiceEdicion] = facultad;
         } else {
-          this.estudiantes.push(estudiante);
+          this.facultadesData.push(facultad);
         }
-        this.filtrarEstudiantes();
+        this.filtrarFacultades();
         break;
 
       case 'horario':
@@ -418,33 +417,17 @@ export class AcademicoComponent implements OnInit {
         }
         break;
 
-      case 'estudiante':
-        if (!this.formularioEstudiante.tipoIdentidad) {
-          alert('El tipo de identidad es requerido');
+      case 'facultad':
+        if (!this.formularioFacultad.nombre.trim()) {
+          alert('El nombre de la facultad es requerido');
           return false;
         }
-        if (!this.formularioEstudiante.identidad.trim()) {
-          alert('El número de identidad es requerido');
+        if (!this.formularioFacultad.decano) {
+          alert('El decano es requerido');
           return false;
         }
-        if (!this.formularioEstudiante.nombres.trim()) {
-          alert('Los nombres son requeridos');
-          return false;
-        }
-        if (!this.formularioEstudiante.apellidos.trim()) {
-          alert('Los apellidos son requeridos');
-          return false;
-        }
-        if (!this.formularioEstudiante.email.trim()) {
-          alert('El email es requerido');
-          return false;
-        }
-        if (!this.validarEmail(this.formularioEstudiante.email)) {
-          alert('El email no tiene un formato válido');
-          return false;
-        }
-        if (!this.formularioEstudiante.carrera) {
-          alert('La carrera es requerida');
+        if (!this.formularioFacultad.fechaCreacion) {
+          alert('La fecha de creación es requerida');
           return false;
         }
         break;
@@ -484,11 +467,6 @@ export class AcademicoComponent implements OnInit {
     return true;
   }
 
-  validarEmail(email: string): boolean {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-  }
-
   cerrarModal() {
     this.mostrarModal = false;
     this.limpiarFormularios();
@@ -517,13 +495,11 @@ export class AcademicoComponent implements OnInit {
       estado: 'ACTIVA'
     };
 
-    this.formularioEstudiante = {
-      tipoIdentidad: 'DNI',
-      identidad: '',
-      nombres: '',
-      apellidos: '',
-      email: '',
-      carrera: '',
+    this.formularioFacultad = {
+      nombre: '',
+      descripcion: '',
+      decano: '',
+      fechaCreacion: '',
       estado: 'ACTIVO'
     };
 
