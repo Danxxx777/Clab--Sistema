@@ -1,4 +1,3 @@
-
 $color-primario: #2d7d51;
 $color-secundario: #27ae60;
 $color-fondo: #f5f7fa;
@@ -574,44 +573,43 @@ $color-eliminar: #e74c3c;
   display: none;
 }
 
-.upload-area {
-  border: 3px dashed $color-borde;
-  border-radius: 12px;
-  padding: 40px 20px;
-  text-align: center;
+.btn-subir-foto {
+  width: 100%;
+  background: $color-primario;
+  color: white;
+  border: none;
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
 
   &:hover {
-    border-color: $color-primario;
-    background: rgba($color-primario, 0.05);
+    background: darken($color-primario, 10%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba($color-primario, 0.3);
   }
+}
 
-  .upload-icon {
-    font-size: 48px;
-    display: block;
-    margin-bottom: 12px;
-  }
-
-  .upload-text {
-    display: block;
-    color: $color-texto;
-    font-weight: 600;
-    font-size: 15px;
-    margin-bottom: 6px;
-  }
-
-  .upload-hint {
-    display: block;
-    color: $color-texto-claro;
-    font-size: 13px;
-  }
+.upload-hint {
+  display: block;
+  color: $color-texto-claro;
+  font-size: 13px;
+  font-style: italic;
+  margin: 0;
+  text-align: left;
 }
 
 .image-preview-container {
   position: relative;
   text-align: center;
+  margin-top: 16px;
 
   .preview-image {
     max-width: 100%;
@@ -846,7 +844,7 @@ $color-eliminar: #e74c3c;
   .modal-body {
     padding: 24px;
   }
-//cha madre loco
+
   .modal-footer {
     padding: 16px 24px;
     flex-direction: column;
