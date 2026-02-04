@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import {Periodo} from '../interfaces/Periodo.model';
+import { PeriodoService } from '../services/periodo.service';
+
 
 @Component({
   selector: 'app-academico',
@@ -15,12 +18,7 @@ export class AcademicoComponent implements OnInit {
   tabActiva = 0;
 
 
-  periodos = [
-    { nombre: 'Semestre I 2024', fechaInicio: '2024-01-15', fechaFin: '2024-06-20', estado: 'ACTIVO' },
-    { nombre: 'Semestre II 2023', fechaInicio: '2023-08-01', fechaFin: '2023-12-20', estado: 'INACTIVO' },
-    { nombre: 'Verano 2024', fechaInicio: '2024-01-02', fechaFin: '2024-02-10', estado: 'INACTIVO' },
-    { nombre: 'Semestre II 2024', fechaInicio: '2024-08-01', fechaFin: '2024-12-20', estado: 'ACTIVO' }
-  ];
+  periodos: Periodo[] = [];
 
   facultadesData = [
     { nombre: 'Facultad de Ingeniería', descripcion: 'Formación de profesionales en ingeniería con excelencia académica', decano: 'Dr. Carlos Rodríguez', fechaCreacion: '1995-03-15', estado: 'ACTIVO' },
@@ -54,7 +52,7 @@ export class AcademicoComponent implements OnInit {
   ];
 
 
-  periodosFiltrados = [...this.periodos];
+  periodosFiltrado: Periodo[] = [];
   carrerasFiltradas = [...this.carreras];
   asignaturasFiltradas = [...this.asignaturas];
   facultadesFiltradas = [...this.facultadesData];
@@ -83,7 +81,8 @@ export class AcademicoComponent implements OnInit {
     nombre: '',
     fechaInicio: '',
     fechaFin: '',
-    estado: 'ACTIVO'
+    fechaCreacion: '',
+    estado: ''
   };
 
   formularioCarrera = {
@@ -146,12 +145,24 @@ export class AcademicoComponent implements OnInit {
     '19:00', '20:00'
   ];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private periodo: PeriodoService) {}
+
+  cargarPeriodos(): void {
+    this.periodo.listar().subscribe({
+      next: (data) => {
+        this.periodos = data;
+        this.periodosFiltrado = [...data];
+      },
+      error: (err) => {
+        console.error('Error al cargar períodos', err);
+      }
+    });
+  }
 
   ngOnInit(): void {
     console.log('Módulo Académico cargado');
+    this.cargarPeriodos();
   }
-
 
   cambiarTab(tabIndex: number) {
     this.tabActiva = tabIndex;
@@ -180,10 +191,10 @@ export class AcademicoComponent implements OnInit {
   }
 
 
-  filtrarPeriodos() {
+  filtrarPeriodos(): void {
     const busqueda = this.busquedaPeriodos.toLowerCase();
-    this.periodosFiltrados = this.periodos.filter(periodo =>
-      periodo.nombre.toLowerCase().includes(busqueda) ||
+    this.periodosFiltrado = this.periodos.filter(periodo =>
+      periodo.nombrePeriodo.toLowerCase().includes(busqueda) ||
       periodo.estado.toLowerCase().includes(busqueda)
     );
   }
@@ -262,7 +273,13 @@ export class AcademicoComponent implements OnInit {
 
     switch(tipo) {
       case 'periodo':
-        this.formularioPeriodo = { ...item };
+        this.formularioPeriodo = {
+          nombre: item.nombrePeriodo,
+          fechaInicio: item.fechaInicio,
+          fechaFin: item.fechaFin,
+          fechaCreacion: item.fechaCreacion,
+          estado: item.estado
+        };
         break;
       case 'carrera':
         this.formularioCarrera = { ...item };
@@ -287,8 +304,13 @@ export class AcademicoComponent implements OnInit {
     if (confirmacion) {
       switch(tipo) {
         case 'periodo':
-          this.periodos.splice(index, 1);
-          this.filtrarPeriodos();
+          this.periodo.eliminar(item.idPeriodo).subscribe({
+            next: () => {
+              this.periodos.splice(index, 1);
+              this.filtrarPeriodos();
+              alert('Período eliminado');
+            }
+          });
           break;
         case 'carrera':
           this.carreras.splice(index, 1);
@@ -316,13 +338,40 @@ export class AcademicoComponent implements OnInit {
 
     switch(this.tipoEdicion) {
       case 'periodo':
-        const periodo = { ...this.formularioPeriodo };
-        if (this.modoEdicion) {
-          this.periodos[this.indiceEdicion] = periodo;
+        const periodo: Periodo = {
+          nombrePeriodo: this.formularioPeriodo.nombre,
+          fechaInicio: this.formularioPeriodo.fechaInicio,
+          fechaFin: this.formularioPeriodo.fechaFin,
+          fechaCreacion: this.formularioPeriodo.fechaCreacion,
+          estado: this.formularioPeriodo.estado
+        };
+
+        if (this.modoEdicion && this.periodos[this.indiceEdicion].idPeriodo) {
+
+          this.periodo
+            .editar(this.periodos[this.indiceEdicion].idPeriodo!, periodo)
+            .subscribe({
+              next: (periodoActualizado) => {
+                this.periodos[this.indiceEdicion] = periodoActualizado;
+                this.periodosFiltrado = [...this.periodos];
+                this.cerrarModal();
+                alert('Período actualizado');
+              },
+              error: () => alert('Error al editar período')
+            });
+
         } else {
-          this.periodos.push(periodo);
+
+          this.periodo.crear(periodo).subscribe({
+            next: (periodoCreado) => {
+              this.periodos.push(periodoCreado);
+              this.periodosFiltrado = [...this.periodos];
+              this.cerrarModal();
+              alert('Período creado');
+            },
+            error: () => alert('Error al crear período')
+          });
         }
-        this.filtrarPeriodos();
         break;
 
       case 'carrera':
@@ -477,7 +526,8 @@ export class AcademicoComponent implements OnInit {
       nombre: '',
       fechaInicio: '',
       fechaFin: '',
-      estado: 'ACTIVO'
+      fechaCreacion: '',
+      estado: ''
     };
 
     this.formularioCarrera = {

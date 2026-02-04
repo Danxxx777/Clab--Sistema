@@ -35,10 +35,9 @@ public class Usuario {
     @Column(name = "usuario", length = 50, nullable = false)
     private String usuario;
 
-    @Column(name = "contrasena", length = 255, nullable = false)
-    private String contrasena;
+    @Column(name = "contrasenia", length = 255, nullable = false)
+    private String contrasenia;
 
-    // Antes era ENUM → ahora String(15)
     @Column(name = "estado", length = 15, nullable = false)
     private String estado;
 

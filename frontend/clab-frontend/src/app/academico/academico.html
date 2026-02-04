@@ -74,26 +74,23 @@
         <table class="data-table">
           <thead>
           <tr>
+            <th>ID PERIODO</th>
             <th>NOMBRE</th>
             <th>FECHA INICIO</th>
             <th>FECHA FIN</th>
+            <th>FECHA CREACIÓN</th>
             <th>ESTADO</th>
             <th>ACCIONES</th>
           </tr>
           </thead>
           <tbody>
-          <tr *ngFor="let periodo of periodosFiltrados; let i = index">
-            <td><strong>{{periodo.nombre}}</strong></td>
+          <tr *ngFor="let periodo of periodosFiltrado; let i = index">
+            <td>{{periodo.idPeriodo}}</td>
+            <td>{{periodo.nombrePeriodo}}</td>
             <td>{{periodo.fechaInicio}}</td>
             <td>{{periodo.fechaFin}}</td>
-            <td>
-                <span
-                  class="badge"
-                  [class.badge-activo]="periodo.estado === 'ACTIVO'"
-                  [class.badge-inactivo]="periodo.estado === 'INACTIVO'">
-                  {{periodo.estado}}
-                </span>
-            </td>
+            <td>{{periodo.fechaCreacion}}</td>
+            <td>{{periodo.estado}}</td>
             <td>
               <div class="action-buttons">
                 <button class="btn-action btn-ver" (click)="verDetalle(periodo, 'periodo')">Ver</button>
@@ -102,8 +99,9 @@
               </div>
             </td>
           </tr>
-          <tr *ngIf="periodosFiltrados.length === 0">
-            <td colspan="5" class="empty-message">No se encontraron períodos</td>
+          <tr *ngIf="periodosFiltrado.length === 0">
+            <td colspan="6" class="empty-message">No se encontraron períodos</td>
+
           </tr>
           </tbody>
         </table>
@@ -375,6 +373,15 @@
         </div>
         <div class="form-row">
           <div class="form-group">
+            <label>Fecha de Creación <span class="required">*</span></label>
+            <input
+              type="date"
+              class="form-control"
+              [(ngModel)]="formularioPeriodo.fechaCreacion">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
             <label>Estado</label>
             <select class="form-control" [(ngModel)]="formularioPeriodo.estado">
               <option value="ACTIVO">Activo</option>
@@ -503,7 +510,7 @@
             <label>Período Académico <span class="required">*</span></label>
             <select class="form-control" [(ngModel)]="formularioHorario.periodo">
               <option value="">Seleccione período</option>
-              <option *ngFor="let periodo of periodos" [value]="periodo.nombre">{{periodo.nombre}}</option>
+              <option *ngFor="let periodo of periodos" [value]="periodo.nombrePeriodo">{{periodo.nombrePeriodo}}</option>
             </select>
           </div>
           <div class="form-group">
@@ -577,6 +584,10 @@
       <h2>📅 Detalles del Período</h2>
       <button class="btn-close" (click)="cerrarDetalle()">×</button>
     </div>
+    <div class="detalle-item">
+      <label>ID del Período</label>
+      <span class="detalle-valor">{{ itemDetalle.idPeriodo }}</span>
+    </div>
     <div class="modal-body">
       <div class="detalle-grid">
         <div class="detalle-item full-width">
@@ -590,6 +601,10 @@
         <div class="detalle-item">
           <label>Fecha de Fin</label>
           <span class="detalle-valor">{{itemDetalle.fechaFin}}</span>
+        </div>
+        <div class="detalle-item">
+          <label>Fecha de Creación</label>
+          <span class="detalle-valor">{{itemDetalle.fechaCreacion}}</span>
         </div>
         <div class="detalle-item">
           <label>Estado</label>
