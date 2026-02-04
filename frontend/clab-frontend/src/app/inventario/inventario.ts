@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { TipoEquipoService, TipoEquipoDTO } from '../services/tipo-equipo.service';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -16,7 +17,7 @@ interface Equipo {
   ultimaRevision: string;
   laboratorio: string;
   ubicacionFisica: string;
-  responsable: string;
+  //responsable: string;
   foto: string | null;
   descripcion: string;
 }
@@ -29,22 +30,15 @@ interface TipoEquipo {
   equipos: number;
 }
 
-interface Marca {
-  id: number;
-  nombre: string;
-  descripcion: string;
-  equipos: number;
-}
-
 interface Laboratorio {
   id: number;
   nombre: string;
 }
 
-interface Responsable {
-  id: number;
-  nombre: string;
-}
+//interface Responsable {
+  //id: number;
+  //nombre: string;
+//}
 
 @Component({
   selector: 'app-inventario',
@@ -53,62 +47,15 @@ interface Responsable {
   templateUrl: './inventario.html',
   styleUrls: ['./inventario.scss']
 })
-export class InventarioComponent {
+export class InventarioComponent implements OnInit{
 
-  tabActiva: 'equipos' | 'tipos' | 'marcas' = 'equipos';
+  tabActiva: 'equipos' | 'tipos' = 'equipos';
   vista: 'grid' | 'list' = 'grid';
   formTabActiva: 'datos' | 'ubicacion' | 'imagen' = 'datos';
 
 
   equipos: Equipo[] = [
-    {
-      id: 1,
-      nombre: 'Computadora Dell',
-      tipoEquipo: 'Computadora',
-      marca: 'Dell',
-      modelo: 'Optiplex 7090',
-      noSerie: 'D1001',
-      estado: 'OPERATIVO',
-      fechaAdquisicion: '2023-01-15',
-      ultimaRevision: '2024-01-10',
-      laboratorio: 'Lab Comp A',
-      ubicacionFisica: 'Edificio A - Piso 2 - Sala 201',
-      responsable: 'Dr. García',
-      foto: 'https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=400',
-      descripcion: 'Computadora de escritorio para laboratorio de cómputo, 16GB RAM, 512GB SSD'
-    },
-    {
-      id: 2,
-      nombre: 'Microscopio Leica',
-      tipoEquipo: 'Microscopio',
-      marca: 'Leica',
-      modelo: 'DM2500',
-      noSerie: 'LC002',
-      estado: 'MANTENIMIENTO',
-      fechaAdquisicion: '2022-06-20',
-      ultimaRevision: '2024-01-20',
-      laboratorio: 'Lab Biología',
-      ubicacionFisica: 'Edificio B - Piso 1 - Sala 105',
-      responsable: 'Dra. Ruiz',
-      foto: 'https://images.unsplash.com/photo-1581093458791-9f3c3250a8e6?w=400',
-      descripcion: 'Microscopio profesional para biología con cámara digital integrada'
-    },
-    {
-      id: 3,
-      nombre: 'Proyector Epson',
-      tipoEquipo: 'Proyector',
-      marca: 'Epson',
-      modelo: 'PowerLite 1781W',
-      noSerie: 'EPS001',
-      estado: 'OPERATIVO',
-      fechaAdquisicion: '2023-03-10',
-      ultimaRevision: '2024-02-15',
-      laboratorio: 'Lab Química',
-      ubicacionFisica: 'Edificio C - Piso 3 - Auditorio',
-      responsable: 'Ing. Martínez',
-      foto: 'https://images.unsplash.com/photo-1580982324983-daee9eb0a5b5?w=400',
-      descripcion: 'Proyector WXGA 3000 lúmenes para presentaciones'
-    }
+
   ];
 
   equiposFiltrados: Equipo[] = [...this.equipos];
@@ -127,18 +74,6 @@ export class InventarioComponent {
   busquedaTipos = '';
 
 
-  marcas: Marca[] = [
-    { id: 1, nombre: 'Dell', descripcion: 'Fabricante de computadoras y hardware', equipos: 3 },
-    { id: 2, nombre: 'HP', descripcion: 'Hewlett-Packard Company', equipos: 2 },
-    { id: 3, nombre: 'Lenovo', descripcion: 'Fabricante de computadoras chino', equipos: 1 },
-    { id: 4, nombre: 'Epson', descripcion: 'Fabricante de impresoras y proyectores', equipos: 1 },
-    { id: 5, nombre: 'Leica', descripcion: 'Fabricante de microscopios alemana', equipos: 1 }
-  ];
-
-  marcasFiltradas: Marca[] = [...this.marcas];
-  busquedaMarcas = '';
-
-
   laboratorios: Laboratorio[] = [
     { id: 1, nombre: 'Lab Comp A' },
     { id: 2, nombre: 'Lab Comp B' },
@@ -148,13 +83,13 @@ export class InventarioComponent {
     { id: 6, nombre: 'Lab Electrónica' }
   ];
 
-  responsables: Responsable[] = [
-    { id: 1, nombre: 'Dr. García' },
-    { id: 2, nombre: 'Dra. Ruiz' },
-    { id: 3, nombre: 'Ing. Martínez' },
-    { id: 4, nombre: 'Lic. Pérez' },
-    { id: 5, nombre: 'Mtro. López' }
-  ];
+  //responsables: Responsable[] = [
+    //{ id: 1, nombre: 'Dr. García' },
+    //{ id: 2, nombre: 'Dra. Ruiz' },
+    //{ id: 3, nombre: 'Ing. Martínez' },
+    //{ id: 4, nombre: 'Lic. Pérez' },
+    //{ id: 5, nombre: 'Mtro. López' }
+  //];
 
   iconos = ['💻', '🖥️', '💾', '🖨️', '📽️', '🔬', '🔭', '⚗️', '📡', '🔌', '🔋', '⌨️'];
 
@@ -175,7 +110,7 @@ export class InventarioComponent {
     ultimaRevision: '',
     laboratorio: '',
     ubicacionFisica: '',
-    responsable: '',
+    //responsable: '',
     foto: null,
     descripcion: ''
   };
@@ -194,18 +129,6 @@ export class InventarioComponent {
   };
 
 
-  mostrarModalMarca = false;
-  modoEdicionMarca = false;
-  marcaEditandoId: number | null = null;
-
-  formularioMarca: Marca = {
-    id: 0,
-    nombre: '',
-    descripcion: '',
-    equipos: 0
-  };
-
-
   mostrarDetalleEquipo = false;
   equipoSeleccionado: Equipo = {
     id: 0,
@@ -219,20 +142,46 @@ export class InventarioComponent {
     ultimaRevision: '',
     laboratorio: '',
     ubicacionFisica: '',
-    responsable: '',
+    //responsable: '',
     foto: null,
     descripcion: ''
   };
 
 
   mostrarConfirmarEliminar = false;
-  itemParaEliminar: Equipo | TipoEquipo | Marca | null = null;
-  tipoEliminacion: 'equipo' | 'tipo' | 'marca' = 'equipo';
+  itemParaEliminar: Equipo | TipoEquipo | null = null;
+  tipoEliminacion: 'equipo' | 'tipo' = 'equipo';
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private tipoEquipoService: TipoEquipoService
+  ) {}
+  ngOnInit(): void {
+    this.cargarTiposEquipo();
+  }
+  cargarTiposEquipo(): void {
+    this.tipoEquipoService.listar().subscribe({
+      next: (data) => {
+        this.tiposEquipo = data.map(t => ({
+          id: t.idTipoEquipo,
+          nombre: t.nombreTipo,
+          descripcion: t.descripcion,
+          icono: '💻',
+          equipos: 0
+        }));
+        this.tiposFiltrados = [...this.tiposEquipo];
+      },
+      error: () => {
+        alert('Error al cargar tipos de equipo');
+      }
+    });
+  }
 
 
-  cambiarTab(tab: 'equipos' | 'tipos' | 'marcas'): void {
+
+
+
+  cambiarTab(tab: 'equipos' | 'tipos'): void {
     this.tabActiva = tab;
   }
 
@@ -244,7 +193,6 @@ export class InventarioComponent {
     switch(this.tabActiva) {
       case 'equipos': return 'Equipo';
       case 'tipos': return 'Tipo';
-      case 'marcas': return 'Marca';
       default: return '';
     }
   }
@@ -257,9 +205,6 @@ export class InventarioComponent {
         break;
       case 'tipos':
         this.abrirModalTipo();
-        break;
-      case 'marcas':
-        this.abrirModalMarca();
         break;
     }
   }
@@ -290,14 +235,6 @@ export class InventarioComponent {
     );
   }
 
-  filtrarMarcas(): void {
-    const busqueda = this.busquedaMarcas.toLowerCase();
-    this.marcasFiltradas = this.marcas.filter(marca =>
-      marca.nombre.toLowerCase().includes(busqueda) ||
-      (marca.descripcion && marca.descripcion.toLowerCase().includes(busqueda))
-    );
-  }
-
 
   abrirModalEquipo(): void {
     this.modoEdicionEquipo = false;
@@ -324,7 +261,7 @@ export class InventarioComponent {
       ultimaRevision: equipo.ultimaRevision,
       laboratorio: equipo.laboratorio,
       ubicacionFisica: equipo.ubicacionFisica,
-      responsable: equipo.responsable,
+      //responsable: equipo.responsable,
       foto: equipo.foto,
       descripcion: equipo.descripcion
     };
@@ -351,7 +288,7 @@ export class InventarioComponent {
       ultimaRevision: '',
       laboratorio: '',
       ubicacionFisica: '',
-      responsable: '',
+      //responsable: '',
       foto: null,
       descripcion: ''
     };
@@ -400,7 +337,7 @@ export class InventarioComponent {
       ultimaRevision: '',
       laboratorio: '',
       ubicacionFisica: '',
-      responsable: '',
+      //responsable: '',
       foto: null,
       descripcion: ''
     };
@@ -415,7 +352,7 @@ export class InventarioComponent {
       this.formularioEquipo.tipoEquipo,
       this.formularioEquipo.ubicacionFisica,
       this.formularioEquipo.laboratorio,
-      this.formularioEquipo.responsable,
+      //this.formularioEquipo.responsable,
       this.formularioEquipo.fechaAdquisicion
     ];
 
@@ -449,24 +386,32 @@ export class InventarioComponent {
       return;
     }
 
+    const payload = {
+      nombre: this.formularioTipo.nombre,
+      descripcion: this.formularioTipo.descripcion
+    };
+
     if (this.modoEdicionTipo && this.tipoEditandoId) {
-      const index = this.tiposEquipo.findIndex(t => t.id === this.tipoEditandoId);
-      if (index !== -1) {
-        this.tiposEquipo[index] = { ...this.formularioTipo };
-      }
+      this.tipoEquipoService.actualizar(this.tipoEditandoId, payload).subscribe({
+        next: () => {
+          this.cargarTiposEquipo();
+          this.cerrarModalTipo();
+          alert('Tipo actualizado correctamente');
+        },
+        error: () => alert('Error al actualizar tipo')
+      });
     } else {
-      const nuevoId = Math.max(...this.tiposEquipo.map(t => t.id), 0) + 1;
-      this.tiposEquipo.push({
-        ...this.formularioTipo,
-        id: nuevoId,
-        equipos: 0
+      this.tipoEquipoService.crear(payload).subscribe({
+        next: () => {
+          this.cargarTiposEquipo();
+          this.cerrarModalTipo();
+          alert('Tipo creado correctamente');
+        },
+        error: () => alert('Error al crear tipo')
       });
     }
-
-    this.filtrarTipos();
-    this.cerrarModalTipo();
-    alert(`Tipo ${this.modoEdicionTipo ? 'actualizado' : 'agregado'} correctamente`);
   }
+
 
   limpiarFormularioTipo(): void {
     this.formularioTipo = {
@@ -474,61 +419,6 @@ export class InventarioComponent {
       nombre: '',
       descripcion: '',
       icono: '💻',
-      equipos: 0
-    };
-  }
-
-
-  abrirModalMarca(): void {
-    this.modoEdicionMarca = false;
-    this.marcaEditandoId = null;
-    this.limpiarFormularioMarca();
-    this.mostrarModalMarca = true;
-  }
-
-  editarMarca(marca: Marca): void {
-    this.modoEdicionMarca = true;
-    this.marcaEditandoId = marca.id;
-    this.formularioMarca = { ...marca };
-    this.mostrarModalMarca = true;
-  }
-
-  eliminarMarca(marca: Marca): void {
-    this.itemParaEliminar = marca;
-    this.tipoEliminacion = 'marca';
-    this.mostrarConfirmarEliminar = true;
-  }
-
-  guardarMarca(): void {
-    if (!this.formularioMarca.nombre.trim()) {
-      alert('El nombre de la marca es requerido');
-      return;
-    }
-
-    if (this.modoEdicionMarca && this.marcaEditandoId) {
-      const index = this.marcas.findIndex(m => m.id === this.marcaEditandoId);
-      if (index !== -1) {
-        this.marcas[index] = { ...this.formularioMarca };
-      }
-    } else {
-      const nuevoId = Math.max(...this.marcas.map(m => m.id), 0) + 1;
-      this.marcas.push({
-        ...this.formularioMarca,
-        id: nuevoId,
-        equipos: 0
-      });
-    }
-
-    this.filtrarMarcas();
-    this.cerrarModalMarca();
-    alert(`Marca ${this.modoEdicionMarca ? 'actualizada' : 'agregada'} correctamente`);
-  }
-
-  limpiarFormularioMarca(): void {
-    this.formularioMarca = {
-      id: 0,
-      nombre: '',
-      descripcion: '',
       equipos: 0
     };
   }
@@ -591,11 +481,6 @@ export class InventarioComponent {
     this.limpiarFormularioTipo();
   }
 
-  cerrarModalMarca(): void {
-    this.mostrarModalMarca = false;
-    this.limpiarFormularioMarca();
-  }
-
   cerrarModalConfirmar(): void {
     this.mostrarConfirmarEliminar = false;
     this.itemParaEliminar = null;
@@ -605,34 +490,38 @@ export class InventarioComponent {
   confirmarEliminacion(): void {
     if (!this.itemParaEliminar) return;
 
-    switch(this.tipoEliminacion) {
-      case 'equipo':
+    switch (this.tipoEliminacion) {
+
+      case 'equipo': {
         const equipo = this.itemParaEliminar as Equipo;
         const indexEquipo = this.equipos.findIndex(e => e.id === equipo.id);
+
         if (indexEquipo !== -1) {
           this.equipos.splice(indexEquipo, 1);
           this.filtrarEquipos();
         }
-        break;
-      case 'tipo':
-        const tipo = this.itemParaEliminar as TipoEquipo;
-        const indexTipo = this.tiposEquipo.findIndex(t => t.id === tipo.id);
-        if (indexTipo !== -1) {
-          this.tiposEquipo.splice(indexTipo, 1);
-          this.filtrarTipos();
-        }
-        break;
-      case 'marca':
-        const marca = this.itemParaEliminar as Marca;
-        const indexMarca = this.marcas.findIndex(m => m.id === marca.id);
-        if (indexMarca !== -1) {
-          this.marcas.splice(indexMarca, 1);
-          this.filtrarMarcas();
-        }
-        break;
-    }
 
-    this.cerrarModalConfirmar();
-    alert(`${this.tipoEliminacion} eliminado correctamente`);
+        this.cerrarModalConfirmar();
+        alert('Equipo eliminado correctamente');
+        break;
+      }
+
+      case 'tipo': {
+        const tipo = this.itemParaEliminar as TipoEquipo;
+
+        this.tipoEquipoService.eliminar(tipo.id).subscribe({
+          next: () => {
+            this.cargarTiposEquipo();   // refresca desde backend
+            this.cerrarModalConfirmar();
+            alert('Tipo eliminado correctamente');
+          },
+          error: () => {
+            alert('Error al eliminar tipo');
+          }
+        });
+        break;
+      }
+    }
   }
+
 }

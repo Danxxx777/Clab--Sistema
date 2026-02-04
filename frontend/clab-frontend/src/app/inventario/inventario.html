@@ -33,12 +33,6 @@
         (click)="cambiarTab('tipos')">
         Tipos de Equipo
       </button>
-      <button
-        class="tab"
-        [class.active]="tabActiva === 'marcas'"
-        (click)="cambiarTab('marcas')">
-        Marcas
-      </button>
     </div>
   </div>
 
@@ -141,7 +135,8 @@
             <th>ID</th>
             <th>NOMBRE</th>
             <th>DESCRIPCIÓN</th>
-            <th>EQUIPOS</th>
+            <!-- <th>EQUIPOS</th> -->
+
             <th>ACCIONES</th>
           </tr>
           </thead>
@@ -150,7 +145,8 @@
             <td>{{tipo.id}}</td>
             <td><strong>{{tipo.nombre}}</strong></td>
             <td>{{tipo.descripcion || 'Sin descripción'}}</td>
-            <td>{{tipo.equipos}}</td>
+            <!-- <td>{{tipo.equipos}}</td>-->
+
             <td>
               <div class="action-buttons">
                 <button class="btn-action btn-editar" (click)="editarTipo(tipo)">Editar</button>
@@ -160,57 +156,6 @@
           </tr>
           <tr *ngIf="tiposFiltrados.length === 0">
             <td colspan="5" class="empty-message">No se encontraron tipos </td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
-
-    </div>
-
-
-    <div class="tab-content" *ngIf="tabActiva === 'marcas'">
-
-      <div class="toolbar">
-        <div class="search-container">
-          <span class="search-icon">🔍</span>
-          <input
-            type="text"
-            class="search-input"
-            [(ngModel)]="busquedaMarcas"
-            (input)="filtrarMarcas()"
-            placeholder="Buscar marcas...">
-        </div>
-        <button class="btn-agregar" (click)="abrirModalMarca()">
-          Agregar Marca
-        </button>
-      </div>
-
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-          <tr>
-            <th>ID</th>
-            <th>NOMBRE</th>
-            <th>DESCRIPCIÓN</th>
-            <th>EQUIPOS</th>
-            <th>ACCIONES</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr *ngFor="let marca of marcasFiltradas">
-            <td>{{marca.id}}</td>
-            <td>{{marca.nombre}}</td>
-            <td>{{marca.descripcion || 'Sin descripción'}}</td>
-            <td>{{marca.equipos}}</td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn-action btn-editar" (click)="editarMarca(marca)">Editar</button>
-                <button class="btn-action btn-eliminar" (click)="eliminarMarca(marca)">Eliminar</button>
-              </div>
-            </td>
-          </tr>
-          <tr *ngIf="marcasFiltradas.length === 0">
-            <td colspan="5" class="empty-message">No se encontraron marcas</td>
           </tr>
           </tbody>
         </table>
@@ -256,10 +201,11 @@
       <div class="form-row">
         <div class="form-group">
           <label>Marca <span class="required">*</span></label>
-          <select class="form-control" [(ngModel)]="formularioEquipo.marca">
-            <option value="">Seleccione una marca</option>
-            <option *ngFor="let marca of marcas" [value]="marca.nombre">{{marca.nombre}}</option>
-          </select>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="formularioEquipo.marca"
+            placeholder="Ej: Dell, HP, Lenovo">
         </div>
 
         <div class="form-group">
@@ -301,13 +247,17 @@
           </select>
         </div>
 
-        <div class="form-group">
-          <label>Responsable <span class="required">*</span></label>
-          <select class="form-control" [(ngModel)]="formularioEquipo.responsable">
-            <option value="">Seleccione un responsable</option>
-            <option *ngFor="let resp of responsables" [value]="resp.nombre">{{resp.nombre}}</option>
-          </select>
-        </div>
+        <!--
+<div class="form-group">
+  <label>Responsable <span class="required">*</span></label>
+  <select class="form-control" [(ngModel)]="formularioEquipo.responsable">
+    <option value="">Seleccione un responsable</option>
+    <option *ngFor="let resp of responsables" [value]="resp.nombre">
+      {{resp.nombre}}
+    </option>
+  </select>
+</div>
+-->
       </div>
 
       <div class="form-row">
@@ -347,7 +297,7 @@
       </div>
 
       <div class="form-group full-width">
-        <label>Imagen del Equipo</label>
+        <label>Foto del Laboratorio</label>
         <div class="image-upload-container">
           <input
             type="file"
@@ -357,11 +307,11 @@
             class="file-input"
             id="fileInput">
 
-          <div class="upload-area" *ngIf="!formularioEquipo.foto" (click)="fileInput.click()">
-            <span class="upload-icon">📁</span>
-            <span class="upload-text">Haz clic para seleccionar una imagen</span>
-            <span class="upload-hint">Formatos: JPG, PNG (Máx. 5MB)</span>
-          </div>
+          <button type="button" class="btn-subir-foto" (click)="fileInput.click()" *ngIf="!formularioEquipo.foto">
+            📷 Subir foto
+          </button>
+
+          <p class="upload-hint">Formatos: JPG, PNG, GIF (máx. 5MB)</p>
 
           <div class="image-preview-container" *ngIf="formularioEquipo.foto">
             <img [src]="formularioEquipo.foto" alt="Vista previa" class="preview-image">
@@ -419,45 +369,6 @@
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cerrarModalTipo()">Cancelar</button>
       <button class="btn-guardar" (click)="guardarTipo()">Guardar</button>
-    </div>
-
-  </div>
-</div>
-
-<!-- MODAL PARA MARCAS -->
-<div class="modal-overlay" *ngIf="mostrarModalMarca" (click)="cerrarModalMarca()">
-  <div class="modal" (click)="$event.stopPropagation()">
-
-    <div class="modal-header">
-      <h2>{{modoEdicionMarca ? 'Editar Marca' : 'Agregar Nueva Marca'}}</h2>
-      <button class="btn-close" (click)="cerrarModalMarca()">×</button>
-    </div>
-
-    <div class="modal-body">
-
-      <div class="form-group full-width">
-        <label>Nombre de la Marca <span class="required">*</span></label>
-        <input
-          type="text"
-          class="form-control"
-          [(ngModel)]="formularioMarca.nombre"
-          placeholder="Ej: Dell, HP, Lenovo">
-      </div>
-
-      <div class="form-group full-width">
-        <label>Descripción</label>
-        <textarea
-          class="form-control"
-          [(ngModel)]="formularioMarca.descripcion"
-          rows="3"
-          placeholder="Descripción de la marca..."></textarea>
-      </div>
-
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn-cancelar" (click)="cerrarModalMarca()">Cancelar</button>
-      <button class="btn-guardar" (click)="guardarMarca()">Guardar</button>
     </div>
 
   </div>
@@ -550,10 +461,12 @@
           <span class="detalle-valor">{{equipoSeleccionado.laboratorio}}</span>
         </div>
 
-        <div class="detalle-item">
-          <label>Responsable</label>
-          <span class="detalle-valor">{{equipoSeleccionado.responsable}}</span>
-        </div>
+        <!--
+<div class="detalle-item">
+  <label>Responsable</label>
+  <span class="detalle-valor">{{equipoSeleccionado.responsable}}</span>
+</div>
+-->
 
         <div class="detalle-item">
           <label>Fecha de Adquisición</label>
