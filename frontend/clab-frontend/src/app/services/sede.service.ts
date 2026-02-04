@@ -26,9 +26,11 @@ export class SedeService {
       `${this.apiUrl}/actualizar/${id}`,
       sede
     );
+
+  }
+  eliminar(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/eliminar/${id}`,{ responseType: 'text' });
   }
 
-  eliminar(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/eliminar/${id}`,{ responseType: 'text' } );
-  }
+
 }

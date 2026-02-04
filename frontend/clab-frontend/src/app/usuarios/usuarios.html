@@ -40,9 +40,9 @@
         <button class="tab" [class.active]="tabActiva === 1" (click)="cambiarTab(1)">
           Roles
         </button>
-        <button class="tab" [class.active]="tabActiva === 2" (click)="cambiarTab(2)">
+        <!--<button class="tab" [class.active]="tabActiva === 2" (click)="cambiarTab(2)">
           Permisos
-        </button>
+        </button>-->
         <button class="tab" [class.active]="tabActiva === 3" (click)="cambiarTab(3)">
           Auditoría
         </button>
@@ -72,10 +72,6 @@
               {{ r.nombre }}
             </option>
           </select>
-          <button class="btn-export"
-                  (click)="registrarAuditoria('Exportar usuarios','Usuarios')"> Exportar
-          </button>
-
           <button class="btn-add" (click)="abrirModalUsuario('crear')">
             + Nuevo Usuario
           </button>
@@ -110,8 +106,8 @@
               </td>
               <td>{{ u.fechaRegistro }}</td>
               <td class="actions">
-                <button (click)="abrirModalUsuario('ver', u)">👁</button>
-                <button (click)="abrirModalUsuario('editar', u)">✏️</button>
+                <button (click)="abrirModalUsuario('ver',u)">👁</button>
+                <button (click)="abrirModalUsuario('editar',u)">✏️</button>
                 <button (click)="eliminarUsuario(u)">🗑</button>
               </td>
             </tr>
@@ -139,24 +135,27 @@
             <tr>
               <th>Rol</th>
               <th>Descripción</th>
-              <th>Estado</th>
+              <th>Fecha creación</th>
               <th>Acciones</th>
             </tr>
             </thead>
 
             <tbody>
             <tr *ngFor="let r of roles">
-              <td><strong>{{ r.nombre }}</strong></td>
-              <td>{{ r.descripcion }}</td>
               <td>
-                  <span class="estado-badge"
-                        [ngClass]="r.estado === 'Activo' ? 'activo' : 'inactivo'">
-                    {{ r.estado }}
-                  </span>
+                <strong>{{ r.nombre }}</strong>
               </td>
+              <td>{{ r.descripcion }}</td>
+              <td>{{ r.fechaCreacion }}</td>
               <td class="actions">
                 <button (click)="abrirModalRol('editar', r)">✏️</button>
                 <button (click)="eliminarRol(r)">🗑</button>
+              </td>
+            </tr>
+
+            <tr *ngIf="roles.length === 0">
+              <td colspan="4" class="empty">
+                No hay roles registrados
               </td>
             </tr>
             </tbody>
@@ -164,13 +163,15 @@
         </div>
       </div>
 
-      <!-- TAB PERMISOS -->
+
+      <!-- TAB PERMISOS
       <div *ngIf="tabActiva === 2">
 
         <div class="filters">
           <button class="btn-add" (click)="abrirModalPermiso('crear')">
             + Nuevo Permiso
           </button>
+
         </div>
 
         <div class="table-wrapper">
@@ -203,6 +204,7 @@
           </table>
         </div>
       </div>
+      -->
 
       <!-- TAB AUDITORÍA -->
       <div *ngIf="tabActiva === 3">
@@ -247,36 +249,61 @@
       <button class="btn-close" (click)="cerrarModalRol()">×</button>
     </div>
 
-    <div class="modal-form">
+    <form class="modal-form" (ngSubmit)="guardarRol()">
+
       <div class="form-grid">
         <div class="form-group">
           <label>Nombre del Rol</label>
-          <input [(ngModel)]="rolActual.nombre">
+          <input
+            [(ngModel)]="rolActual.nombre"
+            name="nombreRol"
+            required
+          >
         </div>
+
         <div class="form-group">
           <label>Descripción</label>
-          <input [(ngModel)]="rolActual.descripcion">
+          <input
+            [(ngModel)]="rolActual.descripcion"
+            name="descripcion"
+          >
         </div>
+
         <div class="form-group">
-          <label>Estado</label>
-          <select [(ngModel)]="rolActual.estado">
-            <option value="Activo">Activo</option>
-            <option value="Inactivo">Inactivo</option>
-          </select>
+          <label>Fecha de creación</label>
+          <input
+            type="date"
+            [(ngModel)]="rolActual.fechaCreacion"
+            name="fechaCreacion"
+            disabled
+          >
         </div>
       </div>
 
       <div class="modal-footer">
-        <button class="btn-cancel" (click)="cerrarModalRol()">Cancelar</button>
-        <button class="btn-save" (click)="guardarRol()">Guardar</button>
+        <button
+          type="button"
+          class="btn-cancel"
+          (click)="cerrarModalRol()">
+          Cancelar
+        </button>
+
+        <button
+          type="submit"
+          class="btn-save">
+          Guardar
+        </button>
       </div>
-    </div>
+
+    </form>
   </div>
 </div>
-
-<!-- Modal Usuario -->
+    <!-- Modal Usuario -->
+<!-- MODAL USUARIO -->
 <div class="modal-overlay" *ngIf="mostrarModalUsuario">
   <div class="modal-container">
+
+    <!-- HEADER -->
     <div class="modal-header">
       <h2>
         {{ modoModal === 'crear' ? 'Nuevo Usuario' :
@@ -285,42 +312,114 @@
       <button class="btn-close" (click)="cerrarModalUsuario()">×</button>
     </div>
 
-    <div class="modal-form">
+    <!-- FORM -->
+    <form class="modal-form" (ngSubmit)="guardarUsuario()">
+
       <div class="form-grid">
+
+        <div class="form-group">
+          <label>Identidad</label>
+          <input
+            [(ngModel)]="usuarioActual.identidad"
+            name="identidad"
+            [disabled]="modoModal === 'ver'"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label>Usuario</label>
+          <input
+            [(ngModel)]="usuarioActual.usuario"
+            name="usuario"
+            [disabled]="modoModal === 'ver'"
+            required>
+        </div>
+
         <div class="form-group">
           <label>Nombres</label>
-          <input [(ngModel)]="usuarioActual.nombres"
-                 [disabled]="modoModal === 'ver'">
+          <input
+            [(ngModel)]="usuarioActual.nombres"
+            name="nombres"
+            [disabled]="modoModal === 'ver'"
+            required>
         </div>
+
         <div class="form-group">
           <label>Apellidos</label>
-          <input [(ngModel)]="usuarioActual.apellidos"
-                 [disabled]="modoModal === 'ver'">
+          <input
+            [(ngModel)]="usuarioActual.apellidos"
+            name="apellidos"
+            [disabled]="modoModal === 'ver'"
+            required>
         </div>
+
         <div class="form-group">
           <label>Email</label>
-          <input [(ngModel)]="usuarioActual.email"
-                 [disabled]="modoModal === 'ver'">
+          <input
+            type="email"
+            [(ngModel)]="usuarioActual.email"
+            name="email"
+            [disabled]="modoModal === 'ver'"
+            required>
         </div>
+
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input
+            [(ngModel)]="usuarioActual.telefono"
+            name="telefono"
+            [disabled]="modoModal === 'ver'">
+        </div>
+
+        <!-- SOLO AL CREAR -->
+        <div class="form-group" *ngIf="modoModal === 'crear'">
+          <label>Contraseña</label>
+          <input
+            type="password"
+            [(ngModel)]="usuarioActual.contrasenia"
+            name="contrasena"
+            required>
+        </div>
+
         <div class="form-group">
           <label>Rol</label>
-          <select [(ngModel)]="usuarioActual.rol"
-                  [disabled]="modoModal === 'ver'">
+          <select
+            [(ngModel)]="usuarioActual.rol"
+            name="rol"
+            [disabled]="modoModal === 'ver'"
+            required>
+            <option value="" disabled>Seleccione un rol</option>
             <option *ngFor="let r of roles" [value]="r.nombre">
               {{ r.nombre }}
             </option>
           </select>
         </div>
+
       </div>
 
-      <div class="modal-footer" *ngIf="modoModal !== 'ver'">
-        <button class="btn-cancel" (click)="cerrarModalUsuario()">Cancelar</button>
-        <button class="btn-save" (click)="guardarUsuario()">Guardar</button>
+      <!-- FOOTER -->
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn-cancel"
+          (click)="cerrarModalUsuario()">
+          Cancelar
+        </button>
+
+        <button
+          type="submit"
+          class="btn-save"
+          *ngIf="modoModal !== 'ver'">
+          Guardar
+        </button>
       </div>
-    </div>
+
+    </form>
   </div>
 </div>
-<!-- Modal Permiso -->
+
+
+<!-- Modal Permiso
 <div class="modal-overlay" *ngIf="mostrarModalPermiso">
   <div class="modal-container">
     <div class="modal-header">
@@ -356,3 +455,5 @@
     </div>
   </div>
 </div>
+-->
+
