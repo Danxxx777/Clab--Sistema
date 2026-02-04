@@ -82,8 +82,8 @@
                 <td>{{lab.numero_equipos}} equipos</td>
                 <td>{{lab.encargado_nombre}}</td>
                 <td>
-                  <span class="estado-badge" [ngClass]="getEstadoBadgeClass(lab.estado_lab)">
-                    {{lab.estado_lab}}
+                  <span class="estado-badge" [ngClass]="getEstadoBadgeClass(lab.estado_lab ?? 'Disponible')">
+                        {{lab.estado_lab ?? 'Disponible'}}
                   </span>
                 </td>
                 <td>
@@ -232,7 +232,7 @@
 <!-- ============================================ -->
 <!-- MODAL PARA LABORATORIOS -->
 <!-- ============================================ -->
-<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'laboratorio'" (click)="cerrarModal()">
+<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'laboratorio'">
   <div class="modal-container" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ modoEdicion ? 'Editar Laboratorio' : 'Agregar Nuevo Laboratorio' }}</h2>
@@ -242,12 +242,12 @@
     <div class="modal-form">
       <div class="form-grid">
         <!-- Código -->
-        <div class="form-group">
-          <label>Código <span class="required">*</span></label>
+        <div class="form-group" *ngIf="modoEdicion">
+          <label>Código</label>
           <input type="number"
                  [(ngModel)]="formularioLab.cod_laboratorio"
-                 placeholder="Ej: 1"
-                 [disabled]="modoEdicion">
+                 [disabled]="true"
+                 readonly>
         </div>
 
         <!-- Nombre -->
@@ -359,7 +359,7 @@
 </div>
 
 
-<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'sede'" (click)="cerrarModal()">
+<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'sede'">
   <div class="modal-container" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ modoEdicion ? 'Editar Sede' : 'Agregar Nueva Sede' }}</h2>
@@ -423,7 +423,7 @@
 </div>
 
 
-<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'encargado'" (click)="cerrarModal()">
+<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'encargado'">
   <div class="modal-container" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ modoEdicion ? 'Editar Encargado' : 'Agregar Nuevo Encargado' }}</h2>
@@ -529,3 +529,4 @@
     </div>
   </div>
 </div>
+
