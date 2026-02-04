@@ -22,8 +22,8 @@ public class UsuarioBD {
     @Column(name = "usuario_bd", length = 100, nullable = false)
     private String usuarioBd;
 
-    @Column(name = "contrasena_bd", length = 100, nullable = false)
-    private String contrasenaBd;
+    @Column(name = "contrasenia_bd", length = 100, nullable = false)
+    private String contraseniaBd;
 
     @Column(name = "estado_user_bd", nullable = false,  length = 15)
     private String estadoUserBd;

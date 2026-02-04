@@ -26,5 +26,4 @@ export class SedeService {
       sede
     );
   }
-//xd
 }
