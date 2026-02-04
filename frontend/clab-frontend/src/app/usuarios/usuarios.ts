@@ -3,32 +3,33 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
+import { RolService, RolRequest, RolResponse } from '../services/rol.service';
+import { UsuarioService, UsuarioRequest, UsuarioResponse } from '../services/usuario.service';
+
 /* ===============================
-   INTERFACES
+   INTERFACES FRONT
 ================================ */
+
 interface Usuario {
-  id: number;
+  id?: number;                  // 🔥 opcional
+  identidad: string;
   nombres: string;
   apellidos: string;
   email: string;
-  identidad: string;
-  rol: string;
-  estado: 'Activo' | 'Inactivo';
-  fechaRegistro: string;
+  telefono?: string;
+  usuario: string;
+  contrasenia?: string;         // solo al crear
+  rol?: string;                 // 🔥 opcional
+  estado?: 'Activo' | 'Inactivo'; // 🔥 opcional
+  fechaRegistro?: string;       // 🔥 opcional
 }
 
-interface Rol {
-  id: number;
-  nombre: string;
-  descripcion: string;
-  estado: 'Activo' | 'Inactivo';
-}
 
-interface Permiso {
-  id: number;
+interface RolView {
+  id?: number;
   nombre: string;
-  modulo: string;
-  estado: 'Activo' | 'Inactivo';
+  descripcion?: string;
+  fechaCreacion: string;
 }
 
 interface Auditoria {
@@ -47,85 +48,64 @@ interface Auditoria {
 })
 export class UsuariosComponent implements OnInit {
 
-  /* ===============================
-     CONSTRUCTOR
-  ================================ */
-  constructor(private router: Router) {}
+  guardandoRol = false;
+
+  constructor(
+    private router: Router,
+    private rolService: RolService,
+    private usuarioService: UsuarioService
+  ) {}
 
   /* ===============================
      ESTADO GENERAL
   ================================ */
   tabActiva = 0;
-
   mostrarModalUsuario = false;
   mostrarModalRol = false;
-  mostrarModalPermiso = false;
-
   modoModal: 'crear' | 'editar' | 'ver' = 'crear';
 
   usuarioActual!: Usuario;
-  rolActual!: Rol;
-  permisoActual!: Permiso;
+  rolActual!: RolView;
 
-  /* ===============================
-     DATA
-  ================================ */
-  usuarios: Usuario[] = [
-    {
-      id: 1,
-      nombres: 'Juan',
-      apellidos: 'Pérez',
-      email: 'juan.perez@universidad.edu',
-      identidad: '0801199012345',
-      rol: 'Administrador',
-      estado: 'Activo',
-      fechaRegistro: '15/01/2024'
-    },
-    {
-      id: 2,
-      nombres: 'María',
-      apellidos: 'González',
-      email: 'maria.gonzalez@universidad.edu',
-      identidad: '0801198023456',
-      rol: 'Docente',
-      estado: 'Activo',
-      fechaRegistro: '20/01/2024'
-    }
-  ];
-
-  usuariosFiltrados: Usuario[] = [];
-
-  roles: Rol[] = [
-    { id: 1, nombre: 'Administrador', descripcion: 'Acceso total', estado: 'Activo' },
-    { id: 2, nombre: 'Docente', descripcion: 'Gestión académica', estado: 'Activo' },
-    { id: 3, nombre: 'Técnico', descripcion: 'Soporte técnico', estado: 'Activo' }
-  ];
-
-  permisos: Permiso[] = [
-    { id: 1, nombre: 'Crear Usuario', modulo: 'Usuarios', estado: 'Activo' },
-    { id: 2, nombre: 'Editar Usuario', modulo: 'Usuarios', estado: 'Activo' },
-    { id: 3, nombre: 'Eliminar Usuario', modulo: 'Usuarios', estado: 'Activo' }
-  ];
-
+  usuarios: {
+    id: number;
+    identidad: string;
+    nombres: string;
+    apellidos: string;
+    email: string;
+    telefono: string | undefined;
+    usuario: string;
+    rol: string;
+    estado: string;
+    fechaRegistro: string
+  }[] = [];
+  usuariosFiltrados: {
+    id: number;
+    identidad: string;
+    nombres: string;
+    apellidos: string;
+    email: string;
+    telefono: string | undefined;
+    usuario: string;
+    rol: string;
+    estado: string;
+    fechaRegistro: string
+  }[] = [];
+  roles: RolView[] = [];
   auditorias: Auditoria[] = [];
 
-  /* ===============================
-     FILTROS
-  ================================ */
   busqueda = '';
   filtroEstado = 'Todos';
   filtroRol = 'Todos';
 
   /* ===============================
-     CICLO DE VIDA
+     INIT
   ================================ */
   ngOnInit(): void {
-    this.usuariosFiltrados = [...this.usuarios];
+    this.cargarUsuarios();
+    this.cargarRoles();
   }
 
-  /* ===============================
-     NAVEGACIÓN
-  ================================ */
   volver(): void {
     this.router.navigate(['/dashboard']);
   }
@@ -137,158 +117,228 @@ export class UsuariosComponent implements OnInit {
   /* ===============================
      USUARIOS
   ================================ */
+  cargarUsuarios(): void {
+    this.usuarioService.listar().subscribe({
+      next: (data: UsuarioResponse[]) => {
+        this.usuarios = data.map(u => ({
+          id: u.idUsuario,
+          identidad: u.identidad,
+          nombres: u.nombres,
+          apellidos: u.apellidos,
+          email: u.email,
+          telefono: u.telefono,
+          usuario: u.usuario,
+          rol: 'Sin rol',
+          estado: u.estado,
+          fechaRegistro: u.fechaRegistro
+        }));
+        this.filtrarUsuarios();
+      },
+      error: err => console.error('Error cargando usuarios', err)
+    });
+  }
+
   filtrarUsuarios(): void {
     const texto = this.busqueda.toLowerCase();
 
     this.usuariosFiltrados = this.usuarios.filter(u =>
-      (`${u.nombres} ${u.apellidos} ${u.email} ${u.identidad}`
-        .toLowerCase().includes(texto)) &&
+      (`${u.nombres} ${u.apellidos} ${u.email} ${u.identidad}`.toLowerCase().includes(texto)) &&
       (this.filtroEstado === 'Todos' || u.estado === this.filtroEstado) &&
       (this.filtroRol === 'Todos' || u.rol === this.filtroRol)
     );
+  }
+
+  abrirModalUsuario(modo: "crear" | "editar" | "ver", u?: {
+    id: number;
+    identidad: string;
+    nombres: string;
+    apellidos: string;
+    email: string;
+    telefono: string | undefined;
+    usuario: string;
+    rol: string;
+    estado: string;
+    fechaRegistro: string
+  }): void {
+    this.modoModal = modo;
+
+    if (modo === 'crear') {
+      this.usuarioActual = {
+        identidad: '',
+        nombres: '',
+        apellidos: '',
+        email: '',
+        telefono: '',
+        usuario: '',
+        contrasenia: '',
+        estado: 'Activo'
+      };
+
+    }
+
+    this.mostrarModalUsuario = true;
+  }
+
+  guardarUsuario(): void {
+    if (
+      !this.usuarioActual.identidad ||
+      !this.usuarioActual.nombres ||
+      !this.usuarioActual.apellidos ||
+      !this.usuarioActual.email ||
+      !this.usuarioActual.contrasenia
+    ) {
+      alert('Complete todos los campos obligatorios');
+      return;
+    }
+
+    const payload: UsuarioRequest = {
+      identidad: this.usuarioActual.identidad,
+      nombres: this.usuarioActual.nombres,
+      apellidos: this.usuarioActual.apellidos,
+      email: this.usuarioActual.email,
+      telefono: this.usuarioActual.telefono,
+      contrasenia: this.usuarioActual.contrasenia
+    };
+
+    this.usuarioService.crear(payload).subscribe({
+      next: () => {
+        this.cargarUsuarios();
+        this.registrarAuditoria('Crear usuario', 'Usuarios');
+        this.cerrarModalUsuario();
+      },
+      error: err => {
+        console.error(err);
+        alert('Error al guardar el usuario');
+      }
+    });
+  }
+
+  eliminarUsuario(u: {
+    id: number;
+    identidad: string;
+    nombres: string;
+    apellidos: string;
+    email: string;
+    telefono: string | undefined;
+    usuario: string;
+    rol: string;
+    estado: string;
+    fechaRegistro: string
+  }): void {
+    if (!confirm(`¿Eliminar al usuario ${u.nombres}?`)) return;
+
+    this.usuarioService.eliminar(u.id).subscribe(() => {
+      this.cargarUsuarios();
+      this.registrarAuditoria('Eliminar usuario', 'Usuarios');
+    });
+  }
+
+  cerrarModalUsuario(): void {
+    this.mostrarModalUsuario = false;
+    this.modoModal = 'crear';
+  }
+
+  /* ===============================
+     ROLES (NO TOCAR)
+  ================================ */
+  cargarRoles(): void {
+    this.rolService.listar().subscribe({
+      next: (data: RolResponse[]) => {
+        this.roles = data.map(r => ({
+          id: r.idRol,
+          nombre: r.nombreRol,
+          descripcion: r.descripcion,
+          fechaCreacion: r.fechaCreacion
+        }));
+      }
+    });
+  }
+
+  abrirModalRol(modo: 'crear' | 'editar', r?: RolView): void {
+    this.modoModal = modo;
+    this.rolActual = r
+      ? { ...r }
+      : {
+        nombre: '',
+        descripcion: '',
+        fechaCreacion: new Date().toISOString().substring(0, 10)
+      };
+    this.mostrarModalRol = true;
+  }
+
+  guardarRol(): void {
+    if (this.guardandoRol) return;
+
+    if (!this.rolActual.nombre?.trim()) {
+      alert('El nombre del rol es obligatorio');
+      return;
+    }
+
+    this.guardandoRol = true;
+
+    const payload: RolRequest = {
+      nombreRol: this.rolActual.nombre.trim(),
+      descripcion: this.rolActual.descripcion?.trim()
+    };
+
+    const request$ =
+      this.modoModal === 'crear'
+        ? this.rolService.crear(payload)
+        : this.rolService.actualizar(this.rolActual.id!, payload);
+
+    request$.subscribe({
+      next: () => {
+        this.cargarRoles();
+        this.registrarAuditoria(
+          this.modoModal === 'crear' ? 'Crear rol' : 'Editar rol',
+          'Roles'
+        );
+        this.cerrarModalRol();
+      },
+      error: () => alert('Error al guardar el rol'),
+      complete: () => (this.guardandoRol = false)
+    });
+  }
+
+  eliminarRol(r: RolView): void {
+    if (!r.id) return;
+    if (!confirm(`¿Eliminar el rol "${r.nombre}"?`)) return;
+
+    this.rolService.eliminar(r.id).subscribe(() => {
+      this.cargarRoles();
+      this.registrarAuditoria('Eliminar rol', 'Roles');
+    });
+  }
+
+  cerrarModalRol(): void {
+    this.mostrarModalRol = false;
+    this.guardandoRol = false;
+    this.rolActual = {
+      nombre: '',
+      descripcion: '',
+      fechaCreacion: ''
+    };
+  }
+
+  /* ===============================
+     UTILIDADES
+  ================================ */
+  private generarUsuario(nombres: string, apellidos: string): string {
+    const n = nombres.trim().split(' ')[0].toLowerCase();
+    const a = apellidos.trim().split(' ')[0].toLowerCase();
+    return `${n}.${a}`;
   }
 
   getEstadoClass(estado: string): string {
     return estado === 'Activo' ? 'activo' : 'inactivo';
   }
 
-  _toggleModalUsuario(modo: 'crear' | 'editar' | 'ver', u?: Usuario): void {
-    this.modoModal = modo;
-    this.usuarioActual = u
-      ? { ...u }
-      : {
-        id: 0,
-        nombres: '',
-        apellidos: '',
-        email: '',
-        identidad: '',
-        rol: '',
-        estado: 'Activo',
-        fechaRegistro: new Date().toLocaleDateString()
-      };
-    this.mostrarModalUsuario = true;
-  }
-
-  abrirModalUsuario(modo: 'crear' | 'editar' | 'ver', u?: Usuario): void {
-    this._toggleModalUsuario(modo, u);
-  }
-
-  guardarUsuario(): void {
-    if (!this.usuarioActual.nombres || !this.usuarioActual.email || !this.usuarioActual.rol) {
-      alert('Complete los campos obligatorios');
-      return;
-    }
-
-    if (this.modoModal === 'crear') {
-      this.usuarioActual.id = Date.now();
-      this.usuarios.push(this.usuarioActual);
-      this.registrarAuditoria('Crear usuario', 'Usuarios');
-    } else {
-      const i = this.usuarios.findIndex(u => u.id === this.usuarioActual.id);
-      if (i !== -1) this.usuarios[i] = this.usuarioActual;
-      this.registrarAuditoria('Editar usuario', 'Usuarios');
-    }
-
-    this.filtrarUsuarios();
-    this.mostrarModalUsuario = false;
-  }
-
-  eliminarUsuario(u: Usuario): void {
-    if (!confirm(`¿Eliminar al usuario ${u.nombres}?`)) return;
-    this.usuarios = this.usuarios.filter(x => x.id !== u.id);
-    this.filtrarUsuarios();
-    this.registrarAuditoria('Eliminar usuario', 'Usuarios');
-  }
-
-  /* ===============================
-     ROLES
-  ================================ */
-  abrirModalRol(modo: 'crear' | 'editar', r?: Rol): void {
-    this.modoModal = modo;
-    this.rolActual = r ? { ...r } : { id: 0, nombre: '', descripcion: '', estado: 'Activo' };
-    this.mostrarModalRol = true;
-  }
-
-  guardarRol(): void {
-    if (!this.rolActual.nombre) {
-      alert('El nombre del rol es obligatorio');
-      return;
-    }
-
-    if (this.modoModal === 'crear') {
-      this.rolActual.id = Date.now();
-      this.roles.push(this.rolActual);
-      this.registrarAuditoria('Crear rol', 'Roles');
-    } else {
-      const i = this.roles.findIndex(r => r.id === this.rolActual.id);
-      if (i !== -1) this.roles[i] = this.rolActual;
-      this.registrarAuditoria('Editar rol', 'Roles');
-    }
-
-    this.mostrarModalRol = false;
-  }
-
-  eliminarRol(r: Rol): void {
-    if (!confirm(`¿Eliminar el rol ${r.nombre}?`)) return;
-    this.roles = this.roles.filter(x => x.id !== r.id);
-    this.registrarAuditoria('Eliminar rol', 'Roles');
-  }
-
-  /* ===============================
-     PERMISOS
-  ================================ */
-  abrirModalPermiso(modo: 'crear' | 'editar', p?: Permiso): void {
-    this.modoModal = modo;
-    this.permisoActual = p ? { ...p } : { id: 0, nombre: '', modulo: '', estado: 'Activo' };
-    this.mostrarModalPermiso = true;
-  }
-
-  guardarPermiso(): void {
-    if (!this.permisoActual.nombre || !this.permisoActual.modulo) {
-      alert('Complete los campos obligatorios');
-      return;
-    }
-
-    if (this.modoModal === 'crear') {
-      this.permisoActual.id = Date.now();
-      this.permisos.push(this.permisoActual);
-      this.registrarAuditoria('Crear permiso', 'Permisos');
-    } else {
-      const i = this.permisos.findIndex(p => p.id === this.permisoActual.id);
-      if (i !== -1) this.permisos[i] = this.permisoActual;
-      this.registrarAuditoria('Editar permiso', 'Permisos');
-    }
-
-    this.mostrarModalPermiso = false;
-  }
-
-  eliminarPermiso(p: Permiso): void {
-    if (!confirm(`¿Eliminar permiso ${p.nombre}?`)) return;
-    this.permisos = this.permisos.filter(x => x.id !== p.id);
-    this.registrarAuditoria('Eliminar permiso', 'Permisos');
-  }
-
-  /* ===============================
-     AUDITORÍA
-  ================================ */
   registrarAuditoria(accion: string, modulo: string): void {
     this.auditorias.unshift({
-      usuario: 'Juan Pérez',
+      usuario: 'Sistema',
       accion,
       modulo,
       fecha: new Date().toLocaleString()
     });
   }
-  cerrarModalUsuario(): void {
-    this.mostrarModalUsuario = false;
-  }
-
-  cerrarModalRol(): void {
-    this.mostrarModalRol = false;
-  }
-
-  cerrarModalPermiso(): void {
-    this.mostrarModalPermiso = false;
-  }
-
 }
