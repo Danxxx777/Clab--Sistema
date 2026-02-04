@@ -40,5 +40,12 @@ public class SedeService {
 
         return sedeRepository.save(sede);
     }
+
+    public void eliminar(Integer id) {
+        if (!sedeRepository.existsById(id)) {
+            throw new RuntimeException("Sede no encontrada con id: " + id);
+        }
+        sedeRepository.deleteById(id);
+    }
 }
 
