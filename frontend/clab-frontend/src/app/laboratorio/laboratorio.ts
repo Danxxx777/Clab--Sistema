@@ -3,21 +3,33 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {SedeService} from '../services/sede.service';
-
+import { LaboratorioService } from '../services/laboratorio.service';
 
 
 interface Laboratorio {
-  cod_laboratorio: number;
-  nombre: string;
+  codLaboratorio?: number;  // Ahora camelCase
+  cod_laboratorio?: number; // Mantener para compatibilidad
+  nombreLab?: string;       // Nuevo nombre
+  nombre?: string;          // Mantener para compatibilidad
   ubicacion: string;
-  capacidad_estudiantes: number;
-  numero_equipos: number;
+  capacidadEstudiantes?: number;
+  capacidad_estudiantes?: number; // Mantener para compatibilidad
+  numeroEquipos?: number;
+  numero_equipos?: number;  // Mantener para compatibilidad
   descripcion: string;
-  estado_lab: 'Disponible' | 'Mantenimiento' | 'Bloqueado';
-  id_sede: number;
+  estadoLab?: string;
+  estado_lab?: 'Disponible' | 'Mantenimiento' | 'Bloqueado';
+  idSede?: number;
+  id_sede?: number;         // Mantener para compatibilidad
+  sede?: {
+    idSede: number;
+    nombre: string;
+  };
+  nombreSede?: string;
   nombre_sede?: string;
+  encargadoNombre?: string;
   encargado_nombre?: string;
-  foto?: string; // Nueva propiedad para la URL o base64 de la imagen
+  foto?: string;
 }
 
 interface Sede {
@@ -202,8 +214,11 @@ export class LaboratoriosComponent implements OnInit {
 
   paginaActual: number = 1;
 
-  constructor(private router: Router, private sedeService: SedeService){
-  }
+  constructor(
+    private router: Router,
+    private sedeService: SedeService,
+    private laboratorioService: LaboratorioService  // ← AGREGAR
+  ) { }
 
   cargarSedes(): void {
     this.sedeService.listar().subscribe({
@@ -217,16 +232,47 @@ export class LaboratoriosComponent implements OnInit {
     });
   }
 
+  cargarLaboratorios(): void {
+    this.laboratorioService.listar().subscribe({
+      next: (data) => {
+        this.laboratorios = data.map(lab => this.mapearLaboratorio(lab));
+        this.laboratoriosFiltrados = [...this.laboratorios];
+      },
+      error: (err) => {
+        console.error('Error cargando laboratorios', err);
+      }
+    });
+  }
+
+  private mapearLaboratorio(lab: any): Laboratorio {
+    return {
+      cod_laboratorio: lab.codLaboratorio || lab.cod_laboratorio || 0,
+      nombre: lab.nombreLab || lab.nombre || '',
+      ubicacion: lab.ubicacion || '',
+      capacidad_estudiantes: lab.capacidadEstudiantes || lab.capacidad_estudiantes || 0,
+      numero_equipos: lab.numeroEquipos || lab.numero_equipos || 0,
+      descripcion: lab.descripcion || '',
+      estado_lab: lab.estadoLab || lab.estado_lab || 'Disponible',
+      id_sede: lab.sede?.idSede || lab.idSede || lab.id_sede || 0,
+      nombre_sede: lab.sede?.nombre || lab.nombreSede || lab.nombre_sede || '',
+      encargado_nombre: lab.encargadoNombre || lab.encargado_nombre || '',
+      foto: lab.foto || ''
+    };
+  }
+
   ngOnInit(): void {
-    this.laboratoriosFiltrados = [...this.laboratorios];
-    this.sedesFiltradas = [...this.sedes];
-    this.encargadosFiltrados = [...this.encargados];
+    this.cargarLaboratorios();  // ← AGREGAR
     this.cargarSedes();
+    this.encargadosFiltrados = [...this.encargados];
   }
 
   cambiarTab(index: number): void {
     this.tabActiva = index;
     this.paginaActual = 1;
+
+    if (index === 0 && this.laboratorios.length === 0) {
+      this.cargarLaboratorios();  // ← AGREGAR
+    }
 
     if (index === 1 && this.sedes.length === 0) {
       this.cargarSedes();
@@ -243,7 +289,9 @@ export class LaboratoriosComponent implements OnInit {
       descripcion: '',
       estado_lab: 'Disponible',
       id_sede: 0,
-      foto: '' // Agregar foto vacía
+      nombre_sede: '',
+      encargado_nombre: '',
+      foto: ''
     };
   }
 
@@ -314,13 +362,19 @@ export class LaboratoriosComponent implements OnInit {
 
   filtrarLaboratorios(): void {
     const busqueda = this.busquedaLaboratorios.toLowerCase();
-    this.laboratoriosFiltrados = this.laboratorios.filter(lab =>
-      lab.cod_laboratorio.toString().includes(busqueda) ||
-      lab.nombre.toLowerCase().includes(busqueda) ||
-      lab.ubicacion.toLowerCase().includes(busqueda) ||
-      (lab.nombre_sede && lab.nombre_sede.toLowerCase().includes(busqueda)) ||
-      (lab.encargado_nombre && lab.encargado_nombre.toLowerCase().includes(busqueda))
-    );
+    this.laboratoriosFiltrados = this.laboratorios.filter(lab => {
+      const codigo = (lab.cod_laboratorio || lab.codLaboratorio || 0).toString();
+      const nombre = (lab.nombre || lab.nombreLab || '').toLowerCase();
+      const ubicacion = (lab.ubicacion || '').toLowerCase();
+      const nombreSede = (lab.nombre_sede || lab.nombreSede || '').toLowerCase();
+      const encargado = (lab.encargado_nombre || lab.encargadoNombre || '').toLowerCase();
+
+      return codigo.includes(busqueda) ||
+        nombre.includes(busqueda) ||
+        ubicacion.includes(busqueda) ||
+        nombreSede.includes(busqueda) ||
+        encargado.includes(busqueda);
+    });
   }
 
   filtrarSedes(): void {
@@ -379,15 +433,77 @@ export class LaboratoriosComponent implements OnInit {
       return;
     }
 
-    if (this.modoEdicion) {
-      this.laboratorios[this.indiceEdicion] = { ...this.formularioLab };
-    } else {
-      this.laboratorios.push({ ...this.formularioLab });
-    }
+    // Preparar datos para enviar al backend
+    const labData = {
+      ...(this.modoEdicion && { codLaboratorio: this.formularioLab.cod_laboratorio }),
+      nombreLab: this.formularioLab.nombre,
+      ubicacion: this.formularioLab.ubicacion,
+      capacidadEstudiantes: this.formularioLab.capacidad_estudiantes,
+      numeroEquipos: this.formularioLab.numero_equipos,
+      descripcion: this.formularioLab.descripcion,
+      estadoLab: this.formularioLab.estado_lab,
+      idSede: this.formularioLab.id_sede,
+      foto: this.formularioLab.foto
+    };
 
-    this.filtrarLaboratorios();
-    this.cerrarModal();
-    alert(this.modoEdicion ? 'Laboratorio actualizado exitosamente' : 'Laboratorio agregado exitosamente');
+    if (this.modoEdicion && this.formularioLab.cod_laboratorio) {
+      // EDITAR LABORATORIO
+      this.laboratorioService.editar(this.formularioLab.cod_laboratorio, labData)
+        .subscribe({
+          next: (labActualizado) => {
+            // Mapear respuesta del backend
+            const labMapeado = {
+              cod_laboratorio: labActualizado.codLaboratorio,
+              nombre: labActualizado.nombreLab,
+              ubicacion: labActualizado.ubicacion,
+              capacidad_estudiantes: labActualizado.capacidadEstudiantes,
+              numero_equipos: labActualizado.numeroEquipos,
+              descripcion: labActualizado.descripcion,
+              estado_lab: labActualizado.estadoLab as 'Disponible' | 'Mantenimiento' | 'Bloqueado',
+              id_sede: labActualizado.sede?.idSede || 0,
+              nombre_sede: labActualizado.sede?.nombre || '',
+              foto: this.formularioLab.foto || ''
+            };
+
+            this.laboratorios[this.indiceEdicion] = labMapeado;
+            this.laboratoriosFiltrados = [...this.laboratorios];
+            this.cerrarModal();
+            alert('Laboratorio actualizado correctamente');
+          },
+          error: (err) => {
+            console.error('Error al editar laboratorio', err);
+            alert('Error al editar el laboratorio');
+          }
+        });
+    } else {
+      // CREAR LABORATORIO
+      this.laboratorioService.crear(labData).subscribe({
+        next: (labCreado) => {
+          // Mapear respuesta del backend
+          const labMapeado = {
+            cod_laboratorio: labCreado.codLaboratorio,
+            nombre: labCreado.nombreLab,
+            ubicacion: labCreado.ubicacion,
+            capacidad_estudiantes: labCreado.capacidadEstudiantes,
+            numero_equipos: labCreado.numeroEquipos,
+            descripcion: labCreado.descripcion,
+            estado_lab: labCreado.estadoLab as 'Disponible' | 'Mantenimiento' | 'Bloqueado',
+            id_sede: labCreado.sede?.idSede || 0,
+            nombre_sede: labCreado.sede?.nombre || '',
+            foto: this.formularioLab.foto || ''
+          };
+
+          this.laboratorios.push(labMapeado);
+          this.laboratoriosFiltrados = [...this.laboratorios];
+          this.cerrarModal();
+          alert('Laboratorio creado exitosamente');
+        },
+        error: (err) => {
+          console.error('Error al crear laboratorio', err);
+          alert('Error al crear el laboratorio');
+        }
+      });
+    }
   }
 
   eliminarLaboratorio(lab: Laboratorio, index: number): void {
@@ -398,15 +514,25 @@ export class LaboratoriosComponent implements OnInit {
   }
 
   validarFormularioLab(): boolean {
+    const nombre = this.formularioLab.nombre || '';
+    const capacidad = this.formularioLab.capacidad_estudiantes || 0;
+    const equipos = this.formularioLab.numero_equipos ?? -1;
+    const estado = this.formularioLab.estado_lab || '';
+    const sede = this.formularioLab.id_sede || 0;
+
+    if (this.modoEdicion) {
+      const codigo = this.formularioLab.cod_laboratorio || 0;
+      if (codigo <= 0) return false;
+    }
+
     return !!(
-      this.formularioLab.cod_laboratorio > 0 &&
-      this.formularioLab.nombre &&
+      nombre &&
       this.formularioLab.ubicacion &&
-      this.formularioLab.capacidad_estudiantes > 0 &&
-      this.formularioLab.numero_equipos >= 0 &&
+      capacidad > 0 &&
+      equipos >= 0 &&
       this.formularioLab.descripcion &&
-      this.formularioLab.estado_lab &&
-      this.formularioLab.id_sede > 0
+      estado &&
+      sede > 0
     );
   }
 
@@ -526,19 +652,40 @@ export class LaboratoriosComponent implements OnInit {
   }
 
   confirmarEliminacion(): void {
-    if (this.tipoModal === 'laboratorio') {
-      this.laboratorios.splice(this.indiceParaEliminar, 1);
-      this.filtrarLaboratorios();
-    } else if (this.tipoModal === 'sede') {
-      this.sedes.splice(this.indiceParaEliminar, 1);
-      this.filtrarSedes();
+    if (this.tipoModal === 'laboratorio' && this.itemParaEliminar.cod_laboratorio) {
+      // ELIMINAR LABORATORIO
+      this.laboratorioService.eliminar(this.itemParaEliminar.cod_laboratorio).subscribe({
+        next: () => {
+          this.laboratorios.splice(this.indiceParaEliminar, 1);
+          this.filtrarLaboratorios();
+          this.cerrarModalConfirmar();
+          alert('Laboratorio eliminado exitosamente');
+        },
+        error: (err) => {
+          console.error('Error al eliminar laboratorio', err);
+          alert('Error al eliminar el laboratorio');
+        }
+      });
+    } else if (this.tipoModal === 'sede' && this.itemParaEliminar.idSede) {
+      // ELIMINAR SEDE (necesitas agregar este método en SedeService)
+      this.sedeService.eliminar(this.itemParaEliminar.idSede).subscribe({
+        next: () => {
+          this.sedes.splice(this.indiceParaEliminar, 1);
+          this.filtrarSedes();
+          this.cerrarModalConfirmar();
+          alert('Sede eliminada exitosamente');
+        },
+        error: (err) => {
+          console.error('Error al eliminar sede', err);
+          alert('Error al eliminar la sede');
+        }
+      });
     } else if (this.tipoModal === 'encargado') {
       this.encargados.splice(this.indiceParaEliminar, 1);
       this.filtrarEncargados();
+      this.cerrarModalConfirmar();
+      alert('Encargado eliminado exitosamente');
     }
-
-    this.cerrarModalConfirmar();
-    alert('Elemento eliminado exitosamente');
   }
 
   verDetalle(item: any): void {
@@ -559,7 +706,9 @@ export class LaboratoriosComponent implements OnInit {
     return `${nombres || ''} ${apellidos || ''}`.trim();
   }
 
-  getEstadoBadgeClass(estado: string): string {
+  getEstadoBadgeClass(estado?: string): string {
+    if (!estado) return 'inactivo';  // Manejo de undefined/null
+
     const estadoLower = estado.toLowerCase();
     if (estadoLower === 'disponible' || estadoLower === 'activa' || estadoLower === 'activo') {
       return 'activo';
