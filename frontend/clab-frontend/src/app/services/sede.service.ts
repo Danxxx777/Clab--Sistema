@@ -27,4 +27,8 @@ export class SedeService {
       sede
     );
   }
+
+  eliminar(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/eliminar/${id}`,{ responseType: 'text' } );
+  }
 }
