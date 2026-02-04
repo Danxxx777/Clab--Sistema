@@ -4,6 +4,7 @@ import com.clab.clabbackend.dto.SedeDTO;
 import com.clab.clabbackend.entities.Sede;
 import com.clab.clabbackend.services.SedeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -32,5 +33,10 @@ public class SedeController {
     public Sede actualizar(@PathVariable Integer id, @RequestBody SedeDTO dto)
     {
         return sedeService.actualizar(id, dto);
+    }
+    @DeleteMapping("/eliminar/{id}")
+    public ResponseEntity<String> eliminarSede(@PathVariable Integer id) {
+        sedeService.eliminar(id);
+        return ResponseEntity.ok("Sede eliminada exitosamente");
     }
 }

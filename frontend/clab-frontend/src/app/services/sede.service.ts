@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Sedes} from '../interfaces/Sedes.model';
+import {Observable} from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class SedeService {
@@ -26,5 +27,8 @@ export class SedeService {
       sede
     );
   }
-//xd
+
+  eliminar(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/eliminar/${id}`,{ responseType: 'text' } );
+  }
 }
