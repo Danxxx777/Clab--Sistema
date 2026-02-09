@@ -12,6 +12,7 @@ import java.util.List;
 @Entity
 @Table(name = "i_equipo", schema = "inventario")
 public class Equipo {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_equipo")
@@ -43,10 +44,6 @@ public class Equipo {
     @JoinColumn(name = "cod_laboratorio", nullable = false)
     private Laboratorio laboratorio;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "id_usuario", nullable = false)
-    private Usuario usuario;
-
     @Column(name = "fecha_adquisicion", nullable = false)
     private LocalDate fechaAdquisicion;
 
@@ -56,3 +53,4 @@ public class Equipo {
     @Column(name = "ultimo_reporte", nullable = false)
     private LocalDate ultimoReporte;
 }
+
