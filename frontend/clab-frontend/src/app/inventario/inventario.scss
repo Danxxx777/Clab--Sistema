@@ -1,3 +1,12 @@
+:host {
+  display: block;
+  width: 100%;
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+
+
 $color-primario: #2d7d51;
 $color-secundario: #27ae60;
 $color-fondo: #f5f7fa;
@@ -558,7 +567,7 @@ $color-eliminar: #e74c3c;
 
   textarea.form-control {
     resize: vertical;
-    min-height: 80px;
+    min-height: 90px;
     max-height: 200px;
     font-family: inherit;
   }

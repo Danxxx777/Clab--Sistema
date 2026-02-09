@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 export interface Laboratorio {
   codLaboratorio: number;
-  nombreLab: string;  // Cambiado de "nombre" a "nombreLab"
+  nombreLab: string;
   ubicacion: string;
   capacidadEstudiantes: number;
   numeroEquipos: number;
@@ -18,7 +18,7 @@ export interface Laboratorio {
     email: string;
     estado: string;
   };
-  idSede?: number;  // Para crear/editar
+  idSede?: number;
   nombreSede?: string;
   encargadoNombre?: string;
   foto?: string;
