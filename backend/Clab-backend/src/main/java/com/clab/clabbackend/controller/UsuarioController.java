@@ -1,9 +1,9 @@
 package com.clab.clabbackend.controller;
 
 import com.clab.clabbackend.dto.UsuarioDTO;
+import com.clab.clabbackend.dto.UsuarioResponseDTO;
 import com.clab.clabbackend.entities.Usuario;
 import com.clab.clabbackend.services.UsuarioService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,12 +25,18 @@ public class UsuarioController {
     }
 
     @GetMapping("/listar")
-    public List<Usuario> listar() {
+    public List<UsuarioResponseDTO> listar() {
         return usuarioService.listar();
     }
 
-    @DeleteMapping("/eliminar/{id}")
-    public void eliminar(@PathVariable Integer id) {
-        usuarioService.eliminar(id);
+    @PutMapping("/desactivar/{id}")
+    public void desactivar(@PathVariable Integer id) {
+        usuarioService.desactivar(id);
     }
+    @PutMapping("/actualizar/{id}")
+    public Usuario actualizar(@PathVariable Integer id, @RequestBody UsuarioDTO dto) {
+        return usuarioService.actualizar(id, dto);
+    }
+
+
 }

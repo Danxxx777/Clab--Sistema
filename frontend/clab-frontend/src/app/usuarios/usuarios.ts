@@ -5,39 +5,9 @@ import { Router } from '@angular/router';
 
 import { RolService, RolRequest, RolResponse } from '../services/rol.service';
 import { UsuarioService, UsuarioRequest, UsuarioResponse } from '../services/usuario.service';
-
-/* ===============================
-   INTERFACES FRONT
-================================ */
-
-interface Usuario {
-  id?: number;                  // 🔥 opcional
-  identidad: string;
-  nombres: string;
-  apellidos: string;
-  email: string;
-  telefono?: string;
-  usuario: string;
-  contrasenia?: string;         // solo al crear
-  rol?: string;                 // 🔥 opcional
-  estado?: 'Activo' | 'Inactivo'; // 🔥 opcional
-  fechaRegistro?: string;       // 🔥 opcional
-}
-
-
-interface RolView {
-  id?: number;
-  nombre: string;
-  descripcion?: string;
-  fechaCreacion: string;
-}
-
-interface Auditoria {
-  usuario: string;
-  accion: string;
-  modulo: string;
-  fecha: string;
-}
+import { Usuario } from '../interfaces/Usuario.model';
+import { RolView } from '../interfaces/Rol.model';
+import { Auditoria } from '../interfaces/Auditoria.model';
 
 @Component({
   selector: 'app-usuarios',
@@ -54,53 +24,25 @@ export class UsuariosComponent implements OnInit {
     private router: Router,
     private rolService: RolService,
     private usuarioService: UsuarioService
-  ) {}
+  ) {
+  }
 
-  /* ===============================
-     ESTADO GENERAL
-  ================================ */
+  /* ESTADO GENERAL*/
   tabActiva = 0;
   mostrarModalUsuario = false;
   mostrarModalRol = false;
   modoModal: 'crear' | 'editar' | 'ver' = 'crear';
-
   usuarioActual!: Usuario;
   rolActual!: RolView;
-
-  usuarios: {
-    id: number;
-    identidad: string;
-    nombres: string;
-    apellidos: string;
-    email: string;
-    telefono: string | undefined;
-    usuario: string;
-    rol: string;
-    estado: string;
-    fechaRegistro: string
-  }[] = [];
-  usuariosFiltrados: {
-    id: number;
-    identidad: string;
-    nombres: string;
-    apellidos: string;
-    email: string;
-    telefono: string | undefined;
-    usuario: string;
-    rol: string;
-    estado: string;
-    fechaRegistro: string
-  }[] = [];
+  usuarios: Usuario[] = [];
+  usuariosFiltrados: Usuario[] = [];
   roles: RolView[] = [];
   auditorias: Auditoria[] = [];
-
   busqueda = '';
   filtroEstado = 'Todos';
   filtroRol = 'Todos';
 
-  /* ===============================
-     INIT
-  ================================ */
+  /*INIT */
   ngOnInit(): void {
     this.cargarUsuarios();
     this.cargarRoles();
@@ -114,9 +56,19 @@ export class UsuariosComponent implements OnInit {
     this.tabActiva = index;
   }
 
-  /* ===============================
-     USUARIOS
-  ================================ */
+  filtrarUsuarios(): void {
+    const texto = this.busqueda.toLowerCase();
+
+    this.usuariosFiltrados = this.usuarios.filter(u =>
+      (`${u.nombres} ${u.apellidos} ${u.email} ${u.identidad}`
+        .toLowerCase()
+        .includes(texto)) &&
+      (this.filtroEstado === 'Todos' || u.estado === this.filtroEstado) &&
+      (this.filtroRol === 'Todos' || u.rolNombre === this.filtroRol)
+    );
+  }
+
+  /* USUARIOS*/
   cargarUsuarios(): void {
     this.usuarioService.listar().subscribe({
       next: (data: UsuarioResponse[]) => {
@@ -128,40 +80,25 @@ export class UsuariosComponent implements OnInit {
           email: u.email,
           telefono: u.telefono,
           usuario: u.usuario,
-          rol: 'Sin rol',
+          idRol: u.idRol,
+          rolNombre: u.nombreRol ?? 'Sin rol',
+
           estado: u.estado,
           fechaRegistro: u.fechaRegistro
         }));
+
         this.filtrarUsuarios();
       },
       error: err => console.error('Error cargando usuarios', err)
     });
   }
 
-  filtrarUsuarios(): void {
-    const texto = this.busqueda.toLowerCase();
+  abrirModalUsuario(
+    modo: 'crear' | 'editar' | 'ver',
+    u?: Usuario
+  ): void {
 
-    this.usuariosFiltrados = this.usuarios.filter(u =>
-      (`${u.nombres} ${u.apellidos} ${u.email} ${u.identidad}`.toLowerCase().includes(texto)) &&
-      (this.filtroEstado === 'Todos' || u.estado === this.filtroEstado) &&
-      (this.filtroRol === 'Todos' || u.rol === this.filtroRol)
-    );
-  }
-
-  abrirModalUsuario(modo: "crear" | "editar" | "ver", u?: {
-    id: number;
-    identidad: string;
-    nombres: string;
-    apellidos: string;
-    email: string;
-    telefono: string | undefined;
-    usuario: string;
-    rol: string;
-    estado: string;
-    fechaRegistro: string
-  }): void {
     this.modoModal = modo;
-
     if (modo === 'crear') {
       this.usuarioActual = {
         identidad: '',
@@ -171,21 +108,31 @@ export class UsuariosComponent implements OnInit {
         telefono: '',
         usuario: '',
         contrasenia: '',
-        estado: 'Activo'
+        idRol: undefined,
+        estado: 'ACTIVO'
       };
-
+    } else if (u) {
+      this.usuarioActual = {
+        ...u,
+        contrasenia: ''
+      };
     }
 
     this.mostrarModalUsuario = true;
   }
 
   guardarUsuario(): void {
+
+    const esCrear = this.modoModal === 'crear';
+    const esEditar = this.modoModal === 'editar';
+
     if (
       !this.usuarioActual.identidad ||
       !this.usuarioActual.nombres ||
       !this.usuarioActual.apellidos ||
       !this.usuarioActual.email ||
-      !this.usuarioActual.contrasenia
+      !this.usuarioActual.idRol ||
+      (esCrear && !this.usuarioActual.contrasenia)
     ) {
       alert('Complete todos los campos obligatorios');
       return;
@@ -197,39 +144,54 @@ export class UsuariosComponent implements OnInit {
       apellidos: this.usuarioActual.apellidos,
       email: this.usuarioActual.email,
       telefono: this.usuarioActual.telefono,
-      contrasenia: this.usuarioActual.contrasenia
+      contrasenia: this.usuarioActual.contrasenia || '',
+      idRol: this.usuarioActual.idRol
     };
 
-    this.usuarioService.crear(payload).subscribe({
-      next: () => {
-        this.cargarUsuarios();
-        this.registrarAuditoria('Crear usuario', 'Usuarios');
-        this.cerrarModalUsuario();
-      },
-      error: err => {
-        console.error(err);
-        alert('Error al guardar el usuario');
+    if (esCrear) {
+      this.usuarioService.crear(payload).subscribe({
+        next: () => {
+          alert('✅ Usuario creado correctamente');
+          this.cargarUsuarios();
+          this.registrarAuditoria('Crear usuario', 'Usuarios');
+          this.cerrarModalUsuario();
+        },
+        error: err => {
+          console.error(err);
+          alert('❌ Error al crear el usuario');
+        }
+      });
+      return;
+    }
+
+    if (esEditar) {
+      if (!this.usuarioActual.id) {
+        alert('❌ No se encontró el id del usuario para actualizar');
+        return;
       }
-    });
+
+      this.usuarioService.actualizar(this.usuarioActual.id, payload).subscribe({
+        next: () => {
+          alert('✅ Usuario actualizado correctamente');
+          this.cargarUsuarios();
+          this.registrarAuditoria('Actualizar usuario', 'Usuarios');
+          this.cerrarModalUsuario();
+        },
+        error: err => {
+          console.error(err);
+          alert('❌ Error al actualizar el usuario');
+        }
+      });
+    }
   }
 
-  eliminarUsuario(u: {
-    id: number;
-    identidad: string;
-    nombres: string;
-    apellidos: string;
-    email: string;
-    telefono: string | undefined;
-    usuario: string;
-    rol: string;
-    estado: string;
-    fechaRegistro: string
-  }): void {
-    if (!confirm(`¿Eliminar al usuario ${u.nombres}?`)) return;
+  desactivarUsuario(u: Usuario): void {
+    if (!u.id) return;
+    if (!confirm(`¿Desactivar al usuario ${u.nombres}?`)) return;
 
-    this.usuarioService.eliminar(u.id).subscribe(() => {
+    this.usuarioService.desactivar(u.id).subscribe(() => {
       this.cargarUsuarios();
-      this.registrarAuditoria('Eliminar usuario', 'Usuarios');
+      this.registrarAuditoria('Desactivar usuario', 'Usuarios');
     });
   }
 
@@ -238,9 +200,6 @@ export class UsuariosComponent implements OnInit {
     this.modoModal = 'crear';
   }
 
-  /* ===============================
-     ROLES (NO TOCAR)
-  ================================ */
   cargarRoles(): void {
     this.rolService.listar().subscribe({
       next: (data: RolResponse[]) => {
@@ -320,17 +279,11 @@ export class UsuariosComponent implements OnInit {
     };
   }
 
-  /* ===============================
-     UTILIDADES
-  ================================ */
-  private generarUsuario(nombres: string, apellidos: string): string {
-    const n = nombres.trim().split(' ')[0].toLowerCase();
-    const a = apellidos.trim().split(' ')[0].toLowerCase();
-    return `${n}.${a}`;
-  }
-
-  getEstadoClass(estado: string): string {
-    return estado === 'Activo' ? 'activo' : 'inactivo';
+  /* UTILIDADES*/
+  getEstadoClass(estado?: string): string {
+    return estado === 'Activo' || estado === 'ACTIVO'
+      ? 'activo'
+      : 'inactivo';
   }
 
   registrarAuditoria(accion: string, modulo: string): void {
