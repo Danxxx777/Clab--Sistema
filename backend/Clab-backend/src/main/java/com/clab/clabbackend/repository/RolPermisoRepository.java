@@ -10,4 +10,4 @@ public interface RolPermisoRepository extends JpaRepository<RolPermiso, Integer>
             String modulo,
             String permiso
     );
-}
+} //aaa

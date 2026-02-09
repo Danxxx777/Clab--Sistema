@@ -9,3 +9,4 @@ public interface RolRolBDRepository extends JpaRepository<RolRolBD, Integer> {
 
     Optional<RolRolBD> findByRol_IdRolAndVigenteTrue(Integer idRol);
 }
+//a

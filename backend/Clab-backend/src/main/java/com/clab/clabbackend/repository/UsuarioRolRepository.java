@@ -10,3 +10,4 @@ public interface UsuarioRolRepository extends JpaRepository<UsuarioRol, Integer>
     Optional<UsuarioRol> findByUsuario_IdUsuarioAndVigenteTrue(Integer idUsuario);
 }
 
+//a

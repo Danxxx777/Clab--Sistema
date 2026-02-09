@@ -8,6 +8,5 @@ public class Permiso {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idPermiso;
-
     private String nombrePermiso;
 }

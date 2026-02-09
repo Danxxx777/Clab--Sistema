@@ -294,4 +294,4 @@ export class UsuariosComponent implements OnInit {
       fecha: new Date().toLocaleString()
     });
   }
-}
+}//a

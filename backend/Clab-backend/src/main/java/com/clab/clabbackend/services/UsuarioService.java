@@ -144,4 +144,4 @@ public class UsuarioService {
         String a = apellidos.trim().split(" ")[0].toLowerCase();
         return n + "." + a;
     }
-}
+}//a

@@ -32,6 +32,6 @@ public class PermisoService {
 
         if (!autorizado) {
             throw new RuntimeException("Acceso denegado");
-        }
+        }//a
     }
 }

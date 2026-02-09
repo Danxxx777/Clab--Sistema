@@ -8,7 +8,6 @@ public class Modulo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idModulo;
-
     private String nombreModulo;
     private String descripcion;
 }

@@ -17,7 +17,6 @@ public class RolPermiso {
     @ManyToOne
     @JoinColumn(name = "id_modulo")
     private Modulo modulo;
-
     @ManyToOne
     @JoinColumn(name = "id_permiso")
     private Permiso permiso;

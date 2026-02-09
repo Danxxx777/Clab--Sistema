@@ -9,6 +9,6 @@ export interface Usuario {
   contrasenia?: string;
   idRol?: number;
   rolNombre?: string;
-  estado?: string;
+  estado?: string;//a
   fechaRegistro?: string;
 }

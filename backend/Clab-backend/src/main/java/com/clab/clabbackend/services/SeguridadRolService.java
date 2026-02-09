@@ -30,4 +30,4 @@ public class SeguridadRolService {
 
         return rolRolBD.getRolBd().getNombreRolBd();
     }
-}
+}//a

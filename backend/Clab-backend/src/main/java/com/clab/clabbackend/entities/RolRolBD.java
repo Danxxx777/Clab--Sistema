@@ -11,7 +11,6 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "u_rol_rol_bd", schema = "usuarios")
 public class RolRolBD {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_rol_rol_bd")
