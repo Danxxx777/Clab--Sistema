@@ -1,0 +1,81 @@
+<div class="login-page">
+  <div class="login-container">
+    <div class="login-left">
+      <div class="brand-content">
+        <div class="logo">
+          <h1>CLAB</h1>
+        </div>
+        <h2>Sistema de Gestión de Laboratorios</h2>
+        <a href="https://www.uteq.edu.ec" target="_blank" class="logo-link">
+          <img
+            src="/LogoUTEQ.png"
+            alt="Logo UTEQ"
+            class="logo-universidad"
+          />
+        </a>
+        <p class="tagline">
+          Administra reservas, equipos y reportes de manera eficiente y profesional
+        </p>
+      </div>
+    </div>
+
+    <div class="login-right">
+      <div class="login-form-container">
+        <div class="form-header">
+          <h2>Bienvenido</h2>
+          <p>Ingresa tus credenciales para acceder al sistema</p>
+        </div>
+
+        <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
+        <form class="login-form" (ngSubmit)="login()">
+          <div class="form-group">
+            <label for="username">
+              <span class="label-icon">👤</span>
+              Usuario
+            </label>
+            <input
+              type="text"
+              id="username"
+              [(ngModel)]="username"
+              name="username"
+              placeholder="Ingresa tu usuario"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="password">
+              <span class="label-icon">🔒</span>
+              Contraseña
+            </label>
+            <input
+              type="password"
+              id="password"
+              [(ngModel)]="password"
+              name="password"
+              placeholder="Ingresa tu contraseña"
+              required
+            >
+          </div>
+
+          <div class="form-options">
+            <label class="checkbox-container">
+              <input type="checkbox" [(ngModel)]="recordarme" name="recordarme">
+              <span class="checkmark"></span>
+              Recordarme
+            </label>
+            <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
+          </div>
+
+          <button type="submit" class="btn-login">
+            Iniciar Sesión
+          </button>
+        </form>
+
+        <div class="form-footer">
+          <p>¿Necesitas ayuda? <a href="#">Contacta soporte técnico</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

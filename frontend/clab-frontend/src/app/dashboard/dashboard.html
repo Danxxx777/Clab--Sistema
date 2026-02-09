@@ -1,18 +1,22 @@
-<button class="logout" (click)="logout()">Cerrar sesión</button>
+
+<nav class="navbar">
+  <div class="nav-container">
+    <div class="logo">
+      <img src="/favicon.ico" alt="CLAB" class="logo-icon">
+      <span>MENÚ CLAB</span>
+    </div>
+
+    <button class="logout" (click)="logout()">Cerrar sesión </button>
+  </div>
+</nav>
+
 
 <div class="page">
   <div class="card">
 
-    <h1 class="title">MENÚ CLAB</h1>
-
-    <div class="backend-status">
-      <strong>Estado del sistema:</strong>
-      <p>{{ mensajeBackend }}</p>
-    </div>
-
-
     <div class="menu-list">
 
+      <!--
       <div class="menu-item" (click)="goTo('reservar')">
         <span class="icon">ℹ️</span>
         <div class="text">
@@ -26,6 +30,15 @@
         <div class="text">
           <strong>Horarios Reservados</strong>
           <p>Ver reservas activas</p>
+        </div>
+      </div>
+
+
+      <div class="menu-item info" (click)="goTo('equipos')">
+        <span class="icon">💻</span>
+        <div class="text">
+          <strong>Equipos</strong>
+          <p>Gestión de inventario</p>
         </div>
       </div>
 
@@ -45,6 +58,122 @@
         </div>
       </div>
 
+      <div class="menu-item warning" (click)="goTo('bloqueos')">
+        <span class="icon">🔒</span>
+        <div class="text">
+          <strong>Bloqueos</strong>
+          <p>Actividades institucionales</p>
+        </div>
+      </div>
+      -->
+
+      <!-- Módulo 1: Usuarios -->
+      <div class="menu-item" (click)="usuario('usuarios')">
+        <img src="/user.png" alt="Usuarios" class="menu-icon">
+        <div class="text">
+          <strong>Usuarios</strong>
+          <p>Gestión de usuarios, roles y permisos del sistema</p>
+        </div>
+      </div>
+
+      <!-- Módulo 2: Laboratorios -->
+      <div class="menu-item" (click)="laboratorios('laboratorios')">
+        <img src="/laboratorio.png" alt="Laboratorios" class="menu-icon">
+        <div class="text">
+          <strong>Laboratorios</strong>
+          <p>Administrar laboratorios, sedes y encargados</p>
+        </div>
+      </div>
+
+      <!-- Módulo 3: Equipos -->
+      <div class="menu-item info" (click)="equipos('equipos')">
+        <img src="/equipo.png" alt="Equipos" class="menu-icon">
+        <div class="text">
+          <strong>Equipos</strong>
+          <p>Control de equipos, tipos y ubicaciones</p>
+        </div>
+      </div>
+
+      <!-- Módulo 4: Reservas -->
+      <div class="menu-item" (click)="reservas('reservas')">
+        <img src="/calendario.png" alt="Calendario" class="menu-icon">
+        <div class="text">
+          <strong>Reservas</strong>
+          <p>Gestión de reservas y disponibilidad</p>
+        </div>
+      </div>
+
+      <!-- Módulo 5: Académico -->
+      <div class="menu-item" (click)="academico('academico')">
+        <img src="/academico.png" alt="Académico" class="menu-icon">
+        <div class="text">
+          <strong>Académico</strong>
+          <p>Períodos, carreras, asignaturas y horarios</p>
+        </div>
+      </div>
+
+      <!-- Módulo 6: Estudiantes -->
+      <div class="menu-item" (click)="estudiantes('estudiantes')">
+        <img src="/estudiantes.png" alt="Estudiantes" class="menu-icon">
+        <div class="text">
+          <strong>Estudiantes</strong>
+          <p>Registro de estudiantes, matrículas e inscripciones</p>
+        </div>
+      </div>
+
+      <!-- Módulo 7: Asistencia -->
+      <div class="menu-item " (click)="asistencia('asistencia')">
+        <img src="/asistencia.png" alt="Asistencia" class="menu-icon">
+        <div class="text">
+          <strong>Asistencia</strong>
+          <p>Control de asistencia en laboratorios</p>
+        </div>
+      </div>
+
+      <!-- Módulo 8: Reportes de Fallas -->
+      <div class="menu-item " (click)="fallas('fallas')">
+        <img src="/fallas.png" alt="Reportes de Fallas" class="menu-icon">
+        <div class="text">
+          <strong>Reportes de Fallas</strong>
+          <p>Gestión de fallas y seguimiento de equipos</p>
+        </div>
+      </div>
+
+      <!-- Módulo 9: Bloqueos -->
+      <div class="menu-item " (click)="bloqueos('bloqueos')">
+        <img src="/bloqueos.png" alt="Bloqueos" class="menu-icon">
+        <div class="text">
+          <strong>Bloqueos</strong>
+          <p>Bloqueos de laboratorios y gestión de conflictos</p>
+        </div>
+      </div>
+
+      <!-- Módulo 10: Notificaciones -->
+      <div class="menu-item " (click)="notificaciones('notificaciones')">
+        <img src="/campana.png" alt="Notificaciones" class="menu-icon">
+        <div class="text">
+          <strong>Notificaciones</strong>
+          <p>Centro de notificaciones y alertas</p>
+        </div>
+      </div>
+
+      <!-- Módulo 11: Reportes de Uso -->
+      <div class="menu-item" (click)="reportesuso('reportesuso')">
+        <img src="/uso.png" alt="Reporte de Uso" class="menu-icon">
+        <div class="text">
+          <strong>Reportes de Uso</strong>
+          <p>Estadísticas y análisis de uso de laboratorios</p>
+        </div>
+      </div>
+
+      <!-- Módulo 12: Auditoría -->
+      <div class="menu-item" (click)="auditoria('auditoria')">
+        <img src="/auditoria.png" alt="Auditoria" class="menu-icon">
+        <div class="text">
+          <strong>Auditoría</strong>
+          <p>Registro de acciones y trazabilidad del sistema</p>
+        </div>
+      </div>
     </div>
 
   </div>

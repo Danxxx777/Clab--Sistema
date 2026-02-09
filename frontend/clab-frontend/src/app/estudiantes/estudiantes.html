@@ -1,0 +1,481 @@
+<nav class="navbar">
+  <div class="nav-container">
+    <div class="logo">
+      <span>📚</span>
+      <span> CLAB </span>
+    </div>
+    <button class="logout" (click)="volver()">Volver</button>
+  </div>
+</nav>
+
+<div class="estudiantes-page">
+  <div class="estudiantes-container">
+    <div class="estudiantes-header">
+      <h1>Gestión de Estudiantes</h1>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-container">
+      <div class="tabs-header">
+        <button class="tab-button"
+                [class.active]="tabActiva === 0"
+                (click)="cambiarTab(0)">
+          Estudiantes
+        </button>
+        <button class="tab-button"
+                [class.active]="tabActiva === 1"
+                (click)="cambiarTab(1)">
+          Matrículas
+        </button>
+        <button class="tab-button"
+                [class.active]="tabActiva === 2"
+                (click)="cambiarTab(2)">
+          Inscripciones
+        </button>
+      </div>
+
+      <!-- TAB 0: ESTUDIANTES -->
+      <div class="tab-content" *ngIf="tabActiva === 0">
+        <div class="search-section">
+          <div class="search-box">
+            <input type="text"
+                   [(ngModel)]="busquedaEstudiantes"
+                   (input)="filtrarEstudiantes()"
+                   placeholder="Buscar estudiantes...">
+            <span class="search-icon">🔍</span>
+          </div>
+          <button class="btn-agregar" (click)="abrirModal('estudiante')">
+            Agregar Estudiante
+          </button>
+        </div>
+
+        <div class="table-container">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>TIPO DOC.</th>
+                <th>DOCUMENTO</th>
+                <th>NOMBRE COMPLETO</th>
+                <th>EMAIL</th>
+                <th>CARRERA</th>
+                <th>ESTADO</th>
+                <th>ACCIONES</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let est of estudiantesFiltrados; let i = index">
+                <td>{{est.id_estudiante}}</td>
+                <td>{{est.tipo_identidad}}</td>
+                <td>{{est.identidad}}</td>
+                <td>{{getNombreCompleto(est.nombres, est.apellidos)}}</td>
+                <td>{{est.email}}</td>
+                <td>{{est.nombre_carrera}}</td>
+                <td>
+                  <span class="estado-badge" [ngClass]="getEstadoBadgeClass(est.estado)">
+                    {{est.estado}}
+                  </span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn-view" (click)="verDetalle(est)" title="Ver">Ver</button>
+                    <button class="btn-edit" (click)="editarEstudiante(est, i)" title="Editar">Editar</button>
+                    <button class="btn-delete" (click)="eliminarEstudiante(est, i)" title="Eliminar">Eliminar</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="estudiantesFiltrados.length === 0">
+                <td colspan="8" class="empty-state">
+                  <div class="empty-icon">👨‍🎓</div>
+                  <p>No hay estudiantes registrados</p>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 1: MATRÍCULAS -->
+      <div class="tab-content" *ngIf="tabActiva === 1">
+        <div class="search-section">
+          <div class="search-box">
+            <input type="text"
+                   [(ngModel)]="busquedaMatriculas"
+                   (input)="filtrarMatriculas()"
+                   placeholder="Buscar matrículas...">
+            <span class="search-icon">🔍</span>
+          </div>
+          <button class="btn-agregar" (click)="abrirModal('matricula')">
+            Agregar Matrícula
+          </button>
+        </div>
+
+        <div class="table-container">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>ESTUDIANTE</th>
+                <th>CARRERA</th>
+                <th>PERIODO</th>
+                <th>SEMESTRE</th>
+                <th>PARALELO</th>
+                <th>ESTADO</th>
+                <th>ACCIONES</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let mat of matriculasFiltradas; let i = index">
+                <td>{{mat.id_matricula}}</td>
+                <td>{{mat.nombre_estudiante}}</td>
+                <td>{{mat.nombre_carrera}}</td>
+                <td>{{mat.nombre_periodo}}</td>
+                <td>{{mat.semestre}}</td>
+                <td>{{mat.paralelo}}</td>
+                <td>
+                  <span class="estado-badge" [ngClass]="getEstadoBadgeClass(mat.estado)">
+                    {{mat.estado}}
+                  </span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn-view" (click)="verDetalle(mat)" title="Ver">Ver</button>
+                    <button class="btn-edit" (click)="editarMatricula(mat, i)" title="Editar">Editar</button>
+                    <button class="btn-delete" (click)="eliminarMatricula(mat, i)" title="Eliminar">Eliminar</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="matriculasFiltradas.length === 0">
+                <td colspan="8" class="empty-state">
+                  <div class="empty-icon">📋</div>
+                  <p>No hay matrículas registradas</p>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: INSCRIPCIONES -->
+      <div class="tab-content" *ngIf="tabActiva === 2">
+        <div class="search-section">
+          <div class="search-box">
+            <input type="text"
+                   [(ngModel)]="busquedaInscripciones"
+                   (input)="filtrarInscripciones()"
+                   placeholder="Buscar inscripciones...">
+            <span class="search-icon">🔍</span>
+          </div>
+          <button class="btn-agregar" (click)="abrirModal('inscripcion')">
+            Agregar Inscripción
+          </button>
+        </div>
+
+        <div class="table-container">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>ESTUDIANTE</th>
+                <th>ASIGNATURA</th>
+                <th>PERIODO</th>
+                <th>ESTADO</th>
+                <th>ACCIONES</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let insc of inscripcionesFiltradas; let i = index">
+                <td>{{insc.id_inscripcion}}</td>
+                <td>{{insc.nombre_estudiante}}</td>
+                <td>{{insc.nombre_asignatura}}</td>
+                <td>{{insc.nombre_periodo}}</td>
+                <td>
+                  <span class="estado-badge" [ngClass]="getEstadoBadgeClass(insc.estado)">
+                    {{insc.estado}}
+                  </span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn-view" (click)="verDetalle(insc)" title="Ver">Ver</button>
+                    <button class="btn-edit" (click)="editarInscripcion(insc, i)" title="Editar">Editar</button>
+                    <button class="btn-delete" (click)="eliminarInscripcion(insc, i)" title="Eliminar">Eliminar</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="inscripcionesFiltradas.length === 0">
+                <td colspan="6" class="empty-state">
+                  <div class="empty-icon">📝</div>
+                  <p>No hay inscripciones registradas</p>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'estudiante'" (click)="cerrarModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ modoEdicion ? 'Editar Estudiante' : 'Agregar Nuevo Estudiante' }}</h2>
+      <button class="btn-close" (click)="cerrarModal()">×</button>
+    </div>
+
+    <div class="modal-form">
+      <div class="form-grid">
+        <!-- Tipo de Documento -->
+        <div class="form-group">
+          <label>Tipo de Documento <span class="required">*</span></label>
+          <select [(ngModel)]="formularioEst.tipo_identidad">
+            <option value="Cedula">Cédula</option>
+            <option value="Pasaporte">Pasaporte</option>
+            <option value="RUC">RUC</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+
+        <!-- Número de Documento -->
+        <div class="form-group">
+          <label>Número de Documento <span class="required">*</span></label>
+          <input type="text"
+                 [(ngModel)]="formularioEst.identidad"
+                 [placeholder]="getPlaceholderIdentidad()"
+                 [maxlength]="getMaxLengthIdentidad()">
+        </div>
+
+        <!-- Nombres -->
+        <div class="form-group">
+          <label>Nombres <span class="required">*</span></label>
+          <input type="text"
+                 [(ngModel)]="formularioEst.nombres"
+                 placeholder="Ej: Juan Carlos">
+        </div>
+
+        <!-- Apellidos -->
+        <div class="form-group">
+          <label>Apellidos <span class="required">*</span></label>
+          <input type="text"
+                 [(ngModel)]="formularioEst.apellidos"
+                 placeholder="Ej: Pérez García">
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label>Email <span class="required">*</span></label>
+          <input type="email"
+                 [(ngModel)]="formularioEst.email"
+                 placeholder="Ej: juan.perez@estudiante.edu.ec">
+        </div>
+
+        <!-- Carrera -->
+        <div class="form-group">
+          <label>Carrera <span class="required">*</span></label>
+          <select [(ngModel)]="formularioEst.id_carrera">
+            <option [value]="0">Seleccione una carrera</option>
+            <option *ngFor="let carrera of carreras" [value]="carrera.id_carrera">
+              {{carrera.nombre_carrera}}
+            </option>
+          </select>
+        </div>
+
+        <!-- Estado -->
+        <div class="form-group">
+          <label>Estado <span class="required">*</span></label>
+          <select [(ngModel)]="formularioEst.estado">
+            <option value="Activo">Activo</option>
+            <option value="Inactivo">Inactivo</option>
+            <option value="Retirado">Retirado</option>
+            <option value="Graduado">Graduado</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="cerrarModal()">
+          Cancelar
+        </button>
+        <button type="button" class="btn-save" (click)="guardarEstudiante()">
+          {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'matricula'" (click)="cerrarModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ modoEdicion ? 'Editar Matrícula' : 'Agregar Nueva Matrícula' }}</h2>
+      <button class="btn-close" (click)="cerrarModal()">×</button>
+    </div>
+
+    <div class="modal-form">
+      <div class="form-grid">
+        <!-- Estudiante -->
+        <div class="form-group">
+          <label>Estudiante <span class="required">*</span></label>
+          <select [(ngModel)]="formularioMat.id_estudiante">
+            <option [value]="0">Seleccione un estudiante</option>
+            <option *ngFor="let est of estudiantes" [value]="est.id_estudiante">
+              {{getNombreCompleto(est.nombres, est.apellidos)}} - {{est.identidad}}
+            </option>
+          </select>
+        </div>
+
+        <!-- Carrera -->
+        <div class="form-group">
+          <label>Carrera <span class="required">*</span></label>
+          <select [(ngModel)]="formularioMat.id_carrera">
+            <option [value]="0">Seleccione una carrera</option>
+            <option *ngFor="let carrera of carreras" [value]="carrera.id_carrera">
+              {{carrera.nombre_carrera}}
+            </option>
+          </select>
+        </div>
+
+        <!-- Periodo -->
+        <div class="form-group">
+          <label>Periodo Académico <span class="required">*</span></label>
+          <select [(ngModel)]="formularioMat.id_periodo">
+            <option [value]="0">Seleccione un periodo</option>
+            <option *ngFor="let periodo of periodos" [value]="periodo.id_periodo">
+              {{periodo.nombre_periodo}}
+            </option>
+          </select>
+        </div>
+
+        <!-- Semestre -->
+        <div class="form-group">
+          <label>Semestre <span class="required">*</span></label>
+          <input type="number"
+                 [(ngModel)]="formularioMat.semestre"
+                 placeholder="Ej: 5"
+                 min="1"
+                 max="10">
+        </div>
+
+        <!-- Paralelo -->
+        <div class="form-group">
+          <label>Paralelo <span class="required">*</span></label>
+          <input type="text"
+                 [(ngModel)]="formularioMat.paralelo"
+                 placeholder="Ej: A"
+                 maxlength="5">
+        </div>
+
+        <!-- Estado -->
+        <div class="form-group">
+          <label>Estado <span class="required">*</span></label>
+          <select [(ngModel)]="formularioMat.estado">
+            <option value="Activa">Activa</option>
+            <option value="Inactiva">Inactiva</option>
+            <option value="Cancelada">Cancelada</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="cerrarModal()">
+          Cancelar
+        </button>
+        <button type="button" class="btn-save" (click)="guardarMatricula()">
+          {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'inscripcion'" (click)="cerrarModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ modoEdicion ? 'Editar Inscripción' : 'Agregar Nueva Inscripción' }}</h2>
+      <button class="btn-close" (click)="cerrarModal()">×</button>
+    </div>
+
+    <div class="modal-form">
+      <div class="form-grid">
+        <!-- Estudiante -->
+        <div class="form-group">
+          <label>Estudiante <span class="required">*</span></label>
+          <select [(ngModel)]="formularioInsc.id_estudiante">
+            <option [value]="0">Seleccione un estudiante</option>
+            <option *ngFor="let est of estudiantes" [value]="est.id_estudiante">
+              {{getNombreCompleto(est.nombres, est.apellidos)}} - {{est.identidad}}
+            </option>
+          </select>
+        </div>
+
+        <!-- Asignatura -->
+        <div class="form-group">
+          <label>Asignatura <span class="required">*</span></label>
+          <select [(ngModel)]="formularioInsc.id_asignatura">
+            <option [value]="0">Seleccione una asignatura</option>
+            <option *ngFor="let asig of asignaturas" [value]="asig.id_asignatura">
+              {{asig.nombre}} - Nivel {{asig.nivel}}
+            </option>
+          </select>
+        </div>
+
+        <!-- Periodo -->
+        <div class="form-group">
+          <label>Periodo Académico <span class="required">*</span></label>
+          <select [(ngModel)]="formularioInsc.id_periodo">
+            <option [value]="0">Seleccione un periodo</option>
+            <option *ngFor="let periodo of periodos" [value]="periodo.id_periodo">
+              {{periodo.nombre_periodo}}
+            </option>
+          </select>
+        </div>
+
+        <!-- Estado -->
+        <div class="form-group">
+          <label>Estado <span class="required">*</span></label>
+          <select [(ngModel)]="formularioInsc.estado">
+            <option value="Activa">Activa</option>
+            <option value="Inactiva">Inactiva</option>
+            <option value="Retirada">Retirada</option>
+            <option value="Aprobada">Aprobada</option>
+            <option value="Reprobada">Reprobada</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="cerrarModal()">
+          Cancelar
+        </button>
+        <button type="button" class="btn-save" (click)="guardarInscripcion()">
+          {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" *ngIf="mostrarConfirmarEliminar" (click)="cerrarModalConfirmar()">
+  <div class="modal-confirm-container" (click)="$event.stopPropagation()">
+    <div class="confirm-icon">⚠️</div>
+    <h2>¿Estás seguro?</h2>
+    <p>
+      Estás a punto de eliminar <strong>{{getItemNombre()}}</strong>.
+      Esta acción no se puede deshacer.
+    </p>
+    <div class="confirm-actions">
+      <button class="btn-cancel" (click)="cerrarModalConfirmar()">Cancelar</button>
+      <button class="btn-delete-confirm" (click)="confirmarEliminacion()">Sí, Eliminar</button>
+    </div>
+  </div>
+</div>

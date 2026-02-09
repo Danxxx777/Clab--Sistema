@@ -1,0 +1,502 @@
+<div class="inventario-container">
+
+
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">
+        <span class="logo-icon"></span>
+        <span class="logo-text">CLAB</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn-volver" (click)="volver()">Volver</button>
+    </div>
+  </div>
+
+
+  <div class="page-title-section">
+    <h1>Gestión de Inventario</h1>
+  </div>
+
+
+  <div class="tabs-container">
+    <div class="tabs">
+      <button
+        class="tab"
+        [class.active]="tabActiva === 'equipos'"
+        (click)="cambiarTab('equipos')">
+        Equipos
+      </button>
+      <button
+        class="tab"
+        [class.active]="tabActiva === 'tipos'"
+        (click)="cambiarTab('tipos')">
+        Tipos de Equipo
+      </button>
+    </div>
+  </div>
+
+
+  <div class="content-wrapper">
+
+
+    <div class="tab-content" *ngIf="tabActiva === 'equipos'">
+
+
+      <div class="toolbar">
+        <div class="search-container">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            class="search-input"
+            [(ngModel)]="busquedaEquipos"
+            (input)="filtrarEquipos()"
+            placeholder="Buscar equipos...">
+        </div>
+        <button class="btn-agregar" (click)="abrirModalEquipo()">
+          Agregar Equipo
+        </button>
+      </div>
+
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th>IMAGEN</th>
+            <th>ID</th>
+            <th>NOMBRE</th>
+            <th>MARCA/MODELO</th>
+            <th>TIPO</th>
+            <th>LABORATORIO</th>
+            <th>ESTADO</th>
+            <th>ACCIONES</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let equipo of equiposFiltrados">
+            <td>
+              <div class="table-image">
+                <img [src]="equipo.foto || 'https://via.placeholder.com/60x60?text=Sin+Imagen'" alt="Equipo">
+              </div>
+            </td>
+            <td>{{equipo.noSerie}}</td>
+            <td><strong>{{equipo.nombre}}</strong></td>
+            <td>{{equipo.marca}} {{equipo.modelo}}</td>
+            <td>{{equipo.tipoEquipo}}</td>
+            <td>{{equipo.laboratorio}}</td>
+            <td>
+                <span
+                  class="badge"
+                  [class.badge-activo]="equipo.estado === 'OPERATIVO'"
+                  [class.badge-inactivo]="equipo.estado !== 'OPERATIVO'">
+                  {{equipo.estado === 'OPERATIVO' ? 'ACTIVO' : 'INACTIVO'}}
+                </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-action btn-ver" (click)="verDetalleEquipo(equipo)">Ver</button>
+                <button class="btn-action btn-editar" (click)="editarEquipo(equipo)">Editar</button>
+                <button class="btn-action btn-eliminar" (click)="eliminarEquipo(equipo)">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="equiposFiltrados.length === 0">
+            <td colspan="8" class="empty-message">No se encontraron equipos</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- TAB TIPOS -->
+    <div class="tab-content" *ngIf="tabActiva === 'tipos'">
+
+      <div class="toolbar">
+        <div class="search-container">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            class="search-input"
+            [(ngModel)]="busquedaTipos"
+            (input)="filtrarTipos()"
+            placeholder="Buscar tipos...">
+        </div>
+        <button class="btn-agregar" (click)="abrirModalTipo()">
+          Agregar Tipo
+        </button>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>NOMBRE</th>
+            <th>DESCRIPCIÓN</th>
+            <!-- <th>EQUIPOS</th> -->
+
+            <th>ACCIONES</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let tipo of tiposFiltrados">
+            <td>{{tipo.id}}</td>
+            <td><strong>{{tipo.nombre}}</strong></td>
+            <td>{{tipo.descripcion || 'Sin descripción'}}</td>
+            <!-- <td>{{tipo.equipos}}</td>-->
+
+            <td>
+              <div class="action-buttons">
+                <button class="btn-action btn-editar" (click)="editarTipo(tipo)">Editar</button>
+                <button class="btn-action btn-eliminar" (click)="eliminarTipo(tipo)">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="tiposFiltrados.length === 0">
+            <td colspan="5" class="empty-message">No se encontraron tipos </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- MODAL PARA EQUIPOS -->
+<div class="modal-overlay" *ngIf="mostrarModalEquipo" (click)="cerrarModalEquipo()">
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>{{modoEdicionEquipo ? 'Editar Equipo' : 'Agregar Nuevo Equipo'}}</h2>
+      <button class="btn-close" (click)="cerrarModalEquipo()">×</button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Número de Serie <span class="required">*</span></label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="formularioEquipo.noSerie"
+            placeholder="Ej: D1001-XYZ123">
+        </div>
+
+        <div class="form-group">
+          <label>Nombre del Equipo <span class="required">*</span></label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="formularioEquipo.nombre"
+            placeholder="Ej: Computadora Dell">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Marca <span class="required">*</span></label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="formularioEquipo.marca"
+            placeholder="Ej: Dell, HP, Lenovo">
+        </div>
+
+        <div class="form-group">
+          <label>Modelo <span class="required">*</span></label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="formularioEquipo.modelo"
+            placeholder="Ej: Optiplex 7090">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tipo de Equipo <span class="required">*</span></label>
+          <select class="form-control" [(ngModel)]="formularioEquipo.tipoEquipo">
+            <option value="">Seleccione un tipo</option>
+            <option *ngFor="let tipo of tiposEquipo" [value]="tipo.nombre">{{tipo.nombre}}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Estado <span class="required">*</span></label>
+          <select class="form-control" [(ngModel)]="formularioEquipo.estado">
+            <option value="OPERATIVO">Operativo</option>
+            <option value="MANTENIMIENTO">Mantenimiento</option>
+            <option value="FUERA">Fuera de Servicio</option>
+            <option value="REPARACION">Reparación</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Laboratorio Asignado <span class="required">*</span></label>
+          <select class="form-control" [(ngModel)]="formularioEquipo.laboratorio">
+            <option value="">Seleccione un laboratorio</option>
+            <option *ngFor="let lab of laboratorios" [value]="lab.nombre">{{lab.nombre}}</option>
+          </select>
+        </div>
+
+        <!--
+<div class="form-group">
+  <label>Responsable <span class="required">*</span></label>
+  <select class="form-control" [(ngModel)]="formularioEquipo.responsable">
+    <option value="">Seleccione un responsable</option>
+    <option *ngFor="let resp of responsables" [value]="resp.nombre">
+      {{resp.nombre}}
+    </option>
+  </select>
+</div>
+-->
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fecha de Adquisición <span class="required">*</span></label>
+          <input
+            type="date"
+            class="form-control"
+            [(ngModel)]="formularioEquipo.fechaAdquisicion">
+        </div>
+
+        <div class="form-group">
+          <label>Última Revisión</label>
+          <input
+            type="date"
+            class="form-control"
+            [(ngModel)]="formularioEquipo.ultimaRevision">
+        </div>
+      </div>
+
+      <div class="form-group full-width">
+        <label>Ubicación Física <span class="required">*</span></label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="formularioEquipo.ubicacionFisica"
+          placeholder="Ej: Edificio A - Piso 2 - Sala 201">
+      </div>
+
+      <div class="form-group full-width">
+        <label>Descripción</label>
+        <textarea
+          class="form-control"
+          [(ngModel)]="formularioEquipo.descripcion"
+          rows="3"
+          placeholder="Descripción del equipo..."></textarea>
+      </div>
+
+      <div class="form-group full-width">
+        <label>Foto del Laboratorio</label>
+        <div class="image-upload-container">
+          <input
+            type="file"
+            #fileInput
+            (change)="onFileSelected($event)"
+            accept="image/*"
+            class="file-input"
+            id="fileInput">
+
+          <button type="button" class="btn-subir-foto" (click)="fileInput.click()" *ngIf="!formularioEquipo.foto">
+            📷 Subir foto
+          </button>
+
+          <p class="upload-hint">Formatos: JPG, PNG, GIF (máx. 5MB)</p>
+
+          <div class="image-preview-container" *ngIf="formularioEquipo.foto">
+            <img [src]="formularioEquipo.foto" alt="Vista previa" class="preview-image">
+            <button type="button" class="btn-remove-image" (click)="eliminarImagen()">
+              🗑️ Eliminar imagen
+            </button>
+            <button type="button" class="btn-change-image" (click)="fileInput.click()">
+              🔄 Cambiar imagen
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModalEquipo()">Cancelar</button>
+      <button class="btn-guardar" (click)="guardarEquipo()">Guardar</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL PARA TIPOS -->
+<div class="modal-overlay" *ngIf="mostrarModalTipo" (click)="cerrarModalTipo()">
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>{{modoEdicionTipo ? 'Editar Tipo' : 'Agregar Nuevo Tipo'}}</h2>
+      <button class="btn-close" (click)="cerrarModalTipo()">×</button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="form-group full-width">
+        <label>Nombre del Tipo <span class="required">*</span></label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="formularioTipo.nombre"
+          placeholder="Ej: Computadora, Microscopio">
+      </div>
+
+      <div class="form-group full-width">
+        <label>Descripción</label>
+        <textarea
+          class="form-control"
+          [(ngModel)]="formularioTipo.descripcion"
+          rows="3"
+          placeholder="Descripción del tipo..."></textarea>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModalTipo()">Cancelar</button>
+      <button class="btn-guardar" (click)="guardarTipo()">Guardar</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL DE CONFIRMACIÓN -->
+<div class="modal-overlay" *ngIf="mostrarConfirmarEliminar" (click)="cerrarModalConfirmar()">
+  <div class="modal modal-confirm" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>Confirmar Eliminación</h2>
+      <button class="btn-close" (click)="cerrarModalConfirmar()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <p>¿Está seguro que desea eliminar <strong>{{itemParaEliminar?.nombre}}</strong>?</p>
+      <p class="warning-text">Esta acción no se puede deshacer.</p>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModalConfirmar()">Cancelar</button>
+      <button class="btn-eliminar-confirm" (click)="confirmarEliminacion()">Eliminar</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL DE DETALLE DE EQUIPO (SOLO LECTURA) -->
+<div class="modal-overlay" *ngIf="mostrarDetalleEquipo" (click)="cerrarDetalleEquipo()">
+  <div class="modal modal-detalle" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>📋 Detalles del Equipo</h2>
+      <button class="btn-close" (click)="cerrarDetalleEquipo()">×</button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- Imagen del equipo -->
+      <div class="detalle-imagen-section" *ngIf="equipoSeleccionado.foto">
+        <img [src]="equipoSeleccionado.foto" alt="Imagen del equipo" class="detalle-imagen">
+      </div>
+
+      <div class="detalle-imagen-section" *ngIf="!equipoSeleccionado.foto">
+        <div class="sin-imagen-placeholder">
+          <span class="placeholder-icon">📷</span>
+          <span class="placeholder-text">Sin imagen disponible</span>
+        </div>
+      </div>
+
+      <!-- Información en dos columnas -->
+      <div class="detalle-grid">
+        <div class="detalle-item">
+          <label>Número de Serie</label>
+          <span class="detalle-valor">{{equipoSeleccionado.noSerie}}</span>
+        </div>
+
+        <div class="detalle-item">
+          <label>Nombre del Equipo</label>
+          <span class="detalle-valor">{{equipoSeleccionado.nombre}}</span>
+        </div>
+
+        <div class="detalle-item">
+          <label>Marca</label>
+          <span class="detalle-valor">{{equipoSeleccionado.marca}}</span>
+        </div>
+
+        <div class="detalle-item">
+          <label>Modelo</label>
+          <span class="detalle-valor">{{equipoSeleccionado.modelo}}</span>
+        </div>
+
+        <div class="detalle-item">
+          <label>Tipo de Equipo</label>
+          <span class="detalle-valor">{{equipoSeleccionado.tipoEquipo}}</span>
+        </div>
+
+        <div class="detalle-item">
+          <label>Estado</label>
+          <span
+            class="badge"
+            [class.badge-activo]="equipoSeleccionado.estado === 'OPERATIVO'"
+            [class.badge-inactivo]="equipoSeleccionado.estado !== 'OPERATIVO'">
+            {{equipoSeleccionado.estado === 'OPERATIVO' ? 'ACTIVO' : 'INACTIVO'}}
+          </span>
+        </div>
+
+        <div class="detalle-item">
+          <label>Laboratorio Asignado</label>
+          <span class="detalle-valor">{{equipoSeleccionado.laboratorio}}</span>
+        </div>
+
+        <!--
+<div class="detalle-item">
+  <label>Responsable</label>
+  <span class="detalle-valor">{{equipoSeleccionado.responsable}}</span>
+</div>
+-->
+
+        <div class="detalle-item">
+          <label>Fecha de Adquisición</label>
+          <span class="detalle-valor">{{equipoSeleccionado.fechaAdquisicion}}</span>
+        </div>
+
+        <div class="detalle-item">
+          <label>Última Revisión</label>
+          <span class="detalle-valor">{{equipoSeleccionado.ultimaRevision || 'Sin revisión'}}</span>
+        </div>
+
+        <div class="detalle-item full-width">
+          <label>Ubicación Física</label>
+          <span class="detalle-valor">{{equipoSeleccionado.ubicacionFisica}}</span>
+        </div>
+
+        <div class="detalle-item full-width" *ngIf="equipoSeleccionado.descripcion">
+          <label>Descripción</label>
+          <span class="detalle-valor">{{equipoSeleccionado.descripcion}}</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarDetalleEquipo()">Cerrar</button>
+      <button class="btn-guardar" (click)="editarEquipo(equipoSeleccionado); cerrarDetalleEquipo()">
+        ✏️ Editar Equipo
+      </button>
+    </div>
+
+  </div>
+</div>
