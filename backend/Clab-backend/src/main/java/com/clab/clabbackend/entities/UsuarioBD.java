@@ -1,4 +1,4 @@
-package com.clab.clabbackend.entities;
+/*package com.clab.clabbackend.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -28,3 +28,4 @@ public class UsuarioBD {
     @Column(name = "estado_user_bd", nullable = false,  length = 15)
     private String estadoUserBd;
 }
+ */
