@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface LaboratorioRepository extends JpaRepository<Laboratorio, Integer> {
 
-    // Métodos personalizados opcionales
+
     List<Laboratorio> findBySedeIdSede(Integer idSede);
     List<Laboratorio> findByEstadoLab(String estadoLab);
 
