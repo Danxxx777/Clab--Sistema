@@ -1,29 +1,34 @@
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+  private apiUrl = 'http://localhost:8080/auth';
 
-  isLoggedIn(): boolean {
-    if (isPlatformBrowser(this.platformId)) {
-      return localStorage.getItem('loggedIn') === 'true';
-    }
-    return false;
-  }
+  constructor(private http: HttpClient) {}
 
-  login() {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem('loggedIn', 'true');
-    }
+  login(usuario: string, contrasenia: string) {
+    return this.http.post<any>(`${this.apiUrl}/login`, {
+      usuario,
+      contrasenia
+    }).pipe(
+      tap(response => {
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('loggedIn', 'true');
+        localStorage.setItem('rol', response.rol);
+      })
+    );
   }
 
   logout() {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem('loggedIn');
-    }
+    localStorage.clear();
+  }
+
+  isLoggedIn(): boolean {
+    return localStorage.getItem('loggedIn') === 'true';
   }
 }
