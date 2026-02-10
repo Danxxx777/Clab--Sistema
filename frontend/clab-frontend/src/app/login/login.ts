@@ -24,22 +24,19 @@ export class LoginComponent {
 
   login() {
     this.errorMessage = '';
+
     if (!this.username.trim() || !this.password.trim()) {
       this.errorMessage = 'Debe completar usuario y contraseña.';
       return;
     }
 
-    const user = this.username.trim();
-    const pass = this.password.trim();
-
-    if (user === 'admin' && pass === '1234') {
-      this.auth.login();
-      this.router.navigate(['/dashboard']);
-    } else {
-      this.errorMessage = 'Usuario o contraseña incorrectos.';
-    }
+    this.auth.login(this.username, this.password).subscribe({
+      next: () => {
+        this.router.navigate(['/dashboard']);
+      },
+      error: () => {
+        this.errorMessage = 'Usuario o contraseña incorrectos.';
+      }
+    });
   }
-}
-
-export class Login {
 }

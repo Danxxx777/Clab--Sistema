@@ -11,14 +11,18 @@ import { BloqueosComponent } from './bloqueos/bloqueos';
 import { InformesComponent } from './informes/informes';
 import { LaboratoriosComponent } from './laboratorio/laboratorio';
 import { AcademicoComponent } from './academico/academico';
-import { EstudiantesComponent} from './estudiantes/estudiantes';
+import { EstudiantesComponent } from './estudiantes/estudiantes';
+import { UsuariosComponent } from './usuarios/usuarios';
 
 import { authGuard } from './auth/auth.guard';
-import {UsuariosComponent} from './usuarios/usuarios';
 
 export const routes: Routes = [
 
-  { path: '', component: LoginComponent },
+  // 🔑 RUTA INICIAL CORRECTA
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+
+  { path: 'login', component: LoginComponent },
+
   {
     path: 'dashboard',
     component: DashboardComponent,
@@ -44,7 +48,6 @@ export const routes: Routes = [
     component: EstudiantesComponent,
     canActivate: [authGuard]
   },
-
   {
     path: 'equipos',
     component: InventarioComponent,
@@ -85,6 +88,7 @@ export const routes: Routes = [
     component: UsuariosComponent,
     canActivate: [authGuard]
   },
-  { path: '**', redirectTo: 'dashboard' }
 
+  // 🔒 fallback FINAL
+  { path: '**', redirectTo: 'dashboard' }
 ];
