@@ -22,4 +22,5 @@ public class UsuarioResponseDTO {
     private LocalDate fechaRegistro;
     private Integer idRol;
     private String nombreRol;
+
 }
