@@ -10,6 +10,8 @@ import com.clab.clabbackend.repository.UsuarioRepository;
 import com.clab.clabbackend.repository.UsuarioRolRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,15 +24,20 @@ public class UsuarioService {
     private final RolRepository rolRepository;
     private final UsuarioRolRepository usuarioRolRepository;
 
+    private final PasswordEncoder passwordEncoder;
+
     public UsuarioService(
             UsuarioRepository usuarioRepository,
             RolRepository rolRepository,
-            UsuarioRolRepository usuarioRolRepository
+            UsuarioRolRepository usuarioRolRepository,
+            PasswordEncoder passwordEncoder
     ) {
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
         this.usuarioRolRepository = usuarioRolRepository;
+        this.passwordEncoder = passwordEncoder;
     }
+
 
     /*CREAR USUARIO*/
     public Usuario crear(UsuarioDTO dto) {
@@ -42,7 +49,9 @@ public class UsuarioService {
         usuario.setEmail(dto.getEmail());
         usuario.setTelefono(dto.getTelefono());
         usuario.setUsuario(generarUsuario(dto.getNombres(), dto.getApellidos()));
-        usuario.setContrasenia(dto.getContrasenia());
+        usuario.setContrasenia(
+                passwordEncoder.encode(dto.getContrasenia())
+        );
         usuario.setEstado("Activo");
         usuario.setFechaRegistro(LocalDate.now());
         usuario.setFoto(null);
@@ -67,7 +76,9 @@ public class UsuarioService {
         usuario.setTelefono(dto.getTelefono());
 
         if (dto.getContrasenia() != null && !dto.getContrasenia().isBlank()) {
-            usuario.setContrasenia(dto.getContrasenia());
+            usuario.setContrasenia(
+                    passwordEncoder.encode(dto.getContrasenia())
+            );
         }
 
         Usuario actualizado = usuarioRepository.save(usuario);
