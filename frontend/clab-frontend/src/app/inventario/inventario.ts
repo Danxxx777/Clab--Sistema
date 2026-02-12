@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -15,8 +15,8 @@ interface Equipo {
   nombre: string;
   marca: string;
   modelo: string;
-  tipoEquipo: string;      // nombreTipo
-  laboratorio: string;     // nombreLab
+  tipoEquipo: string;
+  laboratorio: string;
   estado: string;
   fechaAdquisicion: string;
   ubicacionFisica: string;
@@ -60,7 +60,9 @@ export class InventarioComponent implements OnInit {
   mostrarDetalleEquipo = false;
   equipoDetalle!: Equipo;
 
-
+  mostrarToast= false;
+  toastMensaje= '';
+  toastTipo: 'success' | 'error'= 'success';
 
   formEquipo: Equipo = this.nuevoFormulario();
 
@@ -68,7 +70,8 @@ export class InventarioComponent implements OnInit {
     private router: Router,
     private equipoService: EquipoService,
     private tipoEquipoService: TipoEquipoService,
-    private laboratorioService: LaboratorioService
+    private laboratorioService: LaboratorioService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -80,31 +83,45 @@ export class InventarioComponent implements OnInit {
 
 
   cargarEquipos(): void {
-    this.equipoService.listar().subscribe(data => {
-      this.equipos = data.map(e => ({
-        id: e.idEquipo,
-        noSerie: e.numeroSerie,
-        nombre: e.nombreEquipo,
-        marca: e.marca,
-        modelo: e.modelo,
-        tipoEquipo: e.tipoEquipo.nombreTipo,
-        laboratorio: e.laboratorio.nombreLab,
-        estado: e.estado,
-        fechaAdquisicion: e.fechaAdquisicion,
-        ubicacionFisica: e.ubicacionFisica
-      }));
-      this.equiposFiltrados = [...this.equipos];
+    this.equipoService.listar().subscribe({
+      next: (data) => {
+        this.equipos = data.map(e => ({
+          id: e.idEquipo,
+          noSerie: e.numeroSerie,
+          nombre: e.nombreEquipo,
+          marca: e.marca,
+          modelo: e.modelo,
+          tipoEquipo: e.tipoEquipo.nombreTipo,
+          laboratorio: e.laboratorio.nombreLab,
+          estado: e.estado,
+          fechaAdquisicion: e.fechaAdquisicion,
+          ubicacionFisica: e.ubicacionFisica
+        }));
+        this.equiposFiltrados = [...this.equipos];
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error cargando equipos:', err);
+        this.mostrarNotificacion('Error al cargar equipos', 'error');
+      }
     });
   }
 
   cargarTipos(): void {
-    this.tipoEquipoService.listar().subscribe(data => {
-      this.tiposEquipo = data.map(t => ({
-        id: t.idTipoEquipo,
-        nombre: t.nombreTipo,
-        descripcion: t.descripcion
-      }));
-      this.tiposFiltrados = [...this.tiposEquipo];
+    this.tipoEquipoService.listar().subscribe({
+      next: (data) => {
+        this.tiposEquipo = data.map(t => ({
+          id: t.idTipoEquipo,
+          nombre: t.nombreTipo,
+          descripcion: t.descripcion
+        }));
+        this.tiposFiltrados = [...this.tiposEquipo];
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error cargando tipos:', err);
+        this.mostrarNotificacion('Error al cargar tipos', 'error');
+      }
     });
   }
 
@@ -119,6 +136,16 @@ export class InventarioComponent implements OnInit {
     });
   }
 
+  mostrarNotificacion(mensaje: string, tipo: 'success' | 'error' = 'success'): void {
+    this.toastMensaje = mensaje;
+    this.toastTipo = tipo;
+    this.mostrarToast = true;
+
+    setTimeout(() => {
+      this.mostrarToast = false;
+      this.cdr.detectChanges();
+    }, 2000);
+  }
 
 
 
@@ -162,46 +189,73 @@ export class InventarioComponent implements OnInit {
 
   guardarEquipo(): void {
 
+
     if (
       !this.formEquipo.noSerie ||
       !this.formEquipo.nombre ||
       !this.formEquipo.tipoEquipo ||
       !this.formEquipo.laboratorio
     ) {
-      alert('Complete los campos obligatorios');
+      this.mostrarNotificacion('Complete los campos obligatorios', 'error');
       return;
     }
+
 
     const dto: EquipoDTO = {
       numeroSerie: this.formEquipo.noSerie,
       nombreEquipo: this.formEquipo.nombre,
       marca: this.formEquipo.marca,
       modelo: this.formEquipo.modelo,
-      tipoEquipo: this.formEquipo.tipoEquipo,     // nombreTipo
-      laboratorio: this.formEquipo.laboratorio,   // nombreLab
+      tipoEquipo: this.formEquipo.tipoEquipo,
+      laboratorio: this.formEquipo.laboratorio,
       estado: this.formEquipo.estado,
       ubicacionFisica: this.formEquipo.ubicacionFisica,
       fechaAdquisicion: this.formEquipo.fechaAdquisicion
     };
 
+
     if (this.modoEdicionEquipo && this.idEditando) {
-      this.equipoService.editar(this.idEditando, dto).subscribe(() => {
-        this.cargarEquipos();
-        this.cerrarModalEquipo();
+      this.equipoService.editar(this.idEditando, dto).subscribe({
+        next: () => {
+          this.cargarEquipos();
+          this.cerrarModalEquipo();
+          this.mostrarNotificacion('Equipo actualizado correctamente');
+        },
+        error: (err) => {
+          console.error('Error editando equipo:', err);
+          this.mostrarNotificacion('Error al actualizar equipo', 'error');
+        }
       });
-    } else {
-      this.equipoService.crear(dto).subscribe(() => {
-        this.cargarEquipos();
-        this.cerrarModalEquipo();
-      });
+      return;
     }
+
+
+    this.equipoService.crear(dto).subscribe({
+      next: () => {
+        this.cargarEquipos();
+        this.cerrarModalEquipo();
+        this.mostrarNotificacion('Equipo creado correctamente');
+      },
+      error: (err) => {
+        console.error('Error creando equipo:', err);
+        this.mostrarNotificacion('Error al crear equipo', 'error');
+      }
+    });
   }
+
 
   eliminarEquipo(e: Equipo): void {
     if (!confirm('¿Eliminar equipo?')) return;
 
-    this.equipoService.eliminar(e.id).subscribe(() => {
-      this.cargarEquipos();
+    this.equipoService.eliminar(e.id).subscribe({
+      next: () => {
+        this.cargarEquipos();
+        this.mostrarNotificacion('🗑Equipo eliminado correctamente');
+      },
+      error: (err) => {
+        console.error('Error eliminando equipo:', err);
+        this.mostrarNotificacion('Error al eliminar equipo', 'error');
+      }
     });
   }
 
@@ -216,12 +270,20 @@ export class InventarioComponent implements OnInit {
 
 
   eliminarTipo(t: TipoEquipo): void {
-    if (!confirm('¿Eliminar tipo?')) return;
+    if (!confirm('¿Eliminar tipo de equipo?')) return;
 
-    this.tipoEquipoService.eliminar(t.id).subscribe(() => {
-      this.cargarTipos();
+    this.tipoEquipoService.eliminar(t.id).subscribe({
+      next: () => {
+        this.cargarTipos();
+        this.mostrarNotificacion('Tipo de equipo eliminado');
+      },
+      error: (err) => {
+        console.error('Error eliminando tipo:', err);
+        this.mostrarNotificacion('Error al eliminar tipo', 'error');
+      }
     });
   }
+
   abrirModalTipo(): void {
     this.modoEdicionTipo = false;
     this.idTipoEditando = null;
@@ -238,7 +300,7 @@ export class InventarioComponent implements OnInit {
 
   guardarTipo(): void {
     if (!this.formularioTipo.nombre.trim()) {
-      alert('El nombre del tipo es obligatorio');
+      this.mostrarNotificacion('El nombre del tipo es obligatorio', 'error');
       return;
     }
 
@@ -248,17 +310,34 @@ export class InventarioComponent implements OnInit {
     };
 
     if (this.modoEdicionTipo && this.idTipoEditando) {
-      this.tipoEquipoService.actualizar(this.idTipoEditando, payload).subscribe(() => {
-        this.cargarTipos();
-        this.cerrarModalTipo();
+      this.tipoEquipoService.actualizar(this.idTipoEditando, payload).subscribe({
+        next: () => {
+          this.cargarTipos();
+          this.cerrarModalTipo();
+          this.mostrarNotificacion('Tipo de equipo actualizado');
+        },
+        error: (err) => {
+          console.error('Error actualizando tipo:', err);
+          this.mostrarNotificacion('Error al actualizar tipo', 'error');
+        }
       });
-    } else {
-      this.tipoEquipoService.crear(payload).subscribe(() => {
-        this.cargarTipos();
-        this.cerrarModalTipo();
-      });
+      return;
     }
+
+    this.tipoEquipoService.crear(payload).subscribe({
+      next: () => {
+        this.cargarTipos();
+        this.cerrarModalTipo();
+        this.mostrarNotificacion('Tipo de equipo creado');
+      },
+      error: (err) => {
+        console.error('Error creando tipo:', err);
+        this.mostrarNotificacion('Error al crear tipo', 'error');
+      }
+    });
   }
+
+
 
   cerrarModalTipo(): void {
     this.mostrarModalTipo = false;
