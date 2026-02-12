@@ -1,20 +1,21 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';  // ← IMPORTAR RouterModule
 import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule], // ← AGREGAR AQUÍ
   templateUrl: './login.html',
   styleUrls: ['./login.scss']
 })
 export class LoginComponent {
+
   username = '';
   password = '';
-  recordarme = false; // ← AGREGAR ESTA LÍNEA
+  recordarme = false;
   errorMessage = '';
 
   constructor(
