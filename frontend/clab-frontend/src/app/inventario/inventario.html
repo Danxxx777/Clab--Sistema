@@ -108,11 +108,11 @@
             placeholder="Buscar tipos...">
         </div>
 
-        <!-- 🔥 ESTE ERA EL BOTÓN QUE FALTABA -->
         <button class="btn-agregar" (click)="abrirModalTipo()">
           Agregar Tipo
         </button>
       </div>
+
 
 
       <div class="table-container">
@@ -240,6 +240,45 @@
   </div>
 </div>
 
+<!-- ===================== -->
+<!-- MODAL TIPO DE EQUIPO -->
+<!-- ===================== -->
+<div class="modal-overlay" *ngIf="mostrarModalTipo" (click)="cerrarModalTipo()">
+  <div class="modal modal-small" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>{{ modoEdicionTipo ? 'Editar Tipo de Equipo' : 'Agregar Tipo de Equipo' }}</h2>
+      <button class="btn-close" (click)="cerrarModalTipo()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nombre *</label>
+        <input
+          class="form-control"
+          [(ngModel)]="formularioTipo.nombre"
+          placeholder="Ej: Computadora">
+      </div>
+
+      <div class="form-group">
+        <label>Descripción</label>
+        <textarea
+          class="form-control"
+          rows="3"
+          [(ngModel)]="formularioTipo.descripcion"
+          placeholder="Descripción del tipo de equipo (opcional)">
+        </textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModalTipo()">Cancelar</button>
+      <button class="btn-guardar" (click)="guardarTipo()">Guardar</button>
+    </div>
+
+  </div>
+</div>
+
 
 <div class="modal-overlay" *ngIf="mostrarDetalleEquipo" (click)="cerrarDetalleEquipo()">
   <div class="modal modal-detalle" (click)="$event.stopPropagation()">
@@ -336,4 +375,17 @@
 
   </div>
 </div>
+
+<!-- ===================== -->
+<!-- TOAST NOTIFICACIÓN -->
+<!-- ===================== -->
+<div
+  class="toast"
+  *ngIf="mostrarToast"
+  [class.toast-success]="toastTipo === 'success'"
+  [class.toast-error]="toastTipo === 'error'">
+
+  {{ toastMensaje }}
+</div>
+
 
