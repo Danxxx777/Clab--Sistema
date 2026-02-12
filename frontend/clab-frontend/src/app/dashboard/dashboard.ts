@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { TestService } from '../services/test.service';
+
 
 @Component({
   selector: 'app-dashboard',
@@ -16,8 +17,10 @@ export class DashboardComponent implements OnInit {
   constructor(
     private router: Router,
     private auth: AuthService,
-    private testService: TestService
+    private testService: TestService,
+    private cdr: ChangeDetectorRef
   ) {}
+
 
   ngOnInit(): void {
     console.log('Dashboard iniciado');
@@ -26,10 +29,12 @@ export class DashboardComponent implements OnInit {
       next: (res) => {
         console.log('Respuesta backend:', res);
         this.mensajeBackend = res;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error backend:', err);
         this.mensajeBackend = 'No se pudo conectar con el backend';
+        this.cdr.detectChanges();
       }
     });
   }
