@@ -863,3 +863,47 @@ $color-eliminar: #e74c3c;
     }
   }
 }
+
+/* =====================
+   TOAST
+===================== */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 14px 22px;
+  border-radius: 10px;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  animation: fadeInUp 0.3s ease;
+  z-index: 9999;
+}
+
+.toast-success {
+  background: #2d7d51;
+}
+
+.toast-error {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-small {
+  max-width: 460px;
+}
+
+textarea.form-control {
+  resize: none;
+}
+
