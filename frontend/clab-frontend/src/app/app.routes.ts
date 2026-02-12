@@ -14,15 +14,22 @@ import { AcademicoComponent } from './academico/academico';
 import { EstudiantesComponent } from './estudiantes/estudiantes';
 import { UsuariosComponent } from './usuarios/usuarios';
 
+import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password';
+import { ResetPasswordComponent } from './auth/reset-password/reset-password';
+
 import { authGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
 
-  // 🔑 RUTA INICIAL CORRECTA
+  // 🔑 RUTA INICIAL
   { path: '', redirectTo: 'login', pathMatch: 'full' },
 
+  // 🔓 RUTAS PÚBLICAS
   { path: 'login', component: LoginComponent },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'reset-password', component: ResetPasswordComponent },
 
+  // 🔐 RUTAS PROTEGIDAS
   {
     path: 'dashboard',
     component: DashboardComponent,

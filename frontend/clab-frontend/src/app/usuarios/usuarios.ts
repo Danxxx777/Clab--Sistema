@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -23,9 +23,11 @@ export class UsuariosComponent implements OnInit {
   constructor(
     private router: Router,
     private rolService: RolService,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private cdr: ChangeDetectorRef
   ) {
   }
+
 
   /* ESTADO GENERAL*/
   tabActiva = 0;
@@ -88,6 +90,7 @@ export class UsuariosComponent implements OnInit {
         }));
 
         this.filtrarUsuarios();
+        this.cdr.detectChanges();
       },
       error: err => console.error('Error cargando usuarios', err)
     });
@@ -198,6 +201,7 @@ export class UsuariosComponent implements OnInit {
   cerrarModalUsuario(): void {
     this.mostrarModalUsuario = false;
     this.modoModal = 'crear';
+    this.cdr.detectChanges();
   }
 
   cargarRoles(): void {
@@ -253,6 +257,7 @@ export class UsuariosComponent implements OnInit {
           'Roles'
         );
         this.cerrarModalRol();
+        this.cdr.detectChanges();
       },
       error: () => alert('Error al guardar el rol'),
       complete: () => (this.guardandoRol = false)
@@ -277,6 +282,7 @@ export class UsuariosComponent implements OnInit {
       descripcion: '',
       fechaCreacion: ''
     };
+    this.cdr.detectChanges();
   }
 
   /* UTILIDADES*/
