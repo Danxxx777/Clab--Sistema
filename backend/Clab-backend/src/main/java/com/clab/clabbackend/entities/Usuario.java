@@ -47,4 +47,11 @@ public class Usuario {
     @ManyToOne
     @JoinColumn(name = "id_foto")
     private Foto foto;
+
+    @Column(name = "token_recuperacion", length = 255)
+    private String tokenRecuperacion;
+
+    @Column(name = "expiracion_token")
+    private java.time.LocalDateTime expiracionToken;
+
 }
