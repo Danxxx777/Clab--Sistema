@@ -35,7 +35,7 @@ public class ReporteFallasService {
         Usuario usuario = usuarioRepository.findById(dto.getIdUsuario())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // 🔥 VALIDACIÓN CLAVE
+
         if (!equipo.getLaboratorio().getCodLaboratorio()
                 .equals(laboratorio.getCodLaboratorio())) {
             throw new RuntimeException("El equipo no pertenece al laboratorio seleccionado");
@@ -48,10 +48,23 @@ public class ReporteFallasService {
         reporte.setDescripcionFalla(dto.getDescripcionFalla());
         reporte.setFechaReporte(LocalDate.now());
 
-        // Actualizamos último reporte del equipo
+
+        if (equipo.getEstado() != null &&
+                equipo.getEstado().equalsIgnoreCase("OPERATIVO")) {
+
+            equipo.setEstado("MANTENIMIENTO");
+        }
+
+
         equipo.setUltimoReporte(LocalDate.now());
 
+
+        equipoRepository.save(equipo);
+
+
         return reporteRepository.save(reporte);
+
+
     }
 
     public List<ReporteFallas> listar() {
