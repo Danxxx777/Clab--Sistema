@@ -13,6 +13,9 @@ import { LaboratoriosComponent } from './laboratorio/laboratorio';
 import { AcademicoComponent } from './academico/academico';
 import { EstudiantesComponent } from './estudiantes/estudiantes';
 import { UsuariosComponent } from './usuarios/usuarios';
+import { ReporteFallasComponent } from './reporteFallas/reporteFallas';
+
+
 
 import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password';
@@ -95,6 +98,15 @@ export const routes: Routes = [
     component: UsuariosComponent,
     canActivate: [authGuard]
   },
+
+  {
+    path: 'reporte-fallas',
+    component: ReporteFallasComponent,
+    canActivate: [authGuard]
+  },
+
+
+
 
   // 🔒 fallback FINAL
   { path: '**', redirectTo: 'dashboard' }
