@@ -66,7 +66,7 @@ export class DashboardComponent implements OnInit {
   }
 
   protected fallas(fallas: string) {
-
+      this.router.navigate(['reporte-fallas']);
   }
 
   protected asistencia(asistencia: string) {
