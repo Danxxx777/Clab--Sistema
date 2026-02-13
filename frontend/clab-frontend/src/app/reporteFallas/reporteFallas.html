@@ -1,10 +1,203 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Title</title>
-</head>
-<body>
+<div class="reporte-fallas-container">
 
-</body>
-</html>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">
+        <span class="logo-icon"></span>
+        <span class="logo-text">CLAB</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn-volver" (click)="volver()">Volver</button>
+    </div>
+  </div>
+
+
+  <div class="page-title-section">
+    <h1>Reporte de Fallas</h1>
+  </div>
+
+
+  <div class="content-wrapper">
+
+
+    <div class="toolbar">
+
+      <div class="filters-group">
+
+        <div class="search-container">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Buscar por equipo, laboratorio o descripción">
+        </div>
+
+
+        <select class="select-filtro">
+          <option value="">Todos los laboratorios</option>
+          <option *ngFor="let lab of laboratorios"
+                  [value]="lab.codLaboratorio">
+            {{ lab.nombreLab }}
+          </option>
+        </select>
+
+
+        <select class="select-filtro">
+          <option value="">Todos los equipos</option>
+          <option *ngFor="let equipo of equiposFiltrados"
+                  [value]="equipo.idEquipo">
+            {{ equipo.nombreEquipo }}
+          </option>
+        </select>
+      </div>
+
+      <button class="btn-agregar" (click)="abrirModal()">
+        + Nuevo Reporte
+      </button>
+
+    </div>
+
+
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+        <tr>
+          <th>ID REPORTE</th>
+          <th>FECHA</th>
+          <th>LABORATORIO</th>
+          <th>EQUIPO</th>
+          <th>DESCRIPCIÓN</th>
+          <th>USUARIO</th>
+          <th>ACCIONES</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr *ngFor="let reporte of reportes">
+          <td>{{ reporte.idReporte }}</td>
+
+          <td>{{ formatearFecha(reporte.fechaReporte) }}</td>
+
+          <td>{{ reporte.laboratorio.nombreLab }}</td>
+
+          <td>
+            <strong>{{ reporte.equipo.nombreEquipo }}</strong><br>
+            <small>{{ reporte.equipo.marca }} - {{ reporte.equipo.modelo }}</small>
+          </td>
+
+          <td class="descripcion-cell">
+            {{ reporte.descripcionFalla }}
+          </td>
+
+          <td>
+            <strong>{{ reporte.usuario.nombreCompleto }}</strong><br>
+            <small>{{ reporte.usuario.email }}</small>
+          </td>
+
+          <td>
+            <div class="action-buttons">
+              <button class="btn-action btn-eliminar"
+                      (click)="eliminarReporte(reporte.idReporte)">
+                <i class="bi bi-trash"></i> Eliminar
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <tr *ngIf="reportes.length === 0">
+          <td colspan="7" class="empty-message">
+            No hay reportes registrados
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+
+  <div class="modal-overlay"
+       *ngIf="mostrarModal"
+       (click)="cerrarModal()">
+
+    <div class="modal"
+         (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <h2>Nuevo Reporte de Falla</h2>
+        <button class="btn-close"
+                (click)="cerrarModal()">
+          ×
+        </button>
+      </div>
+
+      <form [formGroup]="reporteForm"
+            (ngSubmit)="guardarReporte()">
+
+        <div class="modal-body">
+
+
+          <div class="form-group">
+            <label>Laboratorio <span class="required">*</span></label>
+            <select formControlName="codLaboratorio"
+                    (change)="onLaboratorioChange()"
+                    class="form-control">
+              <option value="">Seleccione un laboratorio</option>
+              <option *ngFor="let lab of laboratorios"
+                      [value]="lab.codLaboratorio">
+                {{ lab.nombreLab }}
+              </option>
+            </select>
+          </div>
+
+
+          <div class="form-group">
+            <label>Equipo <span class="required">*</span></label>
+            <select formControlName="idEquipo"
+                    [disabled]="equiposFiltrados.length === 0"
+                    class="form-control">
+              <option value="">Seleccione un equipo</option>
+              <option *ngFor="let equipo of equiposFiltrados"
+                      [value]="equipo.idEquipo">
+                {{ equipo.nombreEquipo }} - {{ equipo.marca }} {{ equipo.modelo }}
+              </option>
+            </select>
+          </div>
+
+
+          <div class="form-group">
+            <label>Descripción <span class="required">*</span></label>
+            <textarea
+              formControlName="descripcionFalla"
+              class="form-control"
+              rows="5"
+              placeholder="Describa la falla..."></textarea>
+            <small class="char-count">
+              {{ reporteForm.get('descripcionFalla')?.value?.length || 0 }} / 500
+            </small>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button"
+                  class="btn-cancelar"
+                  (click)="cerrarModal()">
+            Cancelar
+          </button>
+
+          <button type="submit"
+                  class="btn-guardar"
+                  [disabled]="reporteForm.invalid">
+            Guardar Reporte
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+</div>
