@@ -26,6 +26,15 @@ public class EquipoService {
     }
 
 
+//     estooooooo agregueeee
+    public List<Equipo> listarPorLaboratorio(Integer codLaboratorio) {
+        return equipoRepository.findByLaboratorioCodLaboratorio(codLaboratorio);
+    }
+
+
+
+// estoooo
+
     public Equipo crear(
             String numeroSerie,
             String nombreEquipo,
