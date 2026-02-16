@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 import { RolService, RolRequest, RolResponse } from '../services/rol.service';
 import { UsuarioService, UsuarioRequest, UsuarioResponse } from '../services/usuario.service';
@@ -24,9 +25,10 @@ export class UsuariosComponent implements OnInit {
     private router: Router,
     private rolService: RolService,
     private usuarioService: UsuarioService,
-    private cdr: ChangeDetectorRef
-  ) {
-  }
+    private cdr: ChangeDetectorRef,
+    private http: HttpClient
+  ) {}
+
 
 
   /* ESTADO GENERAL*/
@@ -40,6 +42,8 @@ export class UsuariosComponent implements OnInit {
   usuariosFiltrados: Usuario[] = [];
   roles: RolView[] = [];
   auditorias: Auditoria[] = [];
+  permisosDisponibles: any[] = [];
+  permisosSeleccionados: number[] = [];
   busqueda = '';
   filtroEstado = 'Todos';
   filtroRol = 'Todos';
@@ -48,6 +52,7 @@ export class UsuariosComponent implements OnInit {
   ngOnInit(): void {
     this.cargarUsuarios();
     this.cargarRoles();
+    this.cargarPermisos();
   }
 
   volver(): void {
@@ -218,30 +223,48 @@ export class UsuariosComponent implements OnInit {
   }
 
   abrirModalRol(modo: 'crear' | 'editar', r?: RolView): void {
+
     this.modoModal = modo;
-    this.rolActual = r
-      ? { ...r }
-      : {
+    this.permisosSeleccionados = [];
+
+    if (modo === 'crear') {
+      this.rolActual = {
         nombre: '',
         descripcion: '',
         fechaCreacion: new Date().toISOString().substring(0, 10)
       };
+    }
+    else if (r) {
+
+      this.rolActual = { ...r };
+
+      if (r.id) {
+        this.rolService.obtenerPermisos(r.id).subscribe({
+          next: (ids: number[]) => {
+            this.permisosSeleccionados = ids;
+            this.cdr.detectChanges();
+          },
+          error: err => {
+            console.error('Error cargando permisos del rol', err);
+          }
+        });
+      }
+    }
+
     this.mostrarModalRol = true;
   }
 
   guardarRol(): void {
-    if (this.guardandoRol) return;
 
     if (!this.rolActual.nombre?.trim()) {
       alert('El nombre del rol es obligatorio');
       return;
     }
 
-    this.guardandoRol = true;
-
     const payload: RolRequest = {
       nombreRol: this.rolActual.nombre.trim(),
-      descripcion: this.rolActual.descripcion?.trim()
+      descripcion: this.rolActual.descripcion?.trim(),
+      permisos: this.permisosSeleccionados
     };
 
     const request$ =
@@ -251,18 +274,17 @@ export class UsuariosComponent implements OnInit {
 
     request$.subscribe({
       next: () => {
+        alert('Rol guardado correctamente');
         this.cargarRoles();
-        this.registrarAuditoria(
-          this.modoModal === 'crear' ? 'Crear rol' : 'Editar rol',
-          'Roles'
-        );
         this.cerrarModalRol();
-        this.cdr.detectChanges();
       },
-      error: () => alert('Error al guardar el rol'),
-      complete: () => (this.guardandoRol = false)
+      error: err => {
+        console.error(err);
+        alert('Error al guardar el rol');
+      }
     });
   }
+
 
   eliminarRol(r: RolView): void {
     if (!r.id) return;
@@ -277,6 +299,7 @@ export class UsuariosComponent implements OnInit {
   cerrarModalRol(): void {
     this.mostrarModalRol = false;
     this.guardandoRol = false;
+    this.permisosSeleccionados = [];   // 👈 limpiar
     this.rolActual = {
       nombre: '',
       descripcion: '',
@@ -284,6 +307,31 @@ export class UsuariosComponent implements OnInit {
     };
     this.cdr.detectChanges();
   }
+
+  cargarPermisos(): void {
+    this.http.get<any[]>('http://localhost:8080/permisos')
+      .subscribe({
+        next: (data) => {
+          this.permisosDisponibles = data;
+        },
+        error: err => console.error('Error cargando permisos', err)
+      });
+  }
+  togglePermiso(idPermiso: number) {
+    if (this.permisosSeleccionados.includes(idPermiso)) {
+      this.permisosSeleccionados =
+        this.permisosSeleccionados.filter(id => id !== idPermiso);
+    } else {
+      this.permisosSeleccionados.push(idPermiso);
+    }
+
+  }
+  esPermisoSeleccionado(idPermiso: number): boolean {
+    return this.permisosSeleccionados.includes(idPermiso);
+  }
+
+
+
 
   /* UTILIDADES*/
   getEstadoClass(estado?: string): string {

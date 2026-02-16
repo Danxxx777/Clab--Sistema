@@ -15,6 +15,7 @@ export interface RolResponse {
 export interface RolRequest {
   nombreRol: string;
   descripcion?: string;
+  permisos: number[];
 }
 
 @Injectable({
@@ -40,5 +41,9 @@ export class RolService {
 
   eliminar(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/eliminar/${id}`);
+  }
+
+  obtenerPermisos(id: number): Observable<number[]> {
+    return this.http.get<number[]>(`${this.apiUrl}/${id}/permisos`);
   }
 }

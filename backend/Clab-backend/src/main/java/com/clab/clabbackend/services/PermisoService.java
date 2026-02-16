@@ -11,27 +11,16 @@ public class PermisoService {
     private final UsuarioRolRepository usuarioRolRepository;
     private final RolPermisoRepository rolPermisoRepository;
 
-    public PermisoService(UsuarioRolRepository usuarioRolRepository,
-                          RolPermisoRepository rolPermisoRepository) {
-        this.usuarioRolRepository = usuarioRolRepository;
-        this.rolPermisoRepository = rolPermisoRepository;
+    public PermisoService(UsuarioRolRepository usuarioRolRepository, RolPermisoRepository rolPermisoRepository) {
+        this.usuarioRolRepository = usuarioRolRepository;this.rolPermisoRepository = rolPermisoRepository;
     }
 
     public void validarPermiso(Integer idUsuario, String modulo, String permiso) {
-
-        UsuarioRol usuarioRol = usuarioRolRepository
-                .findByUsuario_IdUsuarioAndVigenteTrue(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario sin rol"));
-
-        boolean autorizado = rolPermisoRepository
-                .existsByRol_IdRolAndModulo_NombreModuloAndPermiso_NombrePermisoAndVigenteTrue(
-                        usuarioRol.getRol().getIdRol(),
-                        modulo,
-                        permiso
-                );
-
+        UsuarioRol usuarioRol = usuarioRolRepository.findByUsuario_IdUsuarioAndVigenteTrue(idUsuario).orElseThrow(() -> new RuntimeException("Usuario sin rol"));
+        boolean autorizado = rolPermisoRepository.existsByRol_IdRolAndPermiso_NombrePermisoAndVigenteTrue(usuarioRol.getRol().getIdRol(), permiso);
         if (!autorizado) {
             throw new RuntimeException("Acceso denegado");
-        }//a
+        }
     }
+
 }
