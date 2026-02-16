@@ -2,12 +2,16 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { TestService } from '../services/test.service';
+import {NgIf} from '@angular/common';
 
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   templateUrl: './dashboard.html',
+  imports: [
+    NgIf
+  ],
   styleUrls: ['./dashboard.scss']
 })
 export class DashboardComponent implements OnInit {
@@ -21,8 +25,11 @@ export class DashboardComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
 
+  rol: string | null = '';
 
   ngOnInit(): void {
+    this.rol = localStorage.getItem('rol');
+
     console.log('Dashboard iniciado');
 
     this.testService.getTest().subscribe({

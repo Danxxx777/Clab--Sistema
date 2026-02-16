@@ -9,6 +9,7 @@ export interface UsuarioRequest {
   apellidos: string;
   email: string;
   telefono?: string;
+  rol?: string;
   contrasenia: string;
   idRol: number;
 }
@@ -21,6 +22,7 @@ export interface UsuarioResponse {
   email: string;
   telefono?: string;
   usuario: string;
+  rol: string;
   estado: string;
   fechaRegistro: string;
 }

@@ -24,24 +24,4 @@ public class AuthController {
     public AuthResponseDTO login(@RequestBody LoginRequestDTO request) {
         return authService.login(request);
     }
-
-    @PostMapping("/hash")
-    public String generarHash(@RequestBody Map<String, String> body) {
-        return passwordEncoder.encode(body.get("password"));
-    }
-    @PostMapping("/forgot-password")
-    public String forgotPassword(@RequestParam String email) {
-        authService.solicitarRecuperacion(email);
-        return "Token generado correctamente";
-    }
-    @PostMapping("/reset-password")
-    public String resetPassword(
-            @RequestParam String token,
-            @RequestParam String nuevaPassword) {
-
-        authService.resetPassword(token, nuevaPassword);
-        return "Contraseña actualizada correctamente";
-    }
-
-
 }
