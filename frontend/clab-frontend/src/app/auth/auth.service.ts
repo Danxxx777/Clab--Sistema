@@ -31,4 +31,29 @@ export class AuthService {
   isLoggedIn(): boolean {
     return localStorage.getItem('loggedIn') === 'true';
   }
+
+  getRol(): string | null {
+    return localStorage.getItem('rol');
+  }
+
+  esAdministrador(): boolean {
+    return this.getRol() === 'Administradorr';
+  }
+
+  esDecano(): boolean {
+    return this.getRol() === 'Decano';
+  }
+
+  esEncargado(): boolean {
+    return this.getRol() === 'Encargado_Lab';
+  }
+
+  esDocente(): boolean {
+    return this.getRol() === 'Docente';
+  }
+
+  esCoordinador(): boolean {
+    return this.getRol() === 'Coordinador';
+  }
+
 }

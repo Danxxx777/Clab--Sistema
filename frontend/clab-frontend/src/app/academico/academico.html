@@ -93,7 +93,6 @@
             <td>{{periodo.estado}}</td>
             <td>
               <div class="action-buttons">
-                <button class="btn-action btn-ver" (click)="verDetalle(periodo, 'periodo')">Ver</button>
                 <button class="btn-action btn-editar" (click)="editar(periodo, i, 'periodo')">Editar</button>
                 <button class="btn-action btn-eliminar" (click)="eliminar(periodo, i, 'periodo')">Eliminar</button>
               </div>
@@ -149,7 +148,6 @@
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn-action btn-ver" (click)="verDetalle(carrera, 'carrera')">Ver</button>
                 <button class="btn-action btn-editar" (click)="editar(carrera, i, 'carrera')">Editar</button>
                 <button class="btn-action btn-eliminar" (click)="eliminar(carrera, i, 'carrera')">Eliminar</button>
               </div>
@@ -214,7 +212,6 @@
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn-action btn-ver" (click)="verDetalle(asignatura, 'asignatura')">Ver</button>
                 <button class="btn-action btn-editar" (click)="editar(asignatura, i, 'asignatura')">Editar</button>
                 <button class="btn-action btn-eliminar" (click)="eliminar(asignatura, i, 'asignatura')">Eliminar</button>
               </div>
@@ -271,7 +268,6 @@
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn-action btn-ver" (click)="verDetalle(facultad, 'facultad')">Ver</button>
                 <button class="btn-action btn-editar" (click)="editar(facultad, i, 'facultad')">Editar</button>
                 <button class="btn-action btn-eliminar" (click)="eliminar(facultad, i, 'facultad')">Eliminar</button>
               </div>
@@ -325,7 +321,6 @@
             <td>{{horario.numeroEstudiantes}} estudiantes</td>
             <td>
               <div class="action-buttons">
-                <button class="btn-action btn-ver" (click)="verDetalle(horario, 'horario')">Ver</button>
                 <button class="btn-action btn-editar" (click)="editar(horario, i, 'horario')">Editar</button>
                 <button class="btn-action btn-eliminar" (click)="eliminar(horario, i, 'horario')">Eliminar</button>
               </div>
@@ -573,205 +568,5 @@
       <button class="btn-guardar" (click)="guardar()">Guardar</button>
     </div>
 
-  </div>
-</div>
-
-
-
-<div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'periodo'" (click)="cerrarDetalle()">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>📅 Detalles del Período</h2>
-      <button class="btn-close" (click)="cerrarDetalle()">×</button>
-    </div>
-    <div class="detalle-item">
-      <label>ID del Período</label>
-      <span class="detalle-valor">{{ itemDetalle.idPeriodo }}</span>
-    </div>
-    <div class="modal-body">
-      <div class="detalle-grid">
-        <div class="detalle-item full-width">
-          <label>Nombre del Período</label>
-          <span class="detalle-valor">{{itemDetalle.nombre}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Fecha de Inicio</label>
-          <span class="detalle-valor">{{itemDetalle.fechaInicio}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Fecha de Fin</label>
-          <span class="detalle-valor">{{itemDetalle.fechaFin}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Fecha de Creación</label>
-          <span class="detalle-valor">{{itemDetalle.fechaCreacion}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Estado</label>
-          <span class="badge" [class.badge-activo]="itemDetalle.estado === 'ACTIVO'" [class.badge-inactivo]="itemDetalle.estado === 'INACTIVO'">
-            {{itemDetalle.estado}}
-          </span>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancelar" (click)="cerrarDetalle()">Cerrar</button>
-    </div>
-  </div>
-</div>
-
-
-<div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'carrera'" (click)="cerrarDetalle()">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>📚 Detalles de la Carrera</h2>
-      <button class="btn-close" (click)="cerrarDetalle()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="detalle-grid">
-        <div class="detalle-item full-width">
-          <label>Nombre de la Carrera</label>
-          <span class="detalle-valor">{{itemDetalle.nombre}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Facultad</label>
-          <span class="detalle-valor">{{itemDetalle.facultad}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Estado</label>
-          <span class="badge" [class.badge-activo]="itemDetalle.estado === 'ACTIVA'" [class.badge-inactivo]="itemDetalle.estado === 'INACTIVA'">
-            {{itemDetalle.estado}}
-          </span>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancelar" (click)="cerrarDetalle()">Cerrar</button>
-    </div>
-  </div>
-</div>
-
-
-<div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'asignatura'" (click)="cerrarDetalle()">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>📖 Detalles de la Asignatura</h2>
-      <button class="btn-close" (click)="cerrarDetalle()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="detalle-grid">
-        <div class="detalle-item full-width">
-          <label>Nombre de la Asignatura</label>
-          <span class="detalle-valor">{{itemDetalle.nombre}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Carrera</label>
-          <span class="detalle-valor">{{itemDetalle.carrera}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Nivel</label>
-          <span class="detalle-valor">Nivel {{itemDetalle.nivel}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Horas Semanales</label>
-          <span class="detalle-valor">{{itemDetalle.horasSemanales}} hrs/sem</span>
-        </div>
-        <div class="detalle-item">
-          <label>Requiere Laboratorio</label>
-          <span [ngClass]="itemDetalle.requiereLaboratorio === 'SI' ? 'lab-si' : 'lab-no'">
-            {{itemDetalle.requiereLaboratorio === 'SI' ? '🔬 Sí' : '📘 No'}}
-          </span>
-        </div>
-        <div class="detalle-item">
-          <label>Estado</label>
-          <span class="badge" [class.badge-activo]="itemDetalle.estado === 'ACTIVA'" [class.badge-inactivo]="itemDetalle.estado === 'INACTIVA'">
-            {{itemDetalle.estado}}
-          </span>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancelar" (click)="cerrarDetalle()">Cerrar</button>
-    </div>
-  </div>
-</div>
-
-
-<div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'facultad'" (click)="cerrarDetalle()">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>🏛️ Detalles de la Facultad</h2>
-      <button class="btn-close" (click)="cerrarDetalle()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="detalle-grid">
-        <div class="detalle-item full-width">
-          <label>Nombre de la Facultad</label>
-          <span class="detalle-valor">{{itemDetalle.nombre}}</span>
-        </div>
-        <div class="detalle-item full-width" *ngIf="itemDetalle.descripcion">
-          <label>Descripción</label>
-          <span class="detalle-valor">{{itemDetalle.descripcion}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Decano</label>
-          <span class="detalle-valor">{{itemDetalle.decano}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Fecha de Creación</label>
-          <span class="detalle-valor">{{itemDetalle.fechaCreacion}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Estado</label>
-          <span class="badge" [class.badge-activo]="itemDetalle.estado === 'ACTIVO'" [class.badge-inactivo]="itemDetalle.estado === 'INACTIVO'">
-            {{itemDetalle.estado}}
-          </span>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancelar" (click)="cerrarDetalle()">Cerrar</button>
-    </div>
-  </div>
-</div>
-
-
-<div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'horario'" (click)="cerrarDetalle()">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>⏰ Detalles del Horario</h2>
-      <button class="btn-close" (click)="cerrarDetalle()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="detalle-grid">
-        <div class="detalle-item">
-          <label>Período Académico</label>
-          <span class="detalle-valor">{{itemDetalle.periodo}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Asignatura</label>
-          <span class="detalle-valor">{{itemDetalle.asignatura}}</span>
-        </div>
-        <div class="detalle-item full-width">
-          <label>Docente</label>
-          <span class="detalle-valor">{{itemDetalle.docente}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Día de la Semana</label>
-          <span class="detalle-valor">{{itemDetalle.diaSemana}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Horario </label>
-          <span class="detalle-valor">{{itemDetalle.horaInicio}} - {{itemDetalle.horaFin}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Número de Estudiantes</label>
-          <span class="detalle-valor">{{itemDetalle.numeroEstudiantes}} estudiantes</span>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancelar" (click)="cerrarDetalle()">Cerrar</button>
-    </div>
   </div>
 </div>
