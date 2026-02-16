@@ -31,3 +31,4 @@ export class PeriodoService {
       `${this.apiUrl}/eliminar/${id}`);
   }
 }
+
