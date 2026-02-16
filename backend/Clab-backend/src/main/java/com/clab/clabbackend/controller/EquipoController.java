@@ -62,5 +62,13 @@ public class EquipoController {
         equipoService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/porLaboratorio/{codLaboratorio}")
+    public ResponseEntity<List<Equipo>> listarPorLaboratorio(@PathVariable Integer codLaboratorio) {
+        return ResponseEntity.ok(equipoService.listarPorLaboratorio(codLaboratorio));
+    }
+
+
+
 }
 
