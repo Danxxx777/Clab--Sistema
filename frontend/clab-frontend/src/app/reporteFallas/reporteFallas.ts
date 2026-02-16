@@ -51,10 +51,12 @@ export class ReporteFallasComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    console.log('ReporteFallasComponent iniciado');
     this.inicializarFormulario();
     this.cargarLaboratorios();
     this.cargarReportes();
   }
+
 
   inicializarFormulario(): void {
     this.reporteForm = this.fb.group({
@@ -71,6 +73,20 @@ export class ReporteFallasComponent implements OnInit {
      CARGA DATOS
    */
 
+  onFiltroLaboratorioChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+
+    if (!value) {
+      this.equiposFiltrados = [];
+      return;
+    }
+
+    const codLaboratorio = Number(value);
+    this.cargarEquiposPorLaboratorio(codLaboratorio);
+  }
+
+
+
   cargarLaboratorios(): void {
     this.http.get<Laboratorio[]>(`${this.API_URL}/laboratorios/listar`)
       .subscribe({
@@ -80,19 +96,35 @@ export class ReporteFallasComponent implements OnInit {
   }
 
   cargarEquiposPorLaboratorio(codLaboratorio: number): void {
-    this.http.get<Equipo[]>(`${this.API_URL}/equipos/porLaboratorio/${codLaboratorio}`)
+
+    const url = `${this.API_URL}/equipos/porLaboratorio/${codLaboratorio}`;
+    console.log('Llamando a:', url);
+
+    this.http.get<Equipo[]>(url)
       .subscribe({
-        next: (data) => this.equiposFiltrados = data,
-        error: (err) => console.error(err)
+        next: (data) => {
+          console.log('Equipos recibidos:', data);
+          this.equiposFiltrados = data;
+        },
+        error: (err) => {
+          console.error('Error HTTP:', err);
+        }
       });
   }
 
+
   cargarReportes(): void {
+    console.log('Cargando reportes...');
+
     this.reporteService.listar().subscribe({
-      next: (data) => this.reportes = data,
-      error: (err) => console.error(err)
+      next: (data) => {
+        console.log('Reportes recibidos:', data);
+        this.reportes = data;
+      },
+      error: (err) => console.error('Error al listar reportes:', err)
     });
   }
+
 
   /*
      EVENTOS
@@ -102,18 +134,28 @@ export class ReporteFallasComponent implements OnInit {
     const cod = this.reporteForm.get('codLaboratorio')?.value;
 
     if (cod) {
-      this.cargarEquiposPorLaboratorio(cod);
+      const codNumero = Number(cod);
+      console.log('Laboratorio seleccionado:', codNumero);
+      this.cargarEquiposPorLaboratorio(codNumero);
       this.reporteForm.patchValue({ idEquipo: null });
     } else {
       this.equiposFiltrados = [];
     }
   }
 
+
   abrirModal(): void {
     this.mostrarModal = true;
-    this.reporteForm.reset();
+
+    this.reporteForm.reset({
+      codLaboratorio: null,
+      idEquipo: null,
+      descripcionFalla: ''
+    });
+
     this.equiposFiltrados = [];
   }
+
 
   cerrarModal(): void {
     this.mostrarModal = false;
@@ -129,14 +171,27 @@ export class ReporteFallasComponent implements OnInit {
 
     this.cargando = true;
 
+    const idUsuario = Number(localStorage.getItem('idUsuario'));
+
     const reporteDTO = {
       ...this.reporteForm.value,
       idUsuario: 1
     };
 
+
     this.reporteService.crear(reporteDTO).subscribe({
-      next: () => {
-        this.cargarReportes();
+      next: (nuevoReporte) => {
+
+        // 🔥 Agregamos directamente al array
+        this.reportes.push(nuevoReporte);
+
+        this.reporteForm.reset({
+          codLaboratorio: null,
+          idEquipo: null,
+          descripcionFalla: ''
+        });
+
+        this.equiposFiltrados = [];
         this.cerrarModal();
         this.cargando = false;
       },
@@ -146,6 +201,8 @@ export class ReporteFallasComponent implements OnInit {
       }
     });
   }
+
+
 
   eliminarReporte(id: number): void {
 
