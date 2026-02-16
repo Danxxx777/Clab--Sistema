@@ -10,4 +10,8 @@ export interface RolView {
   descripcion?: string;
   fechaCreacion: string;
 }
-//a
+export interface RolRequest {
+  nombreRol: string;
+  descripcion?: string;
+  permisos: number[];
+}
