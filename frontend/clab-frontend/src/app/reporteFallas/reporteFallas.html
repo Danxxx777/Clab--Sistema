@@ -35,13 +35,15 @@
         </div>
 
 
-        <select class="select-filtro">
+        <select class="select-filtro"
+                (change)="onFiltroLaboratorioChange($event)">
           <option value="">Todos los laboratorios</option>
           <option *ngFor="let lab of laboratorios"
                   [value]="lab.codLaboratorio">
             {{ lab.nombreLab }}
           </option>
         </select>
+
 
 
         <select class="select-filtro">
