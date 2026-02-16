@@ -27,7 +27,7 @@
         </div>
 
         <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
-        <form class="login-form" (ngSubmit)="login()">
+        <form class="login-form" >
           <div class="form-group">
             <label for="username">
               <span class="label-icon">👤</span>
@@ -67,14 +67,12 @@
             <a routerLink="/forgot-password" class="forgot-password">
               ¿Olvidaste tu contraseña?
             </a>
-
-
-
           </div>
 
-          <button type="submit" class="btn-login">
+          <button type="button" class="btn-login" (click)="login()">
             Iniciar Sesión
           </button>
+
         </form>
 
         <div class="form-footer">
