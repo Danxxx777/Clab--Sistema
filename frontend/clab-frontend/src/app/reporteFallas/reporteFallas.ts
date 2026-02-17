@@ -5,7 +5,6 @@ import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { ReporteFallasService } from '../services/reporte-fallas.service';
 
-
 interface Laboratorio {
   codLaboratorio: number;
   nombreLab: string;
@@ -16,7 +15,6 @@ interface Equipo {
   nombreEquipo: string;
   marca: string;
   modelo: string;
-  laboratorio: Laboratorio;
 }
 
 @Component({
@@ -39,6 +37,12 @@ export class ReporteFallasComponent implements OnInit {
   laboratorios: Laboratorio[] = [];
   equiposFiltrados: Equipo[] = [];
   reportes: any[] = [];
+  reportesFiltrados: any[] = []; // 🔥 NUEVO
+
+  // 🔥 VARIABLES DE FILTRO
+  filtroTexto: string = '';
+  filtroCodLaboratorio: number | null = null;
+  filtroIdEquipo: number | null = null;
 
   mostrarModal = false;
   cargando = false;
@@ -52,12 +56,10 @@ export class ReporteFallasComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    console.log('ReporteFallasComponent iniciado');
     this.inicializarFormulario();
     this.cargarLaboratorios();
     this.cargarReportes();
   }
-
 
   inicializarFormulario(): void {
     this.reporteForm = this.fb.group({
@@ -69,94 +71,117 @@ export class ReporteFallasComponent implements OnInit {
       ]
     });
   }
-  /*
-     CARGA DATOS
-   */
-  onFiltroLaboratorioChange(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
 
-    if (!value) {
-      this.equiposFiltrados = [];
-      return;
-    }
-    const codLaboratorio = Number(value);
-    this.cargarEquiposPorLaboratorio(codLaboratorio);
-  }
   cargarLaboratorios(): void {
     this.http.get<Laboratorio[]>(`${this.API_URL}/laboratorios/listar`)
       .subscribe({
         next: (data) => this.laboratorios = data,
-        error: (err) => console.error(err)
+        error: (err) => console.error('Error cargando laboratorios:', err)
       });
   }
+
   cargarEquiposPorLaboratorio(codLaboratorio: number): void {
-
     const url = `${this.API_URL}/equipos/porLaboratorio/${codLaboratorio}`;
-    console.log('Llamando a:', url);
-
-    this.http.get<Equipo[]>(url)
-      .subscribe({
-        next: (data) => {
-          console.log('Equipos recibidos:', data);
-          this.equiposFiltrados = data;
-        },
-        error: (err) => {
-          console.error('Error HTTP:', err);
-        }
-      });
+    this.http.get<Equipo[]>(url).subscribe({
+      next: (data) => {
+        this.equiposFiltrados = data;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error cargando equipos:', err)
+    });
   }
-  cargarReportes(): void {
-    console.log('Cargando reportes...');
 
+  // 🔥 ACTUALIZADO
+  cargarReportes(): void {
     this.reporteService.listar().subscribe({
       next: (data) => {
-        console.log('Reportes recibidos:', data);
         this.reportes = data;
+        this.reportesFiltrados = data; // 🔥 Inicializa filtrados
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Error al listar reportes:', err)
     });
   }
 
+  // 🔥 NUEVO: Aplica todos los filtros
+  aplicarFiltros(): void {
+    this.reportesFiltrados = this.reportes.filter(reporte => {
 
-  /*
-     EVENTOS
-   */
+      const textoCoincide = !this.filtroTexto ||
+        reporte.equipo.nombreEquipo.toLowerCase()
+          .includes(this.filtroTexto.toLowerCase()) ||
+        reporte.laboratorio.nombreLab.toLowerCase()
+          .includes(this.filtroTexto.toLowerCase()) ||
+        reporte.descripcionFalla.toLowerCase()
+          .includes(this.filtroTexto.toLowerCase());
+
+      const laboratorioCoincide = !this.filtroCodLaboratorio ||
+        reporte.laboratorio.codLaboratorio === Number(this.filtroCodLaboratorio);
+
+      const equipoCoincide = !this.filtroIdEquipo ||
+        reporte.equipo.idEquipo === Number(this.filtroIdEquipo);
+
+      return textoCoincide && laboratorioCoincide && equipoCoincide;
+    });
+
+    this.cdr.detectChanges();
+  }
+
+  // 🔥 ACTUALIZADO
+  onFiltroLaboratorioChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    this.filtroCodLaboratorio = value ? Number(value) : null;
+    this.filtroIdEquipo = null; // Resetea filtro equipo
+
+    if (value) {
+      this.cargarEquiposPorLaboratorio(Number(value));
+    } else {
+      this.equiposFiltrados = [];
+    }
+
+    this.aplicarFiltros();
+  }
+
+  // 🔥 NUEVO
+  onFiltroEquipoChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    this.filtroIdEquipo = value ? Number(value) : null;
+    this.aplicarFiltros();
+  }
+
+  // 🔥 NUEVO
+  onFiltroTextoChange(event: Event): void {
+    this.filtroTexto = (event.target as HTMLInputElement).value;
+    this.aplicarFiltros();
+  }
 
   onLaboratorioChange(): void {
     const cod = this.reporteForm.get('codLaboratorio')?.value;
-
     if (cod) {
-      const codNumero = Number(cod);
-      console.log('Laboratorio seleccionado:', codNumero);
-      this.cargarEquiposPorLaboratorio(codNumero);
+      this.cargarEquiposPorLaboratorio(Number(cod));
       this.reporteForm.patchValue({ idEquipo: null });
     } else {
       this.equiposFiltrados = [];
     }
   }
 
-
   abrirModal(): void {
     this.mostrarModal = true;
-
     this.reporteForm.reset({
       codLaboratorio: null,
       idEquipo: null,
       descripcionFalla: ''
     });
-
     this.equiposFiltrados = [];
   }
-
 
   cerrarModal(): void {
     this.mostrarModal = false;
     this.reporteForm.reset();
+    this.equiposFiltrados = [];
   }
 
   guardarReporte(): void {
-
     if (this.reporteForm.invalid) {
       this.reporteForm.markAllAsTouched();
       return;
@@ -164,66 +189,44 @@ export class ReporteFallasComponent implements OnInit {
 
     this.cargando = true;
 
-    const idUsuario = Number(localStorage.getItem('idUsuario'));
-
     const reporteDTO = {
-      ...this.reporteForm.value,
+      codLaboratorio: Number(this.reporteForm.get('codLaboratorio')?.value),
+      idEquipo: Number(this.reporteForm.get('idEquipo')?.value),
+      descripcionFalla: this.reporteForm.get('descripcionFalla')?.value,
       idUsuario: 1
     };
 
-
     this.reporteService.crear(reporteDTO).subscribe({
-      next: (nuevoReporte) => {
-
-
-        this.reportes.push(nuevoReporte);
-
-        this.cdr.detectChanges();
-
-        this.reporteForm.reset({
-          codLaboratorio: null,
-          idEquipo: null,
-          descripcionFalla: ''
-        });
-
-        this.equiposFiltrados = [];
+      next: () => {
         this.cerrarModal();
+        this.cargarReportes();
         this.cargando = false;
       },
       error: (err) => {
-        console.error(err);
+        console.error('Error creando reporte:', err);
         this.cargando = false;
       }
     });
   }
 
   eliminarReporte(id: number): void {
-
     if (!confirm('¿Eliminar este reporte?')) return;
 
     this.reporteService.eliminar(id).subscribe({
       next: () => {
-        console.log('Eliminado del backend, ID:', id);
-        console.log('Reportes ANTES:', this.reportes.length);
-        this.reportes = [...this.reportes.filter(r => r.idReporte !== id)];
-
-        console.log('Reportes DESPUÉS:', this.reportes.length);
-
+        this.cargarReportes();
         this.cdr.detectChanges();
-
-        this.cdr.markForCheck();
       },
-      error: (err) => console.error(err)
+      error: (err) => console.error('Error eliminando reporte:', err)
     });
   }
 
   volver(): void {
-
     this.router.navigate(['/dashboard']);
-
   }
 
-  formatearFecha(fecha: Date): string {
+  formatearFecha(fecha: any): string {
+    if (!fecha) return '';
     return new Date(fecha).toLocaleDateString('es-ES');
   }
 }
