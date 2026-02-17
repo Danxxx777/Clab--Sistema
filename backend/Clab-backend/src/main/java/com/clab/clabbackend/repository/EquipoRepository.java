@@ -18,6 +18,10 @@ public interface EquipoRepository extends JpaRepository<Equipo, Integer> {
     @Query(value = "SELECT * FROM inventario.fn_listar_equipos()", nativeQuery = true)
     List<Object[]> listarSP();
 
+    @Query(value = "SELECT * FROM inventario.fn_equipos_por_laboratorio(:codLaboratorio)",
+            nativeQuery = true)
+    List<Object[]> equiposPorLaboratorio(Integer codLaboratorio);
+
     @Transactional
     @Modifying
     @Query(value = "CALL inventario.sp_insertar_equipo(:numeroSerie, :nombreEquipo, :marca, :modelo, :idTipoEquipo, :estado, :codLaboratorio, :ubicacionFisica, :fechaAdquisicion)", nativeQuery = true)

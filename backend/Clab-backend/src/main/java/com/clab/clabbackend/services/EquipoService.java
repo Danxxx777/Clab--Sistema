@@ -58,6 +58,20 @@ public class EquipoService {
         }).toList();
     }
 
+    public List<Equipo> equiposPorLaboratorio(Integer codLaboratorio) {
+        List<Object[]> resultados = equipoRepository.equiposPorLaboratorio(codLaboratorio);
+
+        return resultados.stream().map(r -> {
+            Equipo equipo = new Equipo();
+            equipo.setIdEquipo((Integer) r[0]);
+            equipo.setNombreEquipo((String) r[1]);
+            equipo.setMarca((String) r[2]);
+            equipo.setModelo((String) r[3]);
+            equipo.setEstado((String) r[4]);
+            return equipo;
+        }).toList();
+    }
+
     public void crear(EquipoDTO dto) {
 
         equipoRepository.insertar(
