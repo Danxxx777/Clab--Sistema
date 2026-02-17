@@ -1,34 +1,38 @@
 package com.clab.clabbackend.controller;
 
 import com.clab.clabbackend.dto.ReporteFallasDTO;
-import com.clab.clabbackend.entities.ReporteFallas;
 import com.clab.clabbackend.services.ReporteFallasService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/reportes")
+@RequiredArgsConstructor
 public class ReporteFallasController {
 
-    @Autowired
-    private ReporteFallasService reporteService;
+    private final ReporteFallasService reporteService;
 
     @GetMapping("/listar")
-    public List<ReporteFallas> listar() {
-        return reporteService.listar();
+    public ResponseEntity<List<Map<String, Object>>> listar() {
+        return ResponseEntity.ok(reporteService.listar());
     }
 
+
     @PostMapping("/crear")
-    public ReporteFallas crear(@RequestBody ReporteFallasDTO dto) {
-        return reporteService.crear(dto);
+    public ResponseEntity<Void> crear(@RequestBody ReporteFallasDTO dto) {
+        reporteService.crear(dto);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/eliminar/{id}")
-    public String eliminar(@PathVariable Integer id) {
+    public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         reporteService.eliminar(id);
-        return "Reporte eliminado correctamente";
+        return ResponseEntity.noContent().build();
     }
+
+
 }
