@@ -10,14 +10,9 @@ public class EquipoDTO {
     private String nombreEquipo;
     private String marca;
     private String modelo;
-
-    private String tipoEquipo;
-
+    private Integer idTipoEquipo;
     private String estado;
-
-
-    private String laboratorio;
-
+    private Integer codLaboratorio;
     private String ubicacionFisica;
     private LocalDate fechaAdquisicion;
 }

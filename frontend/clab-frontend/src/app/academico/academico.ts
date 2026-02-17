@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -145,13 +145,16 @@ export class AcademicoComponent implements OnInit {
     '19:00', '20:00'
   ];
 
-  constructor(private router: Router, private periodo: PeriodoService) {}
+  constructor(private router: Router,
+              private periodo: PeriodoService,
+              private cdr: ChangeDetectorRef) {}
 
   cargarPeriodos(): void {
     this.periodo.listar().subscribe({
       next: (data) => {
         this.periodos = data;
         this.periodosFiltrado = [...data];
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error al cargar períodos', err);
@@ -308,6 +311,7 @@ export class AcademicoComponent implements OnInit {
             next: () => {
               this.periodos.splice(index, 1);
               this.filtrarPeriodos();
+              this.cdr.detectChanges();
               alert('Período eliminado');
             }
           });
@@ -315,18 +319,22 @@ export class AcademicoComponent implements OnInit {
         case 'carrera':
           this.carreras.splice(index, 1);
           this.filtrarCarreras();
+          this.cdr.detectChanges();
           break;
         case 'asignatura':
           this.asignaturas.splice(index, 1);
           this.filtrarAsignaturas();
+          this.cdr.detectChanges();
           break;
         case 'facultad':
           this.facultadesData.splice(index, 1);
           this.filtrarFacultades();
+          this.cdr.detectChanges();
           break;
         case 'horario':
           this.horarios.splice(index, 1);
           this.filtrarHorarios();
+          this.cdr.detectChanges();
           break;
       }
       alert(`${tipo.charAt(0).toUpperCase() + tipo.slice(1)} eliminado exitosamente`);
@@ -354,6 +362,7 @@ export class AcademicoComponent implements OnInit {
               next: (periodoActualizado) => {
                 this.periodos[this.indiceEdicion] = periodoActualizado;
                 this.periodosFiltrado = [...this.periodos];
+                this.cdr.detectChanges();
                 this.cerrarModal();
                 alert('Período actualizado');
               },
@@ -366,6 +375,7 @@ export class AcademicoComponent implements OnInit {
             next: (periodoCreado) => {
               this.periodos.push(periodoCreado);
               this.periodosFiltrado = [...this.periodos];
+              this.cdr.detectChanges();
               this.cerrarModal();
               alert('Período creado');
             },
@@ -382,6 +392,7 @@ export class AcademicoComponent implements OnInit {
           this.carreras.push(carrera);
         }
         this.filtrarCarreras();
+        this.cdr.detectChanges();
         break;
 
       case 'asignatura':
@@ -392,6 +403,7 @@ export class AcademicoComponent implements OnInit {
           this.asignaturas.push(asignatura);
         }
         this.filtrarAsignaturas();
+        this.cdr.detectChanges();
         break;
 
       case 'facultad':
@@ -402,6 +414,7 @@ export class AcademicoComponent implements OnInit {
           this.facultadesData.push(facultad);
         }
         this.filtrarFacultades();
+        this.cdr.detectChanges();
         break;
 
       case 'horario':
@@ -412,6 +425,7 @@ export class AcademicoComponent implements OnInit {
           this.horarios.push(horario);
         }
         this.filtrarHorarios();
+        this.cdr.detectChanges();
         break;
     }
 
