@@ -186,6 +186,31 @@
     color: #0d5a2e;
     margin: 0 0 10px 0;
   }
+  .password-wrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  .password-wrapper input {
+    width: 100%;
+    padding-right: 45px; // espacio para el ícono
+    box-sizing: border-box;
+  }
+
+  .toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 18px;
+    color: #7f8c8d;
+    z-index: 10;
+  }
+
+  .toggle-password:hover {
+    color: #27ae60;
+  }
 
   p {
     font-size: 15px;
@@ -463,4 +488,64 @@
     align-items: flex-start;
     gap: 12px;
   }
+}
+.password-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-container input {
+  width: 100%;
+  padding-right: 45px !important;
+}
+
+.eye-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 18px;
+  color: #7f8c8d;
+  z-index: 100;
+}
+
+.eye-icon:hover {
+  color: #27ae60;
+}
+.label-icon-img {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  vertical-align: middle;
+  object-fit: contain;
+}
+
+.password-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-container input {
+  width: 100%;
+  padding-right: 45px;
+}
+
+.eye-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: 0.2s ease;
+}
+
+.eye-icon:hover {
+  opacity: 1;
+  transform: translateY(-50%) scale(1.1);
 }
