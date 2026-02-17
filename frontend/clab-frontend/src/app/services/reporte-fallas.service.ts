@@ -2,24 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-/* ============================
-   INTERFACES
-============================ */
-
 export interface ReporteFallaDTO {
   codLaboratorio: number;
   idEquipo: number;
   descripcionFalla: string;
   idUsuario: number;
-}
-
-export interface ReporteFallaDetalle {
-  idReporte: number;
-  fechaReporte: Date;
-  descripcionFalla: string;
-  laboratorio: any;
-  equipo: any;
-  usuario: any;
 }
 
 @Injectable({
@@ -31,8 +18,8 @@ export class ReporteFallasService {
 
   constructor(private http: HttpClient) {}
 
-  listar(): Observable<ReporteFallaDetalle[]> {
-    return this.http.get<ReporteFallaDetalle[]>(`${this.API_URL}/listar`);
+  listar(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/listar`);
   }
 
   crear(data: ReporteFallaDTO): Observable<any> {

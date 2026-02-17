@@ -22,6 +22,12 @@ public class EquipoController {
         return ResponseEntity.ok(equipoService.listar());
     }
 
+    @GetMapping("/porLaboratorio/{codLaboratorio}")
+    public ResponseEntity<List<Equipo>> equiposPorLaboratorio(
+            @PathVariable Integer codLaboratorio) {
+        return ResponseEntity.ok(equipoService.equiposPorLaboratorio(codLaboratorio));
+    }
+
     // CREAR (usa procedimiento almacenado)
     @PostMapping
     public ResponseEntity<Void> crear(@RequestBody EquipoDTO dto) {
