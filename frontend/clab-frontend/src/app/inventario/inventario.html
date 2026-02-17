@@ -67,8 +67,8 @@
             <td>{{ equipo.noSerie }}</td>
             <td><strong>{{ equipo.nombre }}</strong></td>
             <td>{{ equipo.marca }} {{ equipo.modelo }}</td>
-            <td>{{ equipo.tipoEquipo }}</td>
-            <td>{{ equipo.laboratorio }}</td>
+            <td>{{ equipo.nombreTipoEquipo }}</td>
+            <td>{{ equipo.nombreLaboratorio }}</td>
             <td>
                 <span
                   class="badge"
@@ -192,20 +192,24 @@
       <div class="form-row">
         <div class="form-group">
           <label>Tipo *</label>
-          <select class="form-control" [(ngModel)]="formEquipo.tipoEquipo">
-            <option value="">Seleccione</option>
-            <option *ngFor="let t of tiposEquipo" [value]="t.nombre">{{ t.nombre }}</option>
+          <select class="form-control" [(ngModel)]="formEquipo.idTipoEquipo">
+            <option [value]="0">Seleccione</option>
+            <option *ngFor="let t of tiposEquipo" [value]="t.id">
+              {{ t.nombre }}
+            </option>
           </select>
+
         </div>
 
         <div class="form-group">
           <label>Laboratorio *</label>
-          <select class="form-control" [(ngModel)]="formEquipo.laboratorio">
-            <option value="">Seleccione</option>
-            <option *ngFor="let l of laboratorios" [value]="l.nombreLab">
+          <select class="form-control" [(ngModel)]="formEquipo.codLaboratorio">
+            <option [value]="0">Seleccione</option>
+            <option *ngFor="let l of laboratorios" [value]="l.codLaboratorio">
               {{ l.nombreLab }}
             </option>
           </select>
+
         </div>
       </div>
 
@@ -313,12 +317,16 @@
 
         <div class="detalle-item">
           <label>Tipo</label>
-          <span class="detalle-valor">{{ equipoDetalle.tipoEquipo }}</span>
+          <span class="detalle-valor">
+    {{ equipoDetalle.nombreTipoEquipo }}
+  </span>
         </div>
 
         <div class="detalle-item">
           <label>Laboratorio</label>
-          <span class="detalle-valor">{{ equipoDetalle.laboratorio }}</span>
+          <span class="detalle-valor">
+    {{ equipoDetalle.nombreLaboratorio }}
+  </span>
         </div>
 
         <div class="detalle-item full-width">

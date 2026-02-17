@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -217,7 +217,8 @@ export class LaboratoriosComponent implements OnInit {
   constructor(
     private router: Router,
     private sedeService: SedeService,
-    private laboratorioService: LaboratorioService  // ← AGREGAR
+    private laboratorioService: LaboratorioService,
+    private cdr: ChangeDetectorRef// ← AGREGAR
   ) { }
 
   cargarSedes(): void {
@@ -225,6 +226,7 @@ export class LaboratoriosComponent implements OnInit {
       next: (data) => {
         this.sedes = data;
         this.sedesFiltradas = [...data];
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error cargando sedes', err);
@@ -237,6 +239,7 @@ export class LaboratoriosComponent implements OnInit {
       next: (data) => {
         this.laboratorios = data.map(lab => this.mapearLaboratorio(lab));
         this.laboratoriosFiltrados = [...this.laboratorios];
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error cargando laboratorios', err);
@@ -467,6 +470,7 @@ export class LaboratoriosComponent implements OnInit {
 
             this.laboratorios[this.indiceEdicion] = labMapeado;
             this.laboratoriosFiltrados = [...this.laboratorios];
+            this.cdr.detectChanges();
             this.cerrarModal();
             alert('Laboratorio actualizado correctamente');
           },
@@ -495,6 +499,7 @@ export class LaboratoriosComponent implements OnInit {
 
           this.laboratorios.push(labMapeado);
           this.laboratoriosFiltrados = [...this.laboratorios];
+          this.cdr.detectChanges();
           this.cerrarModal();
           alert('Laboratorio creado exitosamente');
         },
@@ -556,6 +561,8 @@ export class LaboratoriosComponent implements OnInit {
         .subscribe({next: (sedeActualizada) => {
             this.sedes[this.indiceEdicion] = <Sede>sedeActualizada;
             this.sedesFiltradas = [...this.sedes];
+            this.cdr.detectChanges();
+
 
             this.cerrarModal();
             alert('Sede actualizada correctamente');
@@ -572,6 +579,7 @@ export class LaboratoriosComponent implements OnInit {
           (sedeCreada) => {
           this.sedes.push(<Sede>sedeCreada);
           this.sedesFiltradas = [...this.sedes];
+          this.cdr.detectChanges();
 
           this.cerrarModal();
           alert('Sede creada exitosamente');
@@ -658,6 +666,7 @@ export class LaboratoriosComponent implements OnInit {
         next: () => {
           this.laboratorios.splice(this.indiceParaEliminar, 1);
           this.filtrarLaboratorios();
+          this.cdr.detectChanges();
           this.cerrarModalConfirmar();
           alert('Laboratorio eliminado exitosamente');
         },
@@ -672,6 +681,7 @@ export class LaboratoriosComponent implements OnInit {
         next: () => {
           this.sedes.splice(this.indiceParaEliminar, 1);
           this.filtrarSedes();
+          this.cdr.detectChanges();
           this.cerrarModalConfirmar();
           alert('Sede eliminada exitosamente');
         },
@@ -683,6 +693,7 @@ export class LaboratoriosComponent implements OnInit {
     } else if (this.tipoModal === 'encargado') {
       this.encargados.splice(this.indiceParaEliminar, 1);
       this.filtrarEncargados();
+      this.cdr.detectChanges();
       this.cerrarModalConfirmar();
       alert('Encargado eliminado exitosamente');
     }
