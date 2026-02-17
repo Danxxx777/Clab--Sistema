@@ -16,59 +16,33 @@ public class EquipoController {
 
     private final EquipoService equipoService;
 
+    // LISTAR (usa función almacenada)
     @GetMapping
     public ResponseEntity<List<Equipo>> listar() {
         return ResponseEntity.ok(equipoService.listar());
     }
 
+    // CREAR (usa procedimiento almacenado)
     @PostMapping
-    public ResponseEntity<Equipo> crear(@RequestBody EquipoDTO dto) {
-        Equipo equipo = equipoService.crear(
-                dto.getNumeroSerie(),
-                dto.getNombreEquipo(),
-                dto.getMarca(),
-                dto.getModelo(),
-                dto.getTipoEquipo(),
-                dto.getEstado(),
-                dto.getLaboratorio(),
-                dto.getUbicacionFisica(),
-                dto.getFechaAdquisicion()
-        );
-        return ResponseEntity.ok(equipo);
+    public ResponseEntity<Void> crear(@RequestBody EquipoDTO dto) {
+        equipoService.crear(dto);
+        return ResponseEntity.ok().build();
     }
 
+    // ACTUALIZAR (usa procedimiento almacenado)
     @PutMapping("/{id}")
-    public ResponseEntity<Equipo> editar(
+    public ResponseEntity<Void> editar(
             @PathVariable Integer id,
             @RequestBody EquipoDTO dto
     ) {
-        Equipo equipo = equipoService.editar(
-                id,
-                dto.getNumeroSerie(),
-                dto.getNombreEquipo(),
-                dto.getMarca(),
-                dto.getModelo(),
-                dto.getTipoEquipo(),
-                dto.getEstado(),
-                dto.getLaboratorio(),
-                dto.getUbicacionFisica(),
-                dto.getFechaAdquisicion()
-        );
-        return ResponseEntity.ok(equipo);
+        equipoService.editar(id, dto);
+        return ResponseEntity.ok().build();
     }
 
+    // BAJA LÓGICA
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         equipoService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
-
-    @GetMapping("/porLaboratorio/{codLaboratorio}")
-    public ResponseEntity<List<Equipo>> listarPorLaboratorio(@PathVariable Integer codLaboratorio) {
-        return ResponseEntity.ok(equipoService.listarPorLaboratorio(codLaboratorio));
-    }
-
-
-
 }
-

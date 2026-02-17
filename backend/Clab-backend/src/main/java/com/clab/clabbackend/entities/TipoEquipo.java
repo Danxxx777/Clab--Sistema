@@ -21,4 +21,7 @@ public class TipoEquipo {
 
     @Column(name = "descripcion", length = 200)
     private String descripcion;
+
+    @Column(name = "estado", length= 15, nullable= false)
+    private String estado = "ACTIVO";
 }
