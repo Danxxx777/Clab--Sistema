@@ -89,7 +89,7 @@ export class DashboardComponent implements OnInit {
   }
 
   protected reservas(reservas: string) {
-
+    this.router.navigate(['reservar']);
   }
 
   protected equipos(_: string) {
