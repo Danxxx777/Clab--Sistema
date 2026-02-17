@@ -26,12 +26,16 @@ export class AuthService {
   }
 
   logout() {
-    localStorage.clear();
+    localStorage.removeItem('token');
+    localStorage.removeItem('rol');
+    localStorage.removeItem('loggedIn');
   }
 
   isLoggedIn(): boolean {
-    return localStorage.getItem('loggedIn') === 'true';
+    const token = localStorage.getItem('token');
+    return !!token;
   }
+
 
   getRol(): string | null {
     return localStorage.getItem('rol');

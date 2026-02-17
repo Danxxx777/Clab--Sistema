@@ -2,16 +2,13 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { TestService } from '../services/test.service';
-import {NgIf} from '@angular/common';
+
 
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   templateUrl: './dashboard.html',
-  imports: [
-    NgIf
-  ],
   styleUrls: ['./dashboard.scss']
 })
 export class DashboardComponent implements OnInit {
@@ -28,23 +25,26 @@ export class DashboardComponent implements OnInit {
   rol: string | null = '';
 
   ngOnInit(): void {
-    this.rol = localStorage.getItem('rol');
 
-    console.log('Dashboard iniciado');
+    if (!this.auth.isLoggedIn()) {
+      this.router.navigate(['/login'], { replaceUrl: true });
+      return;
+    }
+
+    this.rol = localStorage.getItem('rol');
 
     this.testService.getTest().subscribe({
       next: (res) => {
-        console.log('Respuesta backend:', res);
         this.mensajeBackend = res;
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('Error backend:', err);
+      error: () => {
         this.mensajeBackend = 'No se pudo conectar con el backend';
         this.cdr.detectChanges();
       }
     });
   }
+
 
   goTo(path: string) {
     console.log('Navegando a:', path);
