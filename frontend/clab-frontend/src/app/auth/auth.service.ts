@@ -20,6 +20,7 @@ export class AuthService {
         localStorage.setItem('token', response.token);
         localStorage.setItem('loggedIn', 'true');
         localStorage.setItem('rol', response.rol);
+
       })
     );
   }

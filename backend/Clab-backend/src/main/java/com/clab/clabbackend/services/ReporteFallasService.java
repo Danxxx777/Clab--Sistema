@@ -1,85 +1,73 @@
 package com.clab.clabbackend.services;
 
 import com.clab.clabbackend.dto.ReporteFallasDTO;
-import com.clab.clabbackend.entities.*;
-import com.clab.clabbackend.repository.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.clab.clabbackend.repository.ReporteFallasRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class ReporteFallasService {
 
-    @Autowired
-    private ReporteFallasRepository reporteRepository;
+    private final ReporteFallasRepository reporteRepository;
 
-    @Autowired
-    private LaboratorioRepository laboratorioRepository;
+    // LISTAR
+    public List<Map<String, Object>> listar() {
+        List<Object[]> resultados = reporteRepository.listarReportes();
 
-    @Autowired
-    private EquipoRepository equipoRepository;
+        List<Map<String, Object>> reportes = new ArrayList<>();
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+        for (Object[] r : resultados) {
+            Map<String, Object> reporte = new HashMap<>();
+            reporte.put("idReporte", r[0]);
+            reporte.put("fechaReporte", r[1] != null ?
+                    ((java.sql.Date) r[1]).toLocalDate() : null);
+            reporte.put("descripcionFalla", r[2]);
 
-    public ReporteFallas crear(ReporteFallasDTO dto) {
+            // Laboratorio
+            Map<String, Object> laboratorio = new HashMap<>();
+            laboratorio.put("codLaboratorio", r[3]);
+            laboratorio.put("nombreLab", r[4]);
+            reporte.put("laboratorio", laboratorio);
 
-        Laboratorio laboratorio = laboratorioRepository.findById(dto.getCodLaboratorio())
-                .orElseThrow(() -> new RuntimeException("Laboratorio no encontrado"));
+            // Equipo
+            Map<String, Object> equipo = new HashMap<>();
+            equipo.put("idEquipo", r[5]);
+            equipo.put("nombreEquipo", r[6]);
+            equipo.put("marca", r[7]);
+            equipo.put("modelo", r[8]);
+            reporte.put("equipo", equipo);
 
-        Equipo equipo = equipoRepository.findById(dto.getIdEquipo())
-                .orElseThrow(() -> new RuntimeException("Equipo no encontrado"));
+            // Usuario
+            Map<String, Object> usuario = new HashMap<>();
+            usuario.put("idUsuario", r[9]);
+            usuario.put("email", r[10]);
+            reporte.put("usuario", usuario);
 
-        Usuario usuario = usuarioRepository.findById(dto.getIdUsuario())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-
-        if (!equipo.getLaboratorio().getCodLaboratorio()
-                .equals(laboratorio.getCodLaboratorio())) {
-            throw new RuntimeException("El equipo no pertenece al laboratorio seleccionado");
+            reportes.add(reporte);
         }
 
-        ReporteFallas reporte = new ReporteFallas();
-        reporte.setLaboratorio(laboratorio);
-        reporte.setEquipo(equipo);
-        reporte.setUsuario(usuario);
-        reporte.setDescripcionFalla(dto.getDescripcionFalla());
-        reporte.setFechaReporte(LocalDate.now());
-
-
-        if (equipo.getEstado() != null &&
-                equipo.getEstado().equalsIgnoreCase("OPERATIVO")) {
-
-            equipo.setEstado("MANTENIMIENTO");
-        }
-
-
-        equipo.setUltimoReporte(LocalDate.now());
-
-
-        equipoRepository.save(equipo);
-
-
-        return reporteRepository.save(reporte);
-
-
+        return reportes;
     }
 
-    public List<ReporteFallas> listar() {
-        return reporteRepository.findAll();
+    // CREAR
+    public void crear(ReporteFallasDTO dto) {
+        reporteRepository.insertar(
+                dto.getCodLaboratorio(),
+                dto.getIdEquipo(),
+                dto.getIdUsuario(),
+                dto.getDescripcionFalla()
+        );
     }
 
-    public ReporteFallas obtenerPorId(Integer id) {
-        return reporteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Reporte no encontrado"));
-    }
-
+    // ELIMINAR
     public void eliminar(Integer id) {
-        if (!reporteRepository.existsById(id)) {
-            throw new RuntimeException("Reporte no encontrado");
-        }
-        reporteRepository.deleteById(id);
+        reporteRepository.eliminar(id);
     }
 }
