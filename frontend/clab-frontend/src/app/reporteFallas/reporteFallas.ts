@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
@@ -47,7 +47,8 @@ export class ReporteFallasComponent implements OnInit {
     private fb: FormBuilder,
     private http: HttpClient,
     private reporteService: ReporteFallasService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -68,11 +69,9 @@ export class ReporteFallasComponent implements OnInit {
       ]
     });
   }
-
   /*
      CARGA DATOS
    */
-
   onFiltroLaboratorioChange(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
 
@@ -80,13 +79,9 @@ export class ReporteFallasComponent implements OnInit {
       this.equiposFiltrados = [];
       return;
     }
-
     const codLaboratorio = Number(value);
     this.cargarEquiposPorLaboratorio(codLaboratorio);
   }
-
-
-
   cargarLaboratorios(): void {
     this.http.get<Laboratorio[]>(`${this.API_URL}/laboratorios/listar`)
       .subscribe({
@@ -94,7 +89,6 @@ export class ReporteFallasComponent implements OnInit {
         error: (err) => console.error(err)
       });
   }
-
   cargarEquiposPorLaboratorio(codLaboratorio: number): void {
 
     const url = `${this.API_URL}/equipos/porLaboratorio/${codLaboratorio}`;
@@ -111,8 +105,6 @@ export class ReporteFallasComponent implements OnInit {
         }
       });
   }
-
-
   cargarReportes(): void {
     console.log('Cargando reportes...');
 
@@ -120,6 +112,7 @@ export class ReporteFallasComponent implements OnInit {
       next: (data) => {
         console.log('Reportes recibidos:', data);
         this.reportes = data;
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Error al listar reportes:', err)
     });
@@ -182,8 +175,10 @@ export class ReporteFallasComponent implements OnInit {
     this.reporteService.crear(reporteDTO).subscribe({
       next: (nuevoReporte) => {
 
-        // 🔥 Agregamos directamente al array
+
         this.reportes.push(nuevoReporte);
+
+        this.cdr.detectChanges();
 
         this.reporteForm.reset({
           codLaboratorio: null,
@@ -202,14 +197,22 @@ export class ReporteFallasComponent implements OnInit {
     });
   }
 
-
-
   eliminarReporte(id: number): void {
 
     if (!confirm('¿Eliminar este reporte?')) return;
 
     this.reporteService.eliminar(id).subscribe({
-      next: () => this.cargarReportes(),
+      next: () => {
+        console.log('Eliminado del backend, ID:', id);
+        console.log('Reportes ANTES:', this.reportes.length);
+        this.reportes = [...this.reportes.filter(r => r.idReporte !== id)];
+
+        console.log('Reportes DESPUÉS:', this.reportes.length);
+
+        this.cdr.detectChanges();
+
+        this.cdr.markForCheck();
+      },
       error: (err) => console.error(err)
     });
   }

@@ -7,9 +7,9 @@ export interface EquipoDTO {
   nombreEquipo: string;
   marca: string;
   modelo: string;
-  tipoEquipo: string;
+  idTipoEquipo: number,
   estado: string;
-  laboratorio: string;
+  codLaboratorio: number,
   ubicacionFisica: string;
   fechaAdquisicion: string;
 }

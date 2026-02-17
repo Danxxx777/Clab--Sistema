@@ -15,8 +15,13 @@ interface Equipo {
   nombre: string;
   marca: string;
   modelo: string;
-  tipoEquipo: string;
-  laboratorio: string;
+
+  idTipoEquipo: number;
+  nombreTipoEquipo: string;
+
+  codLaboratorio: number;
+  nombreLaboratorio: string;
+
   estado: string;
   fechaAdquisicion: string;
   ubicacionFisica: string;
@@ -91,8 +96,11 @@ export class InventarioComponent implements OnInit {
           nombre: e.nombreEquipo,
           marca: e.marca,
           modelo: e.modelo,
-          tipoEquipo: e.tipoEquipo.nombreTipo,
-          laboratorio: e.laboratorio.nombreLab,
+
+          idTipoEquipo: e.tipoEquipo.idTipoEquipo,
+          nombreTipoEquipo: e.tipoEquipo.nombreTipo,
+          codLaboratorio: e.laboratorio.codLaboratorio,
+          nombreLaboratorio: e.laboratorio.nombreLab,
           estado: e.estado,
           fechaAdquisicion: e.fechaAdquisicion,
           ubicacionFisica: e.ubicacionFisica
@@ -154,8 +162,8 @@ export class InventarioComponent implements OnInit {
     this.equiposFiltrados = this.equipos.filter(e =>
       e.noSerie.toLowerCase().includes(b) ||
       e.nombre.toLowerCase().includes(b) ||
-      e.tipoEquipo.toLowerCase().includes(b) ||
-      e.laboratorio.toLowerCase().includes(b)
+      e.nombreTipoEquipo.toLowerCase().includes(b) ||
+      e.nombreLaboratorio.toLowerCase().includes(b)
     );
   }
 
@@ -193,8 +201,8 @@ export class InventarioComponent implements OnInit {
     if (
       !this.formEquipo.noSerie ||
       !this.formEquipo.nombre ||
-      !this.formEquipo.tipoEquipo ||
-      !this.formEquipo.laboratorio
+      !this.formEquipo.idTipoEquipo ||
+      !this.formEquipo.codLaboratorio
     ) {
       this.mostrarNotificacion('Complete los campos obligatorios', 'error');
       return;
@@ -206,12 +214,13 @@ export class InventarioComponent implements OnInit {
       nombreEquipo: this.formEquipo.nombre,
       marca: this.formEquipo.marca,
       modelo: this.formEquipo.modelo,
-      tipoEquipo: this.formEquipo.tipoEquipo,
-      laboratorio: this.formEquipo.laboratorio,
+      idTipoEquipo: this.formEquipo.idTipoEquipo,
+      codLaboratorio: this.formEquipo.codLaboratorio,
       estado: this.formEquipo.estado,
       ubicacionFisica: this.formEquipo.ubicacionFisica,
       fechaAdquisicion: this.formEquipo.fechaAdquisicion
     };
+
 
 
     if (this.modoEdicionEquipo && this.idEditando) {
@@ -373,8 +382,10 @@ export class InventarioComponent implements OnInit {
       nombre: '',
       marca: '',
       modelo: '',
-      tipoEquipo: '',
-      laboratorio: '',
+      idTipoEquipo: 0,
+      nombreTipoEquipo: '',
+      codLaboratorio: 0,
+      nombreLaboratorio: '',
       estado: 'OPERATIVO',
       fechaAdquisicion: '',
       ubicacionFisica: ''

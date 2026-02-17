@@ -1,5 +1,6 @@
 package com.clab.clabbackend.services;
 
+import com.clab.clabbackend.dto.EquipoDTO;
 import com.clab.clabbackend.entities.Equipo;
 import com.clab.clabbackend.entities.Laboratorio;
 import com.clab.clabbackend.entities.TipoEquipo;
@@ -17,103 +18,78 @@ import java.util.List;
 public class EquipoService {
 
     private final EquipoRepository equipoRepository;
-    private final TipoEquipoRepository tipoEquipoRepository;
-    private final LaboratorioRepository laboratorioRepository;
-
 
     public List<Equipo> listar() {
-        return equipoRepository.findAll();
+        List<Object[]> resultados = equipoRepository.listarSP();
+
+        return resultados.stream().map(r -> {
+            Equipo equipo = new Equipo();
+            equipo.setIdEquipo((Integer) r[0]);
+            equipo.setNumeroSerie((String) r[1]);
+            equipo.setNombreEquipo((String) r[2]);
+            equipo.setMarca((String) r[3]);
+            equipo.setModelo((String) r[4]);
+
+            TipoEquipo tipo = new TipoEquipo();
+            tipo.setIdTipoEquipo((Integer) r[5]);
+            tipo.setNombreTipo((String) r[6]);
+            equipo.setTipoEquipo(tipo);
+
+            Laboratorio lab = new Laboratorio();
+            lab.setCodLaboratorio((Integer) r[7]);
+            lab.setNombreLab((String) r[8]);
+            equipo.setLaboratorio(lab);
+
+            equipo.setEstado((String) r[9]);
+            equipo.setUbicacionFisica((String) r[10]);
+
+            // 🔥 CONVERSIÓN DE java.sql.Date a java.time.LocalDate
+            equipo.setFechaAdquisicion(
+                    r[11] != null ? ((java.sql.Date) r[11]).toLocalDate() : null
+            );
+            equipo.setFechaRegistro(
+                    r[12] != null ? ((java.sql.Date) r[12]).toLocalDate() : null
+            );
+            equipo.setUltimoReporte(
+                    r[13] != null ? ((java.sql.Date) r[13]).toLocalDate() : null
+            );
+
+            return equipo;
+        }).toList();
     }
 
+    public void crear(EquipoDTO dto) {
 
-//     estooooooo agregueeee
-    public List<Equipo> listarPorLaboratorio(Integer codLaboratorio) {
-        return equipoRepository.findByLaboratorioCodLaboratorio(codLaboratorio);
+        equipoRepository.insertar(
+                dto.getNumeroSerie(),
+                dto.getNombreEquipo(),
+                dto.getMarca(),
+                dto.getModelo(),
+                dto.getIdTipoEquipo(),
+                dto.getEstado(),
+                dto.getCodLaboratorio(),
+                dto.getUbicacionFisica(),
+                dto.getFechaAdquisicion()
+        );
     }
 
+    public void editar(Integer idEquipo, EquipoDTO dto) {
 
-
-// estoooo
-
-    public Equipo crear(
-            String numeroSerie,
-            String nombreEquipo,
-            String marca,
-            String modelo,
-            String nombreTipoEquipo,
-            String estado,
-            String nombreLaboratorio,
-            String ubicacionFisica,
-            LocalDate fechaAdquisicion
-    ) {
-
-        TipoEquipo tipoEquipo = tipoEquipoRepository
-                .findByNombreTipo(nombreTipoEquipo)
-                .orElseThrow(() -> new RuntimeException("Tipo de equipo no existe"));
-
-        Laboratorio laboratorio = laboratorioRepository
-                .findByNombreLab(nombreLaboratorio)
-                .orElseThrow(() -> new RuntimeException("Laboratorio no existe"));
-
-        Equipo equipo = new Equipo();
-        equipo.setNumeroSerie(numeroSerie);
-        equipo.setNombreEquipo(nombreEquipo);
-        equipo.setMarca(marca);
-        equipo.setModelo(modelo);
-        equipo.setTipoEquipo(tipoEquipo);
-        equipo.setEstado(estado);
-        equipo.setLaboratorio(laboratorio);
-        equipo.setUbicacionFisica(ubicacionFisica);
-        equipo.setFechaAdquisicion(fechaAdquisicion);
-        equipo.setFechaRegistro(LocalDate.now());
-        equipo.setUltimoReporte(LocalDate.now());
-
-        return equipoRepository.save(equipo);
-    }
-
-
-    public Equipo editar(
-            Integer idEquipo,
-            String numeroSerie,
-            String nombreEquipo,
-            String marca,
-            String modelo,
-            String nombreTipoEquipo,
-            String estado,
-            String nombreLaboratorio,
-            String ubicacionFisica,
-            LocalDate fechaAdquisicion
-    ) {
-
-        Equipo equipo = equipoRepository.findById(idEquipo)
-                .orElseThrow(() -> new RuntimeException("Equipo no encontrado"));
-
-        TipoEquipo tipoEquipo = tipoEquipoRepository
-                .findByNombreTipo(nombreTipoEquipo)
-                .orElseThrow(() -> new RuntimeException("Tipo de equipo no existe"));
-
-        Laboratorio laboratorio = laboratorioRepository
-                .findByNombreLab(nombreLaboratorio)
-                .orElseThrow(() -> new RuntimeException("Laboratorio no existe"));
-
-        equipo.setNumeroSerie(numeroSerie);
-        equipo.setNombreEquipo(nombreEquipo);
-        equipo.setMarca(marca);
-        equipo.setModelo(modelo);
-        equipo.setTipoEquipo(tipoEquipo);
-        equipo.setEstado(estado);
-        equipo.setLaboratorio(laboratorio);
-        equipo.setUbicacionFisica(ubicacionFisica);
-        equipo.setFechaAdquisicion(fechaAdquisicion);
-        equipo.setUltimoReporte(LocalDate.now());
-
-        return equipoRepository.save(equipo);
+        equipoRepository.actualizar(
+                idEquipo,
+                dto.getNumeroSerie(),
+                dto.getNombreEquipo(),
+                dto.getMarca(),
+                dto.getModelo(),
+                dto.getIdTipoEquipo(),
+                dto.getEstado(),
+                dto.getCodLaboratorio(),
+                dto.getUbicacionFisica(),
+                dto.getFechaAdquisicion()
+        );
     }
 
     public void eliminar(Integer idEquipo) {
-        if (!equipoRepository.existsById(idEquipo)) {
-            throw new RuntimeException("Equipo no encontrado");
-        }
-        equipoRepository.deleteById(idEquipo);
+        equipoRepository.baja(idEquipo);
     }
 }

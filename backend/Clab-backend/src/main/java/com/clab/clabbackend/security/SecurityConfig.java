@@ -1,5 +1,5 @@
 package com.clab.clabbackend.security;
-import com.clab.clabbackend.security.JwtAuthenticationFilter;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,6 +12,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @EnableMethodSecurity
 @Configuration
@@ -19,19 +24,58 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
+
     public SecurityConfig(JwtAuthenticationFilter jwtFilter) {
         this.jwtFilter = jwtFilter;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable()).sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        http
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(sess ->
+                        sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authorizeHttpRequests(auth -> auth
+                        // 🔥 RUTAS PÚBLICAS - SIN AUTENTICACIÓN
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/api/test").permitAll()
+                        .requestMatchers("/api/test/**").permitAll()
+                        .requestMatchers("/equipos/**").permitAll()
+                        .requestMatchers("/tipos-equipo/**").permitAll()
+                        .requestMatchers("/laboratorios/**").permitAll()
+
+                        // Todo lo demás requiere autenticación
                         .anyRequest().authenticated()
-                ).addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                )
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // 🔥 PERMITE TU FRONTEND
+        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
+
+        // 🔥 PERMITE TODOS LOS MÉTODOS HTTP
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+
+        // 🔥 PERMITE TODOS LOS HEADERS
+        configuration.setAllowedHeaders(List.of("*"));
+
+        // 🔥 PERMITE CREDENCIALES
+        configuration.setAllowCredentials(true);
+
+        // 🔥 EXPONE HEADERS DE RESPUESTA
+        configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
     }
 
     @Bean

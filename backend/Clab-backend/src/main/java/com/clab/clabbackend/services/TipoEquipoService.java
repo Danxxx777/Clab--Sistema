@@ -14,29 +14,30 @@ public class TipoEquipoService {
     @Autowired
     private TipoEquipoRepository tipoEquipoRepository;
 
-    public TipoEquipo crear(TipoEquipoDTO dto) {
-        TipoEquipo tipo = new TipoEquipo();
-        tipo.setNombreTipo(dto.getNombre());
-        tipo.setDescripcion(dto.getDescripcion());
-
-        return tipoEquipoRepository.save(tipo);
+    // CREAR
+    public void crear(TipoEquipoDTO dto) {
+        tipoEquipoRepository.insertar(
+                dto.getNombre(),
+                dto.getDescripcion()
+        );
     }
 
+    // LISTAR
     public List<TipoEquipo> listar() {
-        return tipoEquipoRepository.findAll();
+        return tipoEquipoRepository.listarActivos();
     }
 
-    public TipoEquipo actualizar(Integer id, TipoEquipoDTO dto) {
-        TipoEquipo tipo = tipoEquipoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tipo de equipo no encontrado"));
-
-        tipo.setNombreTipo(dto.getNombre());
-        tipo.setDescripcion(dto.getDescripcion());
-
-        return tipoEquipoRepository.save(tipo);
+    // ACTUALIZAR
+    public void actualizar(Integer id, TipoEquipoDTO dto) {
+        tipoEquipoRepository.actualizarSP(
+                id,
+                dto.getNombre(),
+                dto.getDescripcion()
+        );
     }
 
+    // BAJA LOGICA
     public void eliminar(Integer id) {
-        tipoEquipoRepository.deleteById(id);
+        tipoEquipoRepository.baja(id);
     }
 }
