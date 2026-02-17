@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200")
+//@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/tipos-equipo")
 public class TipoEquipoController {
 
@@ -22,14 +22,14 @@ public class TipoEquipoController {
     }
 
     @PostMapping("/crear")
-    public TipoEquipo crear(@RequestBody TipoEquipoDTO dto) {
-        return tipoEquipoService.crear(dto);
+    public void crear(@RequestBody TipoEquipoDTO dto) {
+        tipoEquipoService.crear(dto);
     }
 
     @PutMapping("/actualizar/{id}")
-    public TipoEquipo actualizar(@PathVariable Integer id,
-                                 @RequestBody TipoEquipoDTO dto) {
-        return tipoEquipoService.actualizar(id, dto);
+    public void actualizar(@PathVariable Integer id,
+                           @RequestBody TipoEquipoDTO dto) {
+        tipoEquipoService.actualizar(id, dto);
     }
 
     @DeleteMapping("/eliminar/{id}")
