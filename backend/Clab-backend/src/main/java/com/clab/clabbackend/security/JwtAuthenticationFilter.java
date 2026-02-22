@@ -42,7 +42,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 || path.startsWith("/equipos")
                 || path.startsWith("/tipos-equipo")
                 || path.startsWith("/laboratorios")
-                || path.startsWith("/reportes");
+                || path.startsWith("/reportes")
+                || path.startsWith("/sedes");
 
         System.out.println("✅ ¿Saltar filtro? " + shouldSkip);
 
