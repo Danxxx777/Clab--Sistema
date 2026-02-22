@@ -7,20 +7,20 @@ import { LaboratorioService } from '../services/laboratorio.service';
 
 
 interface Laboratorio {
-  codLaboratorio?: number;  // Ahora camelCase
-  cod_laboratorio?: number; // Mantener para compatibilidad
-  nombreLab?: string;       // Nuevo nombre
-  nombre?: string;          // Mantener para compatibilidad
+  codLaboratorio?: number;
+  cod_laboratorio?: number;
+  nombreLab?: string;
+  nombre?: string;
   ubicacion: string;
   capacidadEstudiantes?: number;
-  capacidad_estudiantes?: number; // Mantener para compatibilidad
+  capacidad_estudiantes?: number;
   numeroEquipos?: number;
-  numero_equipos?: number;  // Mantener para compatibilidad
+  numero_equipos?: number;
   descripcion: string;
   estadoLab?: string;
   estado_lab?: 'Disponible' | 'Mantenimiento' | 'Bloqueado';
   idSede?: number;
-  id_sede?: number;         // Mantener para compatibilidad
+  id_sede?: number;
   sede?: {
     idSede: number;
     nombre: string;
@@ -66,130 +66,11 @@ export class LaboratoriosComponent implements OnInit {
 
   tabActiva: number = 0;
 
-  laboratorios: Laboratorio[] = [
-    {
-      cod_laboratorio: 1,
-      nombre: 'Laboratorio de Química',
-      ubicacion: 'Edificio A, Piso 2',
-      capacidad_estudiantes: 30,
-      numero_equipos: 15,
-      descripcion: 'Laboratorio equipado con material de química básica',
-      estado_lab: 'Disponible',
-      id_sede: 1,
-      nombre_sede: 'Sede Central',
-      encargado_nombre: 'Dr. Juan Pérez',
-      foto: ''
-    },
-    {
-      cod_laboratorio: 2,
-      nombre: 'Laboratorio de Física',
-      ubicacion: 'Edificio B, Piso 1',
-      capacidad_estudiantes: 25,
-      numero_equipos: 12,
-      descripcion: 'Laboratorio de física experimental',
-      estado_lab: 'Disponible',
-      id_sede: 2,
-      nombre_sede: 'Sede Norte',
-      encargado_nombre: 'Dra. María García',
-      foto: ''
-    },
-    {
-      cod_laboratorio: 3,
-      nombre: 'Laboratorio de Biología',
-      ubicacion: 'Edificio C, Piso 3',
-      capacidad_estudiantes: 20,
-      numero_equipos: 10,
-      descripcion: 'Laboratorio de biología y microbiología',
-      estado_lab: 'Mantenimiento',
-      id_sede: 3,
-      nombre_sede: 'Sede Sur',
-      encargado_nombre: 'Dr. Carlos Ruiz',
-      foto: ''
-    },
-    {
-      cod_laboratorio: 4,
-      nombre: 'Laboratorio de Informática',
-      ubicacion: 'Edificio D, Piso 1',
-      capacidad_estudiantes: 40,
-      numero_equipos: 30,
-      descripcion: 'Laboratorio con computadoras de última generación',
-      estado_lab: 'Disponible',
-      id_sede: 1,
-      nombre_sede: 'Sede Central',
-      encargado_nombre: 'Ing. Ana Martínez',
-      foto: ''
-    },
-    {
-      cod_laboratorio: 5,
-      nombre: 'Laboratorio de Electrónica',
-      ubicacion: 'Edificio E, Piso 2',
-      capacidad_estudiantes: 18,
-      numero_equipos: 20,
-      descripcion: 'Laboratorio de electrónica y circuitos',
-      estado_lab: 'Disponible',
-      id_sede: 2,
-      nombre_sede: 'Sede Norte',
-      encargado_nombre: 'Ing. Roberto Silva',
-      foto: ''
-    }
-  ];
+  laboratorios: Laboratorio[] = [];
 
   sedes: Sede[] = [];
 
-  encargados: EncargadoLaboratorio[] = [
-    {
-      id_encargado_laboratorio: 1,
-      cod_laboratorio: 1,
-      id_usuario: 5,
-      fecha_asignacion: '2024-01-15',
-      vigente: true,
-      identidad: '0912345678',
-      nombres: 'Juan',
-      apellidos: 'Pérez',
-      email: 'juan.perez@universidad.edu.ec',
-      telefono: '(04) 987-6543',
-      nombre_laboratorio: 'Laboratorio de Química'
-    },
-    {
-      id_encargado_laboratorio: 2,
-      cod_laboratorio: 2,
-      id_usuario: 6,
-      fecha_asignacion: '2024-02-10',
-      vigente: true,
-      identidad: '0923456789',
-      nombres: 'María',
-      apellidos: 'García',
-      email: 'maria.garcia@universidad.edu.ec',
-      telefono: '(04) 876-5432',
-      nombre_laboratorio: 'Laboratorio de Física'
-    },
-    {
-      id_encargado_laboratorio: 3,
-      cod_laboratorio: 3,
-      id_usuario: 7,
-      fecha_asignacion: '2023-11-05',
-      vigente: false,
-      identidad: '0934567890',
-      nombres: 'Carlos',
-      apellidos: 'Ruiz',
-      email: 'carlos.ruiz@universidad.edu.ec',
-      telefono: '(04) 765-4321',
-      nombre_laboratorio: 'Laboratorio de Biología'
-    },
-    {
-      id_encargado_laboratorio: 4,
-      cod_laboratorio: 4,
-      id_usuario: 8,
-      fecha_asignacion: '2024-03-01',
-      vigente: true,
-      identidad: '0945678901',
-      nombres: 'Ana',
-      apellidos: 'Martínez',
-      email: 'ana.martinez@universidad.edu.ec',
-      telefono: '(04) 654-3210',
-      nombre_laboratorio: 'Laboratorio de Informática'
-    }
-  ];
+  encargados: EncargadoLaboratorio[] = [];
 
   laboratoriosFiltrados: Laboratorio[] = [];
   sedesFiltradas: Sede[] = [];
@@ -214,11 +95,18 @@ export class LaboratoriosComponent implements OnInit {
 
   paginaActual: number = 1;
 
+  mostrarToast = false;
+  toastMensaje = '';
+  toastTipo: 'success' | 'error' = 'success';
+
+  mostrarDetalleSede = false;
+  sedeDetalle: Sede | null = null;
+
   constructor(
     private router: Router,
     private sedeService: SedeService,
     private laboratorioService: LaboratorioService,
-    private cdr: ChangeDetectorRef// ← AGREGAR
+    private cdr: ChangeDetectorRef
   ) { }
 
   cargarSedes(): void {
@@ -264,7 +152,7 @@ export class LaboratoriosComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.cargarLaboratorios();  // ← AGREGAR
+    this.cargarLaboratorios();
     this.cargarSedes();
     this.encargadosFiltrados = [...this.encargados];
   }
@@ -274,7 +162,7 @@ export class LaboratoriosComponent implements OnInit {
     this.paginaActual = 1;
 
     if (index === 0 && this.laboratorios.length === 0) {
-      this.cargarLaboratorios();  // ← AGREGAR
+      this.cargarLaboratorios();
     }
 
     if (index === 1 && this.sedes.length === 0) {
@@ -432,7 +320,7 @@ export class LaboratoriosComponent implements OnInit {
 
   guardarLaboratorio(): void {
     if (!this.validarFormularioLab()) {
-      alert('Por favor complete todos los campos obligatorios');
+      this.mostrarNotificacion('Por favor complete todos los campos obligatorios', 'error');
       return;
     }
 
@@ -454,7 +342,6 @@ export class LaboratoriosComponent implements OnInit {
       this.laboratorioService.editar(this.formularioLab.cod_laboratorio, labData)
         .subscribe({
           next: (labActualizado) => {
-            // Mapear respuesta del backend
             const labMapeado = {
               cod_laboratorio: labActualizado.codLaboratorio,
               nombre: labActualizado.nombreLab,
@@ -472,18 +359,17 @@ export class LaboratoriosComponent implements OnInit {
             this.laboratoriosFiltrados = [...this.laboratorios];
             this.cdr.detectChanges();
             this.cerrarModal();
-            alert('Laboratorio actualizado correctamente');
+            this.mostrarNotificacion('✅ Laboratorio actualizado correctamente');
           },
           error: (err) => {
             console.error('Error al editar laboratorio', err);
-            alert('Error al editar el laboratorio');
+            this.mostrarNotificacion('❌ Error al editar el laboratorio', 'error');
           }
         });
     } else {
       // CREAR LABORATORIO
       this.laboratorioService.crear(labData).subscribe({
         next: (labCreado) => {
-          // Mapear respuesta del backend
           const labMapeado = {
             cod_laboratorio: labCreado.codLaboratorio,
             nombre: labCreado.nombreLab,
@@ -501,11 +387,11 @@ export class LaboratoriosComponent implements OnInit {
           this.laboratoriosFiltrados = [...this.laboratorios];
           this.cdr.detectChanges();
           this.cerrarModal();
-          alert('Laboratorio creado exitosamente');
+          this.mostrarNotificacion('✅ Laboratorio creado exitosamente');
         },
         error: (err) => {
           console.error('Error al crear laboratorio', err);
-          alert('Error al crear el laboratorio');
+          this.mostrarNotificacion('❌ Error al crear el laboratorio', 'error');
         }
       });
     }
@@ -551,42 +437,33 @@ export class LaboratoriosComponent implements OnInit {
 
   guardarSede(): void {
     if (!this.validarFormularioSede()) {
-      alert('Por favor complete todos los campos obligatorios');
+      this.mostrarNotificacion('Por favor complete todos los campos obligatorios', 'error');
       return;
     }
 
-    if(this.modoEdicion && this.formularioSede.idSede)
-    {
+    if(this.modoEdicion && this.formularioSede.idSede) {
       this.sedeService.editar(this.formularioSede.idSede, this.formularioSede)
-        .subscribe({next: (sedeActualizada) => {
-            this.sedes[this.indiceEdicion] = <Sede>sedeActualizada;
-            this.sedesFiltradas = [...this.sedes];
-            this.cdr.detectChanges();
-
-
+        .subscribe({
+          next: () => {
             this.cerrarModal();
-            alert('Sede actualizada correctamente');
+            this.cargarSedes();
+            this.mostrarNotificacion('✅ Sede actualizada correctamente');
           },
           error: (err) => {
             console.error('Error al editar sede', err);
-            alert('Error al editar la sede');
+            this.mostrarNotificacion('❌ Error al editar la sede', 'error');
           }
         });
-    }
-    else
-    {
-      this.sedeService.crear(this.formularioSede).subscribe({next:
-          (sedeCreada) => {
-          this.sedes.push(<Sede>sedeCreada);
-          this.sedesFiltradas = [...this.sedes];
-          this.cdr.detectChanges();
-
+    } else {
+      this.sedeService.crear(this.formularioSede).subscribe({
+        next: () => {
           this.cerrarModal();
-          alert('Sede creada exitosamente');
+          this.cargarSedes();
+          this.mostrarNotificacion('✅ Sede creada exitosamente');
         },
         error: (err) => {
           console.error('Error al crear sede', err);
-          alert('Error al crear la sede');
+          this.mostrarNotificacion('❌ Error al crear la sede', 'error');
         }
       });
     }
@@ -619,20 +496,22 @@ export class LaboratoriosComponent implements OnInit {
 
   guardarEncargado(): void {
     if (!this.validarFormularioEnc()) {
-      alert('Por favor complete todos los campos obligatorios');
+      this.mostrarNotificacion('Por favor complete todos los campos obligatorios', 'error');
       return;
     }
 
     if (this.modoEdicion) {
       this.encargados[this.indiceEdicion] = { ...this.formularioEnc };
+      this.filtrarEncargados();
+      this.cerrarModal();
+      this.mostrarNotificacion('✅ Encargado actualizado exitosamente');
     } else {
       this.formularioEnc.id_encargado_laboratorio = this.encargados.length + 1;
       this.encargados.push({ ...this.formularioEnc });
+      this.filtrarEncargados();
+      this.cerrarModal();
+      this.mostrarNotificacion('✅ Encargado agregado exitosamente');
     }
-
-    this.filtrarEncargados();
-    this.cerrarModal();
-    alert(this.modoEdicion ? 'Encargado actualizado exitosamente' : 'Encargado agregado exitosamente');
   }
 
   eliminarEncargado(enc: EncargadoLaboratorio, index: number): void {
@@ -668,26 +547,26 @@ export class LaboratoriosComponent implements OnInit {
           this.filtrarLaboratorios();
           this.cdr.detectChanges();
           this.cerrarModalConfirmar();
-          alert('Laboratorio eliminado exitosamente');
+          this.mostrarNotificacion('🗑️ Laboratorio eliminado exitosamente');
         },
         error: (err) => {
           console.error('Error al eliminar laboratorio', err);
-          alert('Error al eliminar el laboratorio');
+          this.mostrarNotificacion('❌ Error al eliminar el laboratorio', 'error');
         }
       });
     } else if (this.tipoModal === 'sede' && this.itemParaEliminar.idSede) {
-      // ELIMINAR SEDE (necesitas agregar este método en SedeService)
+      // ELIMINAR SEDE
       this.sedeService.eliminar(this.itemParaEliminar.idSede).subscribe({
         next: () => {
           this.sedes.splice(this.indiceParaEliminar, 1);
           this.filtrarSedes();
           this.cdr.detectChanges();
           this.cerrarModalConfirmar();
-          alert('Sede eliminada exitosamente');
+          this.mostrarNotificacion('🗑️ Sede eliminada exitosamente');
         },
         error: (err) => {
           console.error('Error al eliminar sede', err);
-          alert('Error al eliminar la sede');
+          this.mostrarNotificacion('❌ Error al eliminar la sede', 'error');
         }
       });
     } else if (this.tipoModal === 'encargado') {
@@ -695,12 +574,24 @@ export class LaboratoriosComponent implements OnInit {
       this.filtrarEncargados();
       this.cdr.detectChanges();
       this.cerrarModalConfirmar();
-      alert('Encargado eliminado exitosamente');
+      this.mostrarNotificacion('🗑️ Encargado eliminado exitosamente');
     }
   }
 
   verDetalle(item: any): void {
-    console.log('Ver detalle:', item);
+    if (this.tabActiva === 1) {
+      // Es una sede
+      this.sedeDetalle = item;
+      this.mostrarDetalleSede = true;
+    } else {
+      // Es laboratorio o encargado
+      console.log('Ver detalle:', item);
+    }
+  }
+
+  cerrarDetalleSede(): void {
+    this.mostrarDetalleSede = false;
+    this.sedeDetalle = null;
   }
 
   cambiarPagina(pagina: number | string): void {
@@ -728,5 +619,16 @@ export class LaboratoriosComponent implements OnInit {
       return 'mantenimiento';
     }
     return 'inactivo';
+  }
+
+  mostrarNotificacion(mensaje: string, tipo: 'success' | 'error' = 'success'): void {
+    this.toastMensaje = mensaje;
+    this.toastTipo = tipo;
+    this.mostrarToast = true;
+
+    setTimeout(() => {
+      this.mostrarToast = false;
+      this.cdr.detectChanges();
+    }, 3000);
   }
 }

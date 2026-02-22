@@ -449,3 +449,61 @@
     </div>
   </div>
 </div>
+
+<!-- MODAL: DETALLE DE SEDE -->
+<div class="modal-overlay" *ngIf="mostrarDetalleSede" (click)="cerrarDetalleSede()">
+  <div class="modal modal-detalle-sede" (click)="$event.stopPropagation()">
+
+    <!-- Header verde -->
+    <div class="modal-header-detalle">
+      <h2>Detalles de la Sede</h2>
+      <button class="btn-close-detalle" (click)="cerrarDetalleSede()">×</button>
+    </div>
+
+    <!-- Body con campos -->
+    <div class="modal-body-detalle" *ngIf="sedeDetalle">
+
+      <div class="campo-detalle">
+        <label>ID</label>
+        <div class="valor-detalle">{{ sedeDetalle.idSede }}</div>
+      </div>
+
+      <div class="campo-detalle">
+        <label>NOMBRE</label>
+        <div class="valor-detalle">{{ sedeDetalle.nombre }}</div>
+      </div>
+
+      <div class="campo-detalle full-width">
+        <label>DIRECCIÓN</label>
+        <div class="valor-detalle">{{ sedeDetalle.direccion }}</div>
+      </div>
+
+      <div class="campo-detalle">
+        <label>TELÉFONO</label>
+        <div class="valor-detalle">{{ sedeDetalle.telefono }}</div>
+      </div>
+
+      <div class="campo-detalle">
+        <label>EMAIL</label>
+        <div class="valor-detalle">{{ sedeDetalle.email }}</div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer-detalle">
+      <button class="btn-cerrar-detalle" (click)="cerrarDetalleSede()">Cerrar</button>
+    </div>
+
+  </div>
+</div>
+<!-- ===================== -->
+<!-- TOAST NOTIFICACIÓN -->
+<!-- ===================== -->
+<div
+  class="toast"
+  *ngIf="mostrarToast"
+  [class.toast-success]="toastTipo === 'success'"
+  [class.toast-error]="toastTipo === 'error'">
+  {{ toastMensaje }}
+</div>
