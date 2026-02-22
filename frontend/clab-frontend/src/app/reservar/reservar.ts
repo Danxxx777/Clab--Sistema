@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-
+import { TipoReservaService } from '../services/tipo-reserva.service';
+import { ChangeDetectorRef } from '@angular/core';
 /* =========================
    INTERFACES
 ========================= */
@@ -25,7 +26,14 @@ interface Reserva {
   id_usuario: number;
   estado: 'Pendiente' | 'Aprobada' | 'Cancelada' | 'Completada';
   descripcion: string;
-  motivo_cancelacion?: string;
+  motivo: string;
+}
+
+interface Cancelacion {
+  id_reserva: number;
+  id_usuario_cancela: number;
+  fecha_cancelacion: string;
+  motivo_cancelacion: string;
 }
 
 interface TipoReserva {
@@ -75,7 +83,11 @@ interface Usuario {
 })
 export class ReservarComponent implements OnInit {
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private tipoReservaService: TipoReservaService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   /* =========================
      TABS
@@ -130,7 +142,7 @@ export class ReservarComponent implements OnInit {
   }
 
   /* =========================
-     MODALES
+     MODALES - RESERVA / TIPO
   ========================= */
 
   mostrarModal = false;
@@ -138,9 +150,13 @@ export class ReservarComponent implements OnInit {
   tipoModal: 'reserva' | 'tipo' | null = null;
   modoEdicion = false;
 
-  tipoAccion: 'cancelar' | 'eliminar' = 'eliminar';
   itemSeleccionado: any = null;
   indexSeleccionado: number | null = null;
+
+
+  mostrarToast = false;
+  toastMensaje = '';
+  toastTipo: 'success' | 'error' = 'success';
 
   abrirModal(tipo: 'reserva' | 'tipo') {
     this.tipoModal = tipo;
@@ -156,6 +172,50 @@ export class ReservarComponent implements OnInit {
 
   cerrarModalConfirmar() {
     this.mostrarConfirmarEliminar = false;
+  }
+
+  /* =========================
+     MODAL - CANCELAR RESERVA
+  ========================= */
+
+  mostrarModalCancelar = false;
+
+  formularioCancelacion: Cancelacion = {
+    id_reserva: 0,
+    id_usuario_cancela: 0,
+    fecha_cancelacion: '',
+    motivo_cancelacion: ''
+  };
+
+  abrirModalCancelar(res: Reserva, index: number) {
+    this.itemSeleccionado = res;
+    this.indexSeleccionado = index;
+    this.formularioCancelacion = {
+      id_reserva: res.id_reserva,
+      id_usuario_cancela: 0,
+      fecha_cancelacion: new Date().toISOString().split('T')[0],
+      motivo_cancelacion: ''
+    };
+    this.mostrarModalCancelar = true;
+  }
+
+  cerrarModalCancelar() {
+    this.mostrarModalCancelar = false;
+    this.itemSeleccionado = null;
+    this.indexSeleccionado = null;
+  }
+
+  confirmarCancelacion() {
+    if (this.indexSeleccionado === null) return;
+
+    // Aquí irá la llamada al servicio con el procedimiento almacenado
+    // this.reservaService.cancelarReserva(this.formularioCancelacion).subscribe(...)
+
+    // Por ahora actualizamos el estado localmente
+    this.reservas[this.indexSeleccionado].estado = 'Cancelada';
+    this.reservasFiltradas = [...this.reservas];
+
+    this.cerrarModalCancelar();
   }
 
   /* =========================
@@ -178,9 +238,8 @@ export class ReservarComponent implements OnInit {
       numero_estudiantes: 1,
       id_tipo_reserva: 0,
       id_usuario: 0,
-      id_usuario_cancela: null,
       descripcion: '',
-      motivo_cancelacion: '',
+      motivo: '',
       estado: 'Pendiente'
     };
 
@@ -230,38 +289,47 @@ export class ReservarComponent implements OnInit {
     this.formularioReserva = { ...res };
   }
 
-  eliminarReserva(res: Reserva, index: number) {
-    this.tipoAccion = 'cancelar';
-    this.itemSeleccionado = res;
-    this.indexSeleccionado = index;
-    this.mostrarConfirmarEliminar = true;
-  }
-
   /* =========================
      CRUD TIPOS
   ========================= */
 
   guardarTipo() {
-
-    if (this.modoEdicion && this.indexSeleccionado !== null) {
-
-      this.tipos[this.indexSeleccionado] = {
-        ...this.tipos[this.indexSeleccionado],
-        ...this.formularioTipo
-      };
-
-    } else {
-
-      const nuevoTipo: TipoReserva = {
-        id_tipo_reserva: Date.now(),
-        ...this.formularioTipo
-      };
-
-      this.tipos.push(nuevoTipo);
+    if (!this.formularioTipo.nombre_tipo?.trim()) {
+      this.mostrarNotificacion('El nombre del tipo es obligatorio', 'error');
+      return;
     }
 
-    this.tiposFiltrados = [...this.tipos];
-    this.cerrarModal();
+    const dto = {
+      nombreTipo: this.formularioTipo.nombre_tipo,
+      descripcion: this.formularioTipo.descripcion || ''
+    };
+
+    if (this.modoEdicion && this.indexSeleccionado !== null) {
+      const id = this.tipos[this.indexSeleccionado].id_tipo_reserva;
+      this.tipoReservaService.actualizar(id, dto).subscribe({
+        next: () => {
+          this.cargarTipos();
+          this.cerrarModal();
+          this.mostrarNotificacion('✅ Tipo de reserva actualizado correctamente');
+        },
+        error: (err) => {
+          console.error('Error actualizando tipo:', err);
+          this.mostrarNotificacion('❌ Error al actualizar el tipo', 'error');
+        }
+      });
+    } else {
+      this.tipoReservaService.crear(dto).subscribe({
+        next: () => {
+          this.cargarTipos();
+          this.cerrarModal();
+          this.mostrarNotificacion('✅ Tipo de reserva creado exitosamente');
+        },
+        error: (err) => {
+          console.error('Error creando tipo:', err);
+          this.mostrarNotificacion('❌ Error al crear el tipo', 'error');
+        }
+      });
+    }
   }
 
   editarTipo(tipo: TipoReserva, index: number) {
@@ -273,39 +341,47 @@ export class ReservarComponent implements OnInit {
   }
 
   eliminarTipo(tipo: TipoReserva, index: number) {
-    this.tipoAccion = 'eliminar';
     this.itemSeleccionado = tipo;
     this.indexSeleccionado = index;
     this.mostrarConfirmarEliminar = true;
   }
 
   confirmarEliminacion() {
-
     if (this.indexSeleccionado !== null) {
+      const id = this.tipos[this.indexSeleccionado].id_tipo_reserva;
 
-      if (this.tipoAccion === 'cancelar') {
-        this.reservas.splice(this.indexSeleccionado, 1);
-        this.reservasFiltradas = [...this.reservas];
-      } else {
-        this.tipos.splice(this.indexSeleccionado, 1);
-        this.tiposFiltrados = [...this.tipos];
-      }
+      this.tipoReservaService.eliminar(id).subscribe({
+        next: () => {
+          this.cargarTipos();
+          this.cerrarModalConfirmar();
+          this.mostrarNotificacion('🗑️ Tipo de reserva eliminado exitosamente');
+        },
+        error: (err) => {
+          console.error('Error eliminando tipo:', err);
+          this.mostrarNotificacion('❌ Error al eliminar el tipo', 'error');
+        }
+      });
     }
+  }
 
-    this.cerrarModalConfirmar();
+  mostrarNotificacion(mensaje: string, tipo: 'success' | 'error' = 'success'): void {
+    this.toastMensaje = mensaje;
+    this.toastTipo = tipo;
+    this.mostrarToast = true;
+
+    setTimeout(() => {
+      this.mostrarToast = false;
+      this.cdr.detectChanges();
+    }, 3000);
   }
 
   getItemNombre(): string {
     if (!this.itemSeleccionado) return '';
-    return this.itemSeleccionado.nombre_laboratorio || this.itemSeleccionado.nombre_tipo || '';
+    return this.itemSeleccionado.nombre_tipo || '';
   }
 
   getEstadoBadgeClass(estado: string): string {
     return estado.toLowerCase();
-  }
-
-  importarHorariosSGA() {
-    alert('Importación desde SGA pendiente');
   }
 
   verDetalle(res: Reserva) {
@@ -321,41 +397,30 @@ export class ReservarComponent implements OnInit {
   ========================= */
 
   ngOnInit(): void {
+    this.cargarTipos();
 
-    this.laboratorios = [
-      { cod_laboratorio: 1, nombre: 'Lab Computación A' },
-      { cod_laboratorio: 2, nombre: 'Lab Redes' }
-    ];
+    this.laboratorios = [];
+    this.asignaturas = [];
+    this.periodos = [];
+    this.horariosAcademicos = [];
+    this.usuarios = [];
 
-    this.asignaturas = [
-      { id_asignatura: 1, nombre: 'Programación I' },
-      { id_asignatura: 2, nombre: 'Base de Datos' }
-    ];
-
-    this.periodos = [
-      { id_periodo: 1, nombre_periodo: '2025-A' },
-      { id_periodo: 2, nombre_periodo: '2025-B' }
-    ];
-
-    this.horariosAcademicos = [
-      { id_horario_academico: 1, nombre_asignatura: 'Programación I', dia_semana: 'Lunes' }
-    ];
-
-    this.usuarios = [
-      { id_usuario: 1, nombres: 'Byron', apellidos: 'Loor' },
-      { id_usuario: 2, nombres: 'Allison', apellidos: 'Mera' }
-    ];
-
-    this.tipos = [
-      {
-        id_tipo_reserva: 1,
-        nombre_tipo: 'Clase Regular',
-        descripcion: 'Reserva para clases normales',
-        estado: 'Activo'
-      }
-    ];
-
-    this.tiposFiltrados = [...this.tipos];
     this.reservasFiltradas = [...this.reservas];
+  }
+
+  cargarTipos(): void {
+    this.tipoReservaService.listar().subscribe({
+      next: (data) => {
+        this.tipos = data.map(t => ({
+          id_tipo_reserva: t.idTipoReserva,
+          nombre_tipo: t.nombreTipo,
+          descripcion: t.descripcion,
+          estado: t.estado as 'Activo' | 'Inactivo'
+        }));
+        this.tiposFiltrados = [...this.tipos];
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error cargando tipos:', err)
+    });
   }
 }
