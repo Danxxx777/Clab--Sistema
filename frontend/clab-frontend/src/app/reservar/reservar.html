@@ -41,7 +41,6 @@
             placeholder="Buscar reservas...">
         </div>
         <div class="toolbar-actions">
-          <button class="btn-import" (click)="importarHorariosSGA()">📥 Importar Horarios SGA</button>
           <button class="btn-agregar" (click)="abrirModal('reserva')">+ Nueva Reserva</button>
         </div>
       </div>
@@ -73,15 +72,20 @@
               <span class="badge tipo-badge">{{ res.nombre_tipo }}</span>
             </td>
             <td>
-                <span class="badge" [ngClass]="getEstadoBadgeClass(res.estado)">
-                  {{ res.estado }}
-                </span>
+              <span class="badge" [ngClass]="getEstadoBadgeClass(res.estado)">
+                {{ res.estado }}
+              </span>
             </td>
             <td>
               <div class="action-buttons">
                 <button class="btn-action btn-ver"      (click)="verDetalle(res)">Ver</button>
                 <button class="btn-action btn-editar"   (click)="editarReserva(res, i)">Editar</button>
-                <button class="btn-action btn-eliminar" (click)="eliminarReserva(res, i)">Cancelar</button>
+                <button
+                  class="btn-action btn-cancelar-res"
+                  (click)="abrirModalCancelar(res, i)"
+                  [disabled]="res.estado === 'Cancelada' || res.estado === 'Completada'">
+                  Cancelar
+                </button>
               </div>
             </td>
           </tr>
@@ -125,9 +129,9 @@
             <td><strong>{{ tipo.nombre_tipo }}</strong></td>
             <td>{{ tipo.descripcion }}</td>
             <td>
-                <span class="badge" [ngClass]="tipo.estado === 'Activo' ? 'badge-activo' : 'badge-inactivo'">
-                  {{ tipo.estado }}
-                </span>
+              <span class="badge" [ngClass]="tipo.estado === 'Activo' ? 'badge-activo' : 'badge-inactivo'">
+                {{ tipo.estado }}
+              </span>
             </td>
             <td>
               <div class="action-buttons">
@@ -148,7 +152,7 @@
 </div>
 
 
-<!-- MODAL: RESERVA -->
+<!-- MODAL: RESERVA (crear / editar) -->
 <div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'reserva'" (click)="cerrarModal()">
   <div class="modal modal-large" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -238,19 +242,10 @@
       </div>
 
       <div class="form-row">
-        <div class="form-group">
+        <div class="form-group full-width">
           <label>Usuario que Solicita <span class="required">*</span></label>
           <select class="form-control" [(ngModel)]="formularioReserva.id_usuario">
             <option [value]="0">Seleccione un usuario</option>
-            <option *ngFor="let usuario of usuarios" [value]="usuario.id_usuario">
-              {{ usuario.nombres }} {{ usuario.apellidos }}
-            </option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Usuario que Cancela</label>
-          <select class="form-control" [(ngModel)]="formularioReserva.id_usuario_cancela">
-            <option [value]="null">Ninguno</option>
             <option *ngFor="let usuario of usuarios" [value]="usuario.id_usuario">
               {{ usuario.nombres }} {{ usuario.apellidos }}
             </option>
@@ -267,8 +262,8 @@
 
       <div class="form-row">
         <div class="form-group full-width">
-          <label>Motivo de Cancelación</label>
-          <textarea class="form-control" [(ngModel)]="formularioReserva.motivo_cancelacion" rows="2" placeholder="Solo si se cancela..."></textarea>
+          <label>Motivo <span class="required">*</span></label>
+          <textarea class="form-control" [(ngModel)]="formularioReserva.motivo" rows="2" placeholder="Motivo de la reserva..."></textarea>
         </div>
       </div>
 
@@ -278,7 +273,6 @@
           <select class="form-control" [(ngModel)]="formularioReserva.estado">
             <option value="Pendiente">Pendiente</option>
             <option value="Aprobada">Aprobada</option>
-            <option value="Cancelada">Cancelada</option>
             <option value="Completada">Completada</option>
           </select>
         </div>
@@ -288,6 +282,55 @@
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
       <button class="btn-guardar" (click)="guardarReserva()">{{ modoEdicion ? 'Actualizar' : 'Guardar' }}</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL: CANCELAR RESERVA -->
+<div class="modal-overlay" *ngIf="mostrarModalCancelar" (click)="cerrarModalCancelar()">
+  <div class="modal modal-cancelar" (click)="$event.stopPropagation()">
+    <div class="modal-header modal-header-danger">
+      <h2>Cancelar Reserva</h2>
+      <button class="btn-close" (click)="cerrarModalCancelar()">×</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="cancelar-info" *ngIf="itemSeleccionado">
+        <p class="cancelar-lab">{{ itemSeleccionado.nombre_laboratorio }}</p>
+        <p class="cancelar-fecha">{{ itemSeleccionado.fecha_reserva | date:'dd/MM/yyyy' }} &nbsp;·&nbsp; {{ itemSeleccionado.hora_inicio }} - {{ itemSeleccionado.hora_fin }}</p>
+      </div>
+
+      <div class="form-row" style="margin-top: 20px;">
+        <div class="form-group full-width">
+          <label>Usuario que Cancela <span class="required">*</span></label>
+          <select class="form-control" [(ngModel)]="formularioCancelacion.id_usuario_cancela">
+            <option [value]="0">Seleccione un usuario</option>
+            <option *ngFor="let usuario of usuarios" [value]="usuario.id_usuario">
+              {{ usuario.nombres }} {{ usuario.apellidos }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>Fecha de Cancelación <span class="required">*</span></label>
+          <input type="date" class="form-control" [(ngModel)]="formularioCancelacion.fecha_cancelacion">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>Motivo de Cancelación <span class="required">*</span></label>
+          <textarea class="form-control" [(ngModel)]="formularioCancelacion.motivo_cancelacion" rows="3" placeholder="Describa el motivo de la cancelación..."></textarea>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModalCancelar()">Volver</button>
+      <button class="btn-eliminar-confirm" (click)="confirmarCancelacion()">Confirmar Cancelación</button>
     </div>
   </div>
 </div>
@@ -335,20 +378,31 @@
 </div>
 
 
-<!-- MODAL: CONFIRMAR ELIMINAR -->
+<!-- MODAL: CONFIRMAR ELIMINAR TIPO -->
 <div class="modal-overlay" *ngIf="mostrarConfirmarEliminar" (click)="cerrarModalConfirmar()">
   <div class="modal modal-confirm" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h2>Confirmar {{ tipoAccion === 'cancelar' ? 'Cancelación' : 'Eliminación' }}</h2>
+      <h2>Confirmar Eliminación</h2>
       <button class="btn-close" (click)="cerrarModalConfirmar()">×</button>
     </div>
     <div class="modal-body">
-      <p>Estás a punto de {{ tipoAccion === 'cancelar' ? 'cancelar' : 'eliminar' }} <strong>{{ getItemNombre() }}</strong>.</p>
+      <p>Estás a punto de eliminar <strong>{{ getItemNombre() }}</strong>.</p>
       <p class="warning-text">Esta acción no se puede deshacer.</p>
     </div>
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cerrarModalConfirmar()">Cancelar</button>
-      <button class="btn-eliminar-confirm" (click)="confirmarEliminacion()">Sí, {{ tipoAccion === 'cancelar' ? 'Cancelar' : 'Eliminar' }}</button>
+      <button class="btn-eliminar-confirm" (click)="confirmarEliminacion()">Sí, Eliminar</button>
     </div>
   </div>
+</div>
+
+<!-- ===================== -->
+<!-- TOAST NOTIFICACIÓN -->
+<!-- ===================== -->
+<div
+  class="toast"
+  *ngIf="mostrarToast"
+  [class.toast-success]="toastTipo === 'success'"
+  [class.toast-error]="toastTipo === 'error'">
+  {{ toastMensaje }}
 </div>

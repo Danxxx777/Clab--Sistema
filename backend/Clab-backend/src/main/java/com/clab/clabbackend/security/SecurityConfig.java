@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/laboratorios/**").permitAll()
                         .requestMatchers("/reportes/**").permitAll()
                         .requestMatchers("/sedes/**").permitAll()
+                        .requestMatchers("/tipos-reserva/**").permitAll()
 
 
                         // Todo lo demás requiere autenticación
