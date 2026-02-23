@@ -3,49 +3,57 @@ package com.clab.clabbackend.services;
 import com.clab.clabbackend.dto.SedeDTO;
 import com.clab.clabbackend.entities.Sede;
 import com.clab.clabbackend.repository.SedeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class SedeService {
-    @Autowired
-    private SedeRepository sedeRepository;
 
-    public Sede crear(SedeDTO dto)
-    {
-        Sede sede = new Sede();
-        sede.setNombre(dto.getNombre());
-        sede.setDireccion(dto.getDireccion());
-        sede.setTelefono(dto.getTelefono());
-        sede.setEmail(dto.getEmail());
-        sede.setEstado(dto.getEstado());
+    private final SedeRepository sedeRepository;
 
-        return  sedeRepository.save(sede);
+    // LISTAR
+    public List<Sede> listar() {
+        List<Object[]> resultados = sedeRepository.listarSedes();
+
+        return resultados.stream().map(r -> {
+            Sede sede = new Sede();
+            sede.setIdSede((Integer) r[0]);
+            sede.setNombre((String) r[1]);
+            sede.setDireccion((String) r[2]);
+            sede.setTelefono((String) r[3]);
+            sede.setEmail((String) r[4]);
+            sede.setEstado((String) r[5]);
+            return sede;
+        }).collect(Collectors.toList());
     }
 
-    public List<Sede>  listar()
-    {
-        return sedeRepository.findAll();
+    // CREAR
+    public void crear(SedeDTO dto) {
+        sedeRepository.insertar(
+                dto.getNombre(),
+                dto.getDireccion(),
+                dto.getTelefono(),
+                dto.getEmail()
+        );
     }
 
-    public Sede actualizar(Integer id, SedeDTO dto)
-    {
-        Sede sede = sedeRepository.findById(id).orElseThrow(() -> new RuntimeException("No se encontro el id"));
-        sede.setNombre(dto.getNombre());
-        sede.setDireccion(dto.getDireccion());
-        sede.setTelefono(dto.getTelefono());
-        sede.setEmail(dto.getEmail());
-        sede.setEstado(dto.getEstado());
-
-        return sedeRepository.save(sede);
+    // ACTUALIZAR
+    public void actualizar(Integer id, SedeDTO dto) {
+        sedeRepository.actualizar(
+                id,
+                dto.getNombre(),
+                dto.getDireccion(),
+                dto.getTelefono(),
+                dto.getEmail()
+        );
     }
 
+    // ELIMINAR
     public void eliminar(Integer id) {
-        if (!sedeRepository.existsById(id)) {
-            throw new RuntimeException("Sede no encontrada con id: " + id);
-        }
-        sedeRepository.deleteById(id);
+        sedeRepository.eliminar(id);
     }
 }
-

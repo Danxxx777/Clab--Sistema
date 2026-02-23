@@ -38,15 +38,14 @@ public class SecurityConfig {
                         sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // 🔥 RUTAS PÚBLICAS - SIN AUTENTICACIÓN
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/api/test/**").permitAll()
                         .requestMatchers("/equipos/**").permitAll()
                         .requestMatchers("/tipos-equipo/**").permitAll()
                         .requestMatchers("/laboratorios/**").permitAll()
                         .requestMatchers("/reportes/**").permitAll()
-
-                        // Todo lo demás requiere autenticación
+                        .requestMatchers("/sedes/**").permitAll()
+                        .requestMatchers("/tipos-reserva/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

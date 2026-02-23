@@ -150,7 +150,7 @@ $color-eliminar: #e74c3c;
 }
 
 // =====================
-// TOOLBAR (con múltiples botones)
+// TOOLBAR
 // =====================
 .toolbar {
   display: flex;
@@ -192,29 +192,9 @@ $color-eliminar: #e74c3c;
     }
   }
 
-  // Grupo de acciones (importar + agregar)
   .toolbar-actions {
     display: flex;
     gap: 12px;
-  }
-
-  .btn-import {
-    background: #3498db;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-
-    &:hover {
-      background: darken(#3498db, 10%);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(#3498db, 0.3);
-    }
   }
 
   .btn-agregar {
@@ -283,9 +263,7 @@ $color-eliminar: #e74c3c;
       color: $color-texto;
       vertical-align: middle;
 
-      strong {
-        font-weight: 600;
-      }
+      strong { font-weight: 600; }
 
       &.empty-message {
         text-align: center;
@@ -309,36 +287,12 @@ $color-eliminar: #e74c3c;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 
-  &.badge-activo,
-  &.activo {
-    background: #d4edda;
-    color: #155724;
-  }
+  &.badge-activo, &.activo   { background: #d4edda; color: #155724; }
+  &.badge-inactivo, &.inactivo { background: #f8d7da; color: #721c24; }
+  &.pendiente   { background: #fff3cd; color: #856404; }
+  &.aprobada, &.completada { background: #d4edda; color: #155724; }
+  &.cancelada   { background: #f8d7da; color: #721c24; }
 
-  &.badge-inactivo,
-  &.inactivo {
-    background: #f8d7da;
-    color: #721c24;
-  }
-
-  // Estados propios de reservas
-  &.pendiente {
-    background: #fff3cd;
-    color: #856404;
-  }
-
-  &.aprobada,
-  &.completada {
-    background: #d4edda;
-    color: #155724;
-  }
-
-  &.cancelada {
-    background: #f8d7da;
-    color: #721c24;
-  }
-
-  // Badge tipo de reserva
   &.tipo-badge {
     background: #e3f2fd;
     color: #1565c0;
@@ -399,6 +353,27 @@ $color-eliminar: #e74c3c;
         box-shadow: 0 4px 8px rgba($color-eliminar, 0.3);
       }
     }
+
+    // Botón cancelar reserva en tabla
+    &.btn-cancelar-res {
+      background: #fdecea;
+      color: #b71c1c;
+
+      &:hover:not(:disabled) {
+        background: $color-eliminar;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba($color-eliminar, 0.3);
+      }
+
+      &:disabled {
+        background: #f0f0f0;
+        color: #adb5bd;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+    }
   }
 }
 
@@ -432,10 +407,9 @@ $color-eliminar: #e74c3c;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   animation: slideUp 0.3s ease;
 
-  &.modal-confirm { max-width: 450px; }
-
-  // Modal más grande para reservas
-  &.modal-large { max-width: 800px; }
+  &.modal-confirm  { max-width: 450px; }
+  &.modal-large    { max-width: 800px; }
+  &.modal-cancelar { max-width: 520px; }
 }
 
 .modal-header {
@@ -451,6 +425,11 @@ $color-eliminar: #e74c3c;
     font-size: 20px;
     font-weight: 700;
     margin: 0;
+  }
+
+  // Header rojo para modal de cancelación
+  &.modal-header-danger {
+    background: linear-gradient(135deg, #c0392b 0%, darken(#c0392b, 10%) 100%);
   }
 
   .btn-close {
@@ -493,6 +472,27 @@ $color-eliminar: #e74c3c;
       font-size: 13px;
       font-style: italic;
     }
+  }
+}
+
+// Info de la reserva dentro del modal cancelar
+.cancelar-info {
+  background: #fff5f5;
+  border: 1px solid #ffc9c9;
+  border-radius: 10px;
+  padding: 16px 20px;
+
+  .cancelar-lab {
+    font-size: 16px;
+    font-weight: 700;
+    color: #b71c1c;
+    margin-bottom: 4px !important;
+  }
+
+  .cancelar-fecha {
+    font-size: 13px;
+    color: $color-texto-claro;
+    margin: 0 !important;
   }
 }
 
@@ -571,10 +571,7 @@ $color-eliminar: #e74c3c;
     color: $color-texto;
     margin-bottom: 8px;
 
-    .required {
-      color: $color-eliminar;
-      margin-left: 3px;
-    }
+    .required { color: $color-eliminar; margin-left: 3px; }
   }
 
   .form-control {
@@ -698,7 +695,6 @@ $color-eliminar: #e74c3c;
       flex-direction: column;
       width: 100%;
 
-      .btn-import,
       .btn-agregar { width: 100%; }
     }
   }
@@ -729,7 +725,8 @@ $color-eliminar: #e74c3c;
     max-width: 95%;
     border-radius: 12px;
 
-    &.modal-large { max-width: 95%; }
+    &.modal-large    { max-width: 95%; }
+    &.modal-cancelar { max-width: 95%; }
   }
 
   .modal-header {
@@ -743,5 +740,42 @@ $color-eliminar: #e74c3c;
     padding: 16px 24px;
     flex-direction: column;
     button { width: 100%; }
+  }
+}
+
+/* ===================== */
+/* TOAST NOTIFICACIÓN */
+/* ===================== */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 10000;
+  animation: slideIn 0.3s ease-out;
+}
+
+.toast-success {
+  background-color: #4caf50;
+  color: white;
+}
+
+.toast-error {
+  background-color: #f44336;
+  color: white;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
   }
 }
