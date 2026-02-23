@@ -10,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "u_rol_bd", schema = "usuarios")
+@Table(name = "rol_bd", schema = "seguridad_bd")
 public class RolBD {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

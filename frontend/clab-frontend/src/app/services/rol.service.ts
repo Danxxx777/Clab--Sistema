@@ -16,6 +16,7 @@ export interface RolRequest {
   nombreRol: string;
   descripcion?: string;
   permisos: number[];
+  rolesBD: string[];
 }
 
 @Injectable({
@@ -45,5 +46,8 @@ export class RolService {
 
   obtenerPermisos(id: number): Observable<number[]> {
     return this.http.get<number[]>(`${this.apiUrl}/${id}/permisos`);
+  }
+  listarRolesBD(): Observable<string[]> {
+    return this.http.get<string[]>('http://localhost:8080/roles/roles-bd');
   }
 }

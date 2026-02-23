@@ -38,7 +38,6 @@ public class SecurityConfig {
                         sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // 🔥 RUTAS PÚBLICAS - SIN AUTENTICACIÓN
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/api/test/**").permitAll()
                         .requestMatchers("/equipos/**").permitAll()
@@ -47,9 +46,6 @@ public class SecurityConfig {
                         .requestMatchers("/reportes/**").permitAll()
                         .requestMatchers("/sedes/**").permitAll()
                         .requestMatchers("/tipos-reserva/**").permitAll()
-
-
-                        // Todo lo demás requiere autenticación
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

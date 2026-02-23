@@ -1,6 +1,7 @@
 package com.clab.clabbackend.controller;
 
 import com.clab.clabbackend.dto.RolRequestDTO;
+import com.clab.clabbackend.dto.RolResponseDTO;
 import com.clab.clabbackend.entities.Rol;
 import com.clab.clabbackend.services.RolService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,7 @@ public class RolController {
     private RolService rolService;
 
     @GetMapping("/listar")
-    public List<Rol> listar() {
+    public List<RolResponseDTO> listar() {
         return rolService.listar();
     }
 
@@ -40,5 +41,9 @@ public class RolController {
     @GetMapping("/{id}/permisos")
     public List<Integer> obtenerPermisos(@PathVariable Integer id) {
         return rolService.obtenerPermisosActivos(id);
+    }
+    @GetMapping("/roles-bd")
+    public List<String> listarRolesBD() {
+        return rolService.listarRolesBD();
     }
 }

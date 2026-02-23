@@ -46,15 +46,31 @@ export class UsuariosComponent implements OnInit {
   permisosSeleccionados: number[] = [];
   busqueda = '';
   filtroEstado = 'Todos';
-  filtroRol = 'Todos';
+  filtroRol: number | 'Todos' = 'Todos';
+  rolesBDDisponibles: string[] = [];
+  rolesBDSeleccionados: string[] = [];
+  rolesBD: string[] = [];
+
 
   /*INIT */
   ngOnInit(): void {
     this.cargarUsuarios();
     this.cargarRoles();
     this.cargarPermisos();
+    this.rolService.listarRolesBD().subscribe(data => {
+      this.rolesBDDisponibles = data;
+    });
   }
 
+
+  toggleRolBD(nombre: string) {
+    if (this.rolesBDSeleccionados.includes(nombre)) {
+      this.rolesBDSeleccionados =
+        this.rolesBDSeleccionados.filter(r => r !== nombre);
+    } else {
+      this.rolesBDSeleccionados.push(nombre);
+    }
+  }
   volver(): void {
     this.router.navigate(['/dashboard']);
   }
@@ -70,11 +86,19 @@ export class UsuariosComponent implements OnInit {
       (`${u.nombres} ${u.apellidos} ${u.email} ${u.identidad}`
         .toLowerCase()
         .includes(texto)) &&
-      (this.filtroEstado === 'Todos' || u.estado === this.filtroEstado) &&
-      (this.filtroRol === 'Todos' || u.rolNombre === this.filtroRol)
+
+      (this.filtroEstado === 'Todos' ||
+        u.estado?.toUpperCase() === this.filtroEstado.toUpperCase()) &&
+
+      (this.filtroRol === 'Todos' || u.idRol === this.filtroRol)
     );
   }
-
+  cargarRolesBD(): void {
+    this.http.get<string[]>('http://localhost:8080/roles/roles-bd')
+      .subscribe(data => {
+        this.rolesBD = data;
+      });
+  }
   /* USUARIOS*/
   cargarUsuarios(): void {
     this.usuarioService.listar().subscribe({
@@ -226,6 +250,7 @@ export class UsuariosComponent implements OnInit {
 
     this.modoModal = modo;
     this.permisosSeleccionados = [];
+    this.cargarRolesBD();
 
     if (modo === 'crear') {
       this.rolActual = {
@@ -262,9 +287,10 @@ export class UsuariosComponent implements OnInit {
     }
 
     const payload: RolRequest = {
-      nombreRol: this.rolActual.nombre.trim(),
-      descripcion: this.rolActual.descripcion?.trim(),
-      permisos: this.permisosSeleccionados
+      nombreRol: this.rolActual.nombre,
+      descripcion: this.rolActual.descripcion,
+      permisos: this.permisosSeleccionados,
+      rolesBD: this.rolesBDSeleccionados
     };
 
     const request$ =
