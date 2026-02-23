@@ -80,7 +80,38 @@ $color-eliminar: #e74c3c;
     }
   }
 }
+.roles-bd-section {
+  margin-top: 20px;
+}
 
+.roles-bd-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.rol-bd-card {
+  padding: 14px;
+  border-radius: 10px;
+  border: 2px solid #e0e0e0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #f8f9fa;
+  font-weight: 500;
+  text-align: center;
+}
+
+.rol-bd-card:hover {
+  border-color: #198754;
+  transform: translateY(-2px);
+}
+
+.rol-bd-card.selected {
+  background: #198754;
+  color: white;
+  border-color: #198754;
+}
 // =====================
 // PAGE TITLE
 // =====================
