@@ -23,14 +23,14 @@
     <div class="tabs">
       <button class="tab" [class.active]="tabActiva === 0" (click)="cambiarTab(0)">Usuarios</button>
       <button class="tab" [class.active]="tabActiva === 1" (click)="cambiarTab(1)">Roles</button>
-      <button class="tab" [class.active]="tabActiva === 2" (click)="cambiarTab(2)">Permisos</button>
-      <button class="tab" [class.active]="tabActiva === 3" (click)="cambiarTab(3)">Auditoría</button>
-    </div>
-  </div>
+      <!--<button class="tab" [class.active]="tabActiva === 2" (click)="cambiarTab(2)">Permisos</button>
+     <button class="tab" [class.active]="tabActiva === 3" (click)="cambiarTab(3)">Auditoría</button>-->
+   </div>
+ </div>
 
-  <div class="content-wrapper">
+ <div class="content-wrapper">
 
-    <!-- TAB 0: USUARIOS -->
+   <!-- TAB 0: USUARIOS -->
     <div class="tab-content" *ngIf="tabActiva === 0">
       <div class="toolbar">
         <div class="filters-group">
@@ -48,9 +48,17 @@
             <option value="Activo">Activo</option>
             <option value="Inactivo">Inactivo</option>
           </select>
-          <select class="filter-select" [(ngModel)]="filtroRol" (change)="filtrarUsuarios()">
-            <option value="Todos">Todos los roles</option>
-            <option *ngFor="let r of roles" [value]="r.nombre">{{ r.nombre }}</option>
+          <select class="filter-select"
+                  [(ngModel)]="filtroRol"
+                  (change)="filtrarUsuarios()">
+
+            <option [ngValue]="'Todos'">Todos los roles</option>
+
+            <option *ngFor="let r of roles"
+                    [ngValue]="r.id">
+              {{ r.nombre }}
+            </option>
+
           </select>
         </div>
         <button class="btn-agregar" (click)="abrirModalUsuario('crear')">+ Nuevo Usuario</button>
@@ -178,35 +186,74 @@
 <!-- MODAL: ROL -->
 <div class="modal-overlay" *ngIf="mostrarModalRol" (click)="cerrarModalRol()">
   <div class="modal" (click)="$event.stopPropagation()">
+
+    <!-- HEADER -->
     <div class="modal-header">
       <h2>{{ modoModal === 'crear' ? 'Nuevo Rol' : 'Editar Rol' }}</h2>
       <button class="btn-close" (click)="cerrarModalRol()">×</button>
     </div>
+
+    <!-- BODY -->
     <div class="modal-body">
+
+      <!-- FILA 1 -->
       <div class="form-row">
         <div class="form-group">
           <label>Nombre del Rol <span class="required">*</span></label>
-          <input class="form-control" [(ngModel)]="rolActual.nombre" name="nombreRol" required>
+          <input class="form-control"
+                 [(ngModel)]="rolActual.nombre"
+                 name="nombreRol"
+                 required>
         </div>
+
         <div class="form-group">
           <label>Descripción</label>
-          <input class="form-control" [(ngModel)]="rolActual.descripcion" name="descripcion">
+          <input class="form-control"
+                 [(ngModel)]="rolActual.descripcion"
+                 name="descripcion">
         </div>
       </div>
+
+      <!-- FILA 2 -->
       <div class="form-row">
-        <div class="form-group">
+        <div class="form-group full-width">
           <label>Fecha de Creación</label>
-          <input type="date" class="form-control" [(ngModel)]="rolActual.fechaCreacion" name="fechaCreacion" disabled>
+          <input type="date"
+                 class="form-control"
+                 [(ngModel)]="rolActual.fechaCreacion"
+                 name="fechaCreacion"
+                 disabled>
         </div>
       </div>
+
+      <!-- SECCIÓN ROLES BD -->
+      <div class="roles-bd-section">
+        <label>Roles de Base de Datos </label>
+
+        <div class="roles-bd-grid">
+          <div
+            class="rol-bd-card"
+            *ngFor="let rolBD of rolesBDDisponibles"
+            [class.selected]="rolesBDSeleccionados.includes(rolBD)"
+            (click)="toggleRolBD(rolBD)"
+          >
+            <div class="rol-bd-name">
+              {{ rolBD }}
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
+
+    <!-- FOOTER -->
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cerrarModalRol()">Cancelar</button>
       <button class="btn-guardar" (click)="guardarRol()">Guardar</button>
     </div>
+
   </div>
 </div>
-
 
 <!-- MODAL: USUARIO -->
 <div class="modal-overlay" *ngIf="mostrarModalUsuario" (click)="cerrarModalUsuario()">

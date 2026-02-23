@@ -7,9 +7,16 @@ public class RolRequestDTO {
 
     private String nombreRol;
     private String descripcion;
-
+    private List<String> rolesBD;
     private List<Integer> permisos = new ArrayList<>();
 
+    public List<String> getRolesBD() {
+        return rolesBD;
+    }
+
+    public void setRolesBD(List<String> rolesBD) {
+        this.rolesBD = rolesBD;
+    }
     public RolRequestDTO() {
     }
 
