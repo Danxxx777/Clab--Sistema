@@ -4,6 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TipoReservaService } from '../services/tipo-reserva.service';
 import { ChangeDetectorRef } from '@angular/core';
+import { ReservaService } from '../services/reserva.service';
+import { LaboratorioService } from '../services/laboratorio.service';
+import { AsignaturaService } from '../services/asignatura.service';
+import { PeriodoService } from '../services/periodo.service';
+import { HorarioService } from '../services/horario.service';
+
 /* =========================
    INTERFACES
 ========================= */
@@ -86,6 +92,11 @@ export class ReservarComponent implements OnInit {
   constructor(
     private router: Router,
     private tipoReservaService: TipoReservaService,
+    private reservaService: ReservaService,
+    private laboratorioService: LaboratorioService,
+    private asignaturaService: AsignaturaService,
+    private periodoService: PeriodoService,
+    private horarioService: HorarioService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -206,16 +217,28 @@ export class ReservarComponent implements OnInit {
   }
 
   confirmarCancelacion() {
-    if (this.indexSeleccionado === null) return;
+    if (!this.formularioCancelacion.motivo_cancelacion?.trim()) {
+      this.mostrarNotificacion('El motivo de cancelación es obligatorio', 'error');
+      return;
+    }
 
-    // Aquí irá la llamada al servicio con el procedimiento almacenado
-    // this.reservaService.cancelarReserva(this.formularioCancelacion).subscribe(...)
+    const dto = {
+      idReserva: this.formularioCancelacion.id_reserva,
+      idUsuarioCancela: this.formularioCancelacion.id_usuario_cancela || 1,
+      motivoCancelacion: this.formularioCancelacion.motivo_cancelacion
+    };
 
-    // Por ahora actualizamos el estado localmente
-    this.reservas[this.indexSeleccionado].estado = 'Cancelada';
-    this.reservasFiltradas = [...this.reservas];
-
-    this.cerrarModalCancelar();
+    this.reservaService.cancelar(dto).subscribe({
+      next: () => {
+        this.cargarReservas();
+        this.cerrarModalCancelar();
+        this.mostrarNotificacion('🗑️ Reserva cancelada exitosamente');
+      },
+      error: (err) => {
+        console.error('Error cancelando reserva:', err);
+        this.mostrarNotificacion('❌ Error al cancelar la reserva', 'error');
+      }
+    });
   }
 
   /* =========================
@@ -255,30 +278,55 @@ export class ReservarComponent implements OnInit {
   ========================= */
 
   guardarReserva() {
-
-    if (this.modoEdicion && this.indexSeleccionado !== null) {
-
-      this.reservas[this.indexSeleccionado] = {
-        ...this.reservas[this.indexSeleccionado],
-        ...this.formularioReserva
-      };
-
-    } else {
-
-      const nuevaReserva: Reserva = {
-        id_reserva: Date.now(),
-        nombre_laboratorio: 'Laboratorio Demo',
-        nombre_asignatura: 'Asignatura Demo',
-        nombre_periodo: '2025-A',
-        nombre_tipo: 'Clase Regular',
-        ...this.formularioReserva
-      };
-
-      this.reservas.push(nuevaReserva);
+    if (!this.formularioReserva.cod_laboratorio ||
+      !this.formularioReserva.fecha_reserva ||
+      !this.formularioReserva.hora_inicio ||
+      !this.formularioReserva.hora_fin) {
+      this.mostrarNotificacion('Complete los campos obligatorios', 'error');
+      return;
     }
 
-    this.reservasFiltradas = [...this.reservas];
-    this.cerrarModal();
+    const dto = {
+      codLaboratorio: this.formularioReserva.cod_laboratorio,
+      idUsuario: this.formularioReserva.id_usuario || 1,
+      idPeriodo: this.formularioReserva.id_periodo || 1,
+      idHorarioAcademico: this.formularioReserva.id_horario_academico || 1,
+      idAsignatura: this.formularioReserva.id_asignatura,
+      idTipoReserva: this.formularioReserva.id_tipo_reserva,
+      fechaReserva: this.formularioReserva.fecha_reserva,
+      horaInicio: this.formularioReserva.hora_inicio,
+      horaFin: this.formularioReserva.hora_fin,
+      motivo: this.formularioReserva.motivo,
+      numeroEstudiantes: this.formularioReserva.numero_estudiantes,
+      descripcion: this.formularioReserva.descripcion
+    };
+
+    if (this.modoEdicion && this.indexSeleccionado !== null) {
+      const id = this.reservas[this.indexSeleccionado].id_reserva;
+      this.reservaService.actualizar(id, dto).subscribe({
+        next: () => {
+          this.cargarReservas();
+          this.cerrarModal();
+          this.mostrarNotificacion('✅ Reserva actualizada correctamente');
+        },
+        error: (err) => {
+          console.error('Error actualizando reserva:', err);
+          this.mostrarNotificacion('❌ Error al actualizar la reserva', 'error');
+        }
+      });
+    } else {
+      this.reservaService.crear(dto).subscribe({
+        next: () => {
+          this.cargarReservas();
+          this.cerrarModal();
+          this.mostrarNotificacion('✅ Reserva creada exitosamente');
+        },
+        error: (err) => {
+          console.error('Error creando reserva:', err);
+          this.mostrarNotificacion('❌ Error al crear la reserva', 'error');
+        }
+      });
+    }
   }
 
   editarReserva(res: Reserva, index: number) {
@@ -346,6 +394,41 @@ export class ReservarComponent implements OnInit {
     this.mostrarConfirmarEliminar = true;
   }
 
+  // ESTO ES PARA CARGAR RESERVAS
+
+  cargarReservas(): void {
+    this.reservaService.listar().subscribe({
+      next: (data) => {
+        this.reservas = data.map(r => ({
+          id_reserva: r.idReserva,
+          cod_laboratorio: r.codLaboratorio,
+          nombre_laboratorio: r.nombreLaboratorio,
+          fecha_reserva: r.fechaReserva,
+          fecha_solicitud: r.fechaSolicitud,
+          hora_inicio: r.horaInicio,
+          hora_fin: r.horaFin,
+          id_asignatura: r.idAsignatura,
+          nombre_asignatura: r.nombreAsignatura || '-',
+          id_periodo: r.idPeriodo,
+          nombre_periodo: r.nombrePeriodo,
+          numero_estudiantes: r.numeroEstudiantes,
+          id_tipo_reserva: r.idTipoReserva,
+          nombre_tipo: r.nombreTipoReserva || '-',
+          id_usuario: r.idUsuario,
+          estado: r.estado as 'Pendiente' | 'Aprobada' | 'Cancelada' | 'Completada',
+          descripcion: r.descripcion || '',
+          motivo: r.motivo
+        }));
+        this.reservasFiltradas = [...this.reservas];
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error cargando reservas:', err);
+        this.mostrarNotificacion('Error al cargar reservas', 'error');
+      }
+    });
+  }
+
   confirmarEliminacion() {
     if (this.indexSeleccionado !== null) {
       const id = this.tipos[this.indexSeleccionado].id_tipo_reserva;
@@ -398,6 +481,10 @@ export class ReservarComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarTipos();
+    this.cargarReservas();
+    this.cargarLaboratorios();
+    this.cargarAsignaturas();
+    this.cargarPeriodos();
 
     this.laboratorios = [];
     this.asignaturas = [];
@@ -422,5 +509,67 @@ export class ReservarComponent implements OnInit {
       },
       error: (err) => console.error('Error cargando tipos:', err)
     });
+  }
+
+  cargarLaboratorios(): void {
+    this.laboratorioService.listar().subscribe({
+      next: (data) => {
+        this.laboratorios = data.map(l => ({
+          cod_laboratorio: l.codLaboratorio,
+          nombre: l.nombreLab
+        }));
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error cargando laboratorios:', err)
+    });
+  }
+
+  cargarAsignaturas(): void {
+    this.asignaturaService.listar().subscribe({
+      next: (data) => {
+        this.asignaturas = data.map(a => ({
+          id_asignatura: a.idAsignatura || 0,
+          nombre: a.nombre
+        }));
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error cargando asignaturas:', err)
+    });
+  }
+
+  cargarPeriodos(): void {
+    this.periodoService.listar().subscribe({
+      next: (data) => {
+        this.periodos = data.map(p => ({
+          id_periodo: p.idPeriodo || 0,
+          nombre_periodo: p.nombrePeriodo
+        }));
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error cargando periodos:', err)
+    });
+  }
+
+  cargarHorariosPorAsignatura(idAsignatura: number): void {
+    this.horarioService.listarPorAsignatura(idAsignatura).subscribe({
+      next: (data) => {
+        this.horariosAcademicos = data.map(h => ({
+          id_horario_academico: h.idHorarioAcademico,
+          nombre_asignatura: h.nombreAsignatura || '',
+          dia_semana: h.diaSemana
+        }));
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error cargando horarios:', err)
+    });
+  }
+
+  onAsignaturaChange(): void {
+    const idAsignatura = this.formularioReserva.id_asignatura;
+    if (idAsignatura) {
+      this.cargarHorariosPorAsignatura(idAsignatura);
+    } else {
+      this.horariosAcademicos = [];
+    }
   }
 }

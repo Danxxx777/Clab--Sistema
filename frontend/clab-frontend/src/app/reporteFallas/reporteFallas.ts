@@ -37,9 +37,9 @@ export class ReporteFallasComponent implements OnInit {
   laboratorios: Laboratorio[] = [];
   equiposFiltrados: Equipo[] = [];
   reportes: any[] = [];
-  reportesFiltrados: any[] = []; // 🔥 NUEVO
+  reportesFiltrados: any[] = [];
 
-  // 🔥 VARIABLES DE FILTRO
+  //Variable de filtro
   filtroTexto: string = '';
   filtroCodLaboratorio: number | null = null;
   filtroIdEquipo: number | null = null;
@@ -91,19 +91,18 @@ export class ReporteFallasComponent implements OnInit {
     });
   }
 
-  // 🔥 ACTUALIZADO
   cargarReportes(): void {
     this.reporteService.listar().subscribe({
       next: (data) => {
         this.reportes = data;
-        this.reportesFiltrados = data; // 🔥 Inicializa filtrados
+        this.reportesFiltrados = data;
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Error al listar reportes:', err)
     });
   }
 
-  // 🔥 NUEVO: Aplica todos los filtros
+  //aplica todos los filtros
   aplicarFiltros(): void {
     this.reportesFiltrados = this.reportes.filter(reporte => {
 
@@ -127,7 +126,6 @@ export class ReporteFallasComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  // 🔥 ACTUALIZADO
   onFiltroLaboratorioChange(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
     this.filtroCodLaboratorio = value ? Number(value) : null;
@@ -142,14 +140,12 @@ export class ReporteFallasComponent implements OnInit {
     this.aplicarFiltros();
   }
 
-  // 🔥 NUEVO
   onFiltroEquipoChange(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
     this.filtroIdEquipo = value ? Number(value) : null;
     this.aplicarFiltros();
   }
 
-  // 🔥 NUEVO
   onFiltroTextoChange(event: Event): void {
     this.filtroTexto = (event.target as HTMLInputElement).value;
     this.aplicarFiltros();
