@@ -9,6 +9,10 @@
       </div>
     </div>
     <div class="header-right">
+      <div class="usuario-info" *ngIf="usuarioLogueado">
+        <span class="usuario-nombre">👤 {{ usuarioLogueado }}</span>
+        <span class="usuario-rol">{{ rolActualHeader }}</span>
+      </div>
       <button class="btn-volver" (click)="volver()">← Volver</button>
     </div>
   </div>
@@ -31,121 +35,154 @@
  <div class="content-wrapper">
 
    <!-- TAB 0: USUARIOS -->
-    <div class="tab-content" *ngIf="tabActiva === 0">
-      <div class="toolbar">
-        <div class="filters-group">
-          <div class="search-container">
-            <span class="search-icon">🔍</span>
-            <input
-              type="text"
-              class="search-input"
-              [(ngModel)]="busqueda"
-              (input)="filtrarUsuarios()"
-              placeholder="Buscar por nombre, email o identidad">
-          </div>
-          <select class="filter-select" [(ngModel)]="filtroEstado" (change)="filtrarUsuarios()">
-            <option value="Todos">Todos los estados</option>
-            <option value="Activo">Activo</option>
-            <option value="Inactivo">Inactivo</option>
-          </select>
-          <select class="filter-select"
-                  [(ngModel)]="filtroRol"
-                  (change)="filtrarUsuarios()">
+   <div class="tab-content" *ngIf="tabActiva === 0">
+     <div class="toolbar">
+       <div class="filters-group">
+         <div class="search-container">
+           <span class="search-icon">🔍</span>
+           <input type="text" class="search-input" [(ngModel)]="busqueda"
+                  (input)="filtrarUsuarios()" placeholder="Buscar por nombre, email o identidad">
+         </div>
+         <select class="filter-select" [(ngModel)]="filtroEstado" (change)="filtrarUsuarios()">
+           <option value="Todos">Todos los estados</option>
+           <option value="Activo">Activo</option>
+           <option value="Inactivo">Inactivo</option>
+         </select>
+         <select class="filter-select" [(ngModel)]="filtroRol" (change)="filtrarUsuarios()">
+           <option [ngValue]="'Todos'">Todos los roles</option>
+           <option *ngFor="let r of roles" [ngValue]="r.id">{{ r.nombre }}</option>
+         </select>
+       </div>
 
-            <option [ngValue]="'Todos'">Todos los roles</option>
+       <!-- PAGINACIÓN USUARIOS EN TOOLBAR -->
+       <div class="pagination-controls" *ngIf="usuariosFiltrados.length > 0">
+         <span class="pagination-info-inline">{{ paginaActual }}/{{ totalPaginas }}</span>
+         <button class="btn-pag" (click)="irAPagina(1)" [disabled]="paginaActual === 1">«</button>
+         <button class="btn-pag" (click)="irAPagina(paginaActual - 1)" [disabled]="paginaActual === 1">‹</button>
+         <button class="btn-pag" *ngFor="let p of paginas" [class.active]="p === paginaActual" (click)="irAPagina(p)">{{ p }}</button>
+         <button class="btn-pag" (click)="irAPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">›</button>
+         <button class="btn-pag" (click)="irAPagina(totalPaginas)" [disabled]="paginaActual === totalPaginas">»</button>
+       </div>
 
-            <option *ngFor="let r of roles"
-                    [ngValue]="r.id">
-              {{ r.nombre }}
-            </option>
+       <button class="btn-agregar" (click)="abrirModalUsuario('crear')">+ Nuevo Usuario</button>
+     </div>
 
-          </select>
-        </div>
-        <button class="btn-agregar" (click)="abrirModalUsuario('crear')">+ Nuevo Usuario</button>
-      </div>
+     <div class="table-container">
+       <table class="data-table">
+         <thead>
+         <tr>
+           <th>USUARIO</th>
+           <th>IDENTIDAD</th>
+           <th>ROL</th>
+           <th>ESTADO</th>
+           <th>FECHA REGISTRO</th>
+           <th>ACCIONES</th>
+         </tr>
+         </thead>
+         <tbody>
+         <tr *ngFor="let u of usuariosPaginados">
+           <td>
+             <strong>{{ u.nombres }} {{ u.apellidos }}</strong>
+             <small>{{ u.email }}</small>
+           </td>
+           <td>{{ u.identidad }}</td>
+           <td><span class="badge rol-badge">{{ u.rolNombre }}</span></td>
+           <td><span class="badge" [ngClass]="getEstadoClass(u.estado)">{{ u.estado }}</span></td>
+           <td>{{ u.fechaRegistro }}</td>
+           <td>
+             <div class="action-buttons">
+               <button class="btn-action btn-ver" (click)="abrirModalUsuario('ver', u)">Ver</button>
+               <button class="btn-action btn-editar" (click)="abrirModalUsuario('editar', u)">Editar</button>
+               <button class="btn-action btn-eliminar" (click)="desactivarUsuario(u)">Desactivar</button>
+             </div>
+           </td>
+         </tr>
+         <tr *ngIf="usuariosFiltrados.length === 0">
+           <td colspan="6" class="empty-message">No hay usuarios registrados</td>
+         </tr>
+         </tbody>
+       </table>
+     </div>
 
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-          <tr>
-            <th>USUARIO</th>
-            <th>IDENTIDAD</th>
-            <th>ROL</th>
-            <th>ESTADO</th>
-            <th>FECHA REGISTRO</th>
-            <th>ACCIONES</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr *ngFor="let u of usuariosFiltrados">
-            <td>
-              <strong>{{ u.nombres }} {{ u.apellidos }}</strong>
-              <small>{{ u.email }}</small>
-            </td>
-            <td>{{ u.identidad }}</td>
-            <td>
-              <span class="badge rol-badge">{{ u.rolNombre }}</span>
-            </td>
-            <td>
-                <span class="badge" [ngClass]="getEstadoClass(u.estado)">
-                  {{ u.estado }}
-                </span>
-            </td>
-            <td>{{ u.fechaRegistro }}</td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn-action btn-ver"      (click)="abrirModalUsuario('ver', u)">Ver</button>
-                <button class="btn-action btn-editar"   (click)="abrirModalUsuario('editar', u)">Editar</button>
-                <button class="btn-action btn-eliminar" (click)="desactivarUsuario(u)">Desactivar</button>
-              </div>
-            </td>
-          </tr>
-          <tr *ngIf="usuariosFiltrados.length === 0">
-            <td colspan="6" class="empty-message">No hay usuarios registrados</td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+     <!-- PAGINACIÓN USUARIOS
+     <div class="pagination-container" *ngIf="totalPaginas > 1">
+       <div class="pagination-info">
+         Mostrando {{ (paginaActual - 1) * itemsPorPagina + 1 }}–{{ paginaActual * itemsPorPagina > usuariosFiltrados.length ? usuariosFiltrados.length : paginaActual * itemsPorPagina }} de {{ usuariosFiltrados.length }} usuarios
+       </div>
+       <div class="pagination-controls">
+         <button class="btn-pag" (click)="irAPagina(1)" [disabled]="paginaActual === 1">«</button>
+         <button class="btn-pag" (click)="irAPagina(paginaActual - 1)" [disabled]="paginaActual === 1">‹</button>
+         <button class="btn-pag" *ngFor="let p of paginas" [class.active]="p === paginaActual" (click)="irAPagina(p)">{{ p }}</button>
+         <button class="btn-pag" (click)="irAPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">›</button>
+         <button class="btn-pag" (click)="irAPagina(totalPaginas)" [disabled]="paginaActual === totalPaginas">»</button>
+       </div>
+     </div>-->
+   </div>
 
-    <!-- TAB 1: ROLES -->
-    <div class="tab-content" *ngIf="tabActiva === 1">
-      <div class="toolbar">
-        <div class="filters-group"></div>
-        <button class="btn-agregar" (click)="abrirModalRol('crear')">+ Nuevo Rol</button>
-      </div>
 
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-          <tr>
-            <th>ROL</th>
-            <th>DESCRIPCIÓN</th>
-            <th>FECHA CREACIÓN</th>
-            <th>ACCIONES</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr *ngFor="let r of roles">
-            <td><strong>{{ r.nombre }}</strong></td>
-            <td>{{ r.descripcion }}</td>
-            <td>{{ r.fechaCreacion }}</td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn-action btn-editar"   (click)="abrirModalRol('editar', r)">Editar</button>
-                <button class="btn-action btn-eliminar" (click)="eliminarRol(r)">Eliminar</button>
-              </div>
-            </td>
-          </tr>
-          <tr *ngIf="roles.length === 0">
-            <td colspan="4" class="empty-message">No hay roles registrados</td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+   <!-- TAB 1: ROLES -->
+   <div class="tab-content" *ngIf="tabActiva === 1">
+     <div class="toolbar">
+       <div class="filters-group"></div>
 
-    <!-- TAB 2: PERMISOS (mantenido comentado como en el original) -->
+       <!-- PAGINACIÓN ROLES EN TOOLBAR -->
+       <div class="pagination-controls" *ngIf="roles.length > 0">
+         <span class="pagination-info-inline">{{ paginaRoles }}/{{ totalPaginasRoles }}</span>
+         <button class="btn-pag" (click)="irAPaginaRoles(1)" [disabled]="paginaRoles === 1">«</button>
+         <button class="btn-pag" (click)="irAPaginaRoles(paginaRoles - 1)" [disabled]="paginaRoles === 1">‹</button>
+         <button class="btn-pag" *ngFor="let p of paginasRoles" [class.active]="p === paginaRoles" (click)="irAPaginaRoles(p)">{{ p }}</button>
+         <button class="btn-pag" (click)="irAPaginaRoles(paginaRoles + 1)" [disabled]="paginaRoles === totalPaginasRoles">›</button>
+         <button class="btn-pag" (click)="irAPaginaRoles(totalPaginasRoles)" [disabled]="paginaRoles === totalPaginasRoles">»</button>
+       </div>
+
+       <button class="btn-agregar" (click)="abrirModalRol('crear')">+ Nuevo Rol</button>
+     </div>
+
+     <div class="table-container">
+       <table class="data-table">
+         <thead>
+         <tr>
+           <th>ROL</th>
+           <th>DESCRIPCIÓN</th>
+           <th>FECHA CREACIÓN</th>
+           <th>ACCIONES</th>
+         </tr>
+         </thead>
+         <tbody>
+         <tr *ngFor="let r of rolesPaginados">
+           <td><strong>{{ r.nombre }}</strong></td>
+           <td>{{ r.descripcion }}</td>
+           <td>{{ r.fechaCreacion }}</td>
+           <td>
+             <div class="action-buttons">
+               <button class="btn-action btn-editar" (click)="abrirModalRol('editar', r)">Editar</button>
+               <button class="btn-action btn-eliminar" (click)="eliminarRol(r)">Eliminar</button>
+             </div>
+           </td>
+         </tr>
+         <tr *ngIf="roles.length === 0">
+           <td colspan="4" class="empty-message">No hay roles registrados</td>
+         </tr>
+         </tbody>
+       </table>
+     </div>
+
+     <!-- PAGINACIÓN ROLES
+     <div class="pagination-container" *ngIf="totalPaginasRoles > 1">
+       <div class="pagination-info">
+         Mostrando {{ (paginaRoles - 1) * itemsPorPagina + 1 }}–{{ paginaRoles * itemsPorPagina > roles.length ? roles.length : paginaRoles * itemsPorPagina }} de {{ roles.length }} roles
+       </div>
+       <div class="pagination-controls">
+         <button class="btn-pag" (click)="irAPaginaRoles(1)" [disabled]="paginaRoles === 1">«</button>
+         <button class="btn-pag" (click)="irAPaginaRoles(paginaRoles - 1)" [disabled]="paginaRoles === 1">‹</button>
+         <button class="btn-pag" *ngFor="let p of paginasRoles" [class.active]="p === paginaRoles" (click)="irAPaginaRoles(p)">{{ p }}</button>
+         <button class="btn-pag" (click)="irAPaginaRoles(paginaRoles + 1)" [disabled]="paginaRoles === totalPaginasRoles">›</button>
+         <button class="btn-pag" (click)="irAPaginaRoles(totalPaginasRoles)" [disabled]="paginaRoles === totalPaginasRoles">»</button>
+       </div>
+     </div>-->
+   </div>
+
+   <!-- TAB 2: PERMISOS (mantenido comentado como en el original) -->
     <!--
     <div class="tab-content" *ngIf="tabActiva === 2">
       ...
