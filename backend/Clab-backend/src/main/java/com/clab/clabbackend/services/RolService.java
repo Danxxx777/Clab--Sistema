@@ -27,7 +27,8 @@ public class RolService {
     private jakarta.persistence.EntityManager entityManager;
     @Autowired
     private RolBDRepository rolBDRepository;
-
+    @Autowired
+    private UsuarioRolRepository UsuarioRolRepository;
     @Autowired
     private RolRolBDRepository rolRolBDRepository;
     @Transactional
@@ -40,27 +41,43 @@ public class RolService {
 
         String nombre = dto.getNombreRol().trim();
         String descripcion = dto.getDescripcion();
-        entityManager.createNativeQuery("CALL public.sp_crear_rol_clab(:nombre, :descripcion)").setParameter("nombre", nombre).setParameter("descripcion", descripcion).executeUpdate();
-        Rol nuevoRol = new Rol();
-        nuevoRol.setNombreRol(nombre);
-        nuevoRol.setDescripcion(descripcion);
-        nuevoRol.setFechaCreacion(LocalDate.now());
-        Rol rolGuardado = rolRepository.save(nuevoRol);
-        guardarPermisos(rolGuardado, dto.getPermisos());
-        for (String nombreRolBD : dto.getRolesBD()) {
 
-            RolBD rolBdEntidad = rolBDRepository.findByNombreRolBd(nombreRolBD).orElseThrow(() -> new RuntimeException("Rol BD no encontrado: " + nombreRolBD));
-            RolRolBD relacion = new RolRolBD();
-            relacion.setRol(rolGuardado);
-            relacion.setRolBd(rolBdEntidad);
-            relacion.setFechaAsignacion(LocalDate.now());
-            relacion.setVigente(true);
-            System.out.println("Rol BD recibido: '" + nombreRolBD + "'");
-            System.out.println("Longitud: " + nombreRolBD.length());
-            rolRolBDRepository.save(relacion);
+        // 1️⃣ Crear mediante SP (esto ya inserta en u_rol)
+        entityManager.createNativeQuery(
+                        "CALL usuarios.sp_crear_rol_clab(:nombre, :descripcion)")
+                .setParameter("nombre", nombre)
+                .setParameter("descripcion", descripcion)
+                .executeUpdate();
+
+        Rol rolGuardado = rolRepository
+                .findByNombreRolIgnoreCase(nombre)
+                .orElseThrow(() ->
+                        new RuntimeException("Rol no encontrado después de ejecutar SP"));
+
+
+        guardarPermisos(rolGuardado, dto.getPermisos());
+
+        if (dto.getRolesBD() != null) {
+            for (String nombreRolBD : dto.getRolesBD()) {
+
+                RolBD rolBdEntidad = rolBDRepository
+                        .findByNombreRolBd(nombreRolBD)
+                        .orElseThrow(() ->
+                                new RuntimeException("Rol BD no encontrado: " + nombreRolBD));
+
+                RolRolBD relacion = new RolRolBD();
+                relacion.setRol(rolGuardado);
+                relacion.setRolBd(rolBdEntidad);
+                relacion.setFechaAsignacion(LocalDate.now());
+                relacion.setVigente(true);
+
+                rolRolBDRepository.save(relacion);
+            }
         }
+
         return rolGuardado;
     }
+
     public List<RolResponseDTO> listar() {
         return rolRepository.findByNombreRolNotLike("clab_%").stream().map(rol -> {
                     List<String> rolesBD = rolRolBDRepository
@@ -89,8 +106,26 @@ public class RolService {
     }
     @Transactional
     public void eliminar(Integer id) {
+
+        Rol rol = rolRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+
+        // 1️⃣ Eliminar relación usuario-rol
+        UsuarioRolRepository.deleteByRol_IdRol(id);
+
+        // 2️⃣ Eliminar relación rol-rolBD
+        rolRolBDRepository.deleteByRol_IdRol(id);
+
+        // 3️⃣ Eliminar relación rol-permiso
         rolPermisoRepository.deleteByRol_IdRol(id);
-        rolRepository.deleteById(id);
+
+        // 4️⃣ Eliminar rol de la tabla u_rol
+        rolRepository.delete(rol);
+
+        // 5️⃣ Eliminar rol físico en PostgreSQL
+        entityManager.createNativeQuery(
+                "DROP ROLE IF EXISTS \"" + rol.getNombreRol().toLowerCase() + "\""
+        ).executeUpdate();
     }
     private void guardarPermisos(Rol rol, List<Integer> permisosIds) {
 
