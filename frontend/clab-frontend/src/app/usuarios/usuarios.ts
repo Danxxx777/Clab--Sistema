@@ -334,7 +334,8 @@ export class UsuariosComponent implements OnInit {
           descripcion: r.descripcion,
           fechaCreacion: r.fechaCreacion
         }));
-        this.actualizarPaginacionRoles(); // 👈 agregar esto
+        this.actualizarPaginacionRoles();
+        this.cdr.detectChanges();
       }
     });
   }
