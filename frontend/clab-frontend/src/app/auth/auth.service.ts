@@ -20,7 +20,7 @@ export class AuthService {
         localStorage.setItem('token', response.token);
         localStorage.setItem('loggedIn', 'true');
         localStorage.setItem('rol', response.rol);
-        localStorage.setItem('usuario', response.usuario ?? response.nombreUsuario ?? ''); // 👈
+        localStorage.setItem('usuario', `${response.nombres.split(' ')[0]} ${response.apellidos.split(' ')[0]}`);
       })
     );
   }
