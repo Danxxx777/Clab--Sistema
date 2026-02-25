@@ -108,7 +108,22 @@ export class LaboratoriosComponent implements OnInit {
     private laboratorioService: LaboratorioService,
     private cdr: ChangeDetectorRef
   ) { }
+  drawerAbierto = false;
+  rol = localStorage.getItem('rol') || '';
+  usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
 
+  toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
+  cerrarDrawer(): void { this.drawerAbierto = false; }
+
+  navegar(ruta: string, texto: string): void {
+    this.cerrarDrawer();
+    this.router.navigate([`/${ruta}`]);
+  }
+
+  logout(): void {
+    localStorage.clear();
+    this.router.navigate(['/login']);
+  }
   cargarSedes(): void {
     this.sedeService.listar().subscribe({
       next: (data) => {
@@ -152,6 +167,8 @@ export class LaboratoriosComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.rol = localStorage.getItem('rol') || '';
+    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
     this.cargarLaboratorios();
     this.cargarSedes();
     this.encargadosFiltrados = [...this.encargados];
@@ -631,4 +648,5 @@ export class LaboratoriosComponent implements OnInit {
       this.cdr.detectChanges();
     }, 3000);
   }
+
 }
