@@ -1,5 +1,22 @@
 <div class="login-page">
-  <div class="login-container">
+
+  <!-- OVERLAY DE CARGA -->
+  <div class="loading-overlay" *ngIf="cargando">
+    <div class="loading-content">
+      <div class="loading-logo">CLAB</div>
+      <div class="loading-spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring"></div>
+      </div>
+      <p class="loading-text">{{ loadingText }}</p>
+      <div class="loading-bar">
+        <div class="loading-bar-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-container" [class.blur-out]="cargando">
     <div class="login-left">
       <div class="brand-content">
         <div class="logo">
@@ -7,11 +24,7 @@
         </div>
         <h2>Sistema de Gestión de Laboratorios</h2>
         <a href="https://www.uteq.edu.ec" target="_blank" class="logo-link">
-          <img
-            src="/LogoUTEQ.png"
-            alt="Logo UTEQ"
-            class="logo-universidad"
-          />
+          <img src="/LogoUTEQ.png" alt="Logo UTEQ" class="logo-universidad"/>
         </a>
         <p class="tagline">
           Administra reservas, equipos y reportes de manera eficiente y profesional
@@ -27,7 +40,8 @@
         </div>
 
         <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
-        <form class="login-form" >
+
+        <form class="login-form">
           <div class="form-group">
             <label for="username">
               <span class="label-icon">👤</span>
@@ -39,20 +53,15 @@
               [(ngModel)]="username"
               name="username"
               placeholder="Ingresa tu usuario"
-              required
-            >
+              [disabled]="cargando"
+              required>
           </div>
 
           <div class="form-group password-group">
             <label for="password">
-              <img
-                src="/candado.png"
-                alt="Candado"
-                class="label-icon-img"
-              />
+              <img src="/candado.png" alt="Candado" class="label-icon-img"/>
               Contraseña
             </label>
-
             <div class="password-container">
               <input
                 [attr.type]="mostrarPassword ? 'text' : 'password'"
@@ -60,15 +69,9 @@
                 [(ngModel)]="password"
                 name="password"
                 placeholder="Ingresa tu contraseña"
-                required
-              />
-
-              <img
-                src="/ojo.png"
-                alt="Mostrar contraseña"
-                class="eye-icon"
-                (click)="togglePassword()"
-              />
+                [disabled]="cargando"
+                required/>
+              <img src="/ojo.png" alt="Mostrar contraseña" class="eye-icon" (click)="togglePassword()"/>
             </div>
           </div>
 
@@ -83,10 +86,14 @@
             </a>
           </div>
 
-          <button type="button" class="btn-login" (click)="login()">
-            Iniciar Sesión
+          <button type="button" class="btn-login" (click)="login()" [disabled]="cargando" [class.loading]="cargando">
+            <span class="btn-text" *ngIf="!cargando">Iniciar Sesión</span>
+            <span class="btn-spinner" *ngIf="cargando">
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </span>
           </button>
-
         </form>
 
         <div class="form-footer">

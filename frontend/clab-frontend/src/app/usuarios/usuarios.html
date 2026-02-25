@@ -219,7 +219,23 @@
   </div>
 </div>
 
-
+<!-- MODAL: NOTIFICACIÓN -->
+<div class="modal-overlay modal-overlay-top" *ngIf="mostrarNotificacion" (click)="cerrarNotificacion()">
+  <div class="modal modal-confirm" (click)="$event.stopPropagation()">
+    <div class="modal-header" [ngClass]="notificacionTipo === 'exito' ? 'header-exito' : notificacionTipo === 'confirmar' ? 'header-confirmar' : 'header-error'">
+      <h2>{{ notificacionTitulo }}</h2>
+      <button class="btn-close" (click)="cerrarNotificacion()">×</button>
+    </div>
+    <div class="modal-body">
+      <p>{{ notificacionMensaje }}</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" *ngIf="notificacionTipo === 'confirmar'" (click)="cerrarNotificacion()">Cancelar</button>
+      <button class="btn-guardar" *ngIf="notificacionTipo === 'confirmar'" (click)="confirmarAccion()">Confirmar</button>
+      <button class="btn-guardar" *ngIf="notificacionTipo !== 'confirmar'" (click)="cerrarNotificacion()">Aceptar</button>
+    </div>
+  </div>
+</div>
 <!-- MODAL: ROL -->
 <div class="modal-overlay" *ngIf="mostrarModalRol" (click)="cerrarModalRol()">
   <div class="modal" (click)="$event.stopPropagation()">
@@ -286,7 +302,12 @@
     <!-- FOOTER -->
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cerrarModalRol()">Cancelar</button>
-      <button class="btn-guardar" (click)="guardarRol()">Guardar</button>
+      <button class="btn-guardar" (click)="guardarRol()" [disabled]="guardandoRol">
+        <span *ngIf="!guardandoRol">Guardar</span>
+        <span class="btn-dots" *ngIf="guardandoRol">
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+  </span>
+      </button>
     </div>
 
   </div>
@@ -383,8 +404,11 @@
     </div>
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cerrarModalUsuario()">Cancelar</button>
-      <button class="btn-guardar" *ngIf="modoModal !== 'ver'" (click)="guardarUsuario()">
-        {{ modoModal === 'crear' ? 'Guardar' : 'Actualizar' }}
+      <button class="btn-guardar" *ngIf="modoModal !== 'ver'" (click)="guardarUsuario()" [disabled]="guardandoUsuario">
+        <span *ngIf="!guardandoUsuario">{{ modoModal === 'crear' ? 'Guardar' : 'Actualizar' }}</span>
+        <span class="btn-dots" *ngIf="guardandoUsuario">
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+  </span>
       </button>
     </div>
   </div>
