@@ -314,7 +314,8 @@ export class UsuariosComponent implements OnInit {
           id: r.idRol,
           nombre: r.nombreRol,
           descripcion: r.descripcion,
-          fechaCreacion: r.fechaCreacion
+          fechaCreacion: r.fechaCreacion,
+          rolesBD: r.rolesBD ?? []
         }));
         this.actualizarPaginacionRoles();
         this.cdr.detectChanges();
@@ -341,25 +342,38 @@ export class UsuariosComponent implements OnInit {
   abrirModalRol(modo: 'crear' | 'editar', r?: RolView): void {
     this.modoModal = modo;
     this.permisosSeleccionados = [];
-    this.cargarRolesBD();
+    this.rolesBDSeleccionados = []; // ✅ limpiar siempre primero
 
     if (modo === 'crear') {
       this.rolActual = {
         nombre: '', descripcion: '',
         fechaCreacion: new Date().toISOString().substring(0, 10)
       };
+      this.cargarRolesBD(); // cargar disponibles sin preselección
     } else if (r) {
       this.rolActual = { ...r };
+
       if (r.id) {
+        // ✅ Cargar roles BD del rol específico desde el backend
+        this.rolService.listar().subscribe({
+          next: (data) => {
+            const rolActualizado = data.find(x => x.idRol === r.id);
+            this.rolesBDSeleccionados = rolActualizado?.rolesBD ?? [];
+            this.cdr.detectChanges();
+          }
+        });
+
         this.rolService.obtenerPermisos(r.id).subscribe({
           next: (ids: number[]) => {
             this.permisosSeleccionados = ids;
             this.cdr.detectChanges();
-          },
-          error: err => console.error('Error cargando permisos del rol', err)
+          }
         });
       }
+
+      this.cargarRolesBD();
     }
+
     this.mostrarModalRol = true;
   }
 

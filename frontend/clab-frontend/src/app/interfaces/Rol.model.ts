@@ -7,8 +7,9 @@ export interface Rol {
 export interface RolView {
   id?: number;
   nombre: string;
-  descripcion?: string;
+  descripcion: string;
   fechaCreacion: string;
+  rolesBD?: string[]; //
 }
 export interface RolRequest {
   nombreRol: string;

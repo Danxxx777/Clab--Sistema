@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import com.clab.clabbackend.repository.RolRolBDRepository;
 import java.util.List;
 
@@ -24,16 +23,33 @@ public class RolService {
     @Autowired
     private RolPermisoRepository rolPermisoRepository;
     @Autowired
-    private jakarta.persistence.EntityManager entityManager;
+    private EntityManager entityManager;
     @Autowired
     private RolBDRepository rolBDRepository;
     @Autowired
     private UsuarioRolRepository UsuarioRolRepository;
     @Autowired
     private RolRolBDRepository rolRolBDRepository;
-    @Transactional
 
+    // ✅ Sincroniza pg_roles → u_rol_bd para evitar FK violations
+    private void sincronizarRolesBD() {
+        List<String> rolesPostgres = entityManager.createNativeQuery(
+                "SELECT rolname FROM pg_roles WHERE rolname LIKE 'clab_%'"
+        ).getResultList();
+
+        for (String nombre : rolesPostgres) {
+            if (rolBDRepository.findByNombreRolBd(nombre).isEmpty()) {
+                RolBD nuevo = new RolBD();
+                nuevo.setNombreRolBd(nombre);
+                nuevo.setFechaCreacion(LocalDate.now()); // ✅ esto faltaba
+                rolBDRepository.save(nuevo);
+            }
+        }
+    }
+    @Transactional
     public Rol crear(RolRequestDTO dto) {
+
+        sincronizarRolesBD(); // ✅ sincronizar antes de asignar
 
         if (dto.getNombreRol() == null || dto.getNombreRol().trim().isEmpty()) {
             throw new RuntimeException("El nombre del rol es obligatorio");
@@ -42,7 +58,6 @@ public class RolService {
         String nombre = dto.getNombreRol().trim();
         String descripcion = dto.getDescripcion();
 
-        // 1️⃣ Crear mediante SP (esto ya inserta en u_rol)
         entityManager.createNativeQuery(
                         "CALL usuarios.sp_crear_rol_clab(:nombre, :descripcion)")
                 .setParameter("nombre", nombre)
@@ -54,12 +69,10 @@ public class RolService {
                 .orElseThrow(() ->
                         new RuntimeException("Rol no encontrado después de ejecutar SP"));
 
-
         guardarPermisos(rolGuardado, dto.getPermisos());
 
         if (dto.getRolesBD() != null) {
             for (String nombreRolBD : dto.getRolesBD()) {
-
                 RolBD rolBdEntidad = rolBDRepository
                         .findByNombreRolBd(nombreRolBD)
                         .orElseThrow(() ->
@@ -80,57 +93,80 @@ public class RolService {
 
     public List<RolResponseDTO> listar() {
         return rolRepository.findByNombreRolNotLike("clab_%").stream().map(rol -> {
-                    List<String> rolesBD = rolRolBDRepository
-                            .findByRol_IdRolAndVigenteTrue(rol.getIdRol())
-                            .stream()
-                            .map(rel -> rel.getRolBd().getNombreRolBd())
-                            .toList();
-                    return new RolResponseDTO(
-                            rol.getIdRol(),
-                            rol.getNombreRol(),
-                            rol.getDescripcion(),
-                            rol.getFechaCreacion(),
-                            rolesBD
-                    );
+            List<String> rolesBD = rolRolBDRepository
+                    .findByRol_IdRolAndVigenteTrue(rol.getIdRol())
+                    .stream()
+                    .map(rel -> rel.getRolBd().getNombreRolBd())
+                    .toList();
+            return new RolResponseDTO(
+                    rol.getIdRol(),
+                    rol.getNombreRol(),
+                    rol.getDescripcion(),
+                    rol.getFechaCreacion(),
+                    rolesBD
+            );
         }).toList();
     }
+
     @Transactional
     public Rol actualizar(Integer id, RolRequestDTO dto) {
-        Rol rol = rolRepository.findById(id).orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+
+        sincronizarRolesBD(); // ✅ sincronizar antes de asignar
+
+        Rol rol = rolRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+
         rol.setNombreRol(dto.getNombreRol().trim());
         rol.setDescripcion(dto.getDescripcion());
         Rol rolActualizado = rolRepository.save(rol);
+
+        // Permisos
         rolPermisoRepository.deleteByRol_IdRol(id);
         guardarPermisos(rolActualizado, dto.getPermisos());
+
+        // Roles de BD — eliminar anteriores y guardar nuevos
+        rolRolBDRepository.deleteByRol_IdRol(id);
+
+        if (dto.getRolesBD() != null) {
+            for (String nombreRolBD : dto.getRolesBD()) {
+                RolBD rolBdEntidad = rolBDRepository
+                        .findByNombreRolBd(nombreRolBD)
+                        .orElseThrow(() -> new RuntimeException("Rol BD no encontrado: " + nombreRolBD));
+
+                RolRolBD relacion = new RolRolBD();
+                relacion.setRol(rolActualizado);
+                relacion.setRolBd(rolBdEntidad);
+                relacion.setFechaAsignacion(LocalDate.now());
+                relacion.setVigente(true);
+
+                rolRolBDRepository.save(relacion);
+            }
+        }
+
         return rolActualizado;
     }
+
     @Transactional
     public void eliminar(Integer id) {
 
         Rol rol = rolRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
 
-        // 1️⃣ Eliminar relación usuario-rol
         UsuarioRolRepository.deleteByRol_IdRol(id);
-
-        // 2️⃣ Eliminar relación rol-rolBD
         rolRolBDRepository.deleteByRol_IdRol(id);
-
-        // 3️⃣ Eliminar relación rol-permiso
         rolPermisoRepository.deleteByRol_IdRol(id);
-
-        // 4️⃣ Eliminar rol de la tabla u_rol
         rolRepository.delete(rol);
 
-        // 5️⃣ Eliminar rol físico en PostgreSQL
         entityManager.createNativeQuery(
                 "DROP ROLE IF EXISTS \"" + rol.getNombreRol().toLowerCase() + "\""
         ).executeUpdate();
     }
-    private void guardarPermisos(Rol rol, List<Integer> permisosIds) {
 
+    private void guardarPermisos(Rol rol, List<Integer> permisosIds) {
+        if (permisosIds == null) return;
         for (Integer idPermiso : permisosIds) {
-            Permiso permiso = permisoRepository.findById(idPermiso).orElseThrow(() -> new RuntimeException("Permiso no encontrado: " + idPermiso));
+            Permiso permiso = permisoRepository.findById(idPermiso)
+                    .orElseThrow(() -> new RuntimeException("Permiso no encontrado: " + idPermiso));
             RolPermiso rolPermiso = new RolPermiso();
             rolPermiso.setRol(rol);
             rolPermiso.setPermiso(permiso);
@@ -139,19 +175,19 @@ public class RolService {
         }
     }
 
+    @Transactional
     public List<String> listarRolesBD() {
-        return entityManager.createNativeQuery("""
-        SELECT rolname 
-            FROM pg_roles 
-            WHERE rolname LIKE 'clab_%'
-        """)
-                .getResultList();
+        sincronizarRolesBD(); // ✅ también aquí
+        return entityManager.createNativeQuery(
+                "SELECT rolname FROM pg_roles WHERE rolname LIKE 'clab_%'"
+        ).getResultList();
     }
+
     @Transactional(readOnly = true)
     public List<Integer> obtenerPermisosActivos(Integer idRol) {
-        return rolPermisoRepository.findByRol_IdRolAndVigenteTrue(idRol).stream().map(rp -> rp.getPermiso().getIdPermiso()).toList();
+        return rolPermisoRepository.findByRol_IdRolAndVigenteTrue(idRol)
+                .stream()
+                .map(rp -> rp.getPermiso().getIdPermiso())
+                .toList();
     }
-
-
-
 }
