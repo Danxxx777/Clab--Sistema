@@ -1,63 +1,508 @@
-<div class="reportes-page">
-  <button class="back-btn" (click)="volver()">Volver</button>
+<div class="reportes-container">
 
-  <div class="reportes-container">
-    <div class="reportes-header">
-      <h1>Gestión de Reportes de Fallas</h1>
-      <div class="header-actions">
-        <select class="filter-estado" [(ngModel)]="filtroEstado" (change)="filtrarReportes()">
-          <option value="">Todos los estados</option>
-          <option value="pendiente">Pendiente</option>
-          <option value="en proceso">En Proceso</option>
-          <option value="resuelto">Resuelto</option>
-        </select>
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">
+        <span class="logo-icon"></span>
+        <span class="logo-text">CLAB</span>
       </div>
     </div>
-
-    <div class="reportes-table-container">
-      <div class="table-wrapper">
-        <table class="reportes-table">
-          <thead>
-          <tr>
-            <th>ID</th>
-            <th>LABORATORIO</th>
-            <th>EQUIPO</th>
-            <th>PROBLEMA</th>
-            <th>RESPONSABLE</th>
-            <th>ESTADO</th>
-            <th>FECHA</th>
-            <th>ACCIONES</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr *ngFor="let reporte of reportesFiltrados">
-            <td>{{reporte.id}}</td>
-            <td>{{reporte.laboratorio}}</td>
-            <td>{{reporte.equipo}}</td>
-            <td>{{reporte.problema}}</td>
-            <td>{{reporte.responsable}}</td>
-            <td>
-                <span class="estado-badge" [ngClass]="getEstadoClass(reporte.estado)">
-                  {{reporte.estado}}
-                </span>
-            </td>
-            <td>{{reporte.fecha}}</td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn-edit" (click)="editar(reporte)" title="Editar">✏️</button>
-                <button class="btn-view" (click)="ver(reporte)" title="Ver detalles">👁️</button>
-              </div>
-            </td>
-          </tr>
-          <tr *ngIf="reportesFiltrados.length === 0">
-            <td colspan="8" class="empty-state">
-              <div class="empty-icon">⚠️</div>
-              <p>No hay reportes de fallas registrados</p>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
+    <div class="header-right">
+      <button class="btn-volver" (click)="volver()">← Volver</button>
     </div>
   </div>
+
+  <!-- TITLE -->
+  <div class="page-title-section">
+    <h1>Reportes y Estadísticas</h1>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-container">
+    <div class="tabs">
+      <button class="tab" [class.active]="tabActiva === 0" (click)="cambiarTab(0)">
+        Uso de Laboratorios
+      </button>
+      <button class="tab" [class.active]="tabActiva === 1" (click)="cambiarTab(1)">
+        Equipos
+      </button>
+      <button class="tab" [class.active]="tabActiva === 2" (click)="cambiarTab(2)">
+        Fallas
+      </button>
+      <button class="tab" [class.active]="tabActiva === 3" (click)="cambiarTab(3)">
+        Usuarios
+      </button>
+      <button class="tab" [class.active]="tabActiva === 4" (click)="cambiarTab(4)">
+        Reservas
+      </button>
+    </div>
+  </div>
+
+  <div class="content-wrapper">
+
+    <!-- ============================================ -->
+    <!-- TAB 0: USO DE LABORATORIOS (desde Reserva)  -->
+    <!-- ============================================ -->
+    <div class="tab-content" *ngIf="tabActiva === 0">
+
+      <div class="filtros-card">
+        <h3>Filtros de Búsqueda</h3>
+        <div class="filtros-grid">
+
+          <div class="filtro-item">
+            <label>Fecha Inicio</label>
+            <input type="date" class="form-control" [(ngModel)]="filtros.fechaInicio">
+          </div>
+
+          <div class="filtro-item">
+            <label>Fecha Fin</label>
+            <input type="date" class="form-control" [(ngModel)]="filtros.fechaFin">
+          </div>
+
+          <div class="filtro-item">
+            <label>Laboratorio</label>
+            <select class="form-control" [(ngModel)]="filtros.laboratorio">
+              <option value="">Todos</option>
+              <option *ngFor="let lab of laboratorios" [value]="lab.codLaboratorio">
+                {{ lab.nombreLab }}
+              </option>
+            </select>
+          </div>
+
+          <div class="filtro-item filtro-buttons">
+            <button class="btn-filtrar" (click)="aplicarFiltros()">🔍 Generar Reporte</button>
+            <button class="btn-limpiar" (click)="limpiarFiltros()">🗑️ Limpiar</button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" *ngIf="mostrarEstadisticas">
+        <div class="stat-card">
+          <div class="stat-icon">📊</div>
+          <div class="stat-info">
+            <div class="stat-label">Total de Usos</div>
+            <div class="stat-value">{{ estadisticas.totalUsos }}</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⏱️</div>
+          <div class="stat-info">
+            <div class="stat-label">Horas Totales</div>
+            <div class="stat-value">{{ estadisticas.horasTotales }}</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-info">
+            <div class="stat-label">Lab Más Usado</div>
+            <div class="stat-value stat-value-sm">{{ estadisticas.labMasUsado }}</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-info">
+            <div class="stat-label">Total Estudiantes</div>
+            <div class="stat-value">{{ estadisticas.totalEstudiantes }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="resultados-section" *ngIf="datosReporte.length > 0">
+        <div class="resultados-header">
+          <h3>Resultados ({{ datosReporte.length }})</h3>
+          <button class="btn-exportar" (click)="exportarPDF()">📄 Exportar PDF</button>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+            <tr>
+              <th>Laboratorio</th>
+              <th>Fecha</th>
+              <th>Horario</th>
+              <th>N° Estudiantes</th>
+              <th>Estado</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let item of datosReporte">
+              <td>{{ item.laboratorio?.nombreLab }}</td>
+              <td>{{ item.fechaReserva | date:'dd/MM/yyyy' }}</td>
+              <td>{{ item.horaInicio }} - {{ item.horaFin }}</td>
+              <td>{{ item.numeroEstudiantes ?? '—' }}</td>
+              <td>
+                  <span class="badge" [ngClass]="getBadgeClass(item.estado)">
+                    {{ item.estado }}
+                  </span>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="sin-datos" *ngIf="datosReporte.length === 0 && busquedaRealizada">
+        <div class="sin-datos-icon">📭</div>
+        <p>No se encontraron resultados con los filtros seleccionados</p>
+      </div>
+
+    </div>
+
+    <!-- ============================================ -->
+    <!-- TAB 1: EQUIPOS                              -->
+    <!-- ============================================ -->
+    <div class="tab-content" *ngIf="tabActiva === 1">
+
+      <div class="filtros-card">
+        <h3>Filtros de Búsqueda</h3>
+        <div class="filtros-grid">
+
+          <div class="filtro-item">
+            <label>Laboratorio</label>
+            <select class="form-control" [(ngModel)]="filtros.laboratorio">
+              <option value="">Todos</option>
+              <option *ngFor="let lab of laboratorios" [value]="lab.codLaboratorio">
+                {{ lab.nombreLab }}
+              </option>
+            </select>
+          </div>
+
+          <div class="filtro-item">
+            <label>Estado</label>
+            <select class="form-control" [(ngModel)]="filtros.estado">
+              <option value="">Todos</option>
+              <option value="OPERATIVO">Operativo</option>
+              <option value="MANTENIMIENTO">Mantenimiento</option>
+              <option value="FUERA">Fuera de Servicio</option>
+            </select>
+          </div>
+
+          <div class="filtro-item filtro-buttons">
+            <button class="btn-filtrar" (click)="aplicarFiltros()">🔍 Generar Reporte</button>
+            <button class="btn-limpiar" (click)="limpiarFiltros()">🗑️ Limpiar</button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" *ngIf="mostrarEstadisticas">
+        <div class="stat-card">
+          <div class="stat-icon">💻</div>
+          <div class="stat-info">
+            <div class="stat-label">Total Equipos</div>
+            <div class="stat-value">{{ estadisticas.totalEquipos }}</div>
+          </div>
+        </div>
+        <div class="stat-card verde">
+          <div class="stat-icon">✅</div>
+          <div class="stat-info">
+            <div class="stat-label">Operativos</div>
+            <div class="stat-value">{{ estadisticas.equiposOperativos }}</div>
+          </div>
+        </div>
+        <div class="stat-card amarillo">
+          <div class="stat-icon">🔧</div>
+          <div class="stat-info">
+            <div class="stat-label">En Mantenimiento</div>
+            <div class="stat-value">{{ estadisticas.equiposMantenimiento }}</div>
+          </div>
+        </div>
+        <div class="stat-card rojo">
+          <div class="stat-icon">❌</div>
+          <div class="stat-info">
+            <div class="stat-label">Fuera de Servicio</div>
+            <div class="stat-value">{{ estadisticas.equiposFuera }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="resultados-section" *ngIf="datosReporte.length > 0">
+        <div class="resultados-header">
+          <h3>Resultados ({{ datosReporte.length }})</h3>
+          <button class="btn-exportar" (click)="exportarPDF()">📄 Exportar PDF</button>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+            <tr>
+              <th>Serie</th>
+              <th>Nombre</th>
+              <th>Tipo</th>
+              <th>Laboratorio</th>
+              <th>Estado</th>
+              <th>Último Reporte</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let item of datosReporte">
+              <td>{{ item.numeroSerie }}</td>
+              <td>{{ item.nombreEquipo }}</td>
+              <td>{{ item.tipoEquipo?.nombre }}</td>
+              <td>{{ item.laboratorio?.nombreLab }}</td>
+              <td>
+                  <span class="badge" [ngClass]="getBadgeClass(item.estado)">
+                    {{ item.estado }}
+                  </span>
+              </td>
+              <td>{{ item.ultimoReporte | date:'dd/MM/yyyy' }}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="sin-datos" *ngIf="datosReporte.length === 0 && busquedaRealizada">
+        <div class="sin-datos-icon">📭</div>
+        <p>No se encontraron resultados con los filtros seleccionados</p>
+      </div>
+
+    </div>
+
+    <!-- ============================================ -->
+    <!-- TAB 2: FALLAS                               -->
+    <!-- ============================================ -->
+    <div class="tab-content" *ngIf="tabActiva === 2">
+
+      <div class="filtros-card">
+        <h3>Filtros de Búsqueda</h3>
+        <div class="filtros-grid">
+
+          <div class="filtro-item">
+            <label>Fecha Inicio</label>
+            <input type="date" class="form-control" [(ngModel)]="filtros.fechaInicio">
+          </div>
+
+          <div class="filtro-item">
+            <label>Fecha Fin</label>
+            <input type="date" class="form-control" [(ngModel)]="filtros.fechaFin">
+          </div>
+
+          <div class="filtro-item">
+            <label>Laboratorio</label>
+            <select class="form-control" [(ngModel)]="filtros.laboratorio">
+              <option value="">Todos</option>
+              <option *ngFor="let lab of laboratorios" [value]="lab.codLaboratorio">
+                {{ lab.nombreLab }}
+              </option>
+            </select>
+          </div>
+
+          <div class="filtro-item filtro-buttons">
+            <button class="btn-filtrar" (click)="aplicarFiltros()">🔍 Generar Reporte</button>
+            <button class="btn-limpiar" (click)="limpiarFiltros()">🗑️ Limpiar</button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="resultados-section" *ngIf="datosReporte.length > 0">
+        <div class="resultados-header">
+          <h3>Resultados ({{ datosReporte.length }})</h3>
+          <button class="btn-exportar" (click)="exportarPDF()">📄 Exportar PDF</button>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Laboratorio</th>
+              <th>Equipo</th>
+              <th>Descripción</th>
+              <th>Reportado por</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let item of datosReporte">
+              <td>{{ item.fechaReporte | date:'dd/MM/yyyy' }}</td>
+              <td>{{ item.laboratorio?.nombreLab }}</td>
+              <td>{{ item.equipo?.nombreEquipo }}</td>
+              <td class="descripcion-cell">{{ item.descripcionFalla }}</td>
+              <td>{{ item.usuario?.nombres }} {{ item.usuario?.apellidos }}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="sin-datos" *ngIf="datosReporte.length === 0 && busquedaRealizada">
+        <div class="sin-datos-icon">📭</div>
+        <p>No se encontraron resultados con los filtros seleccionados</p>
+      </div>
+
+    </div>
+
+    <!-- ============================================ -->
+    <!-- TAB 3: USUARIOS                             -->
+    <!-- ============================================ -->
+    <div class="tab-content" *ngIf="tabActiva === 3">
+
+      <div class="filtros-card">
+        <h3>Filtros de Búsqueda</h3>
+        <div class="filtros-grid">
+
+          <div class="filtro-item">
+            <label>Estado</label>
+            <select class="form-control" [(ngModel)]="filtros.estado">
+              <option value="">Todos</option>
+              <option value="ACTIVO">Activo</option>
+              <option value="INACTIVO">Inactivo</option>
+            </select>
+          </div>
+
+          <div class="filtro-item filtro-buttons">
+            <button class="btn-filtrar" (click)="aplicarFiltros()">🔍 Generar Reporte</button>
+            <button class="btn-limpiar" (click)="limpiarFiltros()">🗑️ Limpiar</button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="resultados-section" *ngIf="datosReporte.length > 0">
+        <div class="resultados-header">
+          <h3>Resultados ({{ datosReporte.length }})</h3>
+          <button class="btn-exportar" (click)="exportarPDF()">📄 Exportar PDF</button>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+            <tr>
+              <th>Identidad</th>
+              <th>Nombre Completo</th>
+              <th>Email</th>
+              <th>Estado</th>
+              <th>Fecha Registro</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let item of datosReporte">
+              <td>{{ item.identidad }}</td>
+              <td>{{ item.nombres }} {{ item.apellidos }}</td>
+              <td>{{ item.email }}</td>
+              <td>
+                  <span class="badge" [ngClass]="getBadgeClass(item.estado)">
+                    {{ item.estado }}
+                  </span>
+              </td>
+              <td>{{ item.fechaRegistro | date:'dd/MM/yyyy' }}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="sin-datos" *ngIf="datosReporte.length === 0 && busquedaRealizada">
+        <div class="sin-datos-icon">📭</div>
+        <p>No se encontraron resultados con los filtros seleccionados</p>
+      </div>
+
+    </div>
+
+    <!-- ============================================ -->
+    <!-- TAB 4: RESERVAS                             -->
+    <!-- ============================================ -->
+    <div class="tab-content" *ngIf="tabActiva === 4">
+
+      <div class="filtros-card">
+        <h3>Filtros de Búsqueda</h3>
+        <div class="filtros-grid">
+
+          <div class="filtro-item">
+            <label>Fecha Inicio</label>
+            <input type="date" class="form-control" [(ngModel)]="filtros.fechaInicio">
+          </div>
+
+          <div class="filtro-item">
+            <label>Fecha Fin</label>
+            <input type="date" class="form-control" [(ngModel)]="filtros.fechaFin">
+          </div>
+
+          <div class="filtro-item">
+            <label>Estado</label>
+            <select class="form-control" [(ngModel)]="filtros.estado">
+              <option value="">Todos</option>
+              <option value="PENDIENTE">Pendiente</option>
+              <option value="APROBADA">Aprobada</option>
+              <option value="CANCELADA">Cancelada</option>
+              <option value="COMPLETADA">Completada</option>
+            </select>
+          </div>
+
+          <div class="filtro-item">
+            <label>Laboratorio</label>
+            <select class="form-control" [(ngModel)]="filtros.laboratorio">
+              <option value="">Todos</option>
+              <option *ngFor="let lab of laboratorios" [value]="lab.codLaboratorio">
+                {{ lab.nombreLab }}
+              </option>
+            </select>
+          </div>
+
+          <div class="filtro-item filtro-buttons">
+            <button class="btn-filtrar" (click)="aplicarFiltros()">🔍 Generar Reporte</button>
+            <button class="btn-limpiar" (click)="limpiarFiltros()">🗑️ Limpiar</button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="resultados-section" *ngIf="datosReporte.length > 0">
+        <div class="resultados-header">
+          <h3>Resultados ({{ datosReporte.length }})</h3>
+          <button class="btn-exportar" (click)="exportarPDF()">📄 Exportar PDF</button>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Laboratorio</th>
+              <th>Horario</th>
+              <th>Tipo Reserva</th>
+              <th>Motivo</th>
+              <th>Estado</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let item of datosReporte">
+              <td>{{ item.fechaReserva | date:'dd/MM/yyyy' }}</td>
+              <td>{{ item.laboratorio?.nombreLab }}</td>
+              <td>{{ item.horaInicio }} - {{ item.horaFin }}</td>
+              <td>{{ item.tipoReserva?.nombre ?? '—' }}</td>
+              <td class="descripcion-cell">{{ item.motivo }}</td>
+              <td>
+                  <span class="badge" [ngClass]="getBadgeClass(item.estado)">
+                    {{ item.estado }}
+                  </span>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="sin-datos" *ngIf="datosReporte.length === 0 && busquedaRealizada">
+        <div class="sin-datos-icon">📭</div>
+        <p>No se encontraron resultados con los filtros seleccionados</p>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast"
+     *ngIf="mostrarToast"
+     [class.toast-success]="toastTipo === 'success'"
+     [class.toast-error]="toastTipo === 'error'">
+  {{ toastMensaje }}
 </div>
