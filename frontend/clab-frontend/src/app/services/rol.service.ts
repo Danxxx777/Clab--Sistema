@@ -8,10 +8,10 @@ import { Observable } from 'rxjs';
 export interface RolResponse {
   idRol: number;
   nombreRol: string;
-  descripcion?: string;
+  descripcion: string;
   fechaCreacion: string;
+  rolesBD: string[]; // ✅ asegúrate que esté
 }
-
 export interface RolRequest {
   nombreRol: string;
   descripcion?: string;
