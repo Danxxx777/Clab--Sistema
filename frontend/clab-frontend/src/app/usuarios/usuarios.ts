@@ -36,6 +36,13 @@ export class UsuariosComponent implements OnInit {
 
   guardandoRol = false;
 
+  guardandoUsuario = false;
+  mostrarNotificacion = false;
+  notificacionTitulo = '';
+  notificacionMensaje = '';
+  notificacionTipo: 'exito' | 'error' | 'confirmar' = 'exito';
+  accionPendiente: (() => void) | null = null;
+
   tabActiva = 0;
   mostrarModalUsuario = false;
   mostrarModalRol = false;
@@ -214,14 +221,11 @@ export class UsuariosComponent implements OnInit {
     const esEditar = this.modoModal === 'editar';
 
     if (
-      !this.usuarioActual.identidad ||
-      !this.usuarioActual.nombres ||
-      !this.usuarioActual.apellidos ||
-      !this.usuarioActual.email ||
-      !this.usuarioActual.idRol ||
-      (esCrear && !this.usuarioActual.contrasenia)
+      !this.usuarioActual.identidad || !this.usuarioActual.nombres ||
+      !this.usuarioActual.apellidos || !this.usuarioActual.email ||
+      !this.usuarioActual.idRol || (esCrear && !this.usuarioActual.contrasenia)
     ) {
-      alert('Complete todos los campos obligatorios');
+      this.mostrarAlerta('Campos incompletos', 'Complete todos los campos obligatorios.', 'error');
       return;
     }
 
@@ -235,17 +239,21 @@ export class UsuariosComponent implements OnInit {
       idRol: this.usuarioActual.idRol
     };
 
+    this.guardandoUsuario = true;
+
     if (esCrear) {
       this.usuarioService.crear(payload).subscribe({
         next: () => {
-          alert('✅ Usuario creado correctamente');
+          this.guardandoUsuario = false;
+          this.cerrarModalUsuario();
           this.cargarUsuarios();
           this.registrarAuditoria('Crear usuario', 'Usuarios');
-          this.cerrarModalUsuario();
+          this.mostrarAlerta('¡Usuario creado!', `El usuario ${payload.nombres} ${payload.apellidos} fue creado correctamente.`, 'exito');
         },
         error: err => {
+          this.guardandoUsuario = false;
           console.error(err);
-          alert('❌ Error al crear el usuario');
+          this.mostrarAlerta('Error', 'No se pudo crear el usuario. Intente nuevamente.', 'error');
         }
       });
       return;
@@ -253,20 +261,22 @@ export class UsuariosComponent implements OnInit {
 
     if (esEditar) {
       if (!this.usuarioActual.id) {
-        alert('❌ No se encontró el id del usuario para actualizar');
+        this.guardandoUsuario = false;
+        this.mostrarAlerta('Error', 'No se encontró el ID del usuario.', 'error');
         return;
       }
-
       this.usuarioService.actualizar(this.usuarioActual.id, payload).subscribe({
         next: () => {
-          alert('✅ Usuario actualizado correctamente');
+          this.guardandoUsuario = false;
+          this.cerrarModalUsuario();
           this.cargarUsuarios();
           this.registrarAuditoria('Actualizar usuario', 'Usuarios');
-          this.cerrarModalUsuario();
+          this.mostrarAlerta('¡Usuario actualizado!', `El usuario ${payload.nombres} ${payload.apellidos} fue actualizado correctamente.`, 'exito');
         },
         error: err => {
+          this.guardandoUsuario = false;
           console.error(err);
-          alert('❌ Error al actualizar el usuario');
+          this.mostrarAlerta('Error', 'No se pudo actualizar el usuario.', 'error');
         }
       });
     }
@@ -274,14 +284,15 @@ export class UsuariosComponent implements OnInit {
 
   desactivarUsuario(u: Usuario): void {
     if (!u.id) return;
-    if (!confirm(`¿Desactivar al usuario ${u.nombres}?`)) return;
-
-    this.usuarioService.desactivar(u.id).subscribe(() => {
-      this.cargarUsuarios();
-      this.registrarAuditoria('Desactivar usuario', 'Usuarios');
-    });
+    this.accionPendiente = () => {
+      this.usuarioService.desactivar(u.id!).subscribe(() => {
+        this.cargarUsuarios();
+        this.registrarAuditoria('Desactivar usuario', 'Usuarios');
+        this.mostrarAlerta('Usuario desactivado', `${u.nombres} ${u.apellidos} fue desactivado.`, 'exito');
+      });
+    };
+    this.mostrarAlerta('¿Desactivar usuario?', `¿Estás seguro de desactivar a ${u.nombres} ${u.apellidos}?`, 'confirmar');
   }
-
   cerrarModalUsuario(): void {
     this.mostrarModalUsuario = false;
     this.modoModal = 'crear';
@@ -388,7 +399,7 @@ export class UsuariosComponent implements OnInit {
 
   guardarRol(): void {
     if (!this.rolActual.nombre?.trim()) {
-      alert('El nombre del rol es obligatorio');
+      this.mostrarAlerta('Campo requerido', 'El nombre del rol es obligatorio.', 'error');
       return;
     }
 
@@ -399,32 +410,37 @@ export class UsuariosComponent implements OnInit {
       rolesBD: this.rolesBDSeleccionados
     };
 
-    const request$ =
-      this.modoModal === 'crear'
-        ? this.rolService.crear(payload)
-        : this.rolService.actualizar(this.rolActual.id!, payload);
+    this.guardandoRol = true;
+
+    const request$ = this.modoModal === 'crear'
+      ? this.rolService.crear(payload)
+      : this.rolService.actualizar(this.rolActual.id!, payload);
 
     request$.subscribe({
       next: () => {
-        alert('Rol guardado correctamente');
-        this.cargarRoles();
+        this.guardandoRol = false;
         this.cerrarModalRol();
+        this.cargarRoles();
+        this.mostrarAlerta('¡Rol guardado!', `El rol "${payload.nombreRol}" fue guardado correctamente.`, 'exito');
       },
       error: err => {
+        this.guardandoRol = false;
         console.error(err);
-        alert('Error al guardar el rol');
+        this.mostrarAlerta('Error', 'No se pudo guardar el rol.', 'error');
       }
     });
   }
 
   eliminarRol(r: RolView): void {
     if (!r.id) return;
-    if (!confirm(`¿Eliminar el rol "${r.nombre}"?`)) return;
-
-    this.rolService.eliminar(r.id).subscribe(() => {
-      this.cargarRoles();
-      this.registrarAuditoria('Eliminar rol', 'Roles');
-    });
+    this.accionPendiente = () => {
+      this.rolService.eliminar(r.id!).subscribe(() => {
+        this.cargarRoles();
+        this.registrarAuditoria('Eliminar rol', 'Roles');
+        this.mostrarAlerta('Rol eliminado', `El rol "${r.nombre}" fue eliminado correctamente.`, 'exito');
+      });
+    };
+    this.mostrarAlerta('¿Eliminar rol?', `¿Estás seguro de eliminar el rol "${r.nombre}"? Esta acción no se puede deshacer.`, 'confirmar');
   }
 
   cerrarModalRol(): void {
@@ -499,5 +515,27 @@ export class UsuariosComponent implements OnInit {
       modulo,
       fecha: new Date().toLocaleString()
     });
+  }
+  mostrarAlerta(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'confirmar'): void {
+    this.notificacionTitulo = titulo;
+    this.notificacionMensaje = mensaje;
+    this.notificacionTipo = tipo;
+    this.mostrarNotificacion = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarNotificacion(): void {
+    this.mostrarNotificacion = false;
+    this.accionPendiente = null;
+    this.cdr.detectChanges();
+  }
+
+  confirmarAccion(): void {
+    this.mostrarNotificacion = false;
+    if (this.accionPendiente) {
+      this.accionPendiente();
+      this.accionPendiente = null;
+    }
+    this.cdr.detectChanges();
   }
 }

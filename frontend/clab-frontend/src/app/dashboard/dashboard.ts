@@ -1,19 +1,25 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { TestService } from '../services/test.service';
 
-
-
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   templateUrl: './dashboard.html',
-  styleUrls: ['./dashboard.scss']
+  styleUrls: ['./dashboard.scss'],
+  imports: [CommonModule]
 })
 export class DashboardComponent implements OnInit {
 
   mensajeBackend = '';
+  cargando = false;
+  loadingText = '';
+  drawerAbierto = false;
+  usuarioLogueado = '';
+  rolActual = '';
+  rol: string | null = '';
 
   constructor(
     private router: Router,
@@ -22,16 +28,15 @@ export class DashboardComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
 
-  rol: string | null = '';
-
   ngOnInit(): void {
-
     if (!this.auth.isLoggedIn()) {
       this.router.navigate(['/login'], { replaceUrl: true });
       return;
     }
 
     this.rol = localStorage.getItem('rol');
+    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+    this.rolActual = localStorage.getItem('rol') || '';
 
     this.testService.getTest().subscribe({
       next: (res) => {
@@ -45,40 +50,44 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  toggleDrawer(): void {
+    this.drawerAbierto = !this.drawerAbierto;
+  }
 
-  goTo(path: string) {
-    console.log('Navegando a:', path);
+  cerrarDrawer(): void {
+    this.drawerAbierto = false;
+  }
+
+  navegar(ruta: string, mensaje: string): void {
+    if (this.cargando) return;
+    this.cerrarDrawer();
+    this.loadingText = mensaje;
+    this.cargando = true;
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      this.router.navigate([ruta]);
+    }, 1500);
+  }
+
+  goTo(path: string): void {
     this.router.navigate([path]);
   }
 
-  logout() {
+  logout(): void {
     this.auth.logout();
     this.router.navigate(['/']);
   }
 
-  protected auditoria(auditoria: string) {
-
-  }
-
-  protected reportesuso(reportesuso: string) {
-
-  }
-
-  protected notificaciones(notificaciones: string) {
-
-  }
-
-  protected bloqueos(bloqueos: string) {
-
-  }
+  protected auditoria(auditoria: string) {}
+  protected reportesuso(reportesuso: string) {}
+  protected notificaciones(notificaciones: string) {}
+  protected bloqueos(bloqueos: string) {}
 
   protected fallas(fallas: string) {
-      this.router.navigate(['reporte-fallas']);
+    this.router.navigate(['reporte-fallas']);
   }
 
-  protected asistencia(asistencia: string) {
-
-  }
+  protected asistencia(asistencia: string) {}
 
   protected estudiantes(estudiantes: string) {
     this.router.navigate(['estudiantes']);
@@ -96,14 +105,11 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['equipos']);
   }
 
-
   protected laboratorios(_: string) {
     this.router.navigate(['laboratorios']);
   }
 
   protected usuario(usuarios: string) {
-    console.log('Navegando a usuarios');
     this.router.navigate(['usuarios']);
   }
-
 }

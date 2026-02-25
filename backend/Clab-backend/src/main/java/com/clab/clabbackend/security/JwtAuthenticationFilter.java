@@ -34,8 +34,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
 
-        // 🔥 AGREGA ESTE LOG PARA DEBUGGING
-        System.out.println("🔍 Verificando ruta: " + path);
 
         boolean shouldSkip = path.startsWith("/auth")
                 || path.startsWith("/api/test")
@@ -44,14 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 || path.startsWith("/laboratorios")
                 || path.startsWith("/reportes")
                 || path.startsWith("/sedes")
-                || path.startsWith("/tipos-reserva")
-                || path.startsWith("/reservas")
-                || path.startsWith("/asignaturas")
-                || path.startsWith("/horarios")
-                || path.startsWith("/periodos");
-
-        System.out.println("✅ ¿Saltar filtro? " + shouldSkip);
-
+                || path.startsWith("/tipos-reserva");
         return shouldSkip;
     }
 
@@ -61,7 +52,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        // 🔥 PERMITE PREFLIGHT (OPTIONS)
         if ("OPTIONS".equals(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;
