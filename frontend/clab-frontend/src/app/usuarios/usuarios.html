@@ -1,25 +1,120 @@
 <div class="inventario-container">
+  <!-- DRAWER OVERLAY -->
+  <div class="drawer-overlay" [class.open]="drawerAbierto" (click)="cerrarDrawer()"></div>
 
-  <!-- HEADER -->
-  <div class="header">
-    <div class="header-left">
-      <div class="logo">
-        <span class="logo-icon">👤</span>
-        <span class="logo-text">CLAB</span>
+  <!-- DRAWER LATERAL -->
+  <!-- DRAWER LATERAL -->
+  <div class="drawer" [class.open]="drawerAbierto">
+    <div class="drawer-header">
+      <div class="drawer-brand">
+        CLAB
+        <span>Sistema de Laboratorios</span>
+      </div>
+      <button class="btn-close-drawer" (click)="cerrarDrawer()">×</button>
+    </div>
+
+    <div class="drawer-user">
+      <div class="drawer-avatar">{{ usuarioLogueado.charAt(0).toUpperCase() }}</div>
+      <div class="drawer-user-info">
+        <div class="dui-name">{{ usuarioLogueado }}</div>
+        <div class="role-badge">
+          <span class="role-dot"></span>
+          {{ rol }}
+        </div>
       </div>
     </div>
-    <div class="header-right">
-      <div class="usuario-info" *ngIf="usuarioLogueado">
-        <span class="usuario-nombre">👤 {{ usuarioLogueado }}</span>
-        <span class="usuario-rol">{{ rolActualHeader }}</span>
+
+    <div class="drawer-section-title">Módulos</div>
+
+    <div class="drawer-modules">
+      @if(rol === 'Administradorr' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('usuarios', '')">
+          <div class="di-icon"><img src="/user.png" alt="Usuarios"></div>
+          <div class="di-text"><div class="di-name">Usuarios</div><div class="di-desc">Gestión de accesos y roles</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
+        <div class="drawer-item" (click)="navegar('laboratorios', '')">
+          <div class="di-icon"><img src="/laboratorio.png" alt="Laboratorios"></div>
+          <div class="di-text"><div class="di-name">Laboratorios</div><div class="di-desc">Sedes y encargados</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('equipos', '')">
+          <div class="di-icon"><img src="/equipo.png" alt="Equipos"></div>
+          <div class="di-text"><div class="di-name">Equipos</div><div class="di-desc">Inventario y ubicaciones</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Coordinador' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('reservar', '')">
+          <div class="di-icon"><img src="/calendario.png" alt="Reservas"></div>
+          <div class="di-text"><div class="di-name">Reservas</div><div class="di-desc">Disponibilidad</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Coordinador') {
+        <div class="drawer-item" (click)="navegar('academico', '')">
+          <div class="di-icon"><img src="/academico.png" alt="Académico"></div>
+          <div class="di-text"><div class="di-name">Académico</div><div class="di-desc">Períodos y carreras</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('estudiantes', '')">
+          <div class="di-icon"><img src="/estudiantes.png" alt="Estudiantes"></div>
+          <div class="di-text"><div class="di-name">Estudiantes</div><div class="di-desc">Matrículas e inscripciones</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('asistencia', '')">
+          <div class="di-icon"><img src="/asistencia.png" alt="Asistencia"></div>
+          <div class="di-text"><div class="di-name">Asistencia</div><div class="di-desc">Control de asistencia</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('reporte-fallas', '')">
+          <div class="di-icon"><img src="/fallas.png" alt="Fallas"></div>
+          <div class="di-text"><div class="di-name">Reportes de Fallas</div><div class="di-desc">Seguimiento de equipos</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('bloqueos', '')">
+          <div class="di-icon"><img src="/bloqueos.png" alt="Bloqueos"></div>
+          <div class="di-text"><div class="di-name">Bloqueos</div><div class="di-desc">Gestión de conflictos</div></div>
+        </div>
+      }
+      <div class="drawer-item" (click)="navegar('notificaciones', '')">
+        <div class="di-icon"><img src="/campana.png" alt="Notificaciones"></div>
+        <div class="di-text"><div class="di-name">Notificaciones</div><div class="di-desc">Centro de alertas</div></div>
       </div>
-      <button class="btn-volver" (click)="volver()">← Volver</button>
+      @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
+        <div class="drawer-item" (click)="navegar('reportesuso', '')">
+          <div class="di-icon"><img src="/uso.png" alt="Reportes"></div>
+          <div class="di-text"><div class="di-name">Reportes de Uso</div><div class="di-desc">Estadísticas</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('auditoria', '')">
+          <div class="di-icon"><img src="/auditoria.png" alt="Auditoría"></div>
+          <div class="di-text"><div class="di-name">Auditoría</div><div class="di-desc">Trazabilidad</div></div>
+        </div>
+      }
+    </div>
+
+    <div class="drawer-footer">
+      <button class="btn-logout-drawer" (click)="logout()">🚪 Cerrar sesión</button>
     </div>
   </div>
 
   <!-- TITLE -->
   <div class="page-title-section">
-    <h1>Gestión de Usuarios</h1>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <button class="btn-hamburger" [class.active]="drawerAbierto" (click)="toggleDrawer()">
+        <div class="ham-line"></div>
+        <div class="ham-line"></div>
+        <div class="ham-line"></div>
+      </button>
+      <h1> Gestión de Usuarios</h1>
+    </div>
+    <button class="btn-volver" (click)="volver()">← Volver</button>
   </div>
 
   <!-- TABS -->
@@ -31,6 +126,38 @@
      <button class="tab" [class.active]="tabActiva === 3" (click)="cambiarTab(3)">Auditoría</button>-->
    </div>
  </div>
+
+  <!-- STATS CARDS -->
+  <div class="stats-bar" *ngIf="tabActiva === 0">
+    <div class="stat-card">
+      <div class="stat-icon sc-blue">👥</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ usuarios.length }}</span>
+        <span class="stat-label">Total Usuarios</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon sc-green">✅</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ usuariosActivos }}</span>
+        <span class="stat-label">Activos</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon sc-red">🚫</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ usuariosInactivos }}</span>
+        <span class="stat-label">Inactivos</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon sc-purple">🔑</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ roles.length }}</span>
+        <span class="stat-label">Roles</span>
+      </div>
+    </div>
+  </div>
 
  <div class="content-wrapper">
 
@@ -219,21 +346,25 @@
   </div>
 </div>
 
-<!-- MODAL: NOTIFICACIÓN -->
-<div class="modal-overlay modal-overlay-top" *ngIf="mostrarNotificacion" (click)="cerrarNotificacion()">
-  <div class="modal modal-confirm" (click)="$event.stopPropagation()">
-    <div class="modal-header" [ngClass]="notificacionTipo === 'exito' ? 'header-exito' : notificacionTipo === 'confirmar' ? 'header-confirmar' : 'header-error'">
-      <h2>{{ notificacionTitulo }}</h2>
-      <button class="btn-close" (click)="cerrarNotificacion()">×</button>
-    </div>
-    <div class="modal-body">
-      <p>{{ notificacionMensaje }}</p>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancelar" *ngIf="notificacionTipo === 'confirmar'" (click)="cerrarNotificacion()">Cancelar</button>
-      <button class="btn-guardar" *ngIf="notificacionTipo === 'confirmar'" (click)="confirmarAccion()">Confirmar</button>
-      <button class="btn-guardar" *ngIf="notificacionTipo !== 'confirmar'" (click)="cerrarNotificacion()">Aceptar</button>
-    </div>
+<!-- TOAST NOTIFICACIÓN -->
+<div class="toast-notif" *ngIf="mostrarNotificacion" [ngClass]="{
+  'toast-exito':     notificacionTipo === 'exito',
+  'toast-error':     notificacionTipo === 'error',
+  'toast-confirmar': notificacionTipo === 'confirmar'
+}">
+  <div class="toast-icon">
+    <span *ngIf="notificacionTipo === 'exito'"></span>
+    <span *ngIf="notificacionTipo === 'error'"></span>
+    <span *ngIf="notificacionTipo === 'confirmar'"></span>
+  </div>
+  <div class="toast-body">
+    <strong>{{ notificacionTitulo }}</strong>
+    <p>{{ notificacionMensaje }}</p>
+  </div>
+  <div class="toast-actions">
+    <button *ngIf="notificacionTipo === 'confirmar'" class="toast-btn-cancel" (click)="cerrarNotificacion()">Cancelar</button>
+    <button *ngIf="notificacionTipo === 'confirmar'" class="toast-btn-confirm" (click)="confirmarAccion()">Confirmar</button>
+    <button *ngIf="notificacionTipo !== 'confirmar'" class="toast-btn-close" (click)="cerrarNotificacion()">×</button>
   </div>
 </div>
 <!-- MODAL: ROL -->

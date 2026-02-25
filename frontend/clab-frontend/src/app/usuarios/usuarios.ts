@@ -20,8 +20,6 @@ import { Auditoria } from '../interfaces/Auditoria.model';
 })
 export class UsuariosComponent implements OnInit {
 
-  /* CONSTRUCTOR*/
-
   constructor(
     private router: Router,
     private rolService: RolService,
@@ -33,9 +31,7 @@ export class UsuariosComponent implements OnInit {
   /* =========================
      ESTADO GENERAL
   ==========================*/
-
   guardandoRol = false;
-
   guardandoUsuario = false;
   mostrarNotificacion = false;
   notificacionTitulo = '';
@@ -46,7 +42,6 @@ export class UsuariosComponent implements OnInit {
   tabActiva = 0;
   mostrarModalUsuario = false;
   mostrarModalRol = false;
-
   modoModal: 'crear' | 'editar' | 'ver' = 'crear';
 
   usuarioActual!: Usuario;
@@ -54,10 +49,7 @@ export class UsuariosComponent implements OnInit {
 
   usuarios: Usuario[] = [];
   usuariosFiltrados: Usuario[] = [];
-
-
   roles: RolView[] = [];
-
   auditorias: Auditoria[] = [];
 
   permisosDisponibles: any[] = [];
@@ -73,6 +65,7 @@ export class UsuariosComponent implements OnInit {
 
   usuarioLogueado: string = '';
   rolActualHeader = '';
+  rol = '';
 
   /* =========================
      PAGINACIÓN USUARIOS
@@ -85,55 +78,37 @@ export class UsuariosComponent implements OnInit {
   /* =========================
      PAGINACIÓN ROLES
   ==========================*/
-
   paginaRoles = 1;
-  itemsPorPaginaRoles = 10;   // 👈 variable propia, NO comparte con usuarios
+  itemsPorPaginaRoles = 10;
   totalPaginasRoles = 1;
   rolesPaginados: RolView[] = [];
 
   /* =========================
-     INIT ORIGINAL (NO TOCAR)
+     DRAWER
   ==========================*/
+  drawerAbierto = false;
 
-  /*INIT
-  ngOnInit(): void {
-    this.cargarUsuarios();
-    this.cargarRoles();
-    this.cargarPermisos();
-    this.rolService.listarRolesBD().subscribe(data => {
-      this.rolesBDDisponibles = data;
-    });
-  }*/
+  toggleDrawer(): void {
+    this.drawerAbierto = !this.drawerAbierto;
+  }
+
+  cerrarDrawer(): void {
+    this.drawerAbierto = false;
+  }
 
   /* =========================
      LIFECYCLE
   ==========================*/
-
   ngOnInit(): void {
     this.cargarUsuarios();
     this.cargarRoles();
     this.cargarPermisos();
-    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
-    this.rolActualHeader = localStorage.getItem('rol') || '';
 
-    const usuario = localStorage.getItem('usuario');
-    const rol = localStorage.getItem('rol');
-    this.usuarioLogueado = usuario || rol || 'Usuario';
+    // Cargar rol
+    this.rol = localStorage.getItem('rol') || '';
+    this.rolActualHeader = this.rol;
 
-    this.rolService.listarRolesBD().subscribe(data => {
-      this.rolesBDDisponibles = data;
-
-      const usuario = localStorage.getItem('usuario');
-      const rol = localStorage.getItem('rol');
-
-      this.usuarioLogueado = usuario ? `${usuario} · ${rol ?? ''}` : '';
-
-      if (usuario) {
-        this.usuarioLogueado = rol ? `${usuario} (${rol})` : usuario;
-      }
-    });
-
-    // Leer usuario logueado del localStorage (ajusta la key según tu auth)
+    // Cargar usuario logueado
     const userData = localStorage.getItem('usuario') || localStorage.getItem('user');
     if (userData) {
       try {
@@ -144,29 +119,43 @@ export class UsuariosComponent implements OnInit {
       } catch {
         this.usuarioLogueado = userData;
       }
+    } else {
+      this.usuarioLogueado = 'Usuario';
     }
+
+    this.rolService.listarRolesBD().subscribe(data => {
+      this.rolesBDDisponibles = data;
+    });
   }
 
   /* =========================
      NAVEGACIÓN / UI
   ==========================*/
-
   volver(): void {
     this.router.navigate(['/dashboard']);
   }
 
+  navegar(ruta: string, texto: string): void {
+    this.cerrarDrawer();
+    this.router.navigate([`/${ruta}`]);
+  }
+
+  logout(): void {
+    localStorage.clear();
+    this.router.navigate(['/login']);
+  }
+
   cambiarTab(index: number): void {
     this.tabActiva = index;
-    // Resetear paginación al cambiar de tab
     this.paginaActual = 1;
     this.paginaRoles = 1;
     this.actualizarPaginacion();
     this.actualizarPaginacionRoles();
   }
+
   /* =========================
      USUARIOS
   ==========================*/
-
   cargarUsuarios(): void {
     this.usuarioService.listar().subscribe({
       next: (data: UsuarioResponse[]) => {
@@ -183,7 +172,6 @@ export class UsuariosComponent implements OnInit {
           estado: u.estado,
           fechaRegistro: u.fechaRegistro
         }));
-
         this.filtrarUsuarios();
         this.cdr.detectChanges();
       },
@@ -193,26 +181,15 @@ export class UsuariosComponent implements OnInit {
 
   abrirModalUsuario(modo: 'crear' | 'editar' | 'ver', u?: Usuario): void {
     this.modoModal = modo;
-
     if (modo === 'crear') {
       this.usuarioActual = {
-        identidad: '',
-        nombres: '',
-        apellidos: '',
-        email: '',
-        telefono: '',
-        usuario: '',
-        contrasenia: '',
-        idRol: undefined,
-        estado: 'ACTIVO'
+        identidad: '', nombres: '', apellidos: '',
+        email: '', telefono: '', usuario: '',
+        contrasenia: '', idRol: undefined, estado: 'ACTIVO'
       };
     } else if (u) {
-      this.usuarioActual = {
-        ...u,
-        contrasenia: ''
-      };
+      this.usuarioActual = { ...u, contrasenia: '' };
     }
-
     this.mostrarModalUsuario = true;
   }
 
@@ -253,7 +230,7 @@ export class UsuariosComponent implements OnInit {
         error: err => {
           this.guardandoUsuario = false;
           console.error(err);
-          this.mostrarAlerta('Error', 'No se pudo crear el usuario. Intente nuevamente.', 'error');
+          this.mostrarAlerta('Error', 'No se pudo crear el usuario.', 'error');
         }
       });
       return;
@@ -293,6 +270,7 @@ export class UsuariosComponent implements OnInit {
     };
     this.mostrarAlerta('¿Desactivar usuario?', `¿Estás seguro de desactivar a ${u.nombres} ${u.apellidos}?`, 'confirmar');
   }
+
   cerrarModalUsuario(): void {
     this.mostrarModalUsuario = false;
     this.modoModal = 'crear';
@@ -301,16 +279,11 @@ export class UsuariosComponent implements OnInit {
 
   filtrarUsuarios(): void {
     const texto = this.busqueda.toLowerCase();
-
     this.usuariosFiltrados = this.usuarios.filter(u =>
-      (`${u.nombres} ${u.apellidos} ${u.email} ${u.identidad}`
-        .toLowerCase()
-        .includes(texto)) &&
-      (this.filtroEstado === 'Todos' ||
-        u.estado?.toUpperCase() === this.filtroEstado.toUpperCase()) &&
+      (`${u.nombres} ${u.apellidos} ${u.email} ${u.identidad}`.toLowerCase().includes(texto)) &&
+      (this.filtroEstado === 'Todos' || u.estado?.toUpperCase() === this.filtroEstado.toUpperCase()) &&
       (this.filtroRol === 'Todos' || u.idRol === this.filtroRol)
     );
-
     this.paginaActual = 1;
     this.actualizarPaginacion();
   }
@@ -318,8 +291,7 @@ export class UsuariosComponent implements OnInit {
   actualizarPaginacion(): void {
     this.totalPaginas = Math.ceil(this.usuariosFiltrados.length / this.itemsPorPagina);
     const inicio = (this.paginaActual - 1) * this.itemsPorPagina;
-    const fin = inicio + this.itemsPorPagina;
-    this.usuariosPaginados = this.usuariosFiltrados.slice(inicio, fin);
+    this.usuariosPaginados = this.usuariosFiltrados.slice(inicio, inicio + this.itemsPorPagina);
   }
 
   irAPagina(pagina: number): void {
@@ -335,7 +307,6 @@ export class UsuariosComponent implements OnInit {
   /* =========================
      ROLES
   ==========================*/
-
   cargarRoles(): void {
     this.rolService.listar().subscribe({
       next: (data: RolResponse[]) => {
@@ -374,26 +345,21 @@ export class UsuariosComponent implements OnInit {
 
     if (modo === 'crear') {
       this.rolActual = {
-        nombre: '',
-        descripcion: '',
+        nombre: '', descripcion: '',
         fechaCreacion: new Date().toISOString().substring(0, 10)
       };
     } else if (r) {
       this.rolActual = { ...r };
-
       if (r.id) {
         this.rolService.obtenerPermisos(r.id).subscribe({
           next: (ids: number[]) => {
             this.permisosSeleccionados = ids;
             this.cdr.detectChanges();
           },
-          error: err => {
-            console.error('Error cargando permisos del rol', err);
-          }
+          error: err => console.error('Error cargando permisos del rol', err)
         });
       }
     }
-
     this.mostrarModalRol = true;
   }
 
@@ -440,39 +406,30 @@ export class UsuariosComponent implements OnInit {
         this.mostrarAlerta('Rol eliminado', `El rol "${r.nombre}" fue eliminado correctamente.`, 'exito');
       });
     };
-    this.mostrarAlerta('¿Eliminar rol?', `¿Estás seguro de eliminar el rol "${r.nombre}"? Esta acción no se puede deshacer.`, 'confirmar');
+    this.mostrarAlerta('¿Eliminar rol?', `¿Estás seguro de eliminar el rol "${r.nombre}"?`, 'confirmar');
   }
 
   cerrarModalRol(): void {
     this.mostrarModalRol = false;
     this.guardandoRol = false;
-    this.permisosSeleccionados = [];   // 👈 limpiar
-    this.rolActual = {
-      nombre: '',
-      descripcion: '',
-      fechaCreacion: ''
-    };
+    this.permisosSeleccionados = [];
+    this.rolActual = { nombre: '', descripcion: '', fechaCreacion: '' };
     this.cdr.detectChanges();
   }
 
   /* =========================
      PERMISOS / ROLES BD
   ==========================*/
-
   cargarPermisos(): void {
-    this.http.get<any[]>('http://localhost:8080/permisos')
-      .subscribe({
-        next: (data) => {
-          this.permisosDisponibles = data;
-        },
-        error: err => console.error('Error cargando permisos', err)
-      });
+    this.http.get<any[]>('http://localhost:8080/permisos').subscribe({
+      next: (data) => { this.permisosDisponibles = data; },
+      error: err => console.error('Error cargando permisos', err)
+    });
   }
 
-  togglePermiso(idPermiso: number) {
+  togglePermiso(idPermiso: number): void {
     if (this.permisosSeleccionados.includes(idPermiso)) {
-      this.permisosSeleccionados =
-        this.permisosSeleccionados.filter(id => id !== idPermiso);
+      this.permisosSeleccionados = this.permisosSeleccionados.filter(id => id !== idPermiso);
     } else {
       this.permisosSeleccionados.push(idPermiso);
     }
@@ -483,16 +440,14 @@ export class UsuariosComponent implements OnInit {
   }
 
   cargarRolesBD(): void {
-    this.http.get<string[]>('http://localhost:8080/roles/roles-bd')
-      .subscribe(data => {
-        this.rolesBD = data;
-      });
+    this.http.get<string[]>('http://localhost:8080/roles/roles-bd').subscribe(data => {
+      this.rolesBD = data;
+    });
   }
 
-  toggleRolBD(nombre: string) {
+  toggleRolBD(nombre: string): void {
     if (this.rolesBDSeleccionados.includes(nombre)) {
-      this.rolesBDSeleccionados =
-        this.rolesBDSeleccionados.filter(r => r !== nombre);
+      this.rolesBDSeleccionados = this.rolesBDSeleccionados.filter(r => r !== nombre);
     } else {
       this.rolesBDSeleccionados.push(nombre);
     }
@@ -501,11 +456,8 @@ export class UsuariosComponent implements OnInit {
   /* =========================
      UTILIDADES
   ==========================*/
-
   getEstadoClass(estado?: string): string {
-    return estado === 'Activo' || estado === 'ACTIVO'
-      ? 'activo'
-      : 'inactivo';
+    return estado === 'Activo' || estado === 'ACTIVO' ? 'activo' : 'inactivo';
   }
 
   registrarAuditoria(accion: string, modulo: string): void {
@@ -516,6 +468,7 @@ export class UsuariosComponent implements OnInit {
       fecha: new Date().toLocaleString()
     });
   }
+
   mostrarAlerta(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'confirmar'): void {
     this.notificacionTitulo = titulo;
     this.notificacionMensaje = mensaje;
@@ -537,5 +490,13 @@ export class UsuariosComponent implements OnInit {
       this.accionPendiente = null;
     }
     this.cdr.detectChanges();
+  }
+
+  get usuariosActivos(): number {
+    return this.usuarios.filter(u => u.estado?.toUpperCase() === 'ACTIVO').length;
+  }
+
+  get usuariosInactivos(): number {
+    return this.usuarios.filter(u => u.estado?.toUpperCase() !== 'ACTIVO').length;
   }
 }

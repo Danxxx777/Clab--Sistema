@@ -66,7 +66,7 @@ export class DashboardComponent implements OnInit {
     this.cdr.detectChanges();
     setTimeout(() => {
       this.router.navigate([ruta]);
-    }, 1500);
+    }, 450);
   }
 
   goTo(path: string): void {
