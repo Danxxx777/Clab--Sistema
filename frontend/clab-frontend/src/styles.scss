@@ -5,3 +5,9 @@ h1, h2, h3, h4, h5, h6,
 p, span, div, button, input, select, textarea, label {
   font-family: 'Roboto', system-ui, sans-serif !important;
 }
+html, body {
+  background: linear-gradient(135deg, #0d5a2e, #1f7a44, #2e9d5b) !important;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}

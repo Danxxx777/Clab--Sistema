@@ -1,17 +1,147 @@
+<!-- DRAWER OVERLAY -->
+<div class="drawer-overlay" [class.open]="drawerAbierto" (click)="cerrarDrawer()"></div>
 
+<!-- DRAWER LATERAL -->
+<div class="drawer" [class.open]="drawerAbierto">
+  <div class="drawer-header">
+    <div class="drawer-brand">
+      CLAB
+      <span>Sistema de Laboratorios</span>
+    </div>
+    <button class="btn-close-drawer" (click)="cerrarDrawer()">×</button>
+  </div>
+
+  <div class="drawer-user">
+    <div class="drawer-avatar">{{ usuarioLogueado.charAt(0).toUpperCase() }}</div>
+    <div class="drawer-user-info">
+      <div class="dui-name">{{ usuarioLogueado }}</div>
+      <div class="role-badge">
+        <span class="role-dot"></span>
+        {{ rolActual }}
+      </div>
+    </div>
+  </div>
+
+  <div class="drawer-section-title">Módulos</div>
+
+  <div class="drawer-modules">
+    @if(rol === 'Administradorr' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('usuarios', 'Cargando Usuarios...')">
+        <div class="di-icon ic-1"><img src="/user.png" alt="Usuarios"></div>
+        <div class="di-text"><div class="di-name">Usuarios</div><div class="di-desc">Gestión de accesos y roles</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
+      <div class="drawer-item" (click)="navegar('laboratorios', 'Cargando Laboratorios...')">
+        <div class="di-icon ic-2"><img src="/laboratorio.png" alt="Laboratorios"></div>
+        <div class="di-text"><div class="di-name">Laboratorios</div><div class="di-desc">Sedes y encargados</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('equipos', 'Cargando Equipos...')">
+        <div class="di-icon ic-3"><img src="/equipo.png" alt="Equipos"></div>
+        <div class="di-text"><div class="di-name">Equipos</div><div class="di-desc">Inventario y ubicaciones</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Coordinador' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('reservar', 'Cargando Reservas...')">
+        <div class="di-icon ic-4"><img src="/calendario.png" alt="Reservas"></div>
+        <div class="di-text"><div class="di-name">Reservas</div><div class="di-desc">Disponibilidad</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Coordinador') {
+      <div class="drawer-item" (click)="navegar('academico', 'Cargando Académico...')">
+        <div class="di-icon ic-5"><img src="/academico.png" alt="Académico"></div>
+        <div class="di-text"><div class="di-name">Académico</div><div class="di-desc">Períodos y carreras</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('estudiantes', 'Cargando Estudiantes...')">
+        <div class="di-icon ic-6"><img src="/estudiantes.png" alt="Estudiantes"></div>
+        <div class="di-text"><div class="di-name">Estudiantes</div><div class="di-desc">Matrículas e inscripciones</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('asistencia', 'Cargando Asistencia...')">
+        <div class="di-icon ic-7"><img src="/asistencia.png" alt="Asistencia"></div>
+        <div class="di-text"><div class="di-name">Asistencia</div><div class="di-desc">Control de asistencia</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('reporte-fallas', 'Cargando Fallas...')">
+        <div class="di-icon ic-8"><img src="/fallas.png" alt="Fallas"></div>
+        <div class="di-text"><div class="di-name">Reportes de Fallas</div><div class="di-desc">Seguimiento de equipos</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('bloqueos', 'Cargando Bloqueos...')">
+        <div class="di-icon ic-9"><img src="/bloqueos.png" alt="Bloqueos"></div>
+        <div class="di-text"><div class="di-name">Bloqueos</div><div class="di-desc">Gestión de conflictos</div></div>
+      </div>
+    }
+    <div class="drawer-item" (click)="navegar('notificaciones', 'Cargando Notificaciones...')">
+      <div class="di-icon ic-10"><img src="/campana.png" alt="Notificaciones"></div>
+      <div class="di-text"><div class="di-name">Notificaciones</div><div class="di-desc">Centro de alertas</div></div>
+    </div>
+    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
+      <div class="drawer-item" (click)="navegar('reportesuso', 'Cargando Reportes...')">
+        <div class="di-icon ic-11"><img src="/uso.png" alt="Reportes"></div>
+        <div class="di-text"><div class="di-name">Reportes de Uso</div><div class="di-desc">Estadísticas</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('auditoria', 'Cargando Auditoría...')">
+        <div class="di-icon ic-12"><img src="/auditoria.png" alt="Auditoría"></div>
+        <div class="di-text"><div class="di-name">Auditoría</div><div class="di-desc">Trazabilidad</div></div>
+      </div>
+    }
+  </div>
+
+  <div class="drawer-footer">
+    <button class="btn-logout-drawer" (click)="logout()">🚪 Cerrar sesión</button>
+  </div>
+</div>
+
+<!-- NAVBAR -->
 <nav class="navbar">
   <div class="nav-container">
-    <div class="logo">
-      <img src="/favicon.ico" alt="CLAB" class="logo-icon">
-      <span>MENÚ CLAB</span>
+    <div class="navbar-left">
+      <button class="btn-hamburger" [class.active]="drawerAbierto" (click)="toggleDrawer()">
+        <div class="ham-line"></div>
+        <div class="ham-line"></div>
+        <div class="ham-line"></div>
+      </button>
+      <div class="logo">
+        <img src="/favicon.ico" alt="CLAB" class="logo-icon">
+        <span class="logo-text">CLAB</span>
+      </div>
     </div>
-
-    <button class="logout" (click)="logout()">Cerrar sesión</button>
+    <div class="navbar-right">
+      <div class="role-pill">
+        <span class="role-dot-nav"></span>
+        {{ rolActual }}
+      </div>
+      <div class="user-chip">
+        <div class="user-avatar-nav">{{ usuarioLogueado.charAt(0).toUpperCase() }}</div>
+        <span class="user-name-nav">{{ usuarioLogueado }}</span>
+      </div>
+    </div>
   </div>
 </nav>
 
+<!-- MODAL DE CARGA -->
+<div class="loading-modal" *ngIf="cargando">
+  <div class="loading-card">
+    <div class="loading-spinner">
+      <div class="ring"></div>
+      <div class="ring"></div>
+      <div class="ring"></div>
+    </div>
+    <p class="loading-label">{{ loadingText }}</p>
+  </div>
+</div>
 
-<div class="page">
+<div class="page" [class.page-blur]="cargando">
   <div class="card">
 
     <div class="menu-list">
@@ -70,7 +200,7 @@
       <!-- Módulo 1: Usuarios -->
       @if(rol === 'Administradorr' || rol === 'Decano')
       {
-        <div class="menu-item" (click)="usuario('usuarios')">
+        <div class="menu-item" (click)="navegar('usuarios', 'Cargando Usuarios...')">
           <img src="/user.png" alt="Usuarios" class="menu-icon">
           <div class="text">
             <strong>Usuarios</strong>
@@ -82,7 +212,7 @@
       <!-- Módulo 2: Laboratorios -->
       @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab')
       {
-        <div class="menu-item" (click)="laboratorios('laboratorios')">
+        <div class="menu-item" (click)="navegar('laboratorios', 'Cargando Laboratorios...')">
           <img src="/laboratorio.png" alt="Laboratorios" class="menu-icon">
           <div class="text">
             <strong>Laboratorios</strong>
@@ -94,7 +224,7 @@
       <!-- Módulo 3: Equipos -->
       @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano')
       {
-        <div class="menu-item info" (click)="equipos('equipos')">
+        <div class="menu-item info"(click)="navegar('equipos', 'Cargando Equipos...')">
           <img src="/equipo.png" alt="Equipos" class="menu-icon">
           <div class="text">
             <strong>Equipos</strong>
@@ -106,7 +236,7 @@
       <!-- Módulo 4: Reservas -->
       @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Coordinador' || rol === 'Decano')
       {
-        <div class="menu-item" (click)="reservas('reservas')">
+        <div class="menu-item" (click)="navegar('reservar', 'Cargando Reservas...')">
           <img src="/calendario.png" alt="Calendario" class="menu-icon">
           <div class="text">
             <strong>Reservas</strong>
@@ -118,7 +248,7 @@
       <!-- Módulo 5: Académico -->
       @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Coordinador')
       {
-        <div class="menu-item" (click)="academico('academico')">
+        <div class="menu-item" (click)="navegar('academico', 'Cargando Académico...')">
           <img src="/academico.png" alt="Académico" class="menu-icon">
           <div class="text">
             <strong>Académico</strong>
@@ -130,7 +260,7 @@
       <!-- Módulo 6: Estudiantes -->
       @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano')
       {
-        <div class="menu-item" (click)="estudiantes('estudiantes')">
+        <div class="menu-item" (click)="navegar('estudiantes', 'Cargando Estudiantes...')">
           <img src="/estudiantes.png" alt="Estudiantes" class="menu-icon">
           <div class="text">
             <strong>Estudiantes</strong>
@@ -142,7 +272,7 @@
       <!-- Módulo 7: Asistencia -->
       @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Decano')
       {
-        <div class="menu-item " (click)="asistencia('asistencia')">
+        <div class="menu-item " (click)="navegar('asistencia', 'Cargando Asistencia...')">
           <img src="/asistencia.png" alt="Asistencia" class="menu-icon">
           <div class="text">
             <strong>Asistencia</strong>
@@ -154,7 +284,7 @@
       <!-- Módulo 8: Reportes de Fallas -->
       @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano')
       {
-        <div class="menu-item " (click)="fallas('fallas')">
+        <div class="menu-item " (click)="navegar('reporte-fallas', 'Cargando Reportes de Fallas...')">
           <img src="/fallas.png" alt="Reportes de Fallas" class="menu-icon">
           <div class="text">
             <strong>Reportes de Fallas</strong>
@@ -166,7 +296,7 @@
       <!-- Módulo 9: Bloqueos -->
       @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano')
       {
-        <div class="menu-item " (click)="bloqueos('bloqueos')">
+        <div class="menu-item " (click)="navegar('bloqueos', 'Cargando Bloqueos...')">
           <img src="/bloqueos.png" alt="Bloqueos" class="menu-icon">
           <div class="text">
             <strong>Bloqueos</strong>
@@ -176,7 +306,7 @@
       }
 
       <!-- Módulo 10: Notificaciones -->
-      <div class="menu-item " (click)="notificaciones('notificaciones')">
+      <div class="menu-item " (click)="navegar('notificaciones', 'Cargando Notificaciones...')">
         <img src="/campana.png" alt="Notificaciones" class="menu-icon">
         <div class="text">
           <strong>Notificaciones</strong>
@@ -187,7 +317,7 @@
       <!-- Módulo 11: Reportes de Uso -->
       @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab')
       {
-        <div class="menu-item" (click)="reportesuso('reportesuso')">
+        <div class="menu-item" (click)="navegar('reportesuso', 'Cargando Reportes de Uso...')">
           <img src="/uso.png" alt="Reporte de Uso" class="menu-icon">
           <div class="text">
             <strong>Reportes de Uso</strong>
@@ -200,7 +330,7 @@
       <!-- Módulo 12: Auditoría -->
       @if(rol === 'Administradorr' || rol === 'Decano')
       {
-        <div class="menu-item" (click)="auditoria('auditoria')">
+        <div class="menu-item" (click)="navegar('auditoria', 'Cargando Auditoría...')">
           <img src="/auditoria.png" alt="Auditoria" class="menu-icon">
           <div class="text">
             <strong>Auditoría</strong>
