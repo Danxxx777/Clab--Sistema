@@ -3,6 +3,7 @@ package com.clab.clabbackend.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -12,8 +13,8 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private static final String SECRET_KEY =
-            "CLAB_SUPER_SECRET_KEY_123456_CLAB_SUPER_SECRET_KEY";
+    @Value("${jwt.secret}")
+    private String SECRET_KEY;
 
     private Key getKey() {
         return Keys.hmacShaKeyFor(
@@ -33,6 +34,10 @@ public class JwtService {
     }
 
     public Claims obtenerClaims(String token) {
-        return Jwts.parser().setSigningKey((SecretKey) getKey()).build().parseSignedClaims(token).getPayload();
+        return Jwts.parser()
+                .verifyWith((SecretKey) getKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }
