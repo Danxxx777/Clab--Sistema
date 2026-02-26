@@ -45,6 +45,9 @@ export class ReporteFallasComponent implements OnInit {
   filtroIdEquipo: number | null = null;
 
   mostrarModal = false;
+  drawerAbierto = false;
+  rol = localStorage.getItem('rol') || '';
+  usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
   cargando = false;
 
   constructor(
@@ -56,6 +59,8 @@ export class ReporteFallasComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.rol = localStorage.getItem('rol') || '';
+    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
     this.inicializarFormulario();
     this.cargarLaboratorios();
     this.cargarReportes();
@@ -216,7 +221,18 @@ export class ReporteFallasComponent implements OnInit {
       error: (err) => console.error('Error eliminando reporte:', err)
     });
   }
+  toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
+  cerrarDrawer(): void { this.drawerAbierto = false; }
 
+  navegar(ruta: string, texto: string): void {
+    this.cerrarDrawer();
+    this.router.navigate([`/${ruta}`]);
+  }
+
+  logout(): void {
+    localStorage.clear();
+    this.router.navigate(['/login']);
+  }
   volver(): void {
     this.router.navigate(['/dashboard']);
   }
