@@ -418,11 +418,15 @@
           <div
             class="rol-bd-card"
             *ngFor="let rolBD of rolesBDDisponibles"
-            [class.selected]="rolesBDSeleccionados.includes(rolBD)"
-            (click)="toggleRolBD(rolBD)"
+            [class.selected]="rolesBDSeleccionados.includes(rolBD.nombreRolBd)"
+            (click)="toggleRolBD(rolBD.nombreRolBd)"
+
           >
             <div class="rol-bd-name">
-              {{ rolBD }}
+              {{ rolBD.nombreRolBd }}
+            </div>
+            <div class="rol-bd-desc" *ngIf="rolBD.descripcion">
+              {{ rolBD.descripcion }}
             </div>
           </div>
         </div>
