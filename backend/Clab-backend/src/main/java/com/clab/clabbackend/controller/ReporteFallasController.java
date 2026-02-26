@@ -5,7 +5,6 @@ import com.clab.clabbackend.services.ReporteFallasService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.Map;
 
@@ -21,18 +20,14 @@ public class ReporteFallasController {
         return ResponseEntity.ok(reporteService.listar());
     }
 
-
     @PostMapping("/crear")
     public ResponseEntity<Void> crear(@RequestBody ReporteFallasDTO dto) {
         reporteService.crear(dto);
         return ResponseEntity.ok().build();
     }
-
     @DeleteMapping("/eliminar/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         reporteService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
-
-
 }

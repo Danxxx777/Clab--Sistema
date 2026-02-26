@@ -17,10 +17,8 @@ public class ReporteFallasService {
 
     private final ReporteFallasRepository reporteRepository;
 
-    // LISTAR
     public List<Map<String, Object>> listar() {
         List<Object[]> resultados = reporteRepository.listarReportes();
-
         List<Map<String, Object>> reportes = new ArrayList<>();
 
         for (Object[] r : resultados) {
