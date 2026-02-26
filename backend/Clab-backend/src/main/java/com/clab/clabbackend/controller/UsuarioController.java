@@ -29,7 +29,6 @@ public class UsuarioController {
         return usuarioService.crear(dto);
     }
 
-
     @GetMapping("/listar")
     public List<UsuarioResponseDTO> listar() {
         return usuarioService.listar();

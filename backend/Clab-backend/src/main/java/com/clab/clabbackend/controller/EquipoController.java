@@ -16,7 +16,7 @@ public class EquipoController {
 
     private final EquipoService equipoService;
 
-    // LISTAR (usa función almacenada)
+    // LISTAR
     @GetMapping
     public ResponseEntity<List<Equipo>> listar() {
         return ResponseEntity.ok(equipoService.listar());
@@ -28,14 +28,14 @@ public class EquipoController {
         return ResponseEntity.ok(equipoService.equiposPorLaboratorio(codLaboratorio));
     }
 
-    // CREAR (usa procedimiento almacenado)
+    // CREAR
     @PostMapping
     public ResponseEntity<Void> crear(@RequestBody EquipoDTO dto) {
         equipoService.crear(dto);
         return ResponseEntity.ok().build();
     }
 
-    // ACTUALIZAR (usa procedimiento almacenado)
+    // ACTUALIZAR
     @PutMapping("/{id}")
     public ResponseEntity<Void> editar(
             @PathVariable Integer id,

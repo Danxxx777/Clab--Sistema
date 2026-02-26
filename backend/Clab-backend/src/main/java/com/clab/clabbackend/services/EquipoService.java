@@ -43,7 +43,6 @@ public class EquipoService {
             equipo.setEstado((String) r[9]);
             equipo.setUbicacionFisica((String) r[10]);
 
-            // 🔥 CONVERSIÓN DE java.sql.Date a java.time.LocalDate
             equipo.setFechaAdquisicion(
                     r[11] != null ? ((java.sql.Date) r[11]).toLocalDate() : null
             );
