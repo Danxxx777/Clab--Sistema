@@ -1,5 +1,6 @@
 package com.clab.clabbackend.controller;
 
+import com.clab.clabbackend.dto.RolBDDTO;
 import com.clab.clabbackend.dto.RolRequestDTO;
 import com.clab.clabbackend.dto.RolResponseDTO;
 import com.clab.clabbackend.entities.Rol;
@@ -39,12 +40,11 @@ public class RolController {
 
     @GetMapping("/{id}/permisos")
     public List<Integer> obtenerPermisos(@PathVariable Integer id) {
-
         return rolService.obtenerPermisosActivos(id);
     }
 
     @GetMapping("/roles-bd")
-    public List<String> listarRolesBD() {
-        return rolService.listarRolesBD();
+    public List<RolBDDTO> listarRolesBD() {       // ← List<RolBDDTO> no String
+        return rolService.listarRolesBD();         // ← listarRolesBD() no listarRolesBDConDescripcion()
     }
 }
