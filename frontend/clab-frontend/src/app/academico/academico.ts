@@ -361,9 +361,7 @@ export class AcademicoComponent implements OnInit {
 
         if (this.modoEdicion && this.periodos[this.indiceEdicion].idPeriodo) {
 
-          this.periodo
-            .editar(this.periodos[this.indiceEdicion].idPeriodo!, periodo)
-            .subscribe({
+          this.periodo.editar(this.periodos[this.indiceEdicion].idPeriodo!, periodo).subscribe({
               next: (periodoActualizado) => {
                 this.periodos[this.indiceEdicion] = periodoActualizado;
                 this.periodosFiltrado = [...this.periodos];

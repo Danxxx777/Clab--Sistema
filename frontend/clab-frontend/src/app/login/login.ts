@@ -48,7 +48,7 @@ export class LoginComponent {
     this.cargando = true;
     this.loadingText = this.loadingMessages[0];
 
-    // Ciclar los mensajes de carga
+
     let msgIndex = 0;
     const msgInterval = setInterval(() => {
       msgIndex++;
