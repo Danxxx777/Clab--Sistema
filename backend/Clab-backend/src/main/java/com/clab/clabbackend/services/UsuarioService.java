@@ -111,7 +111,7 @@ public class UsuarioService {
 
             if (ur.getRol() != null) {
 
-                // 🔹 Obtiene el ID del rol sin importar si se llama id o idRol
+
                 try {
                     idRol = (Integer) ur.getRol()
                             .getClass()
@@ -126,7 +126,7 @@ public class UsuarioService {
                     } catch (Exception ignored) {}
                 }
 
-                // 🔹 Obtiene el nombre del rol sin importar si se llama nombre o nombreRol
+
                 try {
                     nombreRol = (String) ur.getRol()
                             .getClass()
