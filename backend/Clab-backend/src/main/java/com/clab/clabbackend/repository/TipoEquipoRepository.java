@@ -9,8 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface TipoEquipoRepository extends JpaRepository<TipoEquipo, Integer> {
-
-
     // INSERTAR
     @Transactional
     @Modifying

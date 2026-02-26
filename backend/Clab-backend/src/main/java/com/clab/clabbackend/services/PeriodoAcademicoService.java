@@ -39,15 +39,12 @@ public class PeriodoAcademicoService {
         pa.setFechaFin(dto.getFechaFin());
         pa.setFechaCreacion(dto.getFechaCreacion());
         pa.setEstado(dto.getEstado());
-
         return periodoAcademicoRepository.save(pa);
     }
 
     public void eliminar(Integer id)
     {
-        PeriodoAcademico pa = periodoAcademicoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No se encontro el periodo con id: " + id));
+        PeriodoAcademico pa = periodoAcademicoRepository.findById(id).orElseThrow(() -> new RuntimeException("No se encontro el periodo con id: " + id));
         periodoAcademicoRepository.delete(pa);
-
     }
 }

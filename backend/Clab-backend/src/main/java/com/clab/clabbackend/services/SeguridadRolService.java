@@ -22,12 +22,8 @@ public class SeguridadRolService {
 
     public String obtenerRolBdPorUsuario(Integer idUsuario) {
 
-        UsuarioRol usuarioRol = usuarioRolRepository
-                .findByUsuario_IdUsuarioAndVigenteTrue(idUsuario)
-                .orElseThrow(() -> new RuntimeException("El usuario no tiene rol asignado"));
-
-        List<RolRolBD> relaciones = rolRolBDRepository
-                .findByRol_IdRolAndVigenteTrue(usuarioRol.getRol().getIdRol());
+        UsuarioRol usuarioRol = usuarioRolRepository.findByUsuario_IdUsuarioAndVigenteTrue(idUsuario).orElseThrow(() -> new RuntimeException("El usuario no tiene rol asignado"));
+        List<RolRolBD> relaciones = rolRolBDRepository.findByRol_IdRolAndVigenteTrue(usuarioRol.getRol().getIdRol());
 
         if (relaciones.isEmpty()) {
             throw new RuntimeException("El rol no tiene rol BD asociado");

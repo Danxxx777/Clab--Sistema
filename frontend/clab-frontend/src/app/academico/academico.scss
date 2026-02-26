@@ -4,9 +4,7 @@
   min-height: 100vh;
   background: #f5f7fa;
 }
-// =====================
 // VARIABLES
-// =====================
 $color-primario: #2d7d51;
 $color-secundario: #27ae60;
 $color-fondo: #f5f7fa;
@@ -25,17 +23,15 @@ $color-eliminar: #e74c3c;
   box-sizing: border-box;
 }
 
-// =====================
 // CONTAINER
-// =====================
 .inventario-container {
   background: #f5f7fa;
   min-height: 100vh;
   padding-bottom: 40px;
 }
-// =====================
+
 // PAGE TITLE
-// =====================
+
 .page-title-section {
   background: linear-gradient(135deg, #1a4731, #2d6a4f);
   padding: 12px 24px;

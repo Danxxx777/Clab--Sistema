@@ -4,7 +4,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
-
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
@@ -34,11 +33,6 @@ public class JwtService {
     }
 
     public Claims obtenerClaims(String token) {
-
-        return Jwts.parser()                                  // JwtParserBuilder
-                .setSigningKey((SecretKey) getKey())          // ✔ EXISTE (deprecated)
-                .build()                                      // JwtParser
-                .parseSignedClaims(token)                     // ✔ EXISTE
-                .getPayload();
+        return Jwts.parser().setSigningKey((SecretKey) getKey()).build().parseSignedClaims(token).getPayload();
     }
 }
