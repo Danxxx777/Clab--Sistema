@@ -20,15 +20,10 @@ public class LaboratorioService {
     private SedeRepository sedeRepository;
 
     public Laboratorio crear(LaboratorioDTO dto) {
-        // Buscar la sede
-        Sede sede = sedeRepository.findById(dto.getIdSede())
-                .orElseThrow(() -> new RuntimeException("Sede no encontrada con id: " + dto.getIdSede()));
-
+        Sede sede = sedeRepository.findById(dto.getIdSede()).orElseThrow(() -> new RuntimeException("Sede no encontrada con id: " + dto.getIdSede()));
         Integer nuevoCodigo = generarNuevoCodigo();
-
         Laboratorio laboratorio = new Laboratorio();
         laboratorio.setCodLaboratorio(nuevoCodigo);
-
         laboratorio.setNombreLab(dto.getNombreLab());
         laboratorio.setUbicacion(dto.getUbicacion());
         laboratorio.setCapacidadEstudiantes(dto.getCapacidadEstudiantes());
@@ -36,7 +31,6 @@ public class LaboratorioService {
         laboratorio.setDescripcion(dto.getDescripcion());
         laboratorio.setEstadoLab(dto.getEstadoLab() != null ? dto.getEstadoLab() : "Disponible");
         laboratorio.setSede(sede);
-
         return laboratorioRepository.save(laboratorio);
     }
 
@@ -45,13 +39,9 @@ public class LaboratorioService {
     }
 
     public Laboratorio actualizar(Integer codLaboratorio, LaboratorioDTO dto) {
-        Laboratorio laboratorio = laboratorioRepository.findById(codLaboratorio)
-                .orElseThrow(() -> new RuntimeException("Laboratorio no encontrado con código: " + codLaboratorio));
+        Laboratorio laboratorio = laboratorioRepository.findById(codLaboratorio).orElseThrow(() -> new RuntimeException("Laboratorio no encontrado con código: " + codLaboratorio));
 
-        // Buscar la sede si cambió
-        Sede sede = sedeRepository.findById(dto.getIdSede())
-                .orElseThrow(() -> new RuntimeException("Sede no encontrada con id: " + dto.getIdSede()));
-
+        Sede sede = sedeRepository.findById(dto.getIdSede()).orElseThrow(() -> new RuntimeException("Sede no encontrada con id: " + dto.getIdSede()));
         laboratorio.setNombreLab(dto.getNombreLab());
         laboratorio.setUbicacion(dto.getUbicacion());
         laboratorio.setCapacidadEstudiantes(dto.getCapacidadEstudiantes());
@@ -59,7 +49,6 @@ public class LaboratorioService {
         laboratorio.setDescripcion(dto.getDescripcion());
         laboratorio.setEstadoLab(dto.getEstadoLab());
         laboratorio.setSede(sede);
-
         return laboratorioRepository.save(laboratorio);
     }
 
@@ -69,12 +58,7 @@ public class LaboratorioService {
         if (laboratorios.isEmpty()) {
             return 1;
         }
-
-        Integer maxCodigo = laboratorios.stream()
-                .map(Laboratorio::getCodLaboratorio)
-                .max(Integer::compareTo)
-                .orElse(0);
-
+        Integer maxCodigo = laboratorios.stream().map(Laboratorio::getCodLaboratorio).max(Integer::compareTo).orElse(0);
         return maxCodigo + 1;
     }
 

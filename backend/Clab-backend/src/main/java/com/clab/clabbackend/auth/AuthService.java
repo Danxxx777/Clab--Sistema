@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import com.clab.clabbackend.services.EmailService;
 
-
 @Service
 public class AuthService {
     private final PasswordEncoder passwordEncoder;
@@ -24,12 +23,7 @@ public class AuthService {
     private final UsuarioRolRepository usuarioRolRepository;
     private final EmailService emailService;
 
-
-
-    public AuthService(PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager,
-                       JwtService jwtService,
-                       UsuarioRepository usuarioRepository,
-                       UsuarioRolRepository usuarioRolRepository, EmailService emailService) {
+    public AuthService(PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtService jwtService, UsuarioRepository usuarioRepository, UsuarioRolRepository usuarioRolRepository, EmailService emailService) {
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
@@ -39,64 +33,35 @@ public class AuthService {
     }
 
     public AuthResponseDTO login(LoginRequestDTO request) {
-
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsuario(),
-                        request.getContrasenia()
-                )
+                new UsernamePasswordAuthenticationToken(request.getUsuario(), request.getContrasenia())
         );
-
-        Usuario usuario = usuarioRepository
-                .findByUsuarioAndEstado(request.getUsuario(), "ACTIVO")
-                .orElseThrow();
-
-        var usuarioRol = usuarioRolRepository
-                .findByUsuario_IdUsuarioAndVigenteTrue(usuario.getIdUsuario())
-                .orElseThrow();
-
-        String token = jwtService.generarToken(
-                usuario.getIdUsuario(),
-                usuarioRol.getRol().getNombreRol()
-        );
-
-        return new AuthResponseDTO(
-                token,
-                usuario.getNombres(),
-                usuario.getApellidos(),
-                usuarioRol.getRol().getNombreRol()
-        );
+        Usuario usuario = usuarioRepository.findByUsuarioAndEstado(request.getUsuario(), "ACTIVO").orElseThrow();
+        var usuarioRol = usuarioRolRepository.findByUsuario_IdUsuarioAndVigenteTrue(usuario.getIdUsuario()).orElseThrow();
+        String token = jwtService.generarToken(usuario.getIdUsuario(), usuarioRol.getRol().getNombreRol());
+        return new AuthResponseDTO(token, usuario.getNombres(), usuario.getApellidos(), usuarioRol.getRol().getNombreRol());
     }
     public void solicitarRecuperacion(String email) {
 
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
+        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         String token = UUID.randomUUID().toString();
-
         usuario.setTokenRecuperacion(token);
         usuario.setExpiracionToken(LocalDateTime.now().plusMinutes(15));
-
         usuarioRepository.save(usuario);
 
-        // Enviar correo real
+        // Enviar correo
         emailService.enviarCorreoRecuperacion(email, token);
     }
 
     public void resetPassword(String token, String nuevaPassword) {
 
-        Usuario usuario = usuarioRepository.findByTokenRecuperacion(token)
-                .orElseThrow(() -> new RuntimeException("Token inválido"));
-
-        if (usuario.getExpiracionToken() == null ||
-                usuario.getExpiracionToken().isBefore(LocalDateTime.now())) {
+        Usuario usuario = usuarioRepository.findByTokenRecuperacion(token).orElseThrow(() -> new RuntimeException("Token inválido"));
+        if (usuario.getExpiracionToken() == null || usuario.getExpiracionToken().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("Token expirado");
         }
-
         usuario.setContrasenia(passwordEncoder.encode(nuevaPassword));
         usuario.setTokenRecuperacion(null);
         usuario.setExpiracionToken(null);
-
         usuarioRepository.save(usuario);
     }
 
