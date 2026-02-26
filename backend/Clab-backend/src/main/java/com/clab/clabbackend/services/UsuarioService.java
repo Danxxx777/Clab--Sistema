@@ -54,16 +54,12 @@ public class UsuarioService {
                 passwordBd,
                 dto.getIdRol()
         );
-
-        Usuario usuarioCreado = usuarioRepository
-                .findByUsuario(usuarioBd)
-                .orElseThrow(() -> new RuntimeException("Error creando usuario"));
+        Usuario usuarioCreado = usuarioRepository.findByUsuario(usuarioBd).orElseThrow(() -> new RuntimeException("Error creando usuario"));
         return construirResponse(usuarioCreado);
     }
 
     public UsuarioResponseDTO actualizar(Integer id, UsuarioRequestDTO dto) {
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         usuario.setIdentidad(dto.getIdentidad());
         usuario.setNombres(dto.getNombres());
         usuario.setApellidos(dto.getApellidos());

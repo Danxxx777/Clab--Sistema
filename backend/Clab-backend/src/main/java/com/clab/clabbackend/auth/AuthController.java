@@ -5,17 +5,13 @@ import com.clab.clabbackend.dto.LoginRequestDTO;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Map;
-
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-
     private final AuthService authService;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthController(AuthService authService,
-                          PasswordEncoder passwordEncoder) {
+    public AuthController(AuthService authService, PasswordEncoder passwordEncoder) {
         this.authService = authService;
         this.passwordEncoder = passwordEncoder;
     }

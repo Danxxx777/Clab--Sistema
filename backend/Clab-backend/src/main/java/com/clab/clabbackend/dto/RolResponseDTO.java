@@ -11,11 +11,7 @@ public class RolResponseDTO {
     private LocalDate fechaCreacion;
     private List<String> rolesBD;
 
-    public RolResponseDTO(Integer idRol,
-                          String nombreRol,
-                          String descripcion,
-                          LocalDate fechaCreacion,
-                          List<String> rolesBD) {
+    public RolResponseDTO(Integer idRol, String nombreRol, String descripcion, LocalDate fechaCreacion, List<String> rolesBD) {
         this.idRol = idRol;
         this.nombreRol = nombreRol;
         this.descripcion = descripcion;

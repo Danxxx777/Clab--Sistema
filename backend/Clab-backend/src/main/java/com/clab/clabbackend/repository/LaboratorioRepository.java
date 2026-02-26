@@ -9,10 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface LaboratorioRepository extends JpaRepository<Laboratorio, Integer> {
-
-
     List<Laboratorio> findBySedeIdSede(Integer idSede);
     List<Laboratorio> findByEstadoLab(String estadoLab);
-
     Optional<Laboratorio> findByNombreLab(String nombreLab);
 }
