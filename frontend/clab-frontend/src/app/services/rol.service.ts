@@ -2,21 +2,25 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-/* ===============================
-   DTOs ANGULAR (no entidades)
-================================ */
+export interface RolBD {
+  idRolBd: number;
+  nombreRolBd: string;
+  descripcion: string;
+}
+
 export interface RolResponse {
   idRol: number;
   nombreRol: string;
   descripcion: string;
   fechaCreacion: string;
-  rolesBD: string[]; // ✅ asegúrate que esté
+  rolesBD: RolBD[];   // ← antes era string[]
 }
+
 export interface RolRequest {
   nombreRol: string;
   descripcion?: string;
   permisos: number[];
-  rolesBD: string[];
+  rolesBD: string[];  // sigue siendo string[] para enviar al backend
 }
 
 @Injectable({
@@ -47,7 +51,8 @@ export class RolService {
   obtenerPermisos(id: number): Observable<number[]> {
     return this.http.get<number[]>(`${this.apiUrl}/${id}/permisos`);
   }
-  listarRolesBD(): Observable<string[]> {
-    return this.http.get<string[]>('http://localhost:8080/roles/roles-bd');
+
+  listarRolesBD(): Observable<RolBD[]> {   // ← antes era string[]
+    return this.http.get<RolBD[]>(`${this.apiUrl}/roles-bd`);
   }
 }

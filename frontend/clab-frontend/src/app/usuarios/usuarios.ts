@@ -4,12 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 
-import { RolService, RolRequest, RolResponse } from '../services/rol.service';
+import { RolService, RolRequest, RolResponse, RolBD } from '../services/rol.service';
 import { UsuarioService, UsuarioRequest, UsuarioResponse } from '../services/usuario.service';
 
 import { Usuario } from '../interfaces/Usuario.model';
 import { RolView } from '../interfaces/Rol.model';
 import { Auditoria } from '../interfaces/Auditoria.model';
+
 
 @Component({
   selector: 'app-usuarios',
@@ -59,7 +60,7 @@ export class UsuariosComponent implements OnInit {
   filtroEstado = 'Todos';
   filtroRol: number | 'Todos' = 'Todos';
 
-  rolesBDDisponibles: string[] = [];
+  rolesBDDisponibles: RolBD[] = [];
   rolesBDSeleccionados: string[] = [];
   rolesBD: string[] = [];
 
@@ -358,7 +359,7 @@ export class UsuariosComponent implements OnInit {
         this.rolService.listar().subscribe({
           next: (data) => {
             const rolActualizado = data.find(x => x.idRol === r.id);
-            this.rolesBDSeleccionados = rolActualizado?.rolesBD ?? [];
+            this.rolesBDSeleccionados = rolActualizado?.rolesBD?.map(rb => rb.nombreRolBd) ?? [];
             this.cdr.detectChanges();
           }
         });

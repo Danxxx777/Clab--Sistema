@@ -1,5 +1,6 @@
 package com.clab.clabbackend.services;
 
+import com.clab.clabbackend.dto.RolBDDTO;
 import com.clab.clabbackend.dto.RolRequestDTO;
 import com.clab.clabbackend.dto.RolResponseDTO;
 import com.clab.clabbackend.entities.*;
@@ -11,7 +12,6 @@ import java.time.LocalDate;
 import jakarta.persistence.EntityManager;
 import com.clab.clabbackend.repository.RolRolBDRepository;
 import java.util.List;
-
 
 @Service
 public class RolService {
@@ -45,14 +45,15 @@ public class RolService {
             }
         }
     }
+
     @Transactional
     public Rol crear(RolRequestDTO dto) {
-
         sincronizarRolesBD();
 
         if (dto.getNombreRol() == null || dto.getNombreRol().trim().isEmpty()) {
             throw new RuntimeException("El nombre del rol es obligatorio");
         }
+
         String nombre = dto.getNombreRol().trim();
         String descripcion = dto.getDescripcion();
 
@@ -64,8 +65,7 @@ public class RolService {
 
         Rol rolGuardado = rolRepository
                 .findByNombreRolIgnoreCase(nombre)
-                .orElseThrow(() ->
-                        new RuntimeException("Rol no encontrado después de ejecutar SP"));
+                .orElseThrow(() -> new RuntimeException("Rol no encontrado después de ejecutar SP"));
 
         guardarPermisos(rolGuardado, dto.getPermisos());
 
@@ -73,15 +73,13 @@ public class RolService {
             for (String nombreRolBD : dto.getRolesBD()) {
                 RolBD rolBdEntidad = rolBDRepository
                         .findByNombreRolBd(nombreRolBD)
-                        .orElseThrow(() ->
-                                new RuntimeException("Rol BD no encontrado: " + nombreRolBD));
+                        .orElseThrow(() -> new RuntimeException("Rol BD no encontrado: " + nombreRolBD));
 
                 RolRolBD relacion = new RolRolBD();
                 relacion.setRol(rolGuardado);
                 relacion.setRolBd(rolBdEntidad);
                 relacion.setFechaAsignacion(LocalDate.now());
                 relacion.setVigente(true);
-
                 rolRolBDRepository.save(relacion);
             }
         }
@@ -91,10 +89,14 @@ public class RolService {
 
     public List<RolResponseDTO> listar() {
         return rolRepository.findByNombreRolNotLike("clab_%").stream().map(rol -> {
-            List<String> rolesBD = rolRolBDRepository
+            List<RolBDDTO> rolesBD = rolRolBDRepository
                     .findByRol_IdRolAndVigenteTrue(rol.getIdRol())
                     .stream()
-                    .map(rel -> rel.getRolBd().getNombreRolBd())
+                    .map(rel -> new RolBDDTO(
+                            rel.getRolBd().getIdRolBd(),
+                            rel.getRolBd().getNombreRolBd(),
+                            rel.getRolBd().getDescripcion()
+                    ))
                     .toList();
             return new RolResponseDTO(
                     rol.getIdRol(),
@@ -108,30 +110,29 @@ public class RolService {
 
     @Transactional
     public Rol actualizar(Integer id, RolRequestDTO dto) {
-
         sincronizarRolesBD();
 
-        Rol rol = rolRepository.findById(id).orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+        Rol rol = rolRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
         rol.setNombreRol(dto.getNombreRol().trim());
         rol.setDescripcion(dto.getDescripcion());
         Rol rolActualizado = rolRepository.save(rol);
 
-        // Permisos
         rolPermisoRepository.deleteByRol_IdRol(id);
         guardarPermisos(rolActualizado, dto.getPermisos());
 
-        // Roles de BD
         rolRolBDRepository.deleteByRol_IdRol(id);
-
         if (dto.getRolesBD() != null) {
             for (String nombreRolBD : dto.getRolesBD()) {
-                RolBD rolBdEntidad = rolBDRepository.findByNombreRolBd(nombreRolBD).orElseThrow(() -> new RuntimeException("Rol BD no encontrado: " + nombreRolBD));
+                RolBD rolBdEntidad = rolBDRepository
+                        .findByNombreRolBd(nombreRolBD)
+                        .orElseThrow(() -> new RuntimeException("Rol BD no encontrado: " + nombreRolBD));
+
                 RolRolBD relacion = new RolRolBD();
                 relacion.setRol(rolActualizado);
                 relacion.setRolBd(rolBdEntidad);
                 relacion.setFechaAsignacion(LocalDate.now());
                 relacion.setVigente(true);
-
                 rolRolBDRepository.save(relacion);
             }
         }
@@ -141,8 +142,8 @@ public class RolService {
 
     @Transactional
     public void eliminar(Integer id) {
-
-        Rol rol = rolRepository.findById(id).orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+        Rol rol = rolRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
 
         UsuarioRolRepository.deleteByRol_IdRol(id);
         rolRolBDRepository.deleteByRol_IdRol(id);
@@ -168,11 +169,16 @@ public class RolService {
     }
 
     @Transactional
-    public List<String> listarRolesBD() {
+    public List<RolBDDTO> listarRolesBD() {
         sincronizarRolesBD();
-        return entityManager.createNativeQuery(
-                "SELECT rolname FROM pg_roles WHERE rolname LIKE 'clab_%'"
-        ).getResultList();
+        return rolBDRepository.findAll().stream()
+                .filter(r -> r.getNombreRolBd().startsWith("clab_"))
+                .map(r -> new RolBDDTO(
+                        r.getIdRolBd(),
+                        r.getNombreRolBd(),
+                        r.getDescripcion()
+                ))
+                .toList();
     }
 
     @Transactional(readOnly = true)
