@@ -11,7 +11,6 @@ interface Bloqueo {
   motivo: string;
 }
 
-// @ts-ignore
 @Component({
   selector: 'app-bloqueos',
   standalone: true,
@@ -23,10 +22,16 @@ export class BloqueosComponent implements OnInit {
 
   bloqueos: Bloqueo[] = [];
 
+  drawerAbierto = false;
+  rol = localStorage.getItem('rol') || '';
+  usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+
   constructor(private router: Router) {}
 
   ngOnInit() {
-    // Datos de ejemplo - luego los reemplazas con tu servicio
+    this.rol = localStorage.getItem('rol') || '';
+    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+
     this.bloqueos = [
       {
         id: 1,
@@ -39,30 +44,38 @@ export class BloqueosComponent implements OnInit {
     ];
   }
 
+  toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
+  cerrarDrawer(): void { this.drawerAbierto = false; }
+
+  navegar(ruta: string, texto: string): void {
+    this.cerrarDrawer();
+    this.router.navigate([`/${ruta}`]);
+  }
+
+  logout(): void {
+    localStorage.clear();
+    this.router.navigate(['/login']);
+  }
+
   volver() {
     this.router.navigate(['/dashboard']);
   }
 
   crearBloqueo() {
     alert('Abrir formulario de nuevo bloqueo - Por implementar');
-    // Aquí puedes navegar a otro componente o abrir un modal
   }
 
   editar(bloqueo: Bloqueo) {
-    console.log('Editar bloqueo:', bloqueo);
     alert(`Editar bloqueo de ${bloqueo.laboratorio}`);
-    // Aquí irá la lógica para editar
   }
 
   ver(bloqueo: Bloqueo) {
-    console.log('Ver detalles:', bloqueo);
-    alert(`Detalles del bloqueo:\n\nLab: ${bloqueo.laboratorio}\nMotivo: ${bloqueo.motivo}\nHorario: ${bloqueo.horario}`);
+    alert(`Detalles:\nLab: ${bloqueo.laboratorio}\nMotivo: ${bloqueo.motivo}`);
   }
 
   eliminar(bloqueo: Bloqueo) {
-    if (confirm(`¿Seguro que deseas eliminar el bloqueo de "${bloqueo.laboratorio}"?`)) {
+    if (confirm(`¿Eliminar el bloqueo de "${bloqueo.laboratorio}"?`)) {
       this.bloqueos = this.bloqueos.filter(b => b.id !== bloqueo.id);
-      console.log('Bloqueo eliminado:', bloqueo);
     }
   }
 }

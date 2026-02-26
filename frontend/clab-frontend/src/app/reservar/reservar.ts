@@ -104,6 +104,9 @@ export class ReservarComponent implements OnInit {
      TABS
   ========================= */
   tabActiva = 0;
+  drawerAbierto = false;
+  rol = localStorage.getItem('rol') || '';
+  usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
 
   cambiarTab(tab: number) {
     this.tabActiva = tab;
@@ -470,7 +473,18 @@ export class ReservarComponent implements OnInit {
   verDetalle(res: Reserva) {
     console.log('Detalle:', res);
   }
+  toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
+  cerrarDrawer(): void { this.drawerAbierto = false; }
 
+  navegar(ruta: string, texto: string): void {
+    this.cerrarDrawer();
+    this.router.navigate([`/${ruta}`]);
+  }
+
+  logout(): void {
+    localStorage.clear();
+    this.router.navigate(['/login']);
+  }
   volver() {
     this.router.navigate(['/dashboard']);
   }
@@ -480,6 +494,8 @@ export class ReservarComponent implements OnInit {
   ========================= */
 
   ngOnInit(): void {
+    this.rol = localStorage.getItem('rol') || '';
+    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
     this.cargarTipos();
     this.cargarReservas();
     this.cargarLaboratorios();

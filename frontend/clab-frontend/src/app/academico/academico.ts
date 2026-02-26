@@ -16,6 +16,9 @@ import { PeriodoService } from '../services/periodo.service';
 export class AcademicoComponent implements OnInit {
 
   tabActiva = 0;
+  drawerAbierto = false;
+  rol = localStorage.getItem('rol') || '';
+  usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
 
 
   periodos: Periodo[] = [];
@@ -163,6 +166,8 @@ export class AcademicoComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.rol = localStorage.getItem('rol') || '';
+    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
     console.log('Módulo Académico cargado');
     this.cargarPeriodos();
   }
@@ -577,7 +582,13 @@ export class AcademicoComponent implements OnInit {
       numeroEstudiantes: 30
     };
   }
+  toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
+  cerrarDrawer(): void { this.drawerAbierto = false; }
 
+  navegar(ruta: string, texto: string): void {
+    this.cerrarDrawer();
+    this.router.navigate([`/${ruta}`]);
+  }
   goToDashboard() {
     this.router.navigate(['/dashboard']);
   }

@@ -1,23 +1,119 @@
-<div class="reporte-fallas-container">
+<!-- DRAWER OVERLAY -->
+<div class="drawer-overlay" [class.open]="drawerAbierto" (click)="cerrarDrawer()"></div>
 
-  <!-- Header -->
-  <div class="header">
-    <div class="header-left">
-      <div class="logo">
-        <span class="logo-icon"></span>
-        <span class="logo-text">CLAB</span>
+<!-- DRAWER LATERAL -->
+<div class="drawer" [class.open]="drawerAbierto">
+  <div class="drawer-header">
+    <div class="drawer-brand">
+      CLAB
+      <span>Sistema de Laboratorios</span>
+    </div>
+    <button class="btn-close-drawer" (click)="cerrarDrawer()">×</button>
+  </div>
+
+  <div class="drawer-user">
+    <div class="drawer-avatar">{{ usuarioLogueado.charAt(0).toUpperCase() }}</div>
+    <div class="drawer-user-info">
+      <div class="dui-name">{{ usuarioLogueado }}</div>
+      <div class="role-badge">
+        <span class="role-dot"></span>
+        {{ rol }}
       </div>
     </div>
-    <div class="header-right">
-      <button class="btn-volver" (click)="volver()">Volver</button>
-    </div>
   </div>
 
+  <div class="drawer-section-title">Módulos</div>
 
-  <div class="page-title-section">
+  <div class="drawer-modules">
+    @if(rol === 'Administradorr' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('usuarios', '')">
+        <div class="di-icon"><img src="/user.png" alt="Usuarios"></div>
+        <div class="di-text"><div class="di-name">Usuarios</div><div class="di-desc">Gestión de accesos y roles</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
+      <div class="drawer-item" (click)="navegar('laboratorios', '')">
+        <div class="di-icon"><img src="/laboratorio.png" alt="Laboratorios"></div>
+        <div class="di-text"><div class="di-name">Laboratorios</div><div class="di-desc">Sedes y encargados</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('equipos', '')">
+        <div class="di-icon"><img src="/equipo.png" alt="Equipos"></div>
+        <div class="di-text"><div class="di-name">Equipos</div><div class="di-desc">Inventario y ubicaciones</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Coordinador' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('reservar', '')">
+        <div class="di-icon"><img src="/calendario.png" alt="Reservas"></div>
+        <div class="di-text"><div class="di-name">Reservas</div><div class="di-desc">Disponibilidad</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Coordinador') {
+      <div class="drawer-item" (click)="navegar('academico', '')">
+        <div class="di-icon"><img src="/academico.png" alt="Académico"></div>
+        <div class="di-text"><div class="di-name">Académico</div><div class="di-desc">Períodos y carreras</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('estudiantes', '')">
+        <div class="di-icon"><img src="/estudiantes.png" alt="Estudiantes"></div>
+        <div class="di-text"><div class="di-name">Estudiantes</div><div class="di-desc">Matrículas e inscripciones</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('asistencia', '')">
+        <div class="di-icon"><img src="/asistencia.png" alt="Asistencia"></div>
+        <div class="di-text"><div class="di-name">Asistencia</div><div class="di-desc">Control de asistencia</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('reporte-fallas', '')">
+        <div class="di-icon"><img src="/fallas.png" alt="Fallas"></div>
+        <div class="di-text"><div class="di-name">Reportes de Fallas</div><div class="di-desc">Seguimiento de equipos</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('bloqueos', '')">
+        <div class="di-icon"><img src="/bloqueos.png" alt="Bloqueos"></div>
+        <div class="di-text"><div class="di-name">Bloqueos</div><div class="di-desc">Gestión de conflictos</div></div>
+      </div>
+    }
+    <div class="drawer-item" (click)="navegar('notificaciones', '')">
+      <div class="di-icon"><img src="/campana.png" alt="Notificaciones"></div>
+      <div class="di-text"><div class="di-name">Notificaciones</div><div class="di-desc">Centro de alertas</div></div>
+    </div>
+    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
+      <div class="drawer-item" (click)="navegar('reportesuso', '')">
+        <div class="di-icon"><img src="/uso.png" alt="Reportes"></div>
+        <div class="di-text"><div class="di-name">Reportes de Uso</div><div class="di-desc">Estadísticas</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('auditoria', '')">
+        <div class="di-icon"><img src="/auditoria.png" alt="Auditoría"></div>
+        <div class="di-text"><div class="di-name">Auditoría</div><div class="di-desc">Trazabilidad</div></div>
+      </div>
+    }
+  </div>
+
+  <div class="drawer-footer">
+    <button class="btn-logout-drawer" (click)="logout()">🚪 Cerrar sesión</button>
+  </div>
+</div>
+
+
+<div class="page-title-section">
+  <div style="display:flex; align-items:center; gap:14px;">
+    <button class="btn-hamburger" [class.active]="drawerAbierto" (click)="toggleDrawer()">
+      <div class="ham-line"></div>
+      <div class="ham-line"></div>
+      <div class="ham-line"></div>
+    </button>
     <h1>Reporte de Fallas</h1>
   </div>
-
+  <button class="btn-volver" (click)="volver()">← Volver</button>
+</div>
 
   <div class="content-wrapper">
 
@@ -201,5 +297,3 @@
 
     </div>
   </div>
-
-</div>
