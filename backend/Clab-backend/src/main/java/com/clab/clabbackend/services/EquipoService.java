@@ -18,7 +18,20 @@ import java.util.List;
 public class EquipoService {
 
     private final EquipoRepository equipoRepository;
+    public void crear(EquipoDTO dto) {
 
+        equipoRepository.insertar(
+                dto.getNumeroSerie(),
+                dto.getNombreEquipo(),
+                dto.getMarca(),
+                dto.getModelo(),
+                dto.getIdTipoEquipo(),
+                dto.getEstado(),
+                dto.getCodLaboratorio(),
+                dto.getUbicacionFisica(),
+                dto.getFechaAdquisicion()
+        );
+    }
     public List<Equipo> listar() {
         List<Object[]> resultados = equipoRepository.listarSP();
 
@@ -71,20 +84,7 @@ public class EquipoService {
         }).toList();
     }
 
-    public void crear(EquipoDTO dto) {
 
-        equipoRepository.insertar(
-                dto.getNumeroSerie(),
-                dto.getNombreEquipo(),
-                dto.getMarca(),
-                dto.getModelo(),
-                dto.getIdTipoEquipo(),
-                dto.getEstado(),
-                dto.getCodLaboratorio(),
-                dto.getUbicacionFisica(),
-                dto.getFechaAdquisicion()
-        );
-    }
 
     public void editar(Integer idEquipo, EquipoDTO dto) {
 
