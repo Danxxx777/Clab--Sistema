@@ -67,6 +67,12 @@
         <div class="di-text"><div class="di-name">Bloqueos</div><div class="di-desc">Gestión de conflictos</div></div>
       </div>
     }
+    @if(rol === 'Administradorr') {
+      <div class="drawer-item" (click)="navegar('configuracion-correo', '')">
+        <div class="di-icon"><img src="/configuracion.png" alt="Configuración"></div>
+        <div class="di-text"><div class="di-name">Config. Correo</div><div class="di-desc">SMTP y remitente</div></div>
+      </div>
+    }
     <div class="drawer-item" (click)="navegar('notificaciones', '')">
       <div class="di-icon"><img src="/campana.png" alt="Notificaciones"></div>
       <div class="di-text"><div class="di-name">Notificaciones</div><div class="di-desc">Centro de alertas</div></div>
