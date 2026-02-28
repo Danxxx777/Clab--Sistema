@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
-
+$verde-oscuro3: #0d5a2e;
+$verde-medio3: #1f7a44;
+$verde-claro3: #2e9d5b;
 $verde-oscuro:      #1a4731;
 $verde-medio:       #2d6a4f;
 $verde-claro:       #3a8a65;
@@ -24,7 +26,7 @@ html, body { overflow: hidden; height: 100%; }
 
 // PAGE TITLE
 .page-title-section {
-  background: linear-gradient(135deg, $verde-oscuro, $verde-medio);
+  background: linear-gradient(135deg, $verde-oscuro3, $verde-medio3, $verde-claro3);
   padding: 10px 20px;
   display: flex;
   align-items: center;
@@ -134,7 +136,7 @@ html, body { overflow: hidden; height: 100%; }
 }
 
 .btn-guardar-config {
-  padding: 10px 26px; background: $verde-oscuro; color: white;
+  padding: 10px 26px; background: linear-gradient(135deg, $verde-oscuro3, $verde-medio3, $verde-claro3); color: white;
   border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;
   transition: all 0.3s; min-width: 200px; min-height: 42px;
   display: flex; align-items: center; justify-content: center;

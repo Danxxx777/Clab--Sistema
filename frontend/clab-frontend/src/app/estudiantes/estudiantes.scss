@@ -1,6 +1,9 @@
 // =====================
 // VARIABLES
 // =====================
+$verde-oscuro: #0d5a2e;
+$verde-medio: #1f7a44;
+$verde-claro: #2e9d5b;
 $color-primario: #2d7d51;
 $color-secundario: #27ae60;
 $color-fondo: #f5f7fa;
@@ -34,7 +37,7 @@ $color-eliminar: #e74c3c;
 // PAGE TITLE
 // =====================
 .page-title-section {
-  background: linear-gradient(135deg, #1a4731, #2d6a4f);
+  background: linear-gradient(135deg, $verde-oscuro, $verde-medio, $verde-claro);
   padding: 12px 24px;
   display: flex;
   align-items: center;
@@ -159,7 +162,7 @@ $color-eliminar: #e74c3c;
   }
 
   .btn-agregar {
-    background: $color-primario;
+    background: linear-gradient(135deg, $verde-oscuro, $verde-medio, $verde-claro);
     color: white;
     border: none;
     padding: 12px 28px;
@@ -378,7 +381,7 @@ $color-eliminar: #e74c3c;
 }
 
 .modal-header {
-  background: linear-gradient(135deg, $color-primario 0%, darken($color-primario, 10%) 100%);
+  background: linear-gradient(135deg, $verde-oscuro, $verde-medio, $verde-claro);
   padding: 24px 28px;
   border-radius: 16px 16px 0 0;
   display: flex;
@@ -457,18 +460,19 @@ $color-eliminar: #e74c3c;
     border: none;
 
     &.btn-cancelar {
-      background: white;
-      color: $color-texto-claro;
+      background: red;
+      color: white;
       border: 2px solid $color-borde;
 
       &:hover {
         background: #f8f9fa;
         border-color: #adb5bd;
+        color: red;
       }
     }
 
     &.btn-guardar {
-      background: $color-primario;
+      background: linear-gradient(135deg, $verde-oscuro, $verde-medio, $verde-claro);
       color: white;
 
       &:hover {
