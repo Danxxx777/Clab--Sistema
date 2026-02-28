@@ -53,7 +53,7 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("El usuario no tiene rol asignado"));
 
         String token = jwtService.generarToken(usuario.getIdUsuario(), usuarioRol.getRol().getNombreRol());
-        return new AuthResponseDTO(token, usuario.getNombres(), usuario.getApellidos(), usuarioRol.getRol().getNombreRol());
+        return new AuthResponseDTO(token, usuario.getNombres(), usuario.getApellidos(), usuarioRol.getRol().getNombreRol(), usuario.getIdUsuario());
     }
 
     public void solicitarRecuperacion(String email) {
