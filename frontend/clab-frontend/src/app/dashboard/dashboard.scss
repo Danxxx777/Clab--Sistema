@@ -82,7 +82,7 @@ body {
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
-  &:hover { background: rgba(255,255,255,0.15); }
+  &:hover { background: rgba(255,255,255,0.15); transform: rotate(90deg);}
 }
 
 .drawer-user {
@@ -509,116 +509,4 @@ img {
   .menu-list { grid-template-columns: 1fr 1fr; gap: 12px; }
   .user-name-nav { display: none; }
   .menu-item { min-height: 140px; }
-}
-// CONFIGURACIÓN CORREO
-.config-item {
-  cursor: pointer;
-  position: relative;
-  .config-arrow {
-    margin-left: auto;
-    font-size: 12px;
-    color: #888;
-  }
-}
-
-.config-correo-panel {
-  background: #f8fdf9;
-  border: 1px solid #d4e6db;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 16px;
-  animation: fadeIn 0.3s ease;
-}
-
-.config-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.config-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  &.full { grid-column: 1 / -1; }
-
-  label {
-    font-size: 12px;
-    font-weight: 700;
-    color: #2c3e50;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-}
-
-.config-input {
-  padding: 10px 14px;
-  border: 2px solid #d4e6db;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #2c3e50;
-  transition: all 0.3s;
-  &:focus {
-    outline: none;
-    border-color: #27ae60;
-    box-shadow: 0 0 0 3px rgba(39,174,96,0.12);
-  }
-}
-
-.config-checks {
-  display: flex;
-  gap: 24px;
-  grid-template-columns: unset;
-}
-
-.check-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #2c3e50;
-  cursor: pointer;
-  input[type="checkbox"] { width: 16px; height: 16px; accent-color: #27ae60; }
-}
-
-.config-footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 8px;
-  flex-wrap: wrap;
-}
-
-.btn-guardar-config {
-  padding: 10px 24px;
-  background: #1a4731;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-  &:hover:not(:disabled) { background: #2d6a4f; transform: translateY(-2px); }
-  &:disabled { opacity: 0.6; cursor: not-allowed; }
-}
-
-.config-msg-exito {
-  font-size: 13px;
-  color: #1e7e34;
-  background: #f0faf4;
-  padding: 6px 12px;
-  border-radius: 6px;
-  border-left: 3px solid #28a745;
-}
-
-.config-msg-error {
-  font-size: 13px;
-  color: #e74c3c;
-  background: #fdf0ef;
-  padding: 6px 12px;
-  border-radius: 6px;
-  border-left: 3px solid #e74c3c;
 }

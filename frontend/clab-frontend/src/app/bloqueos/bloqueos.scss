@@ -1,3 +1,7 @@
+$verde-oscuro: #0d5a2e;
+$verde-medio: #1f7a44;
+$verde-claro: #2e9d5b;
+
 :host {
   display: block;
   min-height: 100vh;
@@ -11,7 +15,7 @@
 }
 
 .page-title-section {
-  background: linear-gradient(135deg, #1a4731, #2d6a4f);
+  background: linear-gradient(135deg, $verde-oscuro, $verde-medio, $verde-claro);
   padding: 12px 24px;
   display: flex;
   align-items: center;
