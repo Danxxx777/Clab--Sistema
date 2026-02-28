@@ -217,6 +217,15 @@
           </thead>
           <tbody>
           <tr *ngFor="let carrera of carrerasFiltradas; let i = index">
+            <td><strong>{{ carrera.nombre }}</strong></td>
+            <td>{{ carrera.facultad }}</td>
+            <td>
+                <span class="badge"
+                      [class.badge-activo]="carrera.estado === 'ACTIVA'"
+                      [class.badge-inactivo]="carrera.estado === 'INACTIVA'">
+                  {{ carrera.estado }}
+                </span>
+            </td>
             <td>
               <div class="action-buttons">
                 <button class="btn-action btn-editar" (click)="editar(carrera, i, 'carrera')">Editar</button>
@@ -262,6 +271,22 @@
           </thead>
           <tbody>
           <tr *ngFor="let asignatura of asignaturasFiltradas; let i = index">
+            <td><strong>{{ asignatura.nombre }}</strong></td>
+            <td>{{ asignatura.carrera }}</td>
+            <td>Nivel {{ asignatura.nivel }}</td>
+            <td>{{ asignatura.horasSemanales }} hrs/sem</td>
+            <td>
+                <span [ngClass]="asignatura.requiereLaboratorio === 'SI' ? 'lab-si' : 'lab-no'">
+                  {{ asignatura.requiereLaboratorio === 'SI' ? '🔬 Sí' : '📘 No' }}
+                </span>
+            </td>
+            <td>
+                <span class="badge"
+                      [class.badge-activo]="asignatura.estado === 'ACTIVA'"
+                      [class.badge-inactivo]="asignatura.estado === 'INACTIVA'">
+                  {{ asignatura.estado }}
+                </span>
+            </td>
             <td>
               <div class="action-buttons">
                 <button class="btn-action btn-editar" (click)="editar(asignatura, i, 'asignatura')">Editar</button>
@@ -305,6 +330,16 @@
           </thead>
           <tbody>
           <tr *ngFor="let facultad of facultadesFiltradas; let i = index">
+            <td><strong>{{ facultad.nombre }}</strong></td>
+            <td>{{ facultad.nombreDecano }}</td>
+            <td>{{ facultad.fechaCreacion }}</td>
+            <td>
+                <span class="badge"
+                      [class.badge-activo]="facultad.estado === 'ACTIVO'"
+                      [class.badge-inactivo]="facultad.estado === 'INACTIVO'">
+                  {{ facultad.estado }}
+                </span>
+            </td>
             <td>
               <div class="action-buttons">
                 <button class="btn-action btn-editar" (click)="editar(facultad, i, 'facultad')">Editar</button>
@@ -350,6 +385,12 @@
           </thead>
           <tbody>
           <tr *ngFor="let horario of horariosFiltrados; let i = index">
+            <td><strong>{{ horario.periodo }}</strong></td>
+            <td>{{ horario.asignatura }}</td>
+            <td>{{ horario.docente }}</td>
+            <td>{{ horario.diaSemana }}</td>
+            <td>{{ horario.horaInicio }} - {{ horario.horaFin }}</td>
+            <td>{{ horario.numeroEstudiantes }} estudiantes</td>
             <td>
               <div class="action-buttons">
                 <button class="btn-action btn-editar" (click)="editar(horario, i, 'horario')">Editar</button>
@@ -425,6 +466,7 @@
             <label>Facultad <span class="required">*</span></label>
             <select class="form-control" [(ngModel)]="formularioCarrera.facultad">
               <option value="">Seleccione facultad</option>
+              <option *ngFor="let fac of facultades" [value]="fac.nombre">{{ fac.nombre }}</option>
             </select>
           </div>
           <div class="form-group">
@@ -450,6 +492,7 @@
             <label>Carrera <span class="required">*</span></label>
             <select class="form-control" [(ngModel)]="formularioAsignatura.carrera">
               <option value="">Seleccione carrera</option>
+              <option *ngFor="let carrera of carreras" [value]="carrera.nombre">{{ carrera.nombre }}</option>
             </select>
           </div>
           <div class="form-group">
@@ -501,17 +544,13 @@
         <div class="form-row">
           <div class="form-group">
             <label>Decano <span class="required">*</span></label>
-            <select class="form-control" [(ngModel)]="formularioFacultad.decano">
-              <option value="">Seleccione decano</option>
-              <option *ngFor="let decano of decanos" [value]="decano">{{ decano }}</option>
+            <select class="form-control" [(ngModel)]="formularioFacultad.idDecano">
+              <option [value]="0">Seleccione decano</option>
+              <option *ngFor="let decano of decanos" [value]="decano.idUsuario">
+                {{ decano.nombreDecano }}
+              </option>
             </select>
           </div>
-          <div class="form-group">
-            <label>Fecha de Creación <span class="required">*</span></label>
-            <input type="date" class="form-control" [(ngModel)]="formularioFacultad.fechaCreacion">
-          </div>
-        </div>
-        <div class="form-row">
           <div class="form-group">
             <label>Estado</label>
             <select class="form-control" [(ngModel)]="formularioFacultad.estado">
@@ -536,7 +575,7 @@
             <label>Asignatura <span class="required">*</span></label>
             <select class="form-control" [(ngModel)]="formularioHorario.asignatura">
               <option value="">Seleccione asignatura</option>
-
+              <option *ngFor="let asignatura of asignaturas" [value]="asignatura.nombre">{{ asignatura.nombre }}</option>
             </select>
           </div>
         </div>
@@ -593,4 +632,13 @@
     </div>
 
   </div>
+</div>
+
+<div
+  class="toast"
+  *ngIf="mostrarToast"
+  [class.toast-success]="toastTipo === 'success'"
+  [class.toast-error]="toastTipo === 'error'">
+
+  {{ toastMensaje }}
 </div>

@@ -194,7 +194,7 @@ export class ReporteFallasComponent implements OnInit {
       codLaboratorio: Number(this.reporteForm.get('codLaboratorio')?.value),
       idEquipo: Number(this.reporteForm.get('idEquipo')?.value),
       descripcionFalla: this.reporteForm.get('descripcionFalla')?.value,
-      idUsuario: 1
+      idUsuario: Number(localStorage.getItem('idUsuario'))
     };
 
     this.reporteService.crear(reporteDTO).subscribe({
