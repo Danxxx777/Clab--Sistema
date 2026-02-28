@@ -10,4 +10,5 @@ public class AuthResponseDTO {
     private String nombres;
     private String apellidos;
     private String rol;
+    private Integer idUsuario;
 }
