@@ -1,53 +1,77 @@
 package com.clab.clabbackend.services;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
+import com.clab.clabbackend.entities.ConfiguracionCorreo;
+import com.clab.clabbackend.repository.ConfiguracionCorreoRepository;
+import jakarta.mail.internet.MimeMessage;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import jakarta.mail.internet.MimeMessage;
+import java.util.Properties;
 
 @Service
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private final ConfiguracionCorreoRepository configRepo;
 
-    @Value("${spring.mail.username}")
-    private String fromEmail;
-
-    public EmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
+    public EmailService(ConfiguracionCorreoRepository configRepo) {
+        this.configRepo = configRepo;
     }
 
-    public void enviarCorreoRecuperacion(String destino, String token) {
+    private JavaMailSenderImpl construirMailSender(ConfiguracionCorreo config) {
+        JavaMailSenderImpl sender = new JavaMailSenderImpl();
+        sender.setHost(config.getHost());
+        sender.setPort(config.getPuerto());
+        sender.setUsername(config.getEmailRemitente());
+        sender.setPassword(config.getPasswordRemitente());
 
+        Properties props = sender.getJavaMailProperties();
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.auth", config.getAuthHabilitado().toString());
+        props.put("mail.smtp.starttls.enable", config.getStarttlsHabilitado().toString());
+        props.put("mail.debug", "false");
+
+        return sender;
+    }
+
+    public void enviarCorreoRecuperacion(String destino, String codigo) {
         try {
+            ConfiguracionCorreo config = configRepo.findFirstByActivoTrue()
+                    .orElseThrow(() -> new RuntimeException("No hay configuración de correo activa"));
 
-            String link = "http://localhost:4200/reset-password?token=" + token;
-            MimeMessage mensaje = mailSender.createMimeMessage();
+            JavaMailSenderImpl sender = construirMailSender(config);
+
+            MimeMessage mensaje = sender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mensaje, true);
-            helper.setFrom(fromEmail);
+
+            String nombreRemitente = config.getNombreRemitente() != null
+                    ? config.getNombreRemitente()
+                    : "CLAB";
+
+            helper.setFrom(config.getEmailRemitente(), nombreRemitente);
             helper.setTo(destino);
             helper.setSubject("Recuperación de contraseña - CLAB");
+
             String contenidoHTML =
-                    "<div style='font-family: Arial, sans-serif; padding:20px;'>" +
+                    "<div style='font-family: Arial, sans-serif; padding:20px; max-width:500px;'>" +
                             "<h2 style='color:#1e7e34;'>Sistema CLAB</h2>" +
                             "<p>Hola,</p>" +
                             "<p>Recibimos una solicitud para cambiar tu contraseña.</p>" +
-                            "<p>Haz clic en el siguiente botón:</p>" +
-                            "<a href='" + link + "' " +
-                            "style='display:inline-block; padding:12px 25px; background-color:#28a745; color:white; text-decoration:none; border-radius:5px; font-weight:bold;'>" +
-                            "Cambiar contraseña" +
-                            "</a>" +
-                            "<p style='margin-top:20px;'>Este enlace expirará en 15 minutos.</p>" +
+                            "<p>Tu código de verificación es:</p>" +
+                            "<div style='font-size:36px; font-weight:bold; letter-spacing:10px; " +
+                            "color:#1a4731; background:#f0faf4; padding:20px; text-align:center; " +
+                            "border-radius:10px; margin:20px 0;'>" + codigo + "</div>" +
+                            "<p>Este código expirará en <strong>15 minutos</strong>.</p>" +
                             "<hr>" +
                             "<small>Si no solicitaste este cambio, ignora este correo.</small>" +
                             "</div>";
 
             helper.setText(contenidoHTML, true);
-            mailSender.send(mensaje);
+            sender.send(mensaje);
+
         } catch (Exception e) {
-            throw new RuntimeException("Error enviando correo");
+            e.printStackTrace();
+            throw new RuntimeException("Error enviando correo: " + e.getMessage());
         }
     }
 }

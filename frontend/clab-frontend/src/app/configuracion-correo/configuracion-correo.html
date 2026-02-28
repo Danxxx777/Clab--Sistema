@@ -1,4 +1,7 @@
+<!-- DRAWER OVERLAY -->
 <div class="drawer-overlay" [class.open]="drawerAbierto" (click)="cerrarDrawer()"></div>
+
+<!-- DRAWER LATERAL -->
 <div class="drawer" [class.open]="drawerAbierto">
   <div class="drawer-header">
     <div class="drawer-brand">CLAB<span>Sistema de Laboratorios</span></div>
@@ -67,24 +70,38 @@
         <div class="di-text"><div class="di-name">Bloqueos</div><div class="di-desc">Gestión de conflictos</div></div>
       </div>
     }
+    <div class="drawer-item" (click)="navegar('notificaciones', '')">
+      <div class="di-icon"><img src="/campana.png" alt="Notificaciones"></div>
+      <div class="di-text"><div class="di-name">Notificaciones</div><div class="di-desc">Centro de alertas</div></div>
+    </div>
+    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
+      <div class="drawer-item" (click)="navegar('reportesuso', '')">
+        <div class="di-icon"><img src="/uso.png" alt="Reportes"></div>
+        <div class="di-text"><div class="di-name">Reportes de Uso</div><div class="di-desc">Estadísticas</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('auditoria', '')">
+        <div class="di-icon"><img src="/auditoria.png" alt="Auditoría"></div>
+        <div class="di-text"><div class="di-name">Auditoría</div><div class="di-desc">Trazabilidad</div></div>
+      </div>
+    }
     @if(rol === 'Administradorr') {
       <div class="drawer-item" (click)="navegar('configuracion-correo', '')">
         <div class="di-icon"><img src="/configuracion.png" alt="Configuración"></div>
         <div class="di-text"><div class="di-name">Config. Correo</div><div class="di-desc">SMTP y remitente</div></div>
       </div>
     }
-    <div class="drawer-item" (click)="navegar('notificaciones', '')">
-      <div class="di-icon"><img src="/campana.png" alt="Notificaciones"></div>
-      <div class="di-text"><div class="di-name">Notificaciones</div><div class="di-desc">Centro de alertas</div></div>
-    </div>
   </div>
   <div class="drawer-footer">
     <button class="btn-logout-drawer" (click)="logout()">🚪 Cerrar sesión</button>
   </div>
 </div>
 
-<div class="bloqueos-page">
+<!-- CONTENEDOR PRINCIPAL -->
+<div class="inventario-container">
 
+  <!-- HEADER VERDE -->
   <div class="page-title-section">
     <div style="display:flex; align-items:center; gap:14px;">
       <button class="btn-hamburger" [class.active]="drawerAbierto" (click)="toggleDrawer()">
@@ -92,55 +109,79 @@
         <div class="ham-line"></div>
         <div class="ham-line"></div>
       </button>
-      <h1>Bloqueos por Actividades Institucionales</h1>
-    </div>
-    <button class="back-btn" (click)="volver()">← Volver</button>
-  </div>
-
-  <div class="bloqueos-container">
-
-    <div class="bloqueos-header">
-      <button class="btn-crear" (click)="crearBloqueo()">Crear Bloqueo</button>
-    </div>
-
-    <div class="bloqueos-table-container">
-      <div class="table-wrapper">
-        <table class="bloqueos-table">
-          <thead>
-          <tr>
-            <th>LABORATORIO</th>
-            <th>FECHA INICIO</th>
-            <th>FECHA FIN</th>
-            <th>HORARIO</th>
-            <th>MOTIVO</th>
-            <th>ACCIONES</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr *ngFor="let bloqueo of bloqueos">
-            <td>{{bloqueo.laboratorio}}</td>
-            <td>{{bloqueo.fechaInicio}}</td>
-            <td>{{bloqueo.fechaFin}}</td>
-            <td>{{bloqueo.horario}}</td>
-            <td>{{bloqueo.motivo}}</td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn-edit" (click)="editar(bloqueo)" title="Editar">✏️</button>
-                <button class="btn-lock" (click)="ver(bloqueo)" title="Ver detalles">🔒</button>
-                <button class="btn-delete" (click)="eliminar(bloqueo)" title="Eliminar">🗑️</button>
-              </div>
-            </td>
-          </tr>
-          <tr *ngIf="bloqueos.length === 0">
-            <td colspan="6" class="empty-state">
-              <div class="empty-icon">🔒</div>
-              <p>No hay bloqueos registrados</p>
-            </td>
-          </tr>
-          </tbody>
-        </table>
+      <div>
+        <h1>Configuración de Correo</h1>
       </div>
     </div>
+    <button class="btn-volver" (click)="volver()">← Volver</button>
+  </div>
 
+  <!-- CONTENIDO -->
+  <div class="content-wrapper">
+    <div class="config-card">
+
+      <div class="config-section">
+        <div class="config-section-title">Servidor SMTP</div>
+        <div class="config-row">
+          <div class="config-group">
+            <label>Host SMTP <span class="req">*</span></label>
+            <input class="config-input" [(ngModel)]="config.host" placeholder="smtp.gmail.com">
+          </div>
+          <div class="config-group">
+            <label>Puerto <span class="req">*</span></label>
+            <input class="config-input" type="number" [(ngModel)]="config.puerto" placeholder="587">
+          </div>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <div class="config-section-title">Remitente</div>
+        <div class="config-row">
+          <div class="config-group">
+            <label>Email remitente <span class="req">*</span></label>
+            <input class="config-input" type="email" [(ngModel)]="config.emailRemitente" placeholder="correo@gmail.com">
+          </div>
+          <div class="config-group">
+            <label>Nombre remitente</label>
+            <input class="config-input" [(ngModel)]="config.nombreRemitente" placeholder="CLAB Sistema">
+          </div>
+        </div>
+        <div class="config-row">
+          <div class="config-group full">
+            <label>Contraseña de aplicación <span class="req">*</span></label>
+            <div class="password-wrapper">
+              <input class="config-input" [type]="mostrarPassword ? 'text' : 'password'"
+                     [(ngModel)]="config.passwordRemitente" placeholder="••••••••••••••••">
+              <button class="btn-toggle-pass" (click)="mostrarPassword = !mostrarPassword">
+                <img src="/ojo.png" alt="Ver contraseña" class="icon-ojo">
+              </button>
+            </div>
+            <small class="hint">Usa una contraseña de aplicación de Gmail, no tu contraseña normal.</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <div class="config-section-title">Opciones de seguridad</div>
+        <div class="config-checks">
+          <label class="check-label">
+            <input type="checkbox" [(ngModel)]="config.authHabilitado"> Autenticación SMTP
+          </label>
+          <label class="check-label">
+            <input type="checkbox" [(ngModel)]="config.starttlsHabilitado"> STARTTLS habilitado
+          </label>
+        </div>
+      </div>
+
+      <div class="config-footer">
+        <p class="config-msg-exito" *ngIf="mensaje">{{ mensaje }}</p>
+        <p class="config-msg-error" *ngIf="error">{{ error }}</p>
+        <button class="btn-guardar-config" (click)="guardar()" [disabled]="guardando">
+          <span *ngIf="!guardando">Guardar configuración</span>
+          <span *ngIf="guardando" class="dots"><span></span><span></span><span></span></span>
+        </button>
+      </div>
+
+    </div>
   </div>
 </div>
