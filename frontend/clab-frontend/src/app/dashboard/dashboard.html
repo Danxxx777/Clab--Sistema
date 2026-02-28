@@ -339,6 +339,16 @@
         </div>
       }
 
+      @if(rol === 'Administradorr') {
+        <div class="menu-item" (click)="navegar('configuracion-correo', 'Cargando Configuración...')">
+          <span style="font-size:44px">⚙️</span>
+          <div class="text">
+            <strong>Configuración de Correo</strong>
+            <p>Gestionar remitente y credenciales SMTP</p>
+          </div>
+        </div>
+      }
     </div>
+
   </div>
 </div>
