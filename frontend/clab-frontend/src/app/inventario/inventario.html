@@ -107,6 +107,12 @@
           <div class="di-text"><div class="di-name">Auditoría</div><div class="di-desc">Trazabilidad</div></div>
         </div>
       }
+      @if(rol === 'Administradorr') {
+        <div class="drawer-item" (click)="navegar('configuracion-correo', '')">
+          <div class="di-icon"><img src="/configuracion.png" alt="Configuración"></div>
+          <div class="di-text"><div class="di-name">Config. Correo</div><div class="di-desc">SMTP y remitente</div></div>
+        </div>
+      }
     </div>
 
     <div class="drawer-footer">
