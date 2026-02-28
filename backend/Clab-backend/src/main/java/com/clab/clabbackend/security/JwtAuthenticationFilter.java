@@ -35,7 +35,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 || path.startsWith("/laboratorios")
                 || path.startsWith("/reportes")
                 || path.startsWith("/sedes")
-                || path.startsWith("/tipos-reserva");
+                || path.startsWith("/tipos-reserva")
+                || path.startsWith("/facultades");
         return shouldSkip;
     }
 
