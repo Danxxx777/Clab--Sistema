@@ -6,8 +6,8 @@ import {Periodo} from '../interfaces/Periodo.model';
 import { PeriodoService } from '../services/periodo.service';
 import {FacultadService, FacultadDTO} from '../services/facultad.service';
 import { CarreraService, CarreraDTO } from '../services/carrera.service';
-
-
+import { AsignaturaService, AsignaturaDTO } from '../services/asignatura.service';
+import { HorarioService, HorarioDTO } from '../services/horario.service';
 
 @Component({
   selector: 'app-academico',
@@ -30,27 +30,16 @@ export class AcademicoComponent implements OnInit {
 
   carreras: any [] = [];
 
-  asignaturas = [
-    { nombre: 'Programación I', carrera: 'Ingeniería de Sistemas', nivel: 1, horasSemanales: 6, requiereLaboratorio: 'SI', estado: 'ACTIVA' },
-    { nombre: 'Base de Datos', carrera: 'Ingeniería de Sistemas', nivel: 3, horasSemanales: 6, requiereLaboratorio: 'SI', estado: 'ACTIVA' },
-    { nombre: 'Anatomía Humana', carrera: 'Medicina', nivel: 2, horasSemanales: 8, requiereLaboratorio: 'SI', estado: 'ACTIVA' },
-    { nombre: 'Contabilidad General', carrera: 'Administración de Empresas', nivel: 1, horasSemanales: 4, requiereLaboratorio: 'NO', estado: 'ACTIVA' },
-    { nombre: 'Derecho Civil', carrera: 'Derecho', nivel: 1, horasSemanales: 5, requiereLaboratorio: 'NO', estado: 'INACTIVA' }
-  ];
+  asignaturas: any [] = [];
 
-  horarios = [
-    { periodo: '2024-I', asignatura: 'Programación I', docente: 'Dr. Carlos Rodríguez', diaSemana: 'LUNES', horaInicio: '08:00', horaFin: '10:00', numeroEstudiantes: 35 },
-    { periodo: '2024-I', asignatura: 'Base de Datos', docente: 'Ing. Ana Martínez', diaSemana: 'MIÉRCOLES', horaInicio: '10:00', horaFin: '12:00', numeroEstudiantes: 28 },
-    { periodo: '2024-I', asignatura: 'Anatomía Humana', docente: 'Dra. Laura Fernández', diaSemana: 'VIERNES', horaInicio: '14:00', horaFin: '16:00', numeroEstudiantes: 45 },
-    { periodo: '2024-II', asignatura: 'Contabilidad General', docente: 'Lic. Pedro Gómez', diaSemana: 'MARTES', horaInicio: '16:00', horaFin: '18:00', numeroEstudiantes: 32 }
-  ];
+  horarios: any[]= [];
 
 
   periodosFiltrado: Periodo[] = [];
   carrerasFiltradas: any[] = [];
-  asignaturasFiltradas = [...this.asignaturas];
+  asignaturasFiltradas: any[]= [];
   facultadesFiltradas: any[] = [];
-  horariosFiltrados = [...this.horarios];
+  horariosFiltrados: any[]= [];
 
 
   busquedaPeriodos = '';
@@ -103,10 +92,10 @@ export class AcademicoComponent implements OnInit {
 
   formularioAsignatura = {
     nombre: '',
-    carrera: '',
+    idCarrera: 0,
     nivel: 1,
     horasSemanales: 4,
-    requiereLaboratorio: 'NO',
+    requiereLaboratorio: false,
     estado: 'ACTIVA'
   };
 
@@ -118,27 +107,21 @@ export class AcademicoComponent implements OnInit {
   };
 
   formularioHorario = {
-    periodo: '',
-    asignatura: '',
-    docente: '',
+    idPeriodo: 0,
+    idAsignatura: 0,
+    idDocente: 0,
     diaSemana: '',
     horaInicio: '',
     horaFin: '',
-    numeroEstudiantes: 30
+    numeroEstudiantes: 30,
+    estado: 'ACTIVO'
   };
 
 
   decanos: any[]= [];
   coordinadores: any[]= [];
 
-  docentes = [
-    'Dr. Carlos Rodríguez',
-    'Ing. Ana Martínez',
-    'Dra. Laura Fernández',
-    'Lic. Pedro Gómez',
-    'MSc. Roberto Sánchez',
-    'PhD. Julia Méndez'
-  ];
+  docentes: any[]= [];
 
   horas = [
     '07:00', '08:00', '09:00', '10:00', '11:00', '12:00',
@@ -150,6 +133,8 @@ export class AcademicoComponent implements OnInit {
               private periodo: PeriodoService,
               private facultadService: FacultadService,
               private carreraService: CarreraService,
+              private asignaturaService: AsignaturaService,
+              private horarioService: HorarioService,
               private cdr: ChangeDetectorRef) {}
 
   cargarPeriodos(): void {
@@ -174,6 +159,9 @@ export class AcademicoComponent implements OnInit {
     this.cargarDecanos();
     this.cargarCarreras();
     this.cargarCoordinadores();
+    this.cargarAsignaturas();
+    this.cargarHorarios();
+    this.cargarDocentes();
   }
 
   cambiarTab(tabIndex: number) {
@@ -220,12 +208,12 @@ export class AcademicoComponent implements OnInit {
     );
   }
 
-  filtrarAsignaturas() {
+  filtrarAsignaturas(): void {
     const busqueda = this.busquedaAsignaturas.toLowerCase();
-    this.asignaturasFiltradas = this.asignaturas.filter(asignatura =>
-      asignatura.nombre.toLowerCase().includes(busqueda) ||
-      asignatura.carrera.toLowerCase().includes(busqueda) ||
-      asignatura.estado.toLowerCase().includes(busqueda)
+    this.asignaturasFiltradas = this.asignaturas.filter(a =>
+      a.nombre.toLowerCase().includes(busqueda) ||
+      (a.nombreCarrera && a.nombreCarrera.toLowerCase().includes(busqueda)) ||
+      a.estado.toLowerCase().includes(busqueda)
     );
   }
 
@@ -238,13 +226,13 @@ export class AcademicoComponent implements OnInit {
     );
   }
 
-  filtrarHorarios() {
+  filtrarHorarios(): void {
     const busqueda = this.busquedaHorarios.toLowerCase();
-    this.horariosFiltrados = this.horarios.filter(horario =>
-      horario.periodo.toLowerCase().includes(busqueda) ||
-      horario.asignatura.toLowerCase().includes(busqueda) ||
-      horario.docente.toLowerCase().includes(busqueda) ||
-      horario.diaSemana.toLowerCase().includes(busqueda)
+    this.horariosFiltrados = this.horarios.filter(h =>
+      h.nombrePeriodo.toLowerCase().includes(busqueda) ||
+      h.nombreAsignatura.toLowerCase().includes(busqueda) ||
+      h.nombreDocente.toLowerCase().includes(busqueda) ||
+      h.diaSemana.toLowerCase().includes(busqueda)
     );
   }
 
@@ -287,6 +275,38 @@ export class AcademicoComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Error al cargar coordinadores', err)
+    });
+  }
+
+  cargarAsignaturas(): void {
+    this.asignaturaService.listar().subscribe({
+      next: (data) => {
+        this.asignaturas = data;
+        this.asignaturasFiltradas = [...data];
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error al cargar asignaturas', err)
+    });
+  }
+
+  cargarHorarios(): void {
+    this.horarioService.listar().subscribe({
+      next: (data) => {
+        this.horarios = data;
+        this.horariosFiltrados = [...data];
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error al cargar horarios', err)
+    });
+  }
+
+  cargarDocentes(): void {
+    this.horarioService.listarDocentes().subscribe({
+      next: (data) => {
+        this.docentes = data;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error al cargar docentes', err)
     });
   }
 
@@ -344,7 +364,14 @@ export class AcademicoComponent implements OnInit {
         };
         break;
       case 'asignatura':
-        this.formularioAsignatura = { ...item };
+        this.formularioAsignatura = {
+          nombre: item.nombre,
+          idCarrera: item.idCarrera || 0,
+          nivel: item.nivel,
+          horasSemanales: item.horasSemanales,
+          requiereLaboratorio: item.requiereLaboratorio,
+          estado: item.estado || 'ACTIVA'
+        };
         break;
       case 'facultad':
         this.formularioFacultad = {
@@ -355,7 +382,16 @@ export class AcademicoComponent implements OnInit {
         };
         break;
       case 'horario':
-        this.formularioHorario = { ...item };
+        this.formularioHorario = {
+          idPeriodo: item.idPeriodo || 0,
+          idAsignatura: item.idAsignatura || 0,
+          idDocente: item.idDocente || 0,
+          diaSemana: item.diaSemana,
+          horaInicio: item.horaInicio,
+          horaFin: item.horaFin,
+          numeroEstudiantes: item.numeroEstudiantes,
+          estado: item.estado || 'ACTIVO'
+        };
         break;
     }
 
@@ -387,10 +423,13 @@ export class AcademicoComponent implements OnInit {
           });
           break;
         case 'asignatura':
-          this.asignaturas.splice(index, 1);
-          this.filtrarAsignaturas();
-          this.cdr.detectChanges();
-          alert('Asignatura eliminada');
+          this.asignaturaService.eliminar(item.idAsignatura).subscribe({
+            next: () => {
+              this.cargarAsignaturas();
+              this.mostrarNotificacion('Asignatura eliminada correctamente');
+            },
+            error: () => this.mostrarNotificacion('Error al eliminar asignatura', 'error')
+          });
           break;
         case 'facultad':
           this.facultadService.eliminar(item.idFacultad).subscribe({
@@ -404,10 +443,13 @@ export class AcademicoComponent implements OnInit {
           });
           break;
         case 'horario':
-          this.horarios.splice(index, 1);
-          this.filtrarHorarios();
-          this.cdr.detectChanges();
-          alert('Horario eliminado');
+          this.horarioService.eliminar(item.idHorario).subscribe({
+            next: () => {
+              this.cargarHorarios();
+              this.mostrarNotificacion('Horario eliminado correctamente');
+            },
+            error: () => this.mostrarNotificacion('Error al eliminar horario', 'error')
+          });
           break;
       }
     }
@@ -534,26 +576,72 @@ export class AcademicoComponent implements OnInit {
       }
 
       case 'asignatura': {
-        const asignatura = { ...this.formularioAsignatura };
-        if (this.modoEdicion) this.asignaturas[this.indiceEdicion] = asignatura;
-        else this.asignaturas.push(asignatura);
+        const payload: AsignaturaDTO = {
+          nombre: this.formularioAsignatura.nombre,
+          idCarrera: this.formularioAsignatura.idCarrera,
+          nivel: this.formularioAsignatura.nivel,
+          horasSemanales: this.formularioAsignatura.horasSemanales,
+          requiereLaboratorio: this.formularioAsignatura.requiereLaboratorio,
+          estado: this.formularioAsignatura.estado
+        };
 
-        this.filtrarAsignaturas();
-        this.cdr.detectChanges();
-        this.cerrarModal();
-        alert(`Asignatura ${this.modoEdicion ? 'actualizada' : 'agregada'} exitosamente`);
+        const id = this.modoEdicion ? this.asignaturas[this.indiceEdicion]?.idAsignatura : null;
+
+        if (this.modoEdicion && id) {
+          this.asignaturaService.editar(id, payload).subscribe({
+            next: () => {
+              this.cargarAsignaturas();
+              this.cerrarModal();
+              this.mostrarNotificacion('Asignatura actualizada correctamente');
+            },
+            error: () => this.mostrarNotificacion('Error al actualizar asignatura', 'error')
+          });
+        } else {
+          this.asignaturaService.crear(payload).subscribe({
+            next: () => {
+              this.cargarAsignaturas();
+              this.cerrarModal();
+              this.mostrarNotificacion('Asignatura creada correctamente');
+            },
+            error: () => this.mostrarNotificacion('Error al crear asignatura', 'error')
+          });
+        }
         return;
       }
 
       case 'horario': {
-        const horario = { ...this.formularioHorario };
-        if (this.modoEdicion) this.horarios[this.indiceEdicion] = horario;
-        else this.horarios.push(horario);
+        const payload: HorarioDTO = {
+          idPeriodo: this.formularioHorario.idPeriodo,
+          idAsignatura: this.formularioHorario.idAsignatura,
+          idDocente: this.formularioHorario.idDocente,
+          diaSemana: this.formularioHorario.diaSemana,
+          horaInicio: this.formularioHorario.horaInicio,
+          horaFin: this.formularioHorario.horaFin,
+          numeroEstudiantes: this.formularioHorario.numeroEstudiantes,
+          estado: this.formularioHorario.estado
+        };
 
-        this.filtrarHorarios();
-        this.cdr.detectChanges();
-        this.cerrarModal();
-        alert(`Horario ${this.modoEdicion ? 'actualizado' : 'agregado'} exitosamente`);
+        const id = this.modoEdicion ? this.horarios[this.indiceEdicion]?.idHorario : null;
+
+        if (this.modoEdicion && id) {
+          this.horarioService.editar(id, payload).subscribe({
+            next: () => {
+              this.cargarHorarios();
+              this.cerrarModal();
+              this.mostrarNotificacion('Horario actualizado correctamente');
+            },
+            error: () => this.mostrarNotificacion('Error al actualizar horario', 'error')
+          });
+        } else {
+          this.horarioService.crear(payload).subscribe({
+            next: () => {
+              this.cargarHorarios();
+              this.cerrarModal();
+              this.mostrarNotificacion('Horario creado correctamente');
+            },
+            error: () => this.mostrarNotificacion('Error al crear horario', 'error')
+          });
+        }
         return;
       }
     }
@@ -592,7 +680,7 @@ export class AcademicoComponent implements OnInit {
           alert('El nombre de la asignatura es requerido');
           return false;
         }
-        if (!this.formularioAsignatura.carrera) {
+        if (!this.formularioAsignatura.idCarrera || this.formularioAsignatura.idCarrera === 0) {
           alert('La carrera es requerida');
           return false;
         }
@@ -618,15 +706,15 @@ export class AcademicoComponent implements OnInit {
         break;
 
       case 'horario':
-        if (!this.formularioHorario.periodo) {
+        if (!this.formularioHorario.idPeriodo || this.formularioHorario.idPeriodo === 0) {
           alert('El período académico es requerido');
           return false;
         }
-        if (!this.formularioHorario.asignatura) {
+        if (!this.formularioHorario.idAsignatura || this.formularioHorario.idAsignatura === 0) {
           alert('La asignatura es requerida');
           return false;
         }
-        if (!this.formularioHorario.docente) {
+        if (!this.formularioHorario.idDocente || this.formularioHorario.idDocente === 0) {
           alert('El docente es requerido');
           return false;
         }
@@ -640,10 +728,6 @@ export class AcademicoComponent implements OnInit {
         }
         if (this.formularioHorario.horaInicio >= this.formularioHorario.horaFin) {
           alert('La hora de inicio debe ser anterior a la hora de fin');
-          return false;
-        }
-        if (this.formularioHorario.numeroEstudiantes < 1 || this.formularioHorario.numeroEstudiantes > 100) {
-          alert('El número de estudiantes debe estar entre 1 y 100');
           return false;
         }
         break;
@@ -675,10 +759,10 @@ export class AcademicoComponent implements OnInit {
 
     this.formularioAsignatura = {
       nombre: '',
-      carrera: '',
+      idCarrera: 0,
       nivel: 1,
       horasSemanales: 4,
-      requiereLaboratorio: 'NO',
+      requiereLaboratorio: false,
       estado: 'ACTIVA'
     };
 
@@ -690,13 +774,14 @@ export class AcademicoComponent implements OnInit {
     };
 
     this.formularioHorario = {
-      periodo: '',
-      asignatura: '',
-      docente: '',
+      idPeriodo: 0,
+      idAsignatura: 0,
+      idDocente: 0,
       diaSemana: '',
       horaInicio: '',
       horaFin: '',
-      numeroEstudiantes: 30
+      numeroEstudiantes: 30,
+      estado: 'ACTIVO'
     };
   }
   toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
