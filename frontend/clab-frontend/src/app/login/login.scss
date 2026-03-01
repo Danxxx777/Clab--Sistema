@@ -1,72 +1,97 @@
-// Página completa del login
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+
+// =====================
+// VARIABLES
+// =====================
+$bg:          #111111;
+$surface:     #1a1a1a;
+$card-bg:     #1e1e1e;
+$border:      #2a2a2a;
+$border-h:    #3a3a3a;
+$neon:        #39ff14;
+$neon-dim:    rgba(57, 255, 20, 0.10);
+$neon-glow:   rgba(57, 255, 20, 0.06);
+$neon-border: rgba(57, 255, 20, 0.25);
+$neon-strong: rgba(57, 255, 20, 0.5);
+$text:        #f0f0f0;
+$muted:       #6b6b6b;
+$muted2:      #4a4a4a;
+$red:         #e74c3c;
+$red-dim:     rgba(231, 76, 60, 0.12);
+
+// =====================
+// LOGIN PAGE
+// =====================
 .login-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0d5a2e 0%, #1f7a44 50%, #2e9d5b 100%);
+  background: $bg;
   padding: 20px;
   position: relative;
+  font-family: 'Space Grotesk', sans-serif;
 
-  // Patrón de fondo
+  // Patrón de fondo sutil con neón
   &::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background-image:
-      radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
-      radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+      radial-gradient(circle at 20% 30%, rgba(57,255,20,0.04) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(57,255,20,0.03) 0%, transparent 50%);
     pointer-events: none;
   }
 }
 
-// Contenedor principal
+// =====================
+// LOGIN CONTAINER
+// =====================
 .login-container {
   display: flex;
   max-width: 1100px;
   width: 100%;
-  background: white;
-  border-radius: 24px;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px $neon-dim;
   position: relative;
   z-index: 1;
-  animation: fadeInScale 0.6s ease-out;
+  animation: fadeInScale 0.5s ease-out;
 }
 
-// Panel izquierdo - Branding
+// =====================
+// PANEL IZQUIERDO — BRANDING
+// =====================
 .login-left {
   flex: 1;
-  background: linear-gradient(135deg, #1a6b3a 0%, #2e9d5b 100%);
+  background: $card-bg;
+  border-right: 1px solid $border;
   padding: 60px 50px;
-  color: white;
+  color: $text;
   position: relative;
   overflow: hidden;
 
-  // Patrón decorativo
+  // Glow decorativo neón
   &::before {
     content: '';
     position: absolute;
-    top: -50%;
-    right: -30%;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent);
+    top: -80px; right: -80px;
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(57,255,20,0.06), transparent 70%);
     border-radius: 50%;
+    pointer-events: none;
   }
 
   &::after {
     content: '';
     position: absolute;
-    bottom: -30%;
-    left: -20%;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.08), transparent);
+    bottom: -60px; left: -60px;
+    width: 260px; height: 260px;
+    background: radial-gradient(circle, rgba(57,255,20,0.04), transparent 70%);
     border-radius: 50%;
+    pointer-events: none;
   }
 }
 
@@ -79,97 +104,109 @@
   justify-content: center;
 }
 
-// Logo UTEQ
+// Logo universidad
 .logo-link {
   display: inline-block;
-  margin-bottom: 30px;
+  margin-bottom: 28px;
   transition: transform 0.3s ease;
 
-  &:hover {
-    transform: scale(1.05);
-  }
+  &:hover { transform: scale(1.04); }
 }
 
 .logo-universidad {
-  height: 100px;
+  height: 90px;
   width: auto;
-  transition: filter 0.3s ease;
-  .logo-link:hover & {
-  }
+  opacity: 0.92;
+  transition: opacity 0.3s;
+
+  .logo-link:hover & { opacity: 1; }
 }
 
 .logo {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 30px;
+  margin-bottom: 28px;
 
   .logo-icon {
-    width: 70px;
-    height: 70px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 18px;
+    width: 64px; height: 64px;
+    background: $neon-dim;
+    border: 1px solid $neon-border;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 36px;
-    backdrop-filter: blur(10px);
+    font-size: 32px;
+    box-shadow: 0 0 20px rgba(57,255,20,0.1);
   }
 
   h1 {
+    font-family: 'Space Mono', monospace;
     font-size: 48px;
-    font-weight: 900;
+    font-weight: 700;
     margin: 0;
-    letter-spacing: 2px;
+    letter-spacing: 4px;
+    color: $neon;
+    text-shadow: 0 0 30px rgba(57,255,20,0.4);
   }
 }
 
 .brand-content h2 {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
-  margin: 0 0 20px 0;
+  margin: 0 0 16px;
   line-height: 1.3;
+  color: $text;
 }
 
+h2 { color: $neon; }
+
 .tagline {
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.6;
-  opacity: 0.9;
-  margin-bottom: 40px;
+  color: $muted;
+  margin-bottom: 36px;
 }
 
 // Features
 .features {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .feature-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 15px;
+  font-size: 14px;
+  color: rgba(255,255,255,0.7);
 
   .feature-icon {
-    width: 28px;
-    height: 28px;
-    background: rgba(255, 255, 255, 0.2);
+    width: 26px; height: 26px;
+    background: $neon-dim;
+    border: 1px solid $neon-border;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 12px;
+    color: $neon;
+    flex-shrink: 0;
   }
 }
 
+// =====================
+// PANEL DERECHO — FORMULARIO
+// =====================
 .login-right {
   flex: 1;
   padding: 60px 50px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: $surface;
 }
 
 .login-form-container {
@@ -178,120 +215,139 @@
 }
 
 .form-header {
-  margin-bottom: 40px;
+  margin-bottom: 36px;
 
   h2 {
-    font-size: 32px;
-    font-weight: 800;
-    color: #0d5a2e;
-    margin: 0 0 10px 0;
+    font-family: 'Space Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: $neon;
+    margin: 0 0 8px;
+    letter-spacing: 1px;
   }
+
+  p {
+    font-size: 14px;
+    color: $muted;
+    margin: 0;
+  }
+
   .password-wrapper {
     position: relative;
     width: 100%;
-  }
 
-  .password-wrapper input {
-    width: 100%;
-    padding-right: 45px; // espacio para el ícono
-    box-sizing: border-box;
+    input {
+      width: 100%;
+      padding-right: 45px;
+      box-sizing: border-box;
+    }
   }
 
   .toggle-password {
     position: absolute;
-    top: 50%;
-    right: 15px;
+    top: 50%; right: 15px;
     transform: translateY(-50%);
     cursor: pointer;
-    font-size: 18px;
-    color: #7f8c8d;
+    font-size: 16px;
+    color: $muted;
     z-index: 10;
-  }
+    transition: color 0.2s;
 
-  .toggle-password:hover {
-    color: #27ae60;
-  }
-
-  p {
-    font-size: 15px;
-    color: #7f8c8d;
-    margin: 0;
+    &:hover { color: $neon; }
   }
 }
 
-
+// =====================
+// ERROR MESSAGE
+// =====================
 .error-message {
-  background: #ffebee;
-  color: #c62828;
-  padding: 12px 16px;
+  background: $red-dim;
+  color: #ff6b6b;
+  padding: 11px 14px;
   border-radius: 8px;
-  margin-bottom: 20px;
-  font-size: 14px;
+  margin-bottom: 18px;
+  font-size: 13px;
   font-weight: 600;
-  border-left: 4px solid #c62828;
+  border: 1px solid rgba(231,76,60,0.25);
+  border-left: 3px solid $red;
   animation: shake 0.5s ease;
+  font-family: 'Space Grotesk', sans-serif;
 }
 
+// =====================
+// FORGOT PASSWORD
+// =====================
 .forgot-password {
-  color: #28a745;
-  font-weight: 500;
+  color: $neon;
+  font-weight: 600;
   cursor: pointer;
   text-decoration: none;
-  transition: 0.3s;
+  font-size: 13px;
+  transition: all 0.2s;
+  opacity: 0.8;
+
+  &:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
 }
 
-.forgot-password:hover {
-  text-decoration: underline;
-  color: #1e7e34;
-}
-
+// =====================
+// LOGIN FORM
+// =====================
 .login-form {
   .form-group {
-    margin-bottom: 24px;
+    margin-bottom: 22px;
     text-align: left;
 
     label {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 10px;
+      gap: 7px;
+      margin-bottom: 8px;
+      font-family: 'Space Mono', monospace;
       font-weight: 700;
-      color: #2c3e50;
-      font-size: 14px;
+      color: $muted;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
 
-      .label-icon {
-        font-size: 16px;
-      }
+      .label-icon { font-size: 14px; }
     }
 
     input {
       width: 100%;
-      padding: 14px 16px;
-      border: 2px solid #e0e0e0;
-      border-radius: 12px;
-      font-size: 15px;
-      transition: all 0.3s ease;
+      padding: 12px 14px;
+      border: 1px solid $border;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: 'Space Grotesk', sans-serif;
+      color: $text;
+      background: $bg;
+      transition: all 0.2s ease;
       outline: none;
       box-sizing: border-box;
 
       &:focus {
-        border-color: #27ae60;
-        box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.1);
+        border-color: $neon-border;
+        box-shadow: 0 0 0 3px $neon-glow;
+        background: #0d0d0d;
       }
 
-      &::placeholder {
-        color: #bdc3c7;
-      }
+      &::placeholder { color: $muted2; }
     }
   }
 }
 
+// =====================
+// FORM OPTIONS
+// =====================
 .form-options {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
-  font-size: 14px;
+  margin-bottom: 28px;
+  font-size: 13px;
 }
 
 .checkbox-container {
@@ -299,343 +355,134 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  color: #2c3e50;
+  color: $muted;
   font-weight: 500;
+  font-size: 13px;
+  transition: color 0.2s;
 
   input[type="checkbox"] {
     cursor: pointer;
+    accent-color: $neon;
+    width: 14px; height: 14px;
   }
+
+  &:hover { color: $text; }
 }
 
-.forgot-password {
-  color: #27ae60;
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s ease;
-
-  &:hover {
-    color: #229954;
-    text-decoration: underline;
-  }
-}
-
+// =====================
+// BTN LOGIN
+// =====================
 .btn-login {
   width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #27ae60, #229954);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
+  padding: 14px;
+  background: $neon-dim;
+  color: $neon;
+  border: 1px solid $neon-border;
+  border-radius: 10px;
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 20px rgba(39, 174, 96, 0.3);
+  transition: all 0.2s ease;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+  box-shadow: 0 0 20px rgba(57,255,20,0.08);
 
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 30px rgba(39, 174, 96, 0.4);
-    background: linear-gradient(135deg, #229954, #1e8449);
+    background: rgba(57,255,20,0.18);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(57,255,20,0.2);
   }
 
-  &:active {
-    transform: translateY(-1px);
+  &:active { transform: translateY(0); }
+
+  &.loading {
+    background: $neon-dim;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+    opacity: 0.7;
+  }
+
+  .btn-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    .dot {
+      width: 7px; height: 7px;
+      background: $neon;
+      border-radius: 50%;
+      box-shadow: 0 0 6px $neon;
+      animation: dotBounce 0.8s ease-in-out infinite;
+
+      &:nth-child(2) { animation-delay: 0.15s; }
+      &:nth-child(3) { animation-delay: 0.30s; }
+    }
   }
 }
 
+// =====================
+// FORM FOOTER
+// =====================
 .form-footer {
-  margin-top: 30px;
+  margin-top: 28px;
   text-align: center;
-  font-size: 14px;
-  color: #7f8c8d;
+  font-size: 13px;
+  color: $muted;
 
-  p {
-    margin: 0;
-    font-size: 14px;
-  }
+  p { margin: 0; }
 
   a {
-    color: #27ae60;
+    color: $neon;
     text-decoration: none;
     font-weight: 600;
+    opacity: 0.85;
+    transition: opacity 0.2s;
 
-    &:hover {
-      text-decoration: underline;
-    }
+    &:hover { opacity: 1; text-decoration: underline; }
   }
 }
 
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-10px); }
-  75% { transform: translateX(10px); }
-}
-
-@media (max-width: 968px) {
-  .login-container {
-    flex-direction: column;
-    max-width: 500px;
-  }
-
-  .login-left {
-    padding: 40px 30px;
-
-    .logo-universidad {
-      height: 70px;
-    }
-
-    .logo {
-      .logo-icon {
-        width: 60px;
-        height: 60px;
-        font-size: 30px;
-      }
-
-      h1 {
-        font-size: 40px;
-      }
-    }
-
-    h2 {
-      font-size: 24px;
-    }
-
-    .tagline {
-      font-size: 15px;
-      margin-bottom: 30px;
-    }
-  }
-
-  .login-right {
-    padding: 40px 30px;
-  }
-}
-
-@media (max-width: 480px) {
-  .login-page {
-    padding: 15px;
-  }
-
-  .login-container {
-    border-radius: 20px;
-  }
-
-  .login-left {
-    padding: 30px 25px;
-
-    .logo-universidad {
-      height: 60px;
-    }
-
-    .logo {
-      gap: 12px;
-
-      .logo-icon {
-        width: 50px;
-        height: 50px;
-        font-size: 26px;
-      }
-
-      h1 {
-        font-size: 36px;
-      }
-    }
-
-    h2 {
-      font-size: 22px;
-    }
-
-    .tagline {
-      font-size: 14px;
-    }
-
-    .feature-item {
-      font-size: 14px;
-    }
-  }
-
-  .login-right {
-    padding: 30px 25px;
-  }
-
-  .form-header {
-    margin-bottom: 30px;
-
-    h2 {
-      font-size: 28px;
-    }
-
-    p {
-      font-size: 14px;
-    }
-  }
-
-  .form-options {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-}
+// =====================
+// PASSWORD CONTAINER
+// =====================
 .password-container {
   position: relative;
   display: flex;
   align-items: center;
-}
 
-.password-container input {
-  width: 100%;
-  padding-right: 45px !important;
+  input {
+    width: 100%;
+    padding-right: 44px !important;
+  }
 }
 
 .eye-icon {
   position: absolute;
-  right: 15px;
+  right: 14px;
   top: 50%;
   transform: translateY(-50%);
+  width: 18px; height: 18px;
   cursor: pointer;
-  font-size: 18px;
-  color: #7f8c8d;
-  z-index: 100;
+  opacity: 0.35;
+  transition: opacity 0.2s ease;
+  filter: brightness(0) invert(1);
+  z-index: 10;
+
+  &:hover {
+    opacity: 0.85;
+    transform: translateY(-50%) scale(1.1);
+  }
 }
 
-.eye-icon:hover {
-  color: #27ae60;
-}
 .label-icon-img {
-  width: 18px;
-  height: 18px;
-  margin-right: 8px;
+  width: 16px; height: 16px;
+  margin-right: 6px;
   vertical-align: middle;
   object-fit: contain;
-}
-
-.password-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.password-container input {
-  width: 100%;
-  padding-right: 45px;
-}
-
-.eye-icon {
-  position: absolute;
-  right: 15px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-  opacity: 0.7;
-  transition: 0.2s ease;
-}
-
-.eye-icon:hover {
-  opacity: 1;
-  transform: translateY(-50%) scale(1.1);
-}
-// =====================
-// LOADING OVERLAY
-// =====================
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, #0d5a2e 0%, #1f7a44 50%, #2e9d5b 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  animation: overlayIn 0.4s ease;
-
-  .loading-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 24px;
-  }
-
-  .loading-logo {
-    font-size: 52px;
-    font-weight: 900;
-    color: white;
-    letter-spacing: 4px;
-    animation: logoPulse 1.5s ease-in-out infinite;
-  }
-
-  .loading-spinner {
-    position: relative;
-    width: 70px;
-    height: 70px;
-
-    .spinner-ring {
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      border: 3px solid transparent;
-      animation: spin 1.2s linear infinite;
-
-      &:nth-child(1) {
-        border-top-color: rgba(255, 255, 255, 0.9);
-        animation-duration: 1s;
-      }
-
-      &:nth-child(2) {
-        inset: 8px;
-        border-right-color: rgba(255, 255, 255, 0.6);
-        animation-duration: 1.4s;
-        animation-direction: reverse;
-      }
-
-      &:nth-child(3) {
-        inset: 16px;
-        border-bottom-color: rgba(255, 255, 255, 0.4);
-        animation-duration: 1.8s;
-      }
-    }
-  }
-
-  .loading-text {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 16px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    animation: textFade 0.4s ease;
-    min-width: 260px;
-    text-align: center;
-  }
-
-  .loading-bar {
-    width: 260px;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-    overflow: hidden;
-
-    .loading-bar-fill {
-      height: 100%;
-      background: white;
-      border-radius: 4px;
-      animation: barFill 2.5s ease-in-out forwards;
-    }
-  }
+  opacity: 0.6;
 }
 
 // =====================
@@ -649,51 +496,129 @@
 }
 
 // =====================
-// BOTÓN CON ESTADO CARGA
+// LOADING OVERLAY
 // =====================
-.btn-login {
-  &.loading {
-    background: linear-gradient(135deg, #1e8449, #196f3d);
-    cursor: not-allowed;
-    transform: none !important;
-    box-shadow: none !important;
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: $bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: overlayIn 0.4s ease;
+
+  // Glow de fondo
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(57,255,20,0.06) 0%, transparent 60%);
+    pointer-events: none;
   }
 
-  .btn-spinner {
+  .loading-content {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
+    gap: 28px;
+    position: relative;
+    z-index: 1;
+  }
 
-    .dot {
-      width: 8px;
-      height: 8px;
-      background: white;
+  .loading-logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 52px;
+    font-weight: 700;
+    color: $neon;
+    letter-spacing: 8px;
+    text-shadow: 0 0 40px rgba(57,255,20,0.5);
+    animation: logoPulse 1.5s ease-in-out infinite;
+  }
+
+  .loading-spinner {
+    position: relative;
+    width: 70px; height: 70px;
+
+    .spinner-ring {
+      position: absolute;
+      inset: 0;
       border-radius: 50%;
-      animation: dotBounce 0.8s ease-in-out infinite;
+      border: 2px solid transparent;
+      animation: spin 1.2s linear infinite;
 
-      &:nth-child(2) { animation-delay: 0.15s; }
-      &:nth-child(3) { animation-delay: 0.3s; }
+      &:nth-child(1) {
+        border-top-color: $neon;
+        animation-duration: 1s;
+        box-shadow: 0 0 12px rgba(57,255,20,0.3);
+      }
+      &:nth-child(2) {
+        inset: 8px;
+        border-right-color: rgba(57,255,20,0.6);
+        animation-duration: 1.4s;
+        animation-direction: reverse;
+      }
+      &:nth-child(3) {
+        inset: 16px;
+        border-bottom-color: rgba(57,255,20,0.3);
+        animation-duration: 1.8s;
+      }
+    }
+  }
+
+  .loading-text {
+    font-family: 'Space Grotesk', sans-serif;
+    color: $muted;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    animation: textFade 0.4s ease;
+    min-width: 260px;
+    text-align: center;
+  }
+
+  .loading-bar {
+    width: 260px;
+    height: 3px;
+    background: $border;
+    border-radius: 4px;
+    overflow: hidden;
+
+    .loading-bar-fill {
+      height: 100%;
+      background: $neon;
+      border-radius: 4px;
+      box-shadow: 0 0 10px rgba(57,255,20,0.6);
+      animation: barFill 2.5s ease-in-out forwards;
     }
   }
 }
 
 // =====================
-// KEYFRAMES
+// ANIMACIONES
 // =====================
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%       { transform: translateX(-8px); }
+  75%       { transform: translateX(8px); }
+}
+
 @keyframes overlayIn {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 
 @keyframes logoPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.8; transform: scale(1.05); }
+  0%, 100% { opacity: 1; transform: scale(1); text-shadow: 0 0 40px rgba(57,255,20,0.5); }
+  50%       { opacity: 0.7; transform: scale(1.04); text-shadow: 0 0 60px rgba(57,255,20,0.7); }
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 @keyframes textFade {
   from { opacity: 0; transform: translateY(6px); }
@@ -709,6 +634,56 @@
 }
 
 @keyframes dotBounce {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-6px); }
+  0%, 100% { transform: translateY(0); box-shadow: 0 0 6px $neon; }
+  50%       { transform: translateY(-6px); box-shadow: 0 0 14px $neon; }
+}
+
+// =====================
+// RESPONSIVE
+// =====================
+@media (max-width: 968px) {
+  .login-container {
+    flex-direction: column;
+    max-width: 500px;
+  }
+
+  .login-left {
+    border-right: none;
+    border-bottom: 1px solid $border;
+    padding: 40px 30px;
+
+    .logo-universidad { height: 70px; }
+    .logo { .logo-icon { width: 52px; height: 52px; font-size: 26px; } h1 { font-size: 40px; } }
+    .brand-content h2 { font-size: 20px; }
+    .tagline { font-size: 14px; margin-bottom: 24px; }
+  }
+
+  .login-right { padding: 40px 30px; }
+}
+
+@media (max-width: 480px) {
+  .login-page { padding: 15px; }
+  .login-container { border-radius: 16px; }
+
+  .login-left {
+    padding: 30px 24px;
+    .logo-universidad { height: 56px; }
+    .logo { gap: 10px; .logo-icon { width: 44px; height: 44px; font-size: 22px; } h1 { font-size: 32px; } }
+    .brand-content h2 { font-size: 18px; }
+    .tagline { font-size: 13px; }
+    .feature-item { font-size: 13px; }
+  }
+
+  .login-right { padding: 30px 24px; }
+
+  .form-header {
+    margin-bottom: 26px;
+    h2 { font-size: 22px; }
+  }
+
+  .form-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
 }
