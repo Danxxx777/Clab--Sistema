@@ -211,20 +211,22 @@
           <tr>
             <th>NOMBRE</th>
             <th>FACULTAD</th>
+            <th>COORDINADOR</th>
             <th>ESTADO</th>
             <th>ACCIONES</th>
           </tr>
           </thead>
           <tbody>
           <tr *ngFor="let carrera of carrerasFiltradas; let i = index">
-            <td><strong>{{ carrera.nombre }}</strong></td>
-            <td>{{ carrera.facultad }}</td>
+            <td><strong>{{ carrera.nombreCarrera }}</strong></td>
+            <td>{{ carrera.nombreFacultad }}</td>
+            <td>{{ carrera.nombreCoordinador }}</td>
             <td>
-                <span class="badge"
-                      [class.badge-activo]="carrera.estado === 'ACTIVA'"
-                      [class.badge-inactivo]="carrera.estado === 'INACTIVA'">
-                  {{ carrera.estado }}
-                </span>
+          <span class="badge"
+                [class.badge-activo]="carrera.estado === 'ACTIVA'"
+                [class.badge-inactivo]="carrera.estado === 'INACTIVA'">
+            {{ carrera.estado }}
+          </span>
             </td>
             <td>
               <div class="action-buttons">
@@ -234,7 +236,7 @@
             </td>
           </tr>
           <tr *ngIf="carrerasFiltradas.length === 0">
-            <td colspan="4" class="empty-message">No se encontraron carreras</td>
+            <td colspan="5" class="empty-message">No se encontraron carreras</td>
           </tr>
           </tbody>
         </table>
@@ -464,11 +466,20 @@
         <div class="form-row">
           <div class="form-group">
             <label>Facultad <span class="required">*</span></label>
-            <select class="form-control" [(ngModel)]="formularioCarrera.facultad">
-              <option value="">Seleccione facultad</option>
-              <option *ngFor="let fac of facultades" [value]="fac.nombre">{{ fac.nombre }}</option>
+            <select class="form-control" [(ngModel)]="formularioCarrera.idFacultad">
+              <option [value]="0">Seleccione facultad</option>
+              <option *ngFor="let fac of facultades" [value]="fac.idFacultad">{{ fac.nombre }}</option>
             </select>
           </div>
+          <div class="form-group">
+            <label>Coordinador</label>
+            <select class="form-control" [(ngModel)]="formularioCarrera.idCoordinador">
+              <option [value]="0">Seleccione coordinador</option>
+              <option *ngFor="let coord of coordinadores" [value]="coord.idUsuario">{{ coord.nombreCoordinador }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
           <div class="form-group">
             <label>Estado</label>
             <select class="form-control" [(ngModel)]="formularioCarrera.estado">
