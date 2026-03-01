@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0d5a2e 0%, #1f7a44 50%, #2e9d5b 100%);
+  background: #111111;
   padding: 20px;
   position: relative;
 
@@ -40,7 +40,7 @@
 // Panel izquierdo - Branding
 .login-left {
   flex: 1;
-  background: linear-gradient(135deg, #1a6b3a 0%, #2e9d5b 100%);
+  background: #1e1e1e;
   padding: 60px 50px;
   color: white;
   position: relative;
@@ -121,7 +121,12 @@
     font-weight: 900;
     margin: 0;
     letter-spacing: 2px;
+    color: #39ff14;
   }
+}
+
+h2 {
+  color: #39ff14;
 }
 
 .brand-content h2 {
@@ -136,6 +141,7 @@
   line-height: 1.6;
   opacity: 0.9;
   margin-bottom: 40px;
+  color: #39ff14;
 }
 
 // Features
@@ -183,7 +189,7 @@
   h2 {
     font-size: 32px;
     font-weight: 800;
-    color: #0d5a2e;
+    color: #27ae60;
     margin: 0 0 10px 0;
   }
   .password-wrapper {
@@ -214,7 +220,7 @@
 
   p {
     font-size: 15px;
-    color: #7f8c8d;
+    color: #27ae60;
     margin: 0;
   }
 }
