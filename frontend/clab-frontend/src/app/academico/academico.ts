@@ -5,6 +5,9 @@ import { FormsModule } from '@angular/forms';
 import {Periodo} from '../interfaces/Periodo.model';
 import { PeriodoService } from '../services/periodo.service';
 import {FacultadService, FacultadDTO} from '../services/facultad.service';
+import { CarreraService, CarreraDTO } from '../services/carrera.service';
+
+
 
 @Component({
   selector: 'app-academico',
@@ -25,13 +28,7 @@ export class AcademicoComponent implements OnInit {
 
   facultades: any[] = [];
 
-  carreras = [
-    { nombre: 'Ingeniería de Sistemas', facultad: 'Facultad de Ingeniería', estado: 'ACTIVA' },
-    { nombre: 'Medicina', facultad: 'Facultad de Ciencias Médicas', estado: 'ACTIVA' },
-    { nombre: 'Administración de Empresas', facultad: 'Facultad de Ciencias Económicas', estado: 'ACTIVA' },
-    { nombre: 'Derecho', facultad: 'Facultad de Ciencias Jurídicas', estado: 'INACTIVA' },
-    { nombre: 'Psicología', facultad: 'Facultad de Ciencias Sociales', estado: 'ACTIVA' }
-  ];
+  carreras: any [] = [];
 
   asignaturas = [
     { nombre: 'Programación I', carrera: 'Ingeniería de Sistemas', nivel: 1, horasSemanales: 6, requiereLaboratorio: 'SI', estado: 'ACTIVA' },
@@ -50,7 +47,7 @@ export class AcademicoComponent implements OnInit {
 
 
   periodosFiltrado: Periodo[] = [];
-  carrerasFiltradas = [...this.carreras];
+  carrerasFiltradas: any[] = [];
   asignaturasFiltradas = [...this.asignaturas];
   facultadesFiltradas: any[] = [];
   horariosFiltrados = [...this.horarios];
@@ -99,7 +96,8 @@ export class AcademicoComponent implements OnInit {
 
   formularioCarrera = {
     nombre: '',
-    facultad: '',
+    idFacultad: 0,
+    idCoordinador: 0,
     estado: 'ACTIVA'
   };
 
@@ -131,6 +129,7 @@ export class AcademicoComponent implements OnInit {
 
 
   decanos: any[]= [];
+  coordinadores: any[]= [];
 
   docentes = [
     'Dr. Carlos Rodríguez',
@@ -150,6 +149,7 @@ export class AcademicoComponent implements OnInit {
   constructor(private router: Router,
               private periodo: PeriodoService,
               private facultadService: FacultadService,
+              private carreraService: CarreraService,
               private cdr: ChangeDetectorRef) {}
 
   cargarPeriodos(): void {
@@ -172,6 +172,8 @@ export class AcademicoComponent implements OnInit {
     this.cargarPeriodos();
     this.cargarFacultades();
     this.cargarDecanos();
+    this.cargarCarreras();
+    this.cargarCoordinadores();
   }
 
   cambiarTab(tabIndex: number) {
@@ -209,12 +211,12 @@ export class AcademicoComponent implements OnInit {
     );
   }
 
-  filtrarCarreras() {
+  filtrarCarreras(): void {
     const busqueda = this.busquedaCarreras.toLowerCase();
-    this.carrerasFiltradas = this.carreras.filter(carrera =>
-      carrera.nombre.toLowerCase().includes(busqueda) ||
-      carrera.facultad.toLowerCase().includes(busqueda) ||
-      carrera.estado.toLowerCase().includes(busqueda)
+    this.carrerasFiltradas = this.carreras.filter(c =>
+      c.nombreCarrera.toLowerCase().includes(busqueda) ||
+      (c.nombreFacultad && c.nombreFacultad.toLowerCase().includes(busqueda)) ||
+      c.estado.toLowerCase().includes(busqueda)
     );
   }
 
@@ -267,6 +269,27 @@ export class AcademicoComponent implements OnInit {
     });
   }
 
+  cargarCarreras(): void {
+    this.carreraService.listar().subscribe({
+      next: (data) => {
+        this.carreras = data;
+        this.carrerasFiltradas = [...data];
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error al cargar carreras', err)
+    });
+  }
+
+  cargarCoordinadores(): void {
+    this.carreraService.listarCoordinadores().subscribe({
+      next: (data) => {
+        this.coordinadores = data;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error al cargar coordinadores', err)
+    });
+  }
+
 
   agregarNuevo(tabIndex: number) {
     this.modoEdicion = false;
@@ -313,7 +336,12 @@ export class AcademicoComponent implements OnInit {
         };
         break;
       case 'carrera':
-        this.formularioCarrera = { ...item };
+        this.formularioCarrera = {
+          nombre: item.nombreCarrera,
+          idFacultad: item.idFacultad || 0,
+          idCoordinador: item.idCoordinador || 0,
+          estado: item.estado || 'ACTIVA'
+        };
         break;
       case 'asignatura':
         this.formularioAsignatura = { ...item };
@@ -350,10 +378,13 @@ export class AcademicoComponent implements OnInit {
           });
           break;
         case 'carrera':
-          this.carreras.splice(index, 1);
-          this.filtrarCarreras();
-          this.cdr.detectChanges();
-          alert('Carrera eliminada');
+          this.carreraService.eliminar(item.idCarrera).subscribe({
+            next: () => {
+              this.cargarCarreras();
+              this.mostrarNotificacion('Carrera eliminada correctamente');
+            },
+            error: () => this.mostrarNotificacion('Error al eliminar carrera', 'error')
+          });
           break;
         case 'asignatura':
           this.asignaturas.splice(index, 1);
@@ -471,14 +502,34 @@ export class AcademicoComponent implements OnInit {
       }
 
       case 'carrera': {
-        const carrera = { ...this.formularioCarrera };
-        if (this.modoEdicion) this.carreras[this.indiceEdicion] = carrera;
-        else this.carreras.push(carrera);
+        const payload: CarreraDTO = {
+          nombre: this.formularioCarrera.nombre,
+          idFacultad: this.formularioCarrera.idFacultad,
+          idCoordinador: this.formularioCarrera.idCoordinador,
+          estado: this.formularioCarrera.estado
+        };
 
-        this.filtrarCarreras();
-        this.cdr.detectChanges();
-        this.cerrarModal();
-        alert(`Carrera ${this.modoEdicion ? 'actualizada' : 'agregada'} exitosamente`);
+        const id = this.modoEdicion ? this.carreras[this.indiceEdicion]?.idCarrera : null;
+
+        if (this.modoEdicion && id) {
+          this.carreraService.editar(id, payload).subscribe({
+            next: () => {
+              this.cargarCarreras();
+              this.cerrarModal();
+              this.mostrarNotificacion('Carrera actualizada correctamente');
+            },
+            error: () => this.mostrarNotificacion('Error al actualizar carrera', 'error')
+          });
+        } else {
+          this.carreraService.crear(payload).subscribe({
+            next: () => {
+              this.cargarCarreras();
+              this.cerrarModal();
+              this.mostrarNotificacion('Carrera creada correctamente');
+            },
+            error: () => this.mostrarNotificacion('Error al crear carrera', 'error')
+          });
+        }
         return;
       }
 
@@ -530,7 +581,7 @@ export class AcademicoComponent implements OnInit {
           alert('El nombre de la carrera es requerido');
           return false;
         }
-        if (!this.formularioCarrera.facultad) {
+        if (!this.formularioCarrera.idFacultad || this.formularioCarrera.idFacultad === 0) {
           alert('La facultad es requerida');
           return false;
         }
@@ -617,7 +668,8 @@ export class AcademicoComponent implements OnInit {
 
     this.formularioCarrera = {
       nombre: '',
-      facultad: '',
+      idFacultad: 0,
+      idCoordinador: 0,
       estado: 'ACTIVA'
     };
 

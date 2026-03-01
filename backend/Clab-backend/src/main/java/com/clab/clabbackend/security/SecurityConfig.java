@@ -41,6 +41,7 @@ public class SecurityConfig {
                         .requestMatchers("/sedes/**").permitAll()
                         .requestMatchers("/tipos-reserva/**").permitAll()
                         .requestMatchers("/facultades/**").permitAll()
+                        .requestMatchers("/carreras/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
