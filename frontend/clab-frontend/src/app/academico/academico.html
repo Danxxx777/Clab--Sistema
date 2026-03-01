@@ -274,20 +274,20 @@
           <tbody>
           <tr *ngFor="let asignatura of asignaturasFiltradas; let i = index">
             <td><strong>{{ asignatura.nombre }}</strong></td>
-            <td>{{ asignatura.carrera }}</td>
+            <td>{{ asignatura.nombreCarrera }}</td>
             <td>Nivel {{ asignatura.nivel }}</td>
             <td>{{ asignatura.horasSemanales }} hrs/sem</td>
             <td>
-                <span [ngClass]="asignatura.requiereLaboratorio === 'SI' ? 'lab-si' : 'lab-no'">
-                  {{ asignatura.requiereLaboratorio === 'SI' ? '🔬 Sí' : '📘 No' }}
-                </span>
+      <span [ngClass]="asignatura.requiereLaboratorio ? 'lab-si' : 'lab-no'">
+        {{ asignatura.requiereLaboratorio ? '🔬 Sí' : '📘 No' }}
+      </span>
             </td>
             <td>
-                <span class="badge"
-                      [class.badge-activo]="asignatura.estado === 'ACTIVA'"
-                      [class.badge-inactivo]="asignatura.estado === 'INACTIVA'">
-                  {{ asignatura.estado }}
-                </span>
+      <span class="badge"
+            [class.badge-activo]="asignatura.estado === 'ACTIVA'"
+            [class.badge-inactivo]="asignatura.estado === 'INACTIVA'">
+        {{ asignatura.estado }}
+      </span>
             </td>
             <td>
               <div class="action-buttons">
@@ -382,17 +382,25 @@
             <th>DÍA</th>
             <th>HORARIO</th>
             <th>ESTUDIANTES</th>
+            <th>ESTADO</th>
             <th>ACCIONES</th>
           </tr>
           </thead>
           <tbody>
           <tr *ngFor="let horario of horariosFiltrados; let i = index">
-            <td><strong>{{ horario.periodo }}</strong></td>
-            <td>{{ horario.asignatura }}</td>
-            <td>{{ horario.docente }}</td>
+            <td><strong>{{ horario.nombrePeriodo }}</strong></td>
+            <td>{{ horario.nombreAsignatura }}</td>
+            <td>{{ horario.nombreDocente }}</td>
             <td>{{ horario.diaSemana }}</td>
             <td>{{ horario.horaInicio }} - {{ horario.horaFin }}</td>
             <td>{{ horario.numeroEstudiantes }} estudiantes</td>
+            <td>
+      <span class="badge"
+            [class.badge-activo]="horario.estado === 'ACTIVO'"
+            [class.badge-inactivo]="horario.estado === 'INACTIVO'">
+        {{ horario.estado }}
+      </span>
+            </td>
             <td>
               <div class="action-buttons">
                 <button class="btn-action btn-editar" (click)="editar(horario, i, 'horario')">Editar</button>
@@ -401,7 +409,7 @@
             </td>
           </tr>
           <tr *ngIf="horariosFiltrados.length === 0">
-            <td colspan="7" class="empty-message">No se encontraron horarios</td>
+            <td colspan="8" class="empty-message">No se encontraron horarios</td>
           </tr>
           </tbody>
         </table>
@@ -501,15 +509,14 @@
         <div class="form-row">
           <div class="form-group">
             <label>Carrera <span class="required">*</span></label>
-            <select class="form-control" [(ngModel)]="formularioAsignatura.carrera">
-              <option value="">Seleccione carrera</option>
-              <option *ngFor="let carrera of carreras" [value]="carrera.nombre">{{ carrera.nombre }}</option>
+            <select class="form-control" [(ngModel)]="formularioAsignatura.idCarrera">
+              <option [value]="0">Seleccione carrera</option>
+              <option *ngFor="let carrera of carreras" [value]="carrera.idCarrera">{{ carrera.nombreCarrera }}</option>
             </select>
           </div>
           <div class="form-group">
             <label>Nivel <span class="required">*</span></label>
             <select class="form-control" [(ngModel)]="formularioAsignatura.nivel">
-              <option value="">Seleccione nivel</option>
               <option *ngFor="let nivel of [1,2,3,4,5,6,7,8,9,10]" [value]="nivel">Nivel {{ nivel }}</option>
             </select>
           </div>
@@ -517,13 +524,13 @@
         <div class="form-row">
           <div class="form-group">
             <label>Horas Semanales <span class="required">*</span></label>
-            <input type="number" class="form-control" [(ngModel)]="formularioAsignatura.horasSemanales" min="1" max="20" placeholder="Ej: 4">
+            <input type="number" class="form-control" [(ngModel)]="formularioAsignatura.horasSemanales" min="1" max="20">
           </div>
           <div class="form-group">
             <label>Requiere Laboratorio</label>
             <select class="form-control" [(ngModel)]="formularioAsignatura.requiereLaboratorio">
-              <option value="SI">Sí</option>
-              <option value="NO">No</option>
+              <option [value]="true">Sí</option>
+              <option [value]="false">No</option>
             </select>
           </div>
         </div>
@@ -577,25 +584,25 @@
         <div class="form-row">
           <div class="form-group">
             <label>Período Académico <span class="required">*</span></label>
-            <select class="form-control" [(ngModel)]="formularioHorario.periodo">
-              <option value="">Seleccione período</option>
-              <option *ngFor="let periodo of periodos" [value]="periodo.nombrePeriodo">{{ periodo.nombrePeriodo }}</option>
+            <select class="form-control" [(ngModel)]="formularioHorario.idPeriodo">
+              <option [value]="0">Seleccione período</option>
+              <option *ngFor="let periodo of periodos" [value]="periodo.idPeriodo">{{ periodo.nombrePeriodo }}</option>
             </select>
           </div>
           <div class="form-group">
             <label>Asignatura <span class="required">*</span></label>
-            <select class="form-control" [(ngModel)]="formularioHorario.asignatura">
-              <option value="">Seleccione asignatura</option>
-              <option *ngFor="let asignatura of asignaturas" [value]="asignatura.nombre">{{ asignatura.nombre }}</option>
+            <select class="form-control" [(ngModel)]="formularioHorario.idAsignatura">
+              <option [value]="0">Seleccione asignatura</option>
+              <option *ngFor="let asignatura of asignaturas" [value]="asignatura.idAsignatura">{{ asignatura.nombre }}</option>
             </select>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
             <label>Docente <span class="required">*</span></label>
-            <select class="form-control" [(ngModel)]="formularioHorario.docente">
-              <option value="">Seleccione docente</option>
-              <option *ngFor="let docente of docentes" [value]="docente">{{ docente }}</option>
+            <select class="form-control" [(ngModel)]="formularioHorario.idDocente">
+              <option [value]="0">Seleccione docente</option>
+              <option *ngFor="let doc of docentes" [value]="doc.idUsuario">{{ doc.nombreDocente }}</option>
             </select>
           </div>
           <div class="form-group">
@@ -630,10 +637,19 @@
         <div class="form-row">
           <div class="form-group">
             <label>Número de Estudiantes <span class="required">*</span></label>
-            <input type="number" class="form-control" [(ngModel)]="formularioHorario.numeroEstudiantes" min="1" max="100" placeholder="Ej: 30">
+            <input type="number" class="form-control" [(ngModel)]="formularioHorario.numeroEstudiantes" min="1" max="100">
+          </div>
+          <div class="form-group">
+            <label>Estado</label>
+            <select class="form-control" [(ngModel)]="formularioHorario.estado">
+              <option value="ACTIVO">Activo</option>
+              <option value="INACTIVO">Inactivo</option>
+            </select>
           </div>
         </div>
       </div>
+
+
 
     </div>
 
