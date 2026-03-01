@@ -1,5 +1,7 @@
 package com.clab.clabbackend.dto;
 
+import java.util.List;
+
 public class UsuarioRequestDTO {
 
     private String identidad;
@@ -8,19 +10,18 @@ public class UsuarioRequestDTO {
     private String email;
     private String telefono;
     private String contrasenia;
-    private Integer idRol;
+    private List<Integer> idsRoles;
 
-    public UsuarioRequestDTO() {
-    }
+    public UsuarioRequestDTO() {}
 
-    public UsuarioRequestDTO(String identidad, String nombres, String apellidos, String email, String telefono, String contrasenia, Integer idRol) {
+    public UsuarioRequestDTO(String identidad, String nombres, String apellidos, String email, String telefono, String contrasenia, List<Integer> idsRoles) {
         this.identidad = identidad;
         this.nombres = nombres;
         this.apellidos = apellidos;
         this.email = email;
         this.telefono = telefono;
         this.contrasenia = contrasenia;
-        this.idRol = idRol;
+        this.idsRoles = idsRoles;
     }
 
     public String getIdentidad() { return identidad; }
@@ -41,6 +42,6 @@ public class UsuarioRequestDTO {
     public String getContrasenia() { return contrasenia; }
     public void setContrasenia(String contrasenia) { this.contrasenia = contrasenia; }
 
-    public Integer getIdRol() { return idRol; }
-    public void setIdRol(Integer idRol) { this.idRol = idRol; }
+    public List<Integer> getIdsRoles() { return idsRoles; }
+    public void setIdsRoles(List<Integer> idsRoles) { this.idsRoles = idsRoles; }
 }

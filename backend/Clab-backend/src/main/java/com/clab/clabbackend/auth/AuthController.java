@@ -5,7 +5,6 @@ import com.clab.clabbackend.dto.LoginRequestDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import java.util.Map;
 
 @RestController
@@ -24,6 +23,17 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponseDTO login(@RequestBody LoginRequestDTO request) {
         return authService.login(request);
+    }
+
+    @PostMapping("/cambiar-rol")
+    public ResponseEntity<?> cambiarRol(@RequestBody Map<String, Object> body) {
+        try {
+            Integer idUsuario = (Integer) body.get("idUsuario");
+            String nombreRol = (String) body.get("nombreRol");
+            return ResponseEntity.ok(authService.cambiarRol(idUsuario, nombreRol));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PostMapping("/forgot-password")

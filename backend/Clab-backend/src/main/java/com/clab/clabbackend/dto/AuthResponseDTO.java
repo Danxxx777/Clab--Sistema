@@ -3,6 +3,8 @@ package com.clab.clabbackend.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 @AllArgsConstructor
 public class AuthResponseDTO {
@@ -11,4 +13,5 @@ public class AuthResponseDTO {
     private String apellidos;
     private String rol;
     private Integer idUsuario;
+    private List<String> rolesDisponibles;;
 }

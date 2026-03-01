@@ -22,6 +22,7 @@ export class AuthService {
         localStorage.setItem('rol', response.rol);
         localStorage.setItem('usuario', `${response.nombres.split(' ')[0]} ${response.apellidos.split(' ')[0]}`);
         localStorage.setItem('idUsuario', response.idUsuario);
+        localStorage.setItem('rolesDisponibles', JSON.stringify(response.rolesDisponibles ?? [])); // 👈 nuevo
       })
     );
   }
@@ -30,6 +31,7 @@ export class AuthService {
     localStorage.removeItem('token');
     localStorage.removeItem('rol');
     localStorage.removeItem('loggedIn');
+    localStorage.removeItem('rolesDisponibles');
   }
 
   isLoggedIn(): boolean {
