@@ -216,6 +216,7 @@ $color-eliminar: #e74c3c;
     tr {
       border-bottom: 1px solid $color-borde;
       transition: background 0.2s ease;
+      min-height: 64px;
 
       &:hover {
         background: #f8f9fa;
