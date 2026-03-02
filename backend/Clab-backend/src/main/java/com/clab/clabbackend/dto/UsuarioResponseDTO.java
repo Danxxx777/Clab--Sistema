@@ -1,14 +1,13 @@
 package com.clab.clabbackend.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-
+import lombok.*;
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class UsuarioResponseDTO {
 
     private Integer idUsuario;
@@ -20,7 +19,14 @@ public class UsuarioResponseDTO {
     private String usuario;
     private String estado;
     private LocalDate fechaRegistro;
-    private Integer idRol;
-    private String nombreRol;
+    private List<RolInfo> roles;
 
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class RolInfo {
+        private Integer idRol;
+        private String nombreRol;
+    }
 }

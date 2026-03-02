@@ -270,13 +270,13 @@
 
        <button class="btn-agregar" (click)="abrirModalRol('crear')">+ Nuevo Rol</button>
      </div>
-
      <div class="table-container">
        <table class="data-table">
          <thead>
          <tr>
            <th>ROL</th>
            <th>DESCRIPCIÓN</th>
+           <th>ESTADO</th>
            <th>FECHA CREACIÓN</th>
            <th>ACCIONES</th>
          </tr>
@@ -285,21 +285,26 @@
          <tr *ngFor="let r of rolesPaginados">
            <td><strong>{{ r.nombre }}</strong></td>
            <td>{{ r.descripcion }}</td>
+           <td>
+          <span class="badge" [ngClass]="getEstadoClass(r.estado)">
+            {{ r.estado ?? 'ACTIVO' }}
+          </span>
+           </td>
            <td>{{ r.fechaCreacion }}</td>
            <td>
              <div class="action-buttons">
                <button class="btn-action btn-editar" (click)="abrirModalRol('editar', r)">Editar</button>
-               <button class="btn-action btn-eliminar" (click)="eliminarRol(r)">Eliminar</button>
+               <button class="btn-action btn-eliminar" (click)="desactivarRol(r)">Desactivar</button>
+
              </div>
            </td>
          </tr>
          <tr *ngIf="roles.length === 0">
-           <td colspan="4" class="empty-message">No hay roles registrados</td>
+           <td colspan="5" class="empty-message">No hay roles registrados</td>
          </tr>
          </tbody>
        </table>
      </div>
-
      <!-- PAGINACIÓN ROLES
      <div class="pagination-container" *ngIf="totalPaginasRoles > 1">
        <div class="pagination-info">
@@ -529,16 +534,23 @@
                  name="contrasenia"
                  required>
         </div>
-        <div class="form-group">
-          <label>Rol <span class="required">*</span></label>
-          <select class="form-control"
-                  [(ngModel)]="usuarioActual.idRol"
-                  name="idRol"
-                  [disabled]="modoModal === 'ver'"
-                  required>
-            <option [ngValue]="null" disabled>Seleccione un rol</option>
-            <option *ngFor="let r of roles" [ngValue]="r.id">{{ r.nombre }}</option>
-          </select>
+        <!-- DESPUÉS — selector múltiple de roles -->
+        <div class="form-group full-width">
+          <label>Roles <span class="required">*</span></label>
+          <div class="roles-bd-grid">
+            <div
+              class="rol-bd-card"
+              *ngFor="let r of roles"
+              [class.selected]="estaRolSeleccionado(r.id!)"
+              [class.disabled]="modoModal === 'ver'"
+              (click)="modoModal !== 'ver' && toggleRolUsuario(r.id!)">
+              <div class="rol-bd-name">{{ r.nombre }}</div>
+              <div class="rol-bd-desc" *ngIf="r.descripcion">{{ r.descripcion }}</div>
+            </div>
+          </div>
+          <small style="color:#999; font-size:12px; margin-top:6px; display:block">
+            Selecciona uno o más roles
+          </small>
         </div>
       </div>
 

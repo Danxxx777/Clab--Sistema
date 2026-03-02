@@ -105,11 +105,9 @@ export class UsuariosComponent implements OnInit {
     this.cargarRoles();
     this.cargarPermisos();
 
-    // Cargar rol
     this.rol = localStorage.getItem('rol') || '';
     this.rolActualHeader = this.rol;
 
-    // Cargar usuario logueado
     const userData = localStorage.getItem('usuario') || localStorage.getItem('user');
     if (userData) {
       try {
@@ -168,8 +166,9 @@ export class UsuariosComponent implements OnInit {
           email: u.email,
           telefono: u.telefono,
           usuario: u.usuario,
-          idRol: u.idRol,
-          rolNombre: u.nombreRol ?? 'Sin rol',
+          idsRoles: u.roles?.map(r => r.idRol) ?? [],
+          roles: u.roles ?? [],
+          rolNombre: u.roles?.[0]?.nombreRol ?? 'Sin rol', // primer rol para tabla
           estado: u.estado,
           fechaRegistro: u.fechaRegistro
         }));
@@ -186,12 +185,27 @@ export class UsuariosComponent implements OnInit {
       this.usuarioActual = {
         identidad: '', nombres: '', apellidos: '',
         email: '', telefono: '', usuario: '',
-        contrasenia: '', idRol: undefined, estado: 'ACTIVO'
+        contrasenia: '', idsRoles: [], estado: 'ACTIVO'
       };
     } else if (u) {
-      this.usuarioActual = { ...u, contrasenia: '' };
+      this.usuarioActual = { ...u, contrasenia: '', idsRoles: u.idsRoles ?? [] };
     }
     this.mostrarModalUsuario = true;
+  }
+
+  // Toggle para seleccionar/deseleccionar un rol en el modal
+  toggleRolUsuario(idRol: number): void {
+    if (!this.usuarioActual.idsRoles) this.usuarioActual.idsRoles = [];
+    const idx = this.usuarioActual.idsRoles.indexOf(idRol);
+    if (idx >= 0) {
+      this.usuarioActual.idsRoles.splice(idx, 1);
+    } else {
+      this.usuarioActual.idsRoles.push(idRol);
+    }
+  }
+
+  estaRolSeleccionado(idRol: number): boolean {
+    return this.usuarioActual?.idsRoles?.includes(idRol) ?? false;
   }
 
   guardarUsuario(): void {
@@ -201,7 +215,8 @@ export class UsuariosComponent implements OnInit {
     if (
       !this.usuarioActual.identidad || !this.usuarioActual.nombres ||
       !this.usuarioActual.apellidos || !this.usuarioActual.email ||
-      !this.usuarioActual.idRol || (esCrear && !this.usuarioActual.contrasenia)
+      !this.usuarioActual.idsRoles?.length ||
+      (esCrear && !this.usuarioActual.contrasenia)
     ) {
       this.mostrarAlerta('Campos incompletos', 'Complete todos los campos obligatorios.', 'error');
       return;
@@ -214,7 +229,7 @@ export class UsuariosComponent implements OnInit {
       email: this.usuarioActual.email,
       telefono: this.usuarioActual.telefono,
       contrasenia: this.usuarioActual.contrasenia || '',
-      idRol: this.usuarioActual.idRol
+      idsRoles: this.usuarioActual.idsRoles ?? []
     };
 
     this.guardandoUsuario = true;
@@ -283,7 +298,7 @@ export class UsuariosComponent implements OnInit {
     this.usuariosFiltrados = this.usuarios.filter(u =>
       (`${u.nombres} ${u.apellidos} ${u.email} ${u.identidad}`.toLowerCase().includes(texto)) &&
       (this.filtroEstado === 'Todos' || u.estado?.toUpperCase() === this.filtroEstado.toUpperCase()) &&
-      (this.filtroRol === 'Todos' || u.idRol === this.filtroRol)
+      (this.filtroRol === 'Todos' || u.idsRoles?.includes(this.filtroRol as number))
     );
     this.paginaActual = 1;
     this.actualizarPaginacion();
@@ -316,7 +331,8 @@ export class UsuariosComponent implements OnInit {
           nombre: r.nombreRol,
           descripcion: r.descripcion,
           fechaCreacion: r.fechaCreacion,
-          rolesBD: r.rolesBD ?? []
+          rolesBD: r.rolesBD ?? [],
+          estado: r.estado ?? 'ACTIVO'
         }));
         this.actualizarPaginacionRoles();
         this.cdr.detectChanges();
@@ -343,19 +359,18 @@ export class UsuariosComponent implements OnInit {
   abrirModalRol(modo: 'crear' | 'editar', r?: RolView): void {
     this.modoModal = modo;
     this.permisosSeleccionados = [];
-    this.rolesBDSeleccionados = []; // ✅ limpiar siempre primero
+    this.rolesBDSeleccionados = [];
 
     if (modo === 'crear') {
       this.rolActual = {
         nombre: '', descripcion: '',
         fechaCreacion: new Date().toISOString().substring(0, 10)
       };
-      this.cargarRolesBD(); // cargar disponibles sin preselección
+      this.cargarRolesBD();
     } else if (r) {
       this.rolActual = { ...r };
 
       if (r.id) {
-        // ✅ Cargar roles BD del rol específico desde el backend
         this.rolService.listar().subscribe({
           next: (data) => {
             const rolActualizado = data.find(x => x.idRol === r.id);
@@ -422,6 +437,18 @@ export class UsuariosComponent implements OnInit {
       });
     };
     this.mostrarAlerta('¿Eliminar rol?', `¿Estás seguro de eliminar el rol "${r.nombre}"?`, 'confirmar');
+  }
+
+  desactivarRol(r: RolView): void {
+    if (!r.id) return;
+    this.accionPendiente = () => {
+      this.rolService.desactivar(r.id!).subscribe(() => {
+        this.cargarRoles();
+        this.registrarAuditoria('Desactivar rol', 'Roles');
+        this.mostrarAlerta('Rol desactivado', `El rol "${r.nombre}" fue desactivado.`, 'exito');
+      });
+    };
+    this.mostrarAlerta('¿Desactivar rol?', `¿Estás seguro de desactivar el rol "${r.nombre}"?`, 'confirmar');
   }
 
   cerrarModalRol(): void {

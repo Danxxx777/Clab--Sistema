@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../auth/auth.service';
 import { TestService } from '../services/test.service';
+import { ViewChild, ElementRef } from '@angular/core';
 
 @Component({
   selector: 'app-dashboard',
@@ -23,22 +24,10 @@ export class DashboardComponent implements OnInit {
   rolActual = '';
   rol: string | null = '';
 
-  // CONFIGURACIÓN CORREO
-  mostrarConfigCorreo = false;
-  guardandoConfig = false;
-  configCorreo = {
-    idConfig: null as number | null,
-    host: '',
-    puerto: 587,
-    emailRemitente: '',
-    passwordRemitente: '',
-    nombreRemitente: '',
-    authHabilitado: true,
-    starttlsHabilitado: true,
-    activo: true
-  };
-  configMensaje = '';
-  configError = '';
+  // ROLES MÚLTIPLES
+  rolesDisponibles: string[] = [];
+  mostrarSelectorRol = false;
+  cambiandoRol = false;
 
   constructor(
     private router: Router,
@@ -58,46 +47,56 @@ export class DashboardComponent implements OnInit {
     this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
     this.rolActual = localStorage.getItem('rol') || '';
 
+    // Cargar roles disponibles desde localStorage
+    const rolesGuardados = localStorage.getItem('rolesDisponibles');
+    if (rolesGuardados) {
+      this.rolesDisponibles = JSON.parse(rolesGuardados);
+    }
+
     this.testService.getTest().subscribe({
       next: (res) => { this.mensajeBackend = res; this.cdr.detectChanges(); },
       error: () => { this.mensajeBackend = 'No se pudo conectar con el backend'; this.cdr.detectChanges(); }
     });
+  }
 
-    if (this.rol === 'Administradorr') {
-      this.cargarConfigCorreo();
+  toggleSelectorRol(): void {
+    if (this.rolesDisponibles.length > 1) {
+      this.mostrarSelectorRol = !this.mostrarSelectorRol;
     }
   }
 
-  cargarConfigCorreo(): void {
-    this.http.get<any>('http://localhost:8080/configuracion/correo').subscribe({
-      next: (data) => {
-        this.configCorreo = data;
-        this.cdr.detectChanges();
-      },
-      error: () => {} // si no hay config aún, el form queda vacío
-    });
+  cerrarSelectorRol(): void {
+    this.mostrarSelectorRol = false;
   }
 
-  guardarConfigCorreo(): void {
-    this.guardandoConfig = true;
-    this.configMensaje = '';
-    this.configError = '';
+  cambiarRol(nombreRol: string): void {
+    if (nombreRol === this.rolActual) {
+      this.mostrarSelectorRol = false;
+      return;
+    }
 
-    const request$ = this.configCorreo.idConfig
-      ? this.http.put(`http://localhost:8080/configuracion/correo/${this.configCorreo.idConfig}`, this.configCorreo)
-      : this.http.post('http://localhost:8080/configuracion/correo', this.configCorreo);
+    this.cambiandoRol = true;
+    this.mostrarSelectorRol = false;
+    const idUsuario = parseInt(localStorage.getItem('idUsuario') || '0');
 
-    request$.subscribe({
-      next: (data: any) => {
-        this.guardandoConfig = false;
-        this.configCorreo = data;
-        this.configMensaje = '¡Configuración guardada correctamente!';
+    this.http.post<any>('http://localhost:8080/auth/cambiar-rol', {
+      idUsuario,
+      nombreRol
+    }).subscribe({
+      next: (res) => {
+        // Actualizar localStorage con el nuevo token y rol
+        localStorage.setItem('token', res.token);
+        localStorage.setItem('rol', res.rol);
+        localStorage.setItem('rolesDisponibles', JSON.stringify(res.rolesDisponibles));
+
+        this.rol = res.rol;
+        this.rolActual = res.rol;
+        this.rolesDisponibles = res.rolesDisponibles;
+        this.cambiandoRol = false;
         this.cdr.detectChanges();
-        setTimeout(() => { this.configMensaje = ''; this.cdr.detectChanges(); }, 3000);
       },
-      error: (err) => {
-        this.guardandoConfig = false;
-        this.configError = err.error?.error ?? 'Error al guardar la configuración.';
+      error: () => {
+        this.cambiandoRol = false;
         this.cdr.detectChanges();
       }
     });
@@ -109,6 +108,7 @@ export class DashboardComponent implements OnInit {
   navegar(ruta: string, mensaje: string): void {
     if (this.cargando) return;
     this.cerrarDrawer();
+    this.cerrarSelectorRol();
     this.loadingText = mensaje;
     this.cargando = true;
     this.cdr.detectChanges();
@@ -120,6 +120,14 @@ export class DashboardComponent implements OnInit {
   logout(): void {
     this.auth.logout();
     this.router.navigate(['/']);
+  }
+  @ViewChild('rolWrapper') rolWrapper!: ElementRef;
+
+// nuevo método:
+  onDocumentClick(event: MouseEvent): void {
+    if (this.rolWrapper && !this.rolWrapper.nativeElement.contains(event.target)) {
+      this.cerrarSelectorRol();
+    }
   }
 
   protected auditoria(auditoria: string) {}

@@ -67,6 +67,10 @@ public class RolService {
                 .findByNombreRolIgnoreCase(nombre)
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado después de ejecutar SP"));
 
+        // Estado inicial siempre ACTIVO
+        rolGuardado.setEstado("ACTIVO");
+        rolRepository.save(rolGuardado);
+
         guardarPermisos(rolGuardado, dto.getPermisos());
 
         if (dto.getRolesBD() != null) {
@@ -103,7 +107,8 @@ public class RolService {
                     rol.getNombreRol(),
                     rol.getDescripcion(),
                     rol.getFechaCreacion(),
-                    rolesBD
+                    rolesBD,
+                    rol.getEstado() != null ? rol.getEstado() : "ACTIVO" // 👈
             );
         }).toList();
     }
@@ -116,6 +121,12 @@ public class RolService {
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
         rol.setNombreRol(dto.getNombreRol().trim());
         rol.setDescripcion(dto.getDescripcion());
+
+        // Mantener estado actual si no viene en el dto
+        if (dto.getEstado() != null && !dto.getEstado().isBlank()) {
+            rol.setEstado(dto.getEstado());
+        }
+
         Rol rolActualizado = rolRepository.save(rol);
 
         rolPermisoRepository.deleteByRol_IdRol(id);
@@ -138,6 +149,18 @@ public class RolService {
         }
 
         return rolActualizado;
+    }
+
+    // 👈 Nuevo método para cambiar estado
+    @Transactional
+    public void cambiarEstado(Integer id, String estado) {
+        Rol rol = rolRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+        if (!estado.equals("ACTIVO") && !estado.equals("INACTIVO")) {
+            throw new RuntimeException("Estado inválido. Use ACTIVO o INACTIVO");
+        }
+        rol.setEstado(estado);
+        rolRepository.save(rol);
     }
 
     @Transactional

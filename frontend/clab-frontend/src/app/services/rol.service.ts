@@ -13,14 +13,15 @@ export interface RolResponse {
   nombreRol: string;
   descripcion: string;
   fechaCreacion: string;
-  rolesBD: RolBD[];   // ← antes era string[]
+  rolesBD: RolBD[];
+  estado: string;  // 👈
 }
 
 export interface RolRequest {
   nombreRol: string;
   descripcion?: string;
   permisos: number[];
-  rolesBD: string[];  // sigue siendo string[] para enviar al backend
+  rolesBD: string[];
 }
 
 @Injectable({
@@ -52,7 +53,11 @@ export class RolService {
     return this.http.get<number[]>(`${this.apiUrl}/${id}/permisos`);
   }
 
-  listarRolesBD(): Observable<RolBD[]> {   // ← antes era string[]
+  listarRolesBD(): Observable<RolBD[]> {
     return this.http.get<RolBD[]>(`${this.apiUrl}/roles-bd`);
+  }
+
+  desactivar(id: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/${id}/estado`, { estado: 'INACTIVO' });
   }
 }
