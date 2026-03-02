@@ -21,6 +21,7 @@ import { ResetPasswordComponent } from './auth/reset-password/reset-password';
 import { ConfiguracionCorreoComponent } from './configuracion-correo/configuracion-correo';
 
 import { authGuard } from './auth/auth.guard';
+import {SolicitudesReservaComponent} from './solicitudes-reserva/solicitudes-reserva';
 
 export const routes: Routes = [
 
@@ -48,6 +49,7 @@ export const routes: Routes = [
   { path: 'usuarios',       component: UsuariosComponent,       canActivate: [authGuard] },
   { path: 'configuracion-correo', component: ConfiguracionCorreoComponent, canActivate: [authGuard] },
   { path: 'reporte-fallas', component: ReporteFallasComponent,  canActivate: [authGuard] },
+  { path: 'solicitudes-reserva',  component: SolicitudesReservaComponent,  canActivate: [authGuard] }, // 👈
 
   { path: '**', redirectTo: 'dashboard' }
 ];

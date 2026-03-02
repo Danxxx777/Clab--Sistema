@@ -25,4 +25,7 @@ public class Rol {
 
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDate fechaCreacion;
+
+    @Column(name = "estado", length = 10, nullable = false)
+    private String estado = "ACTIVO";
 }

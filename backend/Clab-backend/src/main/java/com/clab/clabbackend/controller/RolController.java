@@ -6,8 +6,10 @@ import com.clab.clabbackend.dto.RolResponseDTO;
 import com.clab.clabbackend.entities.Rol;
 import com.clab.clabbackend.services.RolService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/roles")
@@ -44,7 +46,21 @@ public class RolController {
     }
 
     @GetMapping("/roles-bd")
-    public List<RolBDDTO> listarRolesBD() {       // ← List<RolBDDTO> no String
-        return rolService.listarRolesBD();         // ← listarRolesBD() no listarRolesBDConDescripcion()
+    public List<RolBDDTO> listarRolesBD() {
+        return rolService.listarRolesBD();
+    }
+
+    // 👈 Nuevo endpoint para cambiar estado
+    @PatchMapping("/{id}/estado")
+    public ResponseEntity<?> cambiarEstado(
+            @PathVariable Integer id,
+            @RequestBody Map<String, String> body) {
+        try {
+            String estado = body.get("estado");
+            rolService.cambiarEstado(id, estado);
+            return ResponseEntity.ok(Map.of("mensaje", "Estado actualizado a " + estado));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }

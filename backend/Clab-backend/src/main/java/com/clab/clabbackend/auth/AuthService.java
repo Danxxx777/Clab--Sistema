@@ -3,6 +3,7 @@ package com.clab.clabbackend.auth;
 import com.clab.clabbackend.dto.AuthResponseDTO;
 import com.clab.clabbackend.dto.LoginRequestDTO;
 import com.clab.clabbackend.entities.Usuario;
+import com.clab.clabbackend.entities.UsuarioRol;
 import com.clab.clabbackend.repository.UsuarioRepository;
 import com.clab.clabbackend.repository.UsuarioRolRepository;
 import com.clab.clabbackend.security.JwtService;
@@ -11,6 +12,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Random;
 import com.clab.clabbackend.services.EmailService;
 
@@ -44,23 +47,54 @@ public class AuthService {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsuario(), request.getContrasenia())
         );
+
         Usuario usuario = usuarioRepository
                 .findByUsuarioAndEstado(request.getUsuario(), "ACTIVO")
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado o inactivo"));
 
-        var usuarioRol = usuarioRolRepository
-                .findByUsuario_IdUsuarioAndVigenteTrue(usuario.getIdUsuario())
-                .orElseThrow(() -> new RuntimeException("El usuario no tiene rol asignado"));
+        List<UsuarioRol> rolesVigentes = usuarioRolRepository
+                .findAllByUsuario_IdUsuarioAndVigenteTrue(usuario.getIdUsuario())
+                .stream()
+                .sorted(Comparator.comparing(UsuarioRol::getFechaAsignacion))
+                .toList();
 
-        String token = jwtService.generarToken(usuario.getIdUsuario(), usuarioRol.getRol().getNombreRol());
-        return new AuthResponseDTO(token, usuario.getNombres(), usuario.getApellidos(), usuarioRol.getRol().getNombreRol(), usuario.getIdUsuario());
+        if (rolesVigentes.isEmpty())
+            throw new RuntimeException("El usuario no tiene rol asignado");
+
+        String rolPrincipal = rolesVigentes.get(0).getRol().getNombreRol();
+
+        List<String> rolesDisponibles = rolesVigentes.stream()
+                .map(ur -> ur.getRol().getNombreRol())
+                .toList();
+
+        String token = jwtService.generarToken(usuario.getIdUsuario(), rolPrincipal);
+        return new AuthResponseDTO(token, usuario.getNombres(), usuario.getApellidos(), rolPrincipal, usuario.getIdUsuario(), rolesDisponibles);
+    }
+
+    public AuthResponseDTO cambiarRol(Integer idUsuario, String nombreRol) {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        List<UsuarioRol> rolesVigentes = usuarioRolRepository
+                .findAllByUsuario_IdUsuarioAndVigenteTrue(idUsuario);
+
+        rolesVigentes.stream()
+                .filter(ur -> ur.getRol().getNombreRol().equals(nombreRol))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("El usuario no tiene el rol: " + nombreRol));
+
+        List<String> rolesDisponibles = rolesVigentes.stream()
+                .map(ur -> ur.getRol().getNombreRol())
+                .toList();
+
+        String token = jwtService.generarToken(idUsuario, nombreRol);
+        return new AuthResponseDTO(token, usuario.getNombres(), usuario.getApellidos(), nombreRol, idUsuario, rolesDisponibles);
     }
 
     public void solicitarRecuperacion(String email) {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("No existe ningún usuario con ese correo"));
 
-        // Generar código de 6 dígitos
         String codigo = String.format("%06d", new Random().nextInt(999999));
         usuario.setTokenRecuperacion(codigo);
         usuario.setExpiracionToken(LocalDateTime.now().plusMinutes(15));
