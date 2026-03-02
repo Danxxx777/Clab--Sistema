@@ -60,5 +60,8 @@ export class RolService {
   desactivar(id: number): Observable<any> {
     return this.http.patch(`${this.apiUrl}/${id}/estado`, { estado: 'INACTIVO' });
   }
+  cambiarEstado(id: number, estado: string): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/${id}/estado`, { estado });
+  }
 }
 

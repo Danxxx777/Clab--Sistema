@@ -6,7 +6,6 @@ import jakarta.mail.internet.MimeMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-
 import java.util.Properties;
 
 @Service
@@ -34,19 +33,24 @@ public class EmailService {
         return sender;
     }
 
+    // 👈 Obtener config por propósito con fallback a GENERAL
+    private ConfiguracionCorreo obtenerConfig(String proposito) {
+        return configRepo.findFirstByPropositoAndActivoTrue(proposito)
+                .orElseGet(() -> configRepo.findFirstByPropositoAndActivoTrue("GENERAL")
+                        .orElseGet(() -> configRepo.findFirstByActivoTrue()
+                                .orElseThrow(() -> new RuntimeException("No hay configuración de correo activa"))));
+    }
+
     public void enviarCorreoRecuperacion(String destino, String codigo) {
         try {
-            ConfiguracionCorreo config = configRepo.findFirstByActivoTrue()
-                    .orElseThrow(() -> new RuntimeException("No hay configuración de correo activa"));
+            ConfiguracionCorreo config = obtenerConfig("RECUPERACION"); // 👈
 
             JavaMailSenderImpl sender = construirMailSender(config);
-
             MimeMessage mensaje = sender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mensaje, true);
 
             String nombreRemitente = config.getNombreRemitente() != null
-                    ? config.getNombreRemitente()
-                    : "CLAB";
+                    ? config.getNombreRemitente() : "CLAB";
 
             helper.setFrom(config.getEmailRemitente(), nombreRemitente);
             helper.setTo(destino);
@@ -66,6 +70,29 @@ public class EmailService {
                             "<small>Si no solicitaste este cambio, ignora este correo.</small>" +
                             "</div>";
 
+            helper.setText(contenidoHTML, true);
+            sender.send(mensaje);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error enviando correo: " + e.getMessage());
+        }
+    }
+
+    // 👈 Método genérico para futuros usos
+    public void enviarCorreo(String proposito, String destino, String asunto, String contenidoHTML) {
+        try {
+            ConfiguracionCorreo config = obtenerConfig(proposito);
+            JavaMailSenderImpl sender = construirMailSender(config);
+            MimeMessage mensaje = sender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mensaje, true);
+
+            String nombreRemitente = config.getNombreRemitente() != null
+                    ? config.getNombreRemitente() : "CLAB";
+
+            helper.setFrom(config.getEmailRemitente(), nombreRemitente);
+            helper.setTo(destino);
+            helper.setSubject(asunto);
             helper.setText(contenidoHTML, true);
             sender.send(mensaje);
 

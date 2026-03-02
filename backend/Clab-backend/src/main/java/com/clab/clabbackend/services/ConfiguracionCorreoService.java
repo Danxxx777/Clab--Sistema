@@ -3,6 +3,7 @@ package com.clab.clabbackend.services;
 import com.clab.clabbackend.entities.ConfiguracionCorreo;
 import com.clab.clabbackend.repository.ConfiguracionCorreoRepository;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 @Service
 public class ConfiguracionCorreoService {
@@ -13,24 +14,29 @@ public class ConfiguracionCorreoService {
         this.repo = repo;
     }
 
-    public ConfiguracionCorreo obtener() {
-        return repo.findFirstByActivoTrue()
-                .orElseThrow(() -> new RuntimeException("No hay configuración de correo activa"));
+    // Obtener por propósito con fallback a GENERAL
+    public ConfiguracionCorreo obtenerPorProposito(String proposito) {
+        return repo.findFirstByPropositoAndActivoTrue(proposito)
+                .orElseGet(() -> repo.findFirstByPropositoAndActivoTrue("GENERAL")
+                        .orElseThrow(() -> new RuntimeException("No hay configuración de correo activa")));
     }
 
-    public ConfiguracionCorreo guardar(ConfiguracionCorreo config) {
-        // Si hay una config activa, la desactiva primero
-        repo.findFirstByActivoTrue().ifPresent(c -> {
-            c.setActivo(false);
-            repo.save(c);
-        });
-        config.setActivo(true);
+    // Listar todos
+    public List<ConfiguracionCorreo> listar() {
+        return repo.findAllByOrderByIdConfigAsc();
+    }
+
+    // Crear nuevo
+    public ConfiguracionCorreo crear(ConfiguracionCorreo config) {
         return repo.save(config);
     }
 
+    // Actualizar
     public ConfiguracionCorreo actualizar(Integer id, ConfiguracionCorreo nueva) {
         ConfiguracionCorreo actual = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Configuración no encontrada"));
+        actual.setNombreDisplay(nueva.getNombreDisplay());
+        actual.setProposito(nueva.getProposito());
         actual.setHost(nueva.getHost());
         actual.setPuerto(nueva.getPuerto());
         actual.setEmailRemitente(nueva.getEmailRemitente());
@@ -39,5 +45,18 @@ public class ConfiguracionCorreoService {
         actual.setAuthHabilitado(nueva.getAuthHabilitado());
         actual.setStarttlsHabilitado(nueva.getStarttlsHabilitado());
         return repo.save(actual);
+    }
+
+    // Cambiar estado activo/inactivo
+    public ConfiguracionCorreo cambiarEstado(Integer id, Boolean activo) {
+        ConfiguracionCorreo config = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Configuración no encontrada"));
+        config.setActivo(activo);
+        return repo.save(config);
+    }
+
+    // Eliminar
+    public void eliminar(Integer id) {
+        repo.deleteById(id);
     }
 }
