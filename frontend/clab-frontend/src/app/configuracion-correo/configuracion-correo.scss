@@ -17,6 +17,8 @@ $muted:       #6b6b6b;
 $muted2:      #4a4a4a;
 $red:         #e74c3c;
 $red-dim:     rgba(231, 76, 60, 0.12);
+$orange:      #ffa500;
+$orange-dim:  rgba(255, 165, 0, 0.12);
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -65,13 +67,6 @@ html, body { overflow: hidden; height: 100%; }
     letter-spacing: 1px;
   }
 
-  p {
-    color: $muted;
-    font-size: 12px;
-    margin: 3px 0 0;
-    font-family: 'Space Grotesk', sans-serif;
-  }
-
   .btn-volver {
     background: transparent;
     border: 1px solid $border;
@@ -93,14 +88,6 @@ html, body { overflow: hidden; height: 100%; }
   }
 }
 
-.page-icon-img {
-  width: 28px; height: 28px;
-  object-fit: contain;
-  flex-shrink: 0;
-  opacity: 0.7;
-  filter: brightness(0) invert(1);
-}
-
 // =====================
 // HAMBURGER
 // =====================
@@ -119,11 +106,7 @@ html, body { overflow: hidden; height: 100%; }
   padding: 0;
   flex-shrink: 0;
 
-  &:hover {
-    border-color: $neon-border;
-    background: $neon-glow;
-    box-shadow: 0 0 12px $neon-dim;
-  }
+  &:hover { border-color: $neon-border; background: $neon-glow; }
 
   .ham-line {
     width: 16px; height: 1.5px;
@@ -159,17 +142,289 @@ html, body { overflow: hidden; height: 100%; }
 }
 
 // =====================
-// CONFIG CARD
+// TOOLBAR
 // =====================
-.config-card {
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.toolbar-count {
+  font-size: 12px;
+  color: $muted;
+  font-family: 'Space Mono', monospace;
+  letter-spacing: 0.5px;
+}
+
+.btn-agregar {
+  padding: 9px 20px;
+  background: $neon-dim;
+  color: $neon;
+  border: 1px solid $neon-border;
+  border-radius: 8px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.3px;
+
+  &:hover {
+    background: rgba(57,255,20,0.18);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(57,255,20,0.15);
+  }
+}
+
+// =====================
+// EMPTY STATE
+// =====================
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 80px 20px;
+  color: $muted;
+  text-align: center;
+
+  .empty-icon { font-size: 48px; opacity: 0.5; }
+
+  p {
+    font-size: 14px;
+    color: $muted;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+}
+
+// =====================
+// CORREOS GRID
+// =====================
+.correos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+// =====================
+// CORREO CARD
+// =====================
+.correo-card {
   background: $surface;
-  border-radius: 14px;
-  padding: 28px;
   border: 1px solid $border;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px $neon-dim;
-  max-width: 860px;
-  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
   position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, $neon-border, transparent);
+    border-radius: 12px 12px 0 0;
+  }
+
+  &:hover {
+    border-color: $border-h;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+
+  &.inactivo {
+    opacity: 0.55;
+    filter: grayscale(0.4);
+
+    &::before {
+      background: linear-gradient(90deg, transparent, rgba(107,107,107,0.3), transparent);
+    }
+  }
+}
+
+.correo-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid $border;
+}
+
+.correo-proposito-icon {
+  font-size: 24px;
+  width: 42px; height: 42px;
+  background: $card-bg;
+  border: 1px solid $border;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.correo-card-info {
+  flex: 1;
+  min-width: 0;
+
+  .correo-nombre {
+    font-size: 14px;
+    font-weight: 700;
+    color: $text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .correo-proposito-label {
+    font-size: 11px;
+    color: $muted;
+    margin-top: 2px;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.3px;
+  }
+}
+
+.correo-estado-badge {
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-family: 'Space Mono', monospace;
+  flex-shrink: 0;
+
+  &.activo {
+    background: $neon-dim;
+    color: $neon;
+    border: 1px solid $neon-border;
+  }
+
+  &.inactivo {
+    background: rgba(107,107,107,0.12);
+    color: $muted;
+    border: 1px solid rgba(107,107,107,0.25);
+  }
+}
+
+.correo-card-body {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.correo-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .correo-field-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    color: $muted2;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    min-width: 68px;
+  }
+
+  .correo-field-value {
+    font-size: 12px;
+    color: rgba($text, 0.8);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.correo-card-footer {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid $border;
+  background: rgba(0,0,0,0.15);
+
+  button {
+    padding: 6px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+}
+
+.btn-card-editar {
+  background: rgba(255,255,255,0.05);
+  color: rgba($text, 0.7);
+  border-color: $border !important;
+
+  &:hover {
+    background: rgba(255,255,255,0.1);
+    color: $text;
+    border-color: $border-h !important;
+  }
+}
+
+.btn-card-estado {
+  &.desactivar {
+    background: $orange-dim;
+    color: $orange;
+    border-color: rgba(255,165,0,0.25) !important;
+
+    &:hover { background: rgba(255,165,0,0.2); }
+  }
+
+  &.activar {
+    background: $neon-dim;
+    color: $neon;
+    border-color: $neon-border !important;
+
+    &:hover { background: rgba(57,255,20,0.18); }
+  }
+}
+
+.btn-card-eliminar {
+  margin-left: auto;
+  background: $red-dim;
+  color: #ff6b6b;
+  border-color: rgba(231,76,60,0.25) !important;
+
+  &:hover { background: rgba(231,76,60,0.22); }
+}
+
+// =====================
+// MODAL
+// =====================
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.15s ease;
+}
+
+.modal {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 14px;
+  width: 600px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+  position: relative;
+  overflow: hidden;
 
   &::before {
     content: '';
@@ -177,56 +432,67 @@ html, body { overflow: hidden; height: 100%; }
     top: 0; left: 10%; right: 10%;
     height: 1px;
     background: linear-gradient(90deg, transparent, $neon-border, transparent);
-    border-radius: 14px 14px 0 0;
   }
 }
 
-// =====================
-// CONFIG SECTION
-// =====================
-.config-section {
-  margin-bottom: 28px;
-  padding-bottom: 28px;
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px 14px;
   border-bottom: 1px solid $border;
+  flex-shrink: 0;
 
-  &:last-of-type {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
+  h2 {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: $text;
+    letter-spacing: 0.5px;
   }
 }
 
-.config-section-title {
-  font-family: 'Space Mono', monospace;
-  font-size: 10px;
-  font-weight: 700;
-  color: $neon;
-  margin-bottom: 16px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid $border;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  opacity: 0.8;
+.btn-close {
+  width: 28px; height: 28px;
+  background: transparent;
+  border: 1px solid $border;
+  border-radius: 7px;
+  color: $muted;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  line-height: 1;
+
+  &:hover { border-color: $neon-border; color: $neon; background: $neon-glow; transform: rotate(90deg); }
 }
 
-// =====================
-// CONFIG ROW / GROUP
-// =====================
-.config-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-  margin-bottom: 16px;
-
-  &:last-child { margin-bottom: 0; }
-}
-
-.config-group {
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 22px;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 14px;
 
-  &.full { grid-column: 1 / -1; }
+  &::-webkit-scrollbar { width: 3px; }
+  &::-webkit-scrollbar-thumb { background: $border; border-radius: 3px; }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &.full-width { grid-column: 1 / -1; }
 
   label {
     font-family: 'Space Mono', monospace;
@@ -236,14 +502,11 @@ html, body { overflow: hidden; height: 100%; }
     text-transform: uppercase;
     letter-spacing: 0.8px;
 
-    .req { color: #ff6b6b; margin-left: 3px; }
+    .required { color: #ff6b6b; margin-left: 3px; }
   }
 }
 
-// =====================
-// CONFIG INPUT
-// =====================
-.config-input {
+.form-control {
   padding: 9px 12px;
   border: 1px solid $border;
   border-radius: 8px;
@@ -258,42 +521,26 @@ html, body { overflow: hidden; height: 100%; }
     outline: none;
     border-color: $neon-border;
     box-shadow: 0 0 0 3px $neon-glow;
-    background: #0d0d0d;
   }
 
   &::placeholder { color: $muted2; }
 
-  &:disabled {
-    background: $card-bg;
-    cursor: not-allowed;
-    color: $muted;
-    opacity: 0.6;
-  }
+  option { background: $surface; }
 }
 
-// =====================
-// PASSWORD WRAPPER
-// =====================
 .password-wrapper {
   position: relative;
-
-  .config-input { padding-right: 46px; }
+  .form-control { padding-right: 46px; }
 }
 
 .btn-toggle-pass {
   position: absolute;
-  right: 11px;
-  top: 50%;
+  right: 11px; top: 50%;
   transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  transition: opacity 0.2s;
-  opacity: 0.4;
-
+  background: none; border: none;
+  cursor: pointer; padding: 0;
+  opacity: 0.4; transition: opacity 0.2s;
+  display: flex; align-items: center;
   &:hover { opacity: 0.9; }
 }
 
@@ -304,123 +551,33 @@ html, body { overflow: hidden; height: 100%; }
 }
 
 .hint {
-  font-size: 11px;
-  color: $muted;
-  line-height: 1.4;
-  margin-top: 2px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px; color: $muted;
+  line-height: 1.4; margin-top: 2px;
 }
 
-// =====================
-// CHECKBOXES
-// =====================
-.config-checks {
+.checks-row {
   display: flex;
-  gap: 28px;
+  gap: 24px;
   flex-wrap: wrap;
 }
 
 .check-label {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   font-size: 13px;
   color: $text;
   cursor: pointer;
   font-weight: 500;
-  font-family: 'Space Grotesk', sans-serif;
   transition: color 0.2s;
 
   input[type="checkbox"] {
-    width: 16px; height: 16px;
+    width: 15px; height: 15px;
     accent-color: $neon;
     cursor: pointer;
   }
 
   &:hover { color: $neon; }
-}
-
-// =====================
-// CONFIG FOOTER
-// =====================
-.config-footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 14px;
-  padding-top: 22px;
-  margin-top: 8px;
-  flex-wrap: wrap;
-  border-top: 1px solid $border;
-}
-
-// =====================
-// BTN GUARDAR CONFIG
-// =====================
-.btn-guardar-config {
-  padding: 10px 26px;
-  background: $neon-dim;
-  color: $neon;
-  border: 1px solid $neon-border;
-  border-radius: 8px;
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 180px;
-  min-height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  letter-spacing: 0.3px;
-
-  &:hover:not(:disabled) {
-    background: rgba(57,255,20,0.18);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(57,255,20,0.15);
-  }
-
-  &:disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
-}
-
-// =====================
-// DOTS (loading)
-// =====================
-.dots {
-  display: flex;
-  gap: 5px;
-  align-items: center;
-
-  span {
-    width: 6px; height: 6px;
-    background: $neon;
-    border-radius: 50%;
-    animation: dotBounce 0.7s ease-in-out infinite;
-    box-shadow: 0 0 6px $neon;
-
-    &:nth-child(2) { animation-delay: 0.15s; }
-    &:nth-child(3) { animation-delay: 0.30s; }
-  }
-}
-
-// =====================
-// MENSAJES RESULTADO
-// =====================
-.config-msg-exito {
-  font-size: 12px;
-  color: $neon;
-  background: $neon-glow;
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: 1px solid $neon-border;
-  font-family: 'Space Grotesk', sans-serif;
-  font-weight: 600;
 }
 
 .config-msg-error {
@@ -430,47 +587,177 @@ html, body { overflow: hidden; height: 100%; }
   padding: 8px 14px;
   border-radius: 8px;
   border: 1px solid rgba(231,76,60,0.3);
-  font-family: 'Space Grotesk', sans-serif;
   font-weight: 600;
 }
 
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 22px;
+  border-top: 1px solid $border;
+  flex-shrink: 0;
+}
+
+.btn-cancelar {
+  padding: 9px 20px;
+  background: $red-dim;
+  color: #ff6b6b;
+  border: 1px solid rgba(231,76,60,0.3);
+  border-radius: 8px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover { background: rgba(231,76,60,0.22); }
+}
+
+.btn-guardar {
+  padding: 9px 24px;
+  background: $neon-dim;
+  color: $neon;
+  border: 1px solid $neon-border;
+  border-radius: 8px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 110px;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover:not(:disabled) {
+    background: rgba(57,255,20,0.18);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(57,255,20,0.15);
+  }
+
+  &:disabled { opacity: 0.35; cursor: not-allowed; }
+}
+
+.btn-dots {
+  display: flex; gap: 4px; align-items: center;
+  .dot {
+    width: 5px; height: 5px;
+    background: $neon; border-radius: 50%;
+    animation: dotBounce 0.7s ease-in-out infinite;
+    &:nth-child(2) { animation-delay: 0.15s; }
+    &:nth-child(3) { animation-delay: 0.30s; }
+  }
+}
+
 // =====================
-// DRAWER OVERLAY
+// TOAST
 // =====================
-.drawer-overlay {
+.toast-notif {
   position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  backdrop-filter: blur(3px);
-  z-index: 999;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  &.open { opacity: 1; pointer-events: all; }
+  bottom: 24px; right: 24px;
+  background: $surface;
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  z-index: 2000;
+  min-width: 300px;
+  max-width: 400px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  animation: slideUp 0.3s ease;
+
+  &.toast-exito  { border: 1px solid $neon-border; }
+  &.toast-error  { border: 1px solid rgba(231,76,60,0.4); }
+  &.toast-confirmar { border: 1px solid rgba(255,165,0,0.4); }
+}
+
+.toast-body {
+  flex: 1;
+  strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: $text;
+    margin-bottom: 3px;
+  }
+  p { font-size: 12px; color: $muted; line-height: 1.4; }
+}
+
+.toast-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+
+  button {
+    padding: 6px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    font-family: 'Space Grotesk', sans-serif;
+    transition: all 0.2s;
+  }
+}
+
+.toast-btn-close {
+  background: transparent;
+  border-color: $border !important;
+  color: $muted;
+  width: 28px; height: 28px;
+  padding: 0 !important;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  &:hover { color: $text; border-color: $border-h !important; }
+}
+
+.toast-btn-cancel {
+  background: $red-dim;
+  color: #ff6b6b;
+  border-color: rgba(231,76,60,0.3) !important;
+  &:hover { background: rgba(231,76,60,0.22); }
+}
+
+.toast-btn-confirm {
+  background: $neon-dim;
+  color: $neon;
+  border-color: $neon-border !important;
+  &:hover { background: rgba(57,255,20,0.18); }
 }
 
 // =====================
 // DRAWER
 // =====================
+.drawer-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(3px);
+  z-index: 999;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease;
+  &.open { opacity: 1; pointer-events: all; }
+}
+
 .drawer {
   position: fixed;
   top: 0; left: 0;
-  height: 100vh;
-  width: 290px;
+  height: 100vh; width: 290px;
   background: $surface;
   border-right: 1px solid $border;
   z-index: 1000;
   transform: translateX(-100%);
   transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
   box-shadow: 8px 0 48px rgba(0,0,0,0.6);
 
   &::before {
     content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
     background: linear-gradient(90deg, transparent, $neon, transparent);
   }
 
@@ -480,159 +767,90 @@ html, body { overflow: hidden; height: 100%; }
 .drawer-header {
   padding: 20px 20px 16px;
   border-bottom: 1px solid $border;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: flex; justify-content: space-between; align-items: center;
 }
 
 .drawer-brand {
   font-family: 'Space Mono', monospace;
-  font-size: 16px;
-  font-weight: 700;
-  color: $neon;
-  letter-spacing: 3px;
-
+  font-size: 16px; font-weight: 700; color: $neon; letter-spacing: 3px;
   span {
     display: block;
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 10px;
-    font-weight: 500;
-    color: $muted;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    margin-top: 3px;
+    font-size: 10px; font-weight: 500; color: $muted;
+    letter-spacing: 1.5px; text-transform: uppercase; margin-top: 3px;
   }
 }
 
 .btn-close-drawer {
   width: 30px; height: 30px;
-  background: transparent;
-  border: 1px solid $border;
-  border-radius: 7px;
-  color: $muted;
-  font-size: 17px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  line-height: 1;
-
-  &:hover {
-    border-color: $neon-border;
-    color: $neon;
-    background: $neon-glow;
-    transform: rotate(90deg);
-  }
+  background: transparent; border: 1px solid $border; border-radius: 7px;
+  color: $muted; font-size: 17px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; line-height: 1;
+  &:hover { border-color: $neon-border; color: $neon; background: $neon-glow; transform: rotate(90deg); }
 }
 
 .drawer-user {
-  padding: 14px 20px;
-  border-bottom: 1px solid $border;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  padding: 14px 20px; border-bottom: 1px solid $border;
+  display: flex; align-items: center; gap: 12px;
   background: $neon-glow;
 }
 
 .drawer-avatar {
   width: 38px; height: 38px;
-  background: $neon;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Space Mono', monospace;
-  font-size: 14px;
-  font-weight: 700;
-  color: #111;
-  flex-shrink: 0;
-  box-shadow: 0 0 16px rgba(57,255,20,0.3);
+  background: $neon; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: #111;
+  flex-shrink: 0; box-shadow: 0 0 16px rgba(57,255,20,0.3);
 }
 
 .drawer-user-info {
   .dui-name { font-size: 13px; font-weight: 700; color: $text; }
   .role-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: $neon-dim;
-    border: 1px solid $neon-border;
-    color: $neon;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 100px;
-    margin-top: 4px;
-    letter-spacing: 0.5px;
-    font-family: 'Space Mono', monospace;
+    display: inline-flex; align-items: center; gap: 5px;
+    background: $neon-dim; border: 1px solid $neon-border;
+    color: $neon; font-size: 10px; font-weight: 700;
+    padding: 2px 8px; border-radius: 100px; margin-top: 4px;
+    letter-spacing: 0.5px; font-family: 'Space Mono', monospace;
   }
 }
 
 .role-dot {
-  width: 5px; height: 5px;
-  background: $neon;
-  border-radius: 50%;
-  box-shadow: 0 0 6px $neon;
-  animation: pulse 2s ease-in-out infinite;
+  width: 5px; height: 5px; background: $neon; border-radius: 50%;
+  box-shadow: 0 0 6px $neon; animation: pulse 2s ease-in-out infinite;
 }
 
 .drawer-section-title {
   padding: 14px 20px 6px;
-  font-family: 'Space Mono', monospace;
-  font-size: 9px;
-  font-weight: 700;
-  color: $muted2;
-  letter-spacing: 2px;
-  text-transform: uppercase;
+  font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700;
+  color: $muted2; letter-spacing: 2px; text-transform: uppercase;
 }
 
 .drawer-modules {
-  flex: 1;
-  overflow-y: auto;
-  padding: 4px 10px 16px;
-
+  flex: 1; overflow-y: auto; padding: 4px 10px 16px;
   &::-webkit-scrollbar { width: 3px; }
-  &::-webkit-scrollbar-track { background: transparent; }
   &::-webkit-scrollbar-thumb { background: $border; border-radius: 3px; }
 }
 
 .drawer-item {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 10px 11px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-bottom: 2px;
-  border: 1px solid transparent;
+  display: flex; align-items: center; gap: 11px;
+  padding: 10px 11px; border-radius: 8px;
+  cursor: pointer; transition: all 0.2s ease;
+  margin-bottom: 2px; border: 1px solid transparent;
 
   &:hover {
-    background: $neon-glow;
-    border-color: $neon-border;
-    transform: translateX(4px);
+    background: $neon-glow; border-color: $neon-border; transform: translateX(4px);
     .di-name { color: $neon; }
   }
 }
 
 .di-icon {
-  width: 34px; height: 34px;
-  border-radius: 8px;
-  background: $card-bg;
-  border: 1px solid $border;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  width: 34px; height: 34px; border-radius: 8px;
+  background: $card-bg; border: 1px solid $border;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   transition: all 0.2s;
-
   img { width: 18px; height: 18px; object-fit: contain; }
-
-  .drawer-item:hover & {
-    border-color: $neon-border;
-    background: $neon-dim;
-  }
+  .drawer-item:hover & { border-color: $neon-border; background: $neon-dim; }
 }
 
 .di-text {
@@ -640,49 +858,32 @@ html, body { overflow: hidden; height: 100%; }
   .di-desc { font-size: 10px; color: $muted; margin-top: 1px; }
 }
 
-.drawer-footer {
-  padding: 14px 20px;
-  border-top: 1px solid $border;
-}
+.drawer-footer { padding: 14px 20px; border-top: 1px solid $border; }
 
 .btn-logout-drawer {
-  width: 100%;
-  padding: 10px 14px;
-  background: $red-dim !important;
-  border: 1px solid rgba(231,76,60,0.3) !important;
-  border-radius: 8px;
-  color: #ff6b6b !important;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.2s;
-  font-family: 'Space Grotesk', sans-serif;
-  letter-spacing: 0.5px;
-  box-shadow: none !important;
+  width: 100%; padding: 10px 14px;
+  background: $red-dim !important; border: 1px solid rgba(231,76,60,0.3) !important;
+  border-radius: 8px; color: #ff6b6b !important;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all 0.2s; font-family: 'Space Grotesk', sans-serif; letter-spacing: 0.5px;
 
-  &:hover {
-    background: rgba(231,76,60,0.22) !important;
-    border-color: rgba(231,76,60,0.5) !important;
-    transform: translateY(-1px) !important;
-  }
+  &:hover { background: rgba(231,76,60,0.22) !important; border-color: rgba(231,76,60,0.5) !important; transform: translateY(-1px) !important; }
 }
 
 // =====================
 // ANIMACIONES
 // =====================
 @keyframes fadeIn    { from { opacity: 0; } to { opacity: 1; } }
-@keyframes dotBounce { 0%, 100% { transform: translateY(0); box-shadow: 0 0 6px $neon; } 50% { transform: translateY(-5px); box-shadow: 0 0 12px $neon; } }
-@keyframes pulse     { 0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 6px currentColor; } 50% { opacity: 0.4; transform: scale(0.6); box-shadow: none; } }
+@keyframes slideUp   { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes dotBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes pulse     { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.6); } }
 
 // =====================
 // RESPONSIVE
 // =====================
 @media (max-width: 768px) {
   .content-wrapper { padding: 16px; }
-  .config-card { padding: 20px; }
-  .config-row { grid-template-columns: 1fr; }
+  .correos-grid { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
 }

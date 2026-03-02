@@ -1,90 +1,239 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+// =====================
+// VARIABLES
+// =====================
+$bg:          #111111;
+$surface:     #1a1a1a;
+$card-bg:     #1e1e1e;
+$border:      #2a2a2a;
+$border-h:    #3a3a3a;
+$neon:        #39ff14;
+$neon-dim:    rgba(57, 255, 20, 0.10);
+$neon-glow:   rgba(57, 255, 20, 0.06);
+$neon-border: rgba(57, 255, 20, 0.25);
+$text:        #f0f0f0;
+$muted:       #6b6b6b;
+$muted2:      #4a4a4a;
+$red:         #e74c3c;
+$red-dim:     rgba(231, 76, 60, 0.12);
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  background: $bg;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+// =====================
+// AUTH PAGE
+// =====================
 .auth-page {
   height: 100vh;
-  background: linear-gradient(135deg, #1e7e34, #28a745);
+  background: $bg;
   display: flex;
   justify-content: center;
   align-items: center;
-}
+  position: relative;
+  overflow: hidden;
 
-.auth-card {
-  background: white;
-  padding: 40px;
-  width: 400px;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-  text-align: center;
-}
+  // Fondo con grid sutil
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(57,255,20,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(57,255,20,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
 
-.auth-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-}
-
-.auth-card h2 {
-  color: #1e7e34;
-  margin-bottom: 10px;
-  font-size: 22px;
-}
-
-.auth-card p {
-  margin-bottom: 20px;
-  color: #555;
-  font-size: 14px;
-  line-height: 1.5;
-  strong { color: #1e7e34; }
-}
-
-.form-group input {
-  width: 94%;
-  padding: 12px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  margin-bottom: 20px;
-  font-size: 14px;
-  transition: border-color 0.3s;
-  &:focus {
-    outline: none;
-    border-color: #28a745;
-    box-shadow: 0 0 0 3px rgba(40,167,69,0.12);
+  // Glow central
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(57,255,20,0.04) 0%, transparent 70%);
+    pointer-events: none;
   }
 }
 
-// Input especial para el código
-.input-codigo {
-  font-size: 28px !important;
-  font-weight: bold !important;
-  letter-spacing: 12px !important;
-  text-align: center !important;
-  color: #1e7e34 !important;
+// =====================
+// AUTH CARD
+// =====================
+.auth-card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 40px 36px;
+  width: 420px;
+  max-width: calc(100vw - 32px);
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  box-shadow:
+    0 24px 64px rgba(0,0,0,0.6),
+    0 0 0 1px $neon-dim;
+  animation: slideUp 0.4s cubic-bezier(0.4,0,0.2,1);
+
+  // Línea neón superior
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, $neon-border, transparent);
+    border-radius: 16px 16px 0 0;
+  }
 }
 
+// =====================
+// AUTH BRAND
+// =====================
+.auth-brand {
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: $neon;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  opacity: 0.7;
+}
+
+// =====================
+// AUTH ICON
+// =====================
+.auth-icon {
+  width: 56px; height: 56px;
+  background: $neon-dim;
+  border: 1px solid $neon-border;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  margin: 0 auto 20px;
+  box-shadow: 0 0 24px rgba(57,255,20,0.1);
+}
+
+// =====================
+// TÍTULOS
+// =====================
+.auth-card h2 {
+  font-family: 'Space Mono', monospace;
+  color: $text;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.auth-card p {
+  color: $muted;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 24px;
+
+  strong { color: $neon; font-weight: 600; }
+}
+
+// =====================
+// FORM GROUP
+// =====================
+.form-group {
+  margin-bottom: 14px;
+  text-align: left;
+
+  label {
+    display: block;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: $muted;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 7px;
+  }
+
+  input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid $border;
+    border-radius: 8px;
+    font-size: 13px;
+    color: $text;
+    background: $bg;
+    font-family: 'Space Grotesk', sans-serif;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+
+    &::placeholder { color: $muted2; }
+
+    &:focus {
+      outline: none;
+      border-color: $neon-border;
+      box-shadow: 0 0 0 3px $neon-glow;
+      background: #0d0d0d;
+    }
+  }
+}
+
+// =====================
+// INPUT CÓDIGO
+// =====================
+.input-codigo {
+  font-family: 'Space Mono', monospace !important;
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  letter-spacing: 14px !important;
+  text-align: center !important;
+  color: $neon !important;
+  padding: 16px !important;
+}
+
+// =====================
+// BTN PRIMARY
+// =====================
 .btn-primary {
   width: 100%;
   padding: 12px;
-  background-color: #28a745;
-  border: none;
-  border-radius: 6px;
-  color: white;
-  font-weight: bold;
-  font-size: 15px;
+  background: $neon-dim;
+  border: 1px solid $neon-border;
+  border-radius: 8px;
+  color: $neon;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
   cursor: pointer;
-  transition: 0.3s;
+  transition: all 0.2s ease;
   min-height: 46px;
   display: flex;
   align-items: center;
   justify-content: center;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
 
   &:hover:not(:disabled) {
-    background-color: #1e7e34;
+    background: rgba(57,255,20,0.18);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(57,255,20,0.15);
   }
 
   &:disabled {
-    opacity: 0.7;
+    opacity: 0.4;
     cursor: not-allowed;
+    transform: none;
   }
 }
 
-// Loading dots
+// =====================
+// LOADING DOTS
+// =====================
 .dots {
   display: flex;
   gap: 5px;
@@ -92,59 +241,69 @@
   justify-content: center;
 
   span {
-    width: 8px;
-    height: 8px;
-    background: white;
+    width: 7px; height: 7px;
+    background: $neon;
     border-radius: 50%;
-    animation: bounce 0.7s ease-in-out infinite;
+    animation: dotBounce 0.7s ease-in-out infinite;
+    box-shadow: 0 0 6px $neon;
 
     &:nth-child(2) { animation-delay: 0.15s; }
-    &:nth-child(3) { animation-delay: 0.3s; }
+    &:nth-child(3) { animation-delay: 0.30s; }
   }
 }
 
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-6px); }
-}
-
-// Mensajes
+// =====================
+// MENSAJES
+// =====================
 .msg-error {
   margin-top: 12px;
-  font-size: 13px;
-  color: #e74c3c;
-  background: #fdf0ef;
-  padding: 8px 12px;
-  border-radius: 6px;
-  border-left: 3px solid #e74c3c;
+  font-size: 12px;
+  color: #ff6b6b;
+  background: $red-dim;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(231,76,60,0.25);
+  border-left: 3px solid #ff6b6b;
+  text-align: left;
+  font-family: 'Space Grotesk', sans-serif;
 }
 
 .msg-exito {
   margin-top: 12px;
-  font-size: 13px;
-  color: #1e7e34;
-  background: #f0faf4;
-  padding: 8px 12px;
-  border-radius: 6px;
-  border-left: 3px solid #28a745;
+  font-size: 12px;
+  color: $neon;
+  background: $neon-glow;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid $neon-border;
+  border-left: 3px solid $neon;
+  text-align: left;
+  font-family: 'Space Grotesk', sans-serif;
 }
 
-// Reenviar código
+// =====================
+// REENVIAR / LINKS
+// =====================
 .reenviar {
   margin-top: 16px;
-  font-size: 13px;
-  color: #777;
+  font-size: 12px;
+  color: $muted;
+  font-family: 'Space Grotesk', sans-serif;
 
   .btn-link {
     background: none;
     border: none;
-    color: #28a745;
-    font-weight: bold;
+    color: $neon;
+    font-weight: 700;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 12px;
     padding: 0;
     margin-left: 4px;
-    &:hover { text-decoration: underline; }
+    font-family: 'Space Grotesk', sans-serif;
+    transition: opacity 0.2s;
+
+    &:hover { opacity: 0.7; text-decoration: underline; }
+    &:disabled { opacity: 0.4; cursor: not-allowed; }
   }
 }
 
@@ -152,7 +311,52 @@
   display: block;
   margin-top: 20px;
   text-decoration: none;
-  color: #28a745;
-  font-size: 14px;
-  &:hover { text-decoration: underline; }
+  color: $muted;
+  font-size: 12px;
+  font-family: 'Space Grotesk', sans-serif;
+  transition: color 0.2s;
+
+  &:hover { color: $neon; }
+}
+
+// =====================
+// DIVIDER
+// =====================
+.auth-divider {
+  height: 1px;
+  background: $border;
+  margin: 20px 0;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 30%; right: 30%;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, $neon-border, transparent);
+  }
+}
+
+// =====================
+// ANIMACIONES
+// =====================
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes dotBounce {
+  0%, 100% { transform: translateY(0); box-shadow: 0 0 6px $neon; }
+  50%       { transform: translateY(-6px); box-shadow: 0 0 12px $neon; }
+}
+
+// =====================
+// RESPONSIVE
+// =====================
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 28px 20px;
+    border-radius: 12px;
+  }
 }
