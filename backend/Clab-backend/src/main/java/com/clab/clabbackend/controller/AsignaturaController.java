@@ -1,4 +1,4 @@
-package com.clab.clabbackend.controllers;
+package com.clab.clabbackend.controller;
 
 import com.clab.clabbackend.dto.AsignaturaDTO;
 import com.clab.clabbackend.services.AsignaturaService;

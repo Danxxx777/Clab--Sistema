@@ -793,7 +793,7 @@ img {
     }
 
     &.active {
-      color: #2ecc71;
+      color: #39ff14;
       font-weight: 700;
     }
 
@@ -804,15 +804,15 @@ img {
       flex-shrink: 0;
 
       &.active {
-        background: #2ecc71;
-        box-shadow: 0 0 6px rgba(46,204,113,0.6);
+        background: $neon;
+        box-shadow: $neon;
       }
     }
 
     .rdi-check {
       margin-left: auto;
       font-size: 13px;
-      color: #2ecc71;
+      color: #39ff14;
     }
   }
 }
