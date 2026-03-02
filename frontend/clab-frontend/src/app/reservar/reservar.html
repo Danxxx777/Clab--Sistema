@@ -122,6 +122,38 @@
     <button class="btn-volver" (click)="volver()">← Volver</button>
   </div>
 
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-icon sc-blue">📋</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ reservas.length }}</span>
+        <span class="stat-label">Total</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon sc-amber">⏳</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ totalPorEstado('Pendiente') }}</span>
+        <span class="stat-label">Pendientes</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon sc-green">✅</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ totalPorEstado('Aprobada') }}</span>
+        <span class="stat-label">Aprobadas</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon sc-red">🚫</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ totalPorEstado('Rechazada') }}</span>
+        <span class="stat-label">Rechazadas</span>
+      </div>
+    </div>
+  </div>
+
   <!-- TABS -->
   <div class="tabs-container">
     <div class="tabs">
@@ -182,12 +214,17 @@
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn-action btn-ver"      (click)="verDetalle(res)">Ver</button>
-                <button class="btn-action btn-editar"   (click)="editarReserva(res, i)">Editar</button>
-                <button
-                  class="btn-action btn-cancelar-res"
-                  (click)="abrirModalCancelar(res, i)"
-                  [disabled]="res.estado === 'Cancelada' || res.estado === 'Completada'">
+                <button class="btn-action btn-ver" (click)="verDetalle(res)">Ver</button>
+                <button class="btn-action btn-editar" (click)="editarReserva(res, i)">Editar</button>
+                <button class="btn-action btn-aprobar"
+                        *ngIf="res.estado === 'Pendiente'"
+                        (click)="aprobarReserva(res)">Aprobar</button>
+                <button class="btn-action btn-rechazar"
+                        *ngIf="res.estado === 'Pendiente'"
+                        (click)="rechazarReserva(res)">Rechazar</button>
+                <button class="btn-action btn-cancelar-res"
+                        (click)="abrirModalCancelar(res, i)"
+                        [disabled]="res.estado === 'Cancelada' || res.estado === 'Completada' || res.estado === 'Rechazada' || res.estado === 'Pendiente'">
                   Cancelar
                 </button>
               </div>
@@ -265,6 +302,7 @@
     </div>
     <div class="modal-body">
 
+      <!-- FILA 1: Laboratorio + Asignatura -->
       <div class="form-row">
         <div class="form-group">
           <label>Laboratorio <span class="required">*</span></label>
@@ -277,7 +315,9 @@
         </div>
         <div class="form-group">
           <label>Asignatura <span class="required">*</span></label>
-          <select class="form-control" [(ngModel)]="formularioReserva.id_asignatura">
+          <select class="form-control"
+                  [(ngModel)]="formularioReserva.id_asignatura"
+                  (change)="onAsignaturaChange()">
             <option [value]="0">Seleccione una asignatura</option>
             <option *ngFor="let asig of asignaturas" [value]="asig.id_asignatura">
               {{ asig.nombre }}
@@ -286,6 +326,7 @@
         </div>
       </div>
 
+      <!-- FILA 2: Período + Horario Académico -->
       <div class="form-row">
         <div class="form-group">
           <label>Período Académico <span class="required">*</span></label>
@@ -298,41 +339,50 @@
         </div>
         <div class="form-group">
           <label>Horario Académico</label>
-          <select class="form-control" [(ngModel)]="formularioReserva.id_horario_academico">
+          <select class="form-control"
+                  [(ngModel)]="formularioReserva.id_horario_academico"
+                  (change)="onHorarioChange()">
             <option [value]="null">Sin horario académico</option>
-            <option *ngFor="let horario of horariosAcademicos" [value]="horario.id_horario_academico">
-              {{ horario.nombre_asignatura }} - {{ horario.dia_semana }}
+            <option *ngFor="let h of horariosAcademicos" [value]="h.id_horario_academico">
+              {{ h.nombre_asignatura }} - {{ h.dia_semana }} {{ h.hora_inicio }} - {{ h.hora_fin }}
             </option>
           </select>
         </div>
       </div>
 
+      <!-- FILA 3: Fecha de Reserva -->
       <div class="form-row">
         <div class="form-group">
           <label>Fecha de Reserva <span class="required">*</span></label>
-          <input type="date" class="form-control" [(ngModel)]="formularioReserva.fecha_reserva">
+          <input type="date" class="form-control"
+                 [(ngModel)]="formularioReserva.fecha_reserva">
         </div>
-        <div class="form-group">
-          <label>Fecha de Solicitud <span class="required">*</span></label>
-          <input type="date" class="form-control" [(ngModel)]="formularioReserva.fecha_solicitud">
-        </div>
+        <div class="form-group"></div>
       </div>
 
+      <!-- FILA 4: Hora Inicio + Hora Fin (bloqueadas si hay horario académico) -->
       <div class="form-row">
         <div class="form-group">
           <label>Hora de Inicio <span class="required">*</span></label>
-          <input type="time" class="form-control" [(ngModel)]="formularioReserva.hora_inicio">
+          <input type="time" class="form-control"
+                 [(ngModel)]="formularioReserva.hora_inicio"
+                 [attr.disabled]="formularioReserva.id_horario_academico ? '' : null">
         </div>
         <div class="form-group">
           <label>Hora de Fin <span class="required">*</span></label>
-          <input type="time" class="form-control" [(ngModel)]="formularioReserva.hora_fin">
+          <input type="time" class="form-control"
+                 [(ngModel)]="formularioReserva.hora_fin"
+                 [attr.disabled]="formularioReserva.id_horario_academico ? '' : null">
         </div>
       </div>
 
+      <!-- FILA 5: Estudiantes + Tipo de Reserva -->
       <div class="form-row">
         <div class="form-group">
           <label>Número de Estudiantes <span class="required">*</span></label>
-          <input type="number" class="form-control" [(ngModel)]="formularioReserva.numero_estudiantes" min="1" placeholder="Ej: 25">
+          <input type="number" class="form-control"
+                 [(ngModel)]="formularioReserva.numero_estudiantes"
+                 min="1" placeholder="Ej: 25">
         </div>
         <div class="form-group">
           <label>Tipo de Reserva <span class="required">*</span></label>
@@ -345,41 +395,41 @@
         </div>
       </div>
 
+      <!-- FILA 6: Descripción -->
       <div class="form-row">
         <div class="form-group full-width">
-          <label>Usuario que Solicita <span class="required">*</span></label>
-          <select class="form-control" [(ngModel)]="formularioReserva.id_usuario">
-            <option [value]="0">Seleccione un usuario</option>
-            <option *ngFor="let usuario of usuarios" [value]="usuario.id_usuario">
-              {{ usuario.nombres }} {{ usuario.apellidos }}
-            </option>
-          </select>
+          <label>Descripción</label>
+          <textarea class="form-control"
+                    [(ngModel)]="formularioReserva.descripcion"
+                    rows="3"
+                    placeholder="Descripción de la reserva..."></textarea>
         </div>
       </div>
 
-      <div class="form-row">
-        <div class="form-group full-width">
-          <label>Descripción <span class="required">*</span></label>
-          <textarea class="form-control" [(ngModel)]="formularioReserva.descripcion" rows="3" placeholder="Descripción de la reserva..."></textarea>
-        </div>
-      </div>
-
+      <!-- FILA 7: Motivo -->
       <div class="form-row">
         <div class="form-group full-width">
           <label>Motivo <span class="required">*</span></label>
-          <textarea class="form-control" [(ngModel)]="formularioReserva.motivo" rows="2" placeholder="Motivo de la reserva..."></textarea>
+          <textarea class="form-control"
+                    [(ngModel)]="formularioReserva.motivo"
+                    rows="2"
+                    placeholder="Motivo de la reserva..."></textarea>
         </div>
       </div>
 
-      <div class="form-row">
+      <!-- ESTADO: solo visible en modo edición -->
+      <div class="form-row" *ngIf="modoEdicion">
         <div class="form-group">
           <label>Estado <span class="required">*</span></label>
           <select class="form-control" [(ngModel)]="formularioReserva.estado">
             <option value="Pendiente">Pendiente</option>
             <option value="Aprobada">Aprobada</option>
             <option value="Completada">Completada</option>
+            <option value="Rechazada">Rechazada</option>
+            <option value="Cancelada">Cancelada</option>
           </select>
         </div>
+        <div class="form-group"></div>
       </div>
 
     </div>
@@ -407,27 +457,11 @@
 
       <div class="form-row" style="margin-top: 20px;">
         <div class="form-group full-width">
-          <label>Usuario que Cancela <span class="required">*</span></label>
-          <select class="form-control" [(ngModel)]="formularioCancelacion.id_usuario_cancela">
-            <option [value]="0">Seleccione un usuario</option>
-            <option *ngFor="let usuario of usuarios" [value]="usuario.id_usuario">
-              {{ usuario.nombres }} {{ usuario.apellidos }}
-            </option>
-          </select>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group full-width">
-          <label>Fecha de Cancelación <span class="required">*</span></label>
-          <input type="date" class="form-control" [(ngModel)]="formularioCancelacion.fecha_cancelacion">
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group full-width">
           <label>Motivo de Cancelación <span class="required">*</span></label>
-          <textarea class="form-control" [(ngModel)]="formularioCancelacion.motivo_cancelacion" rows="3" placeholder="Describa el motivo de la cancelación..."></textarea>
+          <textarea class="form-control"
+                    [(ngModel)]="formularioCancelacion.motivo_cancelacion"
+                    rows="3"
+                    placeholder="Describa el motivo de la cancelación..."></textarea>
         </div>
       </div>
 
@@ -452,14 +486,19 @@
       <div class="form-row">
         <div class="form-group full-width">
           <label>Nombre del Tipo <span class="required">*</span></label>
-          <input type="text" class="form-control" [(ngModel)]="formularioTipo.nombre_tipo" placeholder="Ej: Clase Regular">
+          <input type="text" class="form-control"
+                 [(ngModel)]="formularioTipo.nombre_tipo"
+                 placeholder="Ej: Clase Regular">
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group full-width">
           <label>Descripción</label>
-          <textarea class="form-control" [(ngModel)]="formularioTipo.descripcion" rows="3" placeholder="Descripción del tipo de reserva..."></textarea>
+          <textarea class="form-control"
+                    [(ngModel)]="formularioTipo.descripcion"
+                    rows="3"
+                    placeholder="Descripción del tipo de reserva..."></textarea>
         </div>
       </div>
 
@@ -500,9 +539,7 @@
   </div>
 </div>
 
-<!-- ===================== -->
 <!-- TOAST NOTIFICACIÓN -->
-<!-- ===================== -->
 <div
   class="toast"
   *ngIf="mostrarToast"

@@ -41,6 +41,10 @@ export class ReservaService {
     return this.http.post(`${this.API_URL}/crear`, data);
   }
 
+  crearAdmin(data: ReservaDTO): Observable<any> {
+    return this.http.post(`${this.API_URL}/crear-admin`, data);
+  }
+
   actualizar(id: number, data: ReservaDTO): Observable<any> {
     return this.http.put(`${this.API_URL}/actualizar/${id}`, data);
   }
@@ -55,5 +59,9 @@ export class ReservaService {
 
   rechazar(id: number): Observable<any> {
     return this.http.put(`${this.API_URL}/rechazar/${id}`, {});
+  }
+
+  listarPorUsuario(idUsuario: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/usuario/${idUsuario}`);
   }
 }

@@ -77,21 +77,21 @@
     <div class="stat-card">
       <div class="stat-icon sc-amber">⏳</div>
       <div class="stat-info">
-        <span class="stat-num">{{ totalPorEstado('PENDIENTE') }}</span>
+        <span class="stat-num">{{ totalPorEstado('Pendiente') }}</span>
         <span class="stat-label">Pendientes</span>
       </div>
     </div>
     <div class="stat-card">
       <div class="stat-icon sc-green">✅</div>
       <div class="stat-info">
-        <span class="stat-num">{{ totalPorEstado('APROBADA') }}</span>
+        <span class="stat-num">{{ totalPorEstado('Aprobada') }}</span>
         <span class="stat-label">Aprobadas</span>
       </div>
     </div>
     <div class="stat-card">
       <div class="stat-icon sc-red">🚫</div>
       <div class="stat-info">
-        <span class="stat-num">{{ totalPorEstado('RECHAZADA') }}</span>
+        <span class="stat-num">{{ totalPorEstado('Rechazada') }}</span>
         <span class="stat-label">Rechazadas</span>
       </div>
     </div>
@@ -104,13 +104,13 @@
       <div class="filters-group">
         <select class="filter-select" [(ngModel)]="filtroEstado" (change)="filtrar()">
           <option value="Todos">Todos los estados</option>
-          <option value="PENDIENTE">Pendiente</option>
-          <option value="APROBADA">Aprobada</option>
-          <option value="RECHAZADA">Rechazada</option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="Aprobada">Aprobada</option>
+          <option value="Rechazada">Rechazada</option>
+          <option value="Cancelada">Cancelada</option>
         </select>
       </div>
 
-      <!-- PAGINACIÓN -->
       <div class="pagination-controls" *ngIf="solicitudesFiltradas.length > 0">
         <span class="pagination-info-inline">{{ paginaActual }}/{{ totalPaginas }}</span>
         <button class="btn-pag" (click)="irAPagina(1)" [disabled]="paginaActual === 1">«</button>
@@ -138,10 +138,10 @@
         </thead>
         <tbody>
         <tr *ngFor="let s of solicitudesPaginadas">
-          <td><strong>{{ s.laboratorio }}</strong></td>
-          <td>{{ s.materia }}</td>
+          <td><strong>{{ s.nombre_laboratorio }}</strong></td>
+          <td>{{ s.nombre_asignatura }}</td>
           <td>
-            <strong>{{ s.fecha }}</strong>
+            <strong>{{ s.fecha | date:'dd/MM/yyyy' }}</strong>
             <small>{{ s.horaInicio }} – {{ s.horaFin }}</small>
           </td>
           <td>{{ s.cantidadEstudiantes }}</td>
@@ -152,7 +152,7 @@
             <div class="action-buttons">
               <button class="btn-action btn-ver" (click)="verDetalle(s)">Ver</button>
               <button class="btn-action btn-eliminar"
-                      *ngIf="s.estado === 'PENDIENTE'"
+                      *ngIf="s.estado === 'Pendiente'"
                       (click)="cancelarSolicitud(s)">Cancelar</button>
             </div>
           </td>
@@ -194,31 +194,64 @@
 
     <div class="modal-body">
 
-      <!-- FILA 1 -->
+      <!-- FILA 1: Laboratorio + Asignatura -->
       <div class="form-row">
         <div class="form-group">
           <label>Laboratorio <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
-          <select class="form-control" [(ngModel)]="solicitudActual.laboratorio" [disabled]="modoModal === 'ver'">
-            <option value="">Seleccionar laboratorio</option>
-            <option *ngFor="let lab of laboratorios" [value]="lab">{{ lab }}</option>
+          <select *ngIf="modoModal !== 'ver'" class="form-control" [(ngModel)]="solicitudActual.cod_laboratorio">
+            <option [value]="0">Seleccione un laboratorio</option>
+            <option *ngFor="let lab of laboratorios" [value]="lab.cod_laboratorio">{{ lab.nombre }}</option>
           </select>
+          <div *ngIf="modoModal === 'ver'" class="form-control" style="cursor:default">{{ solicitudActual.nombre_laboratorio }}</div>
         </div>
         <div class="form-group">
-          <label>Materia / Asignatura <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
-          <input class="form-control"
-                 [(ngModel)]="solicitudActual.materia"
-                 [disabled]="modoModal === 'ver'"
-                 placeholder="Ej: Bases de Datos I">
+          <label>Asignatura <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
+          <select *ngIf="modoModal !== 'ver'" class="form-control"
+                  [(ngModel)]="solicitudActual.id_asignatura"
+                  (change)="onAsignaturaChange()">
+            <option [value]="0">Seleccione una asignatura</option>
+            <option *ngFor="let asig of asignaturas" [value]="asig.id_asignatura">{{ asig.nombre }}</option>
+          </select>
+          <div *ngIf="modoModal === 'ver'" class="form-control" style="cursor:default">{{ solicitudActual.nombre_asignatura }}</div>
         </div>
       </div>
 
-      <!-- FILA 2 -->
+      <!-- FILA 2: Período + Horario Académico -->
       <div class="form-row">
         <div class="form-group">
-          <label>Fecha <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
-          <input type="date" class="form-control"
-                 [(ngModel)]="solicitudActual.fecha"
-                 [disabled]="modoModal === 'ver'">
+          <label>Período Académico <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
+          <select *ngIf="modoModal !== 'ver'" class="form-control" [(ngModel)]="solicitudActual.id_periodo">
+            <option [value]="0">Seleccione un período</option>
+            <option *ngFor="let periodo of periodos" [value]="periodo.id_periodo">{{ periodo.nombre_periodo }}</option>
+          </select>
+          <div *ngIf="modoModal === 'ver'" class="form-control" style="cursor:default">{{ solicitudActual.nombre_periodo }}</div>
+        </div>
+        <div class="form-group">
+          <label>Horario Académico</label>
+          <!-- 👇 Agregado (change)="onHorarioChange()" -->
+          <select *ngIf="modoModal !== 'ver'" class="form-control"
+                  [(ngModel)]="solicitudActual.id_horario_academico"
+                  (change)="onHorarioChange()">
+            <option [value]="null">Sin horario académico</option>
+            <option *ngFor="let h of horariosAcademicos" [value]="h.id_horario_academico">
+              {{ h.nombre_asignatura }} - {{ h.dia_semana }} {{ h.hora_inicio }} - {{ h.hora_fin }}
+            </option>
+          </select>
+          <div *ngIf="modoModal === 'ver'" class="form-control" style="cursor:default">
+            {{ solicitudActual.id_horario_academico ? 'Con horario académico' : 'Sin horario académico' }}
+          </div>
+        </div>
+      </div>
+
+      <!-- FILA 3: Tipo de Reserva + Estudiantes -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tipo de Reserva</label>
+          <select *ngIf="modoModal !== 'ver'" class="form-control" [(ngModel)]="solicitudActual.id_tipo_reserva">
+            <option [value]="0">Seleccione un tipo</option>
+            <option *ngFor="let tipo of tipos" [value]="tipo.id_tipo_reserva">{{ tipo.nombre_tipo }}</option>
+          </select>
+          <div *ngIf="modoModal === 'ver'" class="form-control" style="cursor:default">{{ solicitudActual.nombre_tipo }}</div>
         </div>
         <div class="form-group">
           <label>Cantidad de Estudiantes <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
@@ -229,59 +262,62 @@
         </div>
       </div>
 
-      <!-- FILA 3 -->
+      <!-- FILA 4: Fecha + Hora Inicio -->
       <div class="form-row">
         <div class="form-group">
-          <label>Hora Inicio <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
-          <input type="time" class="form-control"
-                 [(ngModel)]="solicitudActual.horaInicio"
+          <label>Fecha de Reserva <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
+          <input type="date" class="form-control"
+                 [(ngModel)]="solicitudActual.fecha"
                  [disabled]="modoModal === 'ver'">
         </div>
         <div class="form-group">
-          <label>Hora Fin <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
+          <label>Hora Inicio <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
+          <!-- 👇 Se bloquea si hay horario académico seleccionado -->
           <input type="time" class="form-control"
-                 [(ngModel)]="solicitudActual.horaFin"
-                 [disabled]="modoModal === 'ver'">
+                 [(ngModel)]="solicitudActual.horaInicio"
+                 [disabled]="modoModal === 'ver' || solicitudActual.id_horario_academico">
         </div>
       </div>
 
-      <!-- EQUIPOS -->
-      <div class="form-group full-width" style="margin-bottom:18px">
-        <label>Equipos Específicos</label>
-        <div class="equipos-grid">
-          <div class="equipo-card"
-               *ngFor="let eq of equiposDisponibles"
-               [class.selected]="equipoSeleccionado(eq)"
-               [class.disabled]="modoModal === 'ver'"
-               (click)="modoModal !== 'ver' && toggleEquipo(eq)">
-            <span class="equipo-icon">{{ eq.icono }}</span>
-            <span class="equipo-nombre">{{ eq.nombre }}</span>
-          </div>
+      <!-- FILA 5: Hora Fin -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Hora Fin <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
+          <!-- 👇 Se bloquea si hay horario académico seleccionado -->
+          <input type="time" class="form-control"
+                 [(ngModel)]="solicitudActual.horaFin"
+                 [disabled]="modoModal === 'ver' || solicitudActual.id_horario_academico">
         </div>
+        <div class="form-group"></div>
       </div>
 
       <!-- MOTIVO -->
       <div class="form-group full-width">
-        <label>Motivo / Descripción <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
+        <label>Motivo <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
         <textarea class="form-control"
                   [(ngModel)]="solicitudActual.motivo"
                   [disabled]="modoModal === 'ver'"
-                  rows="3"
+                  rows="2"
                   placeholder="Describe el propósito de la reserva..."></textarea>
+      </div>
+
+      <!-- DESCRIPCIÓN -->
+      <div class="form-group full-width">
+        <label>Descripción</label>
+        <textarea class="form-control"
+                  [(ngModel)]="solicitudActual.descripcion"
+                  [disabled]="modoModal === 'ver'"
+                  rows="2"
+                  placeholder="Información adicional..."></textarea>
       </div>
 
       <!-- ESTADO (solo ver) -->
       <div class="form-group full-width" *ngIf="modoModal === 'ver'">
         <label>Estado</label>
-        <span class="badge" [ngClass]="getEstadoClass(solicitudActual.estado)" style="font-size:12px; padding:5px 14px">
+        <span class="badge" [ngClass]="getEstadoClass(solicitudActual.estado)"
+              style="font-size:12px; padding:5px 14px">
           {{ solicitudActual.estado }}
         </span>
-      </div>
-
-      <!-- OBSERVACIONES si fue rechazada -->
-      <div class="form-group full-width" *ngIf="modoModal === 'ver' && solicitudActual.observaciones">
-        <label>Observaciones</label>
-        <div class="obs-box">{{ solicitudActual.observaciones }}</div>
       </div>
 
     </div>

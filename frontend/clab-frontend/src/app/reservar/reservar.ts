@@ -30,7 +30,7 @@ interface Reserva {
   id_tipo_reserva: number;
   nombre_tipo: string;
   id_usuario: number;
-  estado: 'Pendiente' | 'Aprobada' | 'Cancelada' | 'Completada';
+  estado: 'Pendiente' | 'Aprobada' | 'Cancelada' | 'Completada' | 'Rechazada';
   descripcion: string;
   motivo: string;
 }
@@ -68,6 +68,9 @@ interface HorarioAcademico {
   id_horario_academico: number;
   nombre_asignatura: string;
   dia_semana: string;
+  hora_inicio: string;
+  hora_fin: string;
+  id_asignatura: number;
 }
 
 interface Usuario {
@@ -107,6 +110,7 @@ export class ReservarComponent implements OnInit {
   drawerAbierto = false;
   rol = localStorage.getItem('rol') || '';
   usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+  idUsuario= 0;
 
   cambiarTab(tab: number) {
     this.tabActiva = tab;
@@ -155,6 +159,10 @@ export class ReservarComponent implements OnInit {
     );
   }
 
+  totalPorEstado(estado: string): number {
+    return this.reservas.filter(r => r.estado === estado).length;
+  }
+
   /* =========================
      MODALES - RESERVA / TIPO
   ========================= */
@@ -177,6 +185,9 @@ export class ReservarComponent implements OnInit {
     this.modoEdicion = false;
     this.mostrarModal = true;
     this.resetFormularios();
+    if (tipo === 'reserva') {
+      this.cargarTodosLosHorarios(); // ← agrega esto
+    }
   }
 
   cerrarModal() {
@@ -217,6 +228,39 @@ export class ReservarComponent implements OnInit {
     this.mostrarModalCancelar = false;
     this.itemSeleccionado = null;
     this.indexSeleccionado = null;
+  }
+
+  onHorarioChange(): void {
+    const idHorario = this.formularioReserva.id_horario_academico;
+    if (!idHorario) {
+      this.formularioReserva.hora_inicio = '';
+      this.formularioReserva.hora_fin = '';
+      return;
+    }
+    const horario = this.horariosAcademicos.find(h => h.id_horario_academico == idHorario);
+    if (horario) {
+      this.formularioReserva.hora_inicio = horario.hora_inicio;
+      this.formularioReserva.hora_fin = horario.hora_fin;
+      this.formularioReserva.id_asignatura = horario.id_asignatura;
+      this.cdr.detectChanges();
+    }
+  }
+
+  cargarTodosLosHorarios(): void {
+    this.horarioService.listar().subscribe({
+      next: (data) => {
+        this.horariosAcademicos = data.map(h => ({
+          id_horario_academico: h.idHorario,
+          nombre_asignatura: h.nombreAsignatura || '',
+          dia_semana: h.diaSemana,
+          hora_inicio: h.horaInicio,
+          hora_fin: h.horaFin,
+          id_asignatura: h.idAsignatura
+        }));
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error cargando horarios:', err)
+    });
   }
 
   confirmarCancelacion() {
@@ -263,12 +307,11 @@ export class ReservarComponent implements OnInit {
       hora_fin: '',
       numero_estudiantes: 1,
       id_tipo_reserva: 0,
-      id_usuario: 0,
+      id_usuario: this.idUsuario,
       descripcion: '',
       motivo: '',
-      estado: 'Pendiente'
+      estado: 'Aprobada'
     };
-
     this.formularioTipo = {
       nombre_tipo: '',
       descripcion: '',
@@ -291,7 +334,7 @@ export class ReservarComponent implements OnInit {
 
     const dto = {
       codLaboratorio: this.formularioReserva.cod_laboratorio,
-      idUsuario: this.formularioReserva.id_usuario || 1,
+      idUsuario: this.idUsuario,
       idPeriodo: this.formularioReserva.id_periodo || 1,
       idHorarioAcademico: this.formularioReserva.id_horario_academico || 1,
       idAsignatura: this.formularioReserva.id_asignatura,
@@ -318,7 +361,7 @@ export class ReservarComponent implements OnInit {
         }
       });
     } else {
-      this.reservaService.crear(dto).subscribe({
+      this.reservaService.crearAdmin(dto).subscribe({  // ← cambia crear por crearAdmin
         next: () => {
           this.cargarReservas();
           this.cerrarModal();
@@ -418,7 +461,7 @@ export class ReservarComponent implements OnInit {
           id_tipo_reserva: r.idTipoReserva,
           nombre_tipo: r.nombreTipoReserva || '-',
           id_usuario: r.idUsuario,
-          estado: r.estado as 'Pendiente' | 'Aprobada' | 'Cancelada' | 'Completada',
+          estado: r.estado as 'Pendiente' | 'Aprobada' | 'Cancelada' | 'Completada' | 'Rechazada',
           descripcion: r.descripcion || '',
           motivo: r.motivo
         }));
@@ -428,6 +471,32 @@ export class ReservarComponent implements OnInit {
       error: (err) => {
         console.error('Error cargando reservas:', err);
         this.mostrarNotificacion('Error al cargar reservas', 'error');
+      }
+    });
+  }
+
+  aprobarReserva(res: any): void {
+    this.reservaService.aprobar(res.id_reserva).subscribe({
+      next: () => {
+        this.cargarReservas();
+        this.mostrarNotificacion('✅ Reserva aprobada correctamente');
+      },
+      error: (err) => {
+        console.error('Error aprobando:', err);
+        this.mostrarNotificacion('❌ Error al aprobar la reserva', 'error');
+      }
+    });
+  }
+
+  rechazarReserva(res: any): void {
+    this.reservaService.rechazar(res.id_reserva).subscribe({
+      next: () => {
+        this.cargarReservas();
+        this.mostrarNotificacion('🚫 Reserva rechazada');
+      },
+      error: (err) => {
+        console.error('Error rechazando:', err);
+        this.mostrarNotificacion('❌ Error al rechazar la reserva', 'error');
       }
     });
   }
@@ -509,6 +578,7 @@ export class ReservarComponent implements OnInit {
     this.usuarios = [];
 
     this.reservasFiltradas = [...this.reservas];
+    this.idUsuario = parseInt(localStorage.getItem('idUsuario') || '0');
   }
 
   cargarTipos(): void {
@@ -572,7 +642,10 @@ export class ReservarComponent implements OnInit {
         this.horariosAcademicos = data.map(h => ({
           id_horario_academico: h.idHorarioAcademico,
           nombre_asignatura: h.nombreAsignatura || '',
-          dia_semana: h.diaSemana
+          dia_semana: h.diaSemana,
+          hora_inicio: h.horaInicio,    // ← agrega
+          hora_fin: h.horaFin,          // ← agrega
+          id_asignatura: h.idAsignatura // ← agrega
         }));
         this.cdr.detectChanges();
       },
