@@ -9,6 +9,7 @@ public class RolRequestDTO {
     private String descripcion;
     private List<String> rolesBD;
     private List<Integer> permisos = new ArrayList<>();
+    private String estado;
 
     public List<String> getRolesBD() {
         return rolesBD;
@@ -49,4 +50,7 @@ public class RolRequestDTO {
     public void setPermisos(List<Integer> permisos) {
         this.permisos = permisos != null ? permisos : new ArrayList<>();
     }
+
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
 }

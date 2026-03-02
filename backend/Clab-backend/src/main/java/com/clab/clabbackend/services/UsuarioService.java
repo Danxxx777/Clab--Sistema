@@ -43,6 +43,12 @@ public class UsuarioService {
         String usuarioBd = generarUsuario(dto.getNombres(), dto.getApellidos());
         String passwordSistema = passwordEncoder.encode(dto.getContrasenia());
         String passwordBd = dto.getContrasenia();
+
+        // El SP solo acepta un rol — pasamos el primero
+        Integer primerRol = (dto.getIdsRoles() != null && !dto.getIdsRoles().isEmpty())
+                ? dto.getIdsRoles().get(0)
+                : null;
+
         usuarioRepository.spUsuarioInsertar(
                 dto.getIdentidad(),
                 dto.getNombres(),
@@ -52,38 +58,65 @@ public class UsuarioService {
                 usuarioBd,
                 passwordSistema,
                 passwordBd,
-                dto.getIdRol()
+                primerRol
         );
-        Usuario usuarioCreado = usuarioRepository.findByUsuario(usuarioBd).orElseThrow(() -> new RuntimeException("Error creando usuario"));
+
+        Usuario usuarioCreado = usuarioRepository.findByUsuario(usuarioBd)
+                .orElseThrow(() -> new RuntimeException("Error creando usuario"));
+
+        // Asignar roles adicionales (desde el 2do en adelante)
+        if (dto.getIdsRoles() != null && dto.getIdsRoles().size() > 1) {
+            for (int i = 1; i < dto.getIdsRoles().size(); i++) {
+                Integer idRol = dto.getIdsRoles().get(i);
+                var rol = rolRepository.findById(idRol)
+                        .orElseThrow(() -> new RuntimeException("Rol no encontrado: " + idRol));
+                var ur = new UsuarioRol();
+                ur.setUsuario(usuarioCreado);
+                ur.setRol(rol);
+                ur.setFechaAsignacion(LocalDate.now());
+                ur.setVigente(true);
+                usuarioRolRepository.save(ur);
+            }
+        }
+
         return construirResponse(usuarioCreado);
     }
 
     public UsuarioResponseDTO actualizar(Integer id, UsuarioRequestDTO dto) {
-        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
         usuario.setIdentidad(dto.getIdentidad());
         usuario.setNombres(dto.getNombres());
         usuario.setApellidos(dto.getApellidos());
         usuario.setEmail(dto.getEmail());
         usuario.setTelefono(dto.getTelefono());
+
         if (dto.getContrasenia() != null && !dto.getContrasenia().isBlank()) {
             usuario.setContrasenia(passwordEncoder.encode(dto.getContrasenia()));
         }
-        if (dto.getIdRol() != null) {
-            var rolActualOpt = usuarioRolRepository.findByUsuario_IdUsuarioAndVigenteTrue(usuario.getIdUsuario());
-            if (rolActualOpt.isPresent()) {
-                var rolActual = rolActualOpt.get();
-                if (!rolActual.getRol().getIdRol().equals(dto.getIdRol())) {
-                    rolActual.setVigente(false);
-                    usuarioRolRepository.save(rolActual);
-                    var nuevoRol = new UsuarioRol();
-                    nuevoRol.setUsuario(usuario);
-                    nuevoRol.setRol(rolRepository.findById(dto.getIdRol()).orElseThrow(() -> new RuntimeException("Rol no encontrado")));
-                    nuevoRol.setFechaAsignacion(LocalDate.now());
-                    nuevoRol.setVigente(true);
-                    usuarioRolRepository.save(nuevoRol);
-                }
+
+        // Actualizar roles: desactivar todos los vigentes y asignar los nuevos
+        if (dto.getIdsRoles() != null && !dto.getIdsRoles().isEmpty()) {
+            // Desactivar todos los roles vigentes actuales
+            List<UsuarioRol> rolesVigentes = usuarioRolRepository
+                    .findAllByUsuario_IdUsuarioAndVigenteTrue(usuario.getIdUsuario());
+            rolesVigentes.forEach(ur -> ur.setVigente(false));
+            usuarioRolRepository.saveAll(rolesVigentes);
+
+            // Asignar los nuevos roles
+            for (Integer idRol : dto.getIdsRoles()) {
+                var rol = rolRepository.findById(idRol)
+                        .orElseThrow(() -> new RuntimeException("Rol no encontrado: " + idRol));
+                var ur = new UsuarioRol();
+                ur.setUsuario(usuario);
+                ur.setRol(rol);
+                ur.setFechaAsignacion(LocalDate.now());
+                ur.setVigente(true);
+                usuarioRolRepository.save(ur);
             }
         }
+
         Usuario actualizado = usuarioRepository.save(usuario);
         return construirResponse(actualizado);
     }
@@ -93,55 +126,22 @@ public class UsuarioService {
     }
 
     public void desactivar(Integer id) {
-        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         usuario.setEstado("INACTIVO");
         usuarioRepository.save(usuario);
     }
 
     private UsuarioResponseDTO construirResponse(Usuario u) {
-
-        Integer idRol = null;
-        String nombreRol = "Sin rol";
-
-        var rolOpt = usuarioRolRepository
-                .findByUsuario_IdUsuarioAndVigenteTrue(u.getIdUsuario());
-
-        if (rolOpt.isPresent()) {
-            UsuarioRol ur = rolOpt.get();
-
-            if (ur.getRol() != null) {
-
-
-                try {
-                    idRol = (Integer) ur.getRol()
-                            .getClass()
-                            .getMethod("getIdRol")
-                            .invoke(ur.getRol());
-                } catch (Exception e) {
-                    try {
-                        idRol = (Integer) ur.getRol()
-                                .getClass()
-                                .getMethod("getId")
-                                .invoke(ur.getRol());
-                    } catch (Exception ignored) {}
-                }
-
-
-                try {
-                    nombreRol = (String) ur.getRol()
-                            .getClass()
-                            .getMethod("getNombre")
-                            .invoke(ur.getRol());
-                } catch (Exception e) {
-                    try {
-                        nombreRol = (String) ur.getRol()
-                                .getClass()
-                                .getMethod("getNombreRol")
-                                .invoke(ur.getRol());
-                    } catch (Exception ignored) {}
-                }
-            }
-        }
+        List<UsuarioResponseDTO.RolInfo> roles = usuarioRolRepository
+                .findAllByUsuario_IdUsuarioAndVigenteTrue(u.getIdUsuario())
+                .stream()
+                .filter(ur -> ur.getRol() != null)
+                .map(ur -> new UsuarioResponseDTO.RolInfo(
+                        ur.getRol().getIdRol(),
+                        ur.getRol().getNombreRol()
+                ))
+                .toList();
 
         return new UsuarioResponseDTO(
                 u.getIdUsuario(),
@@ -153,11 +153,9 @@ public class UsuarioService {
                 u.getUsuario(),
                 u.getEstado(),
                 u.getFechaRegistro(),
-                idRol,
-                nombreRol
+                roles
         );
     }
-
 
     private String generarUsuario(String nombres, String apellidos) {
         String n = nombres.trim().split(" ")[0].toLowerCase();
