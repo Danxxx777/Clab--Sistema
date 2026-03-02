@@ -210,7 +210,13 @@ export class UsuariosComponent implements OnInit {
       error: err => console.error('Error cargando usuarios', err)
     });
   }
+  getRolResumido(rolNombre: string | undefined): string {
+    if (!rolNombre) return 'Sin rol';
+    const roles = rolNombre.split(',').map(r => r.trim());
+    if (roles.length <= 1) return rolNombre;
 
+    return `${roles[0]}, ${roles[1].charAt(0)}...`;
+  }
   /* =========================
      USUARIOS — MODAL
   ==========================*/
@@ -421,7 +427,9 @@ export class UsuariosComponent implements OnInit {
       }
     });
   }
-
+  get rolesActivos(): RolView[] {
+    return this.roles.filter(r => r.estado === 'ACTIVO');
+  }
   actualizarPaginacionRoles(): void {
     this.totalPaginasRoles = Math.max(1, Math.ceil(this.roles.length / this.itemsPorPaginaRoles));
     const inicio = (this.paginaRoles - 1) * this.itemsPorPaginaRoles;
