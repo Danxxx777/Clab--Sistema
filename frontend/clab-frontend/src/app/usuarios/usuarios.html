@@ -204,7 +204,9 @@
               <small>&#64;{{ u.usuario }}</small>
             </td>
             <td>{{ u.identidad }}</td>
-            <td><span class="badge rol-badge">{{ u.rolNombre }}</span></td>
+            <td>
+             <span class="badge rol-badge" [title]="u.rolNombre">{{ getRolResumido(u.rolNombre) }}</span>
+            </td>
             <td><span class="badge" [ngClass]="getEstadoClass(u.estado)">{{ u.estado }}</span></td>
             <td>{{ u.fechaRegistro }}</td>
             <td>
@@ -444,7 +446,7 @@
         <div class="form-group full-width">
           <label>Roles <span class="required">*</span></label>
           <div class="roles-bd-grid">
-            <div class="rol-bd-card" *ngFor="let r of roles"
+            <div class="rol-bd-card" *ngFor="let r of rolesActivos"
                  [class.selected]="estaRolSeleccionado(r.id!)"
                  [class.disabled]="modoModal === 'ver'"
                  (click)="modoModal !== 'ver' && toggleRolUsuario(r.id!)">
