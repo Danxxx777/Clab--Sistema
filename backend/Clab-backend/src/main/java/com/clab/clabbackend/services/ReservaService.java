@@ -57,9 +57,55 @@ public class ReservaService {
         }).collect(Collectors.toList());
     }
 
+    public List<Map<String, Object>> listarPorUsuario(Integer idUsuario) {
+        List<Object[]> resultados = reservaRepository.listarReservasPorUsuario(idUsuario);
+        return resultados.stream().map(r -> {
+            Map<String, Object> reserva = new HashMap<>();
+            reserva.put("idReserva", r[0]);
+            reserva.put("codLaboratorio", r[1]);
+            reserva.put("nombreLaboratorio", r[2]);
+            reserva.put("idUsuario", r[3]);
+            reserva.put("nombreUsuario", r[4]);
+            reserva.put("idPeriodo", r[5]);
+            reserva.put("nombrePeriodo", r[6]);
+            reserva.put("idHorarioAcademico", r[7]);
+            reserva.put("idAsignatura", r[8]);
+            reserva.put("nombreAsignatura", r[9]);
+            reserva.put("idTipoReserva", r[10]);
+            reserva.put("nombreTipoReserva", r[11]);
+            reserva.put("fechaReserva", r[12] != null ? ((Date) r[12]).toLocalDate() : null);
+            reserva.put("horaInicio", r[13] != null ? ((Time) r[13]).toLocalTime() : null);
+            reserva.put("horaFin", r[14] != null ? ((Time) r[14]).toLocalTime() : null);
+            reserva.put("motivo", r[15]);
+            reserva.put("numeroEstudiantes", r[16]);
+            reserva.put("estado", r[17]);
+            reserva.put("descripcion", r[18]);
+            reserva.put("fechaSolicitud", r[19] != null ? ((Date) r[19]).toLocalDate() : null);
+            reserva.put("fechaConfirmacion", r[20] != null ? ((Date) r[20]).toLocalDate() : null);
+            return reserva;
+        }).collect(Collectors.toList());
+    }
+
     // CREAR
     public void crear(ReservaDTO dto) {
         reservaRepository.insertar(
+                dto.getCodLaboratorio(),
+                dto.getIdUsuario(),
+                dto.getIdPeriodo(),
+                dto.getIdHorarioAcademico(),
+                dto.getIdAsignatura(),
+                dto.getIdTipoReserva(),
+                dto.getFechaReserva(),
+                dto.getHoraInicio(),
+                dto.getHoraFin(),
+                dto.getMotivo(),
+                dto.getNumeroEstudiantes(),
+                dto.getDescripcion()
+        );
+    }
+
+    public void crearAdmin(ReservaDTO dto) {
+        reservaRepository.insertarAdmin(
                 dto.getCodLaboratorio(),
                 dto.getIdUsuario(),
                 dto.getIdPeriodo(),
