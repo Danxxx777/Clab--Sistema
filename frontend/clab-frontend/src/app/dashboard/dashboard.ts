@@ -129,7 +129,6 @@ export class DashboardComponent implements OnInit {
       this.cerrarSelectorRol();
     }
   }
-
   protected auditoria(auditoria: string) {}
   protected reportesuso(reportesuso: string) {}
   protected notificaciones(notificaciones: string) {}

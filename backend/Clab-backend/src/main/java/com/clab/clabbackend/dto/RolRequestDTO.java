@@ -54,3 +54,4 @@ public class RolRequestDTO {
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
 }
+// a ver
