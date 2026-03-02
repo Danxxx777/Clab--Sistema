@@ -438,7 +438,6 @@ export class UsuariosComponent implements OnInit {
     };
     this.mostrarAlerta('¿Eliminar rol?', `¿Estás seguro de eliminar el rol "${r.nombre}"?`, 'confirmar');
   }
-
   desactivarRol(r: RolView): void {
     if (!r.id) return;
     this.accionPendiente = () => {
