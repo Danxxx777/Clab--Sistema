@@ -39,7 +39,10 @@
           <p>Ingresa tus credenciales para acceder al sistema</p>
         </div>
 
-        <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
+        <div class="error-message" *ngIf="errorMessage">
+          <span class="error-icon">⚠️</span>
+          {{ errorMessage }}
+        </div>
 
         <form class="login-form">
           <div class="form-group">

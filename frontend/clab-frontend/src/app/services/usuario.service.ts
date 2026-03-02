@@ -9,7 +9,8 @@ export interface UsuarioRequest {
   email: string;
   telefono?: string;
   contrasenia: string;
-  idsRoles: number[];  // 👈 antes idRol
+  idsRoles: number[];
+  usuario?: string;// 👈 antes idRol
 }
 
 export interface UsuarioResponse {
