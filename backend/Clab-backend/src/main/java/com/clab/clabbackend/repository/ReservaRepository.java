@@ -18,6 +18,9 @@ public interface ReservaRepository extends JpaRepository<Reserva, Integer> {
     @Query(value = "SELECT * FROM reservas.fn_listar_reservas()", nativeQuery = true)
     List<Object[]> listarReservas();
 
+    @Query(value = "SELECT * FROM reservas.fn_listar_reservas_usuario(:idUsuario)", nativeQuery = true)
+    List<Object[]> listarReservasPorUsuario(Integer idUsuario);
+
     // INSERTAR
     @Transactional
     @Modifying
@@ -27,6 +30,28 @@ public interface ReservaRepository extends JpaRepository<Reserva, Integer> {
             ":horaFin, :motivo, :numeroEstudiantes, :descripcion)",
             nativeQuery = true)
     void insertar(
+            Integer codLaboratorio,
+            Integer idUsuario,
+            Integer idPeriodo,
+            Integer idHorarioAcademico,
+            Integer idAsignatura,
+            Integer idTipoReserva,
+            LocalDate fechaReserva,
+            LocalTime horaInicio,
+            LocalTime horaFin,
+            String motivo,
+            Integer numeroEstudiantes,
+            String descripcion
+    );
+
+    @Transactional
+    @Modifying
+    @Query(value = "CALL reservas.sp_insertar_reserva_admin(" +
+            ":codLaboratorio, :idUsuario, :idPeriodo, :idHorarioAcademico, " +
+            ":idAsignatura, :idTipoReserva, :fechaReserva, :horaInicio, " +
+            ":horaFin, :motivo, :numeroEstudiantes, :descripcion)",
+            nativeQuery = true)
+    void insertarAdmin(
             Integer codLaboratorio,
             Integer idUsuario,
             Integer idPeriodo,
