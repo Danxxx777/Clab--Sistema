@@ -409,7 +409,7 @@ export class AcademicoComponent implements OnInit {
               this.periodos.splice(index, 1);
               this.filtrarPeriodos();
               this.cdr.detectChanges();
-              alert('Período eliminado');
+              this.mostrarNotificacion('Período eliminado correctamente');
             }
           });
           break;
@@ -480,20 +480,26 @@ export class AcademicoComponent implements OnInit {
               this.periodosFiltrado = [...this.periodos];
               this.cdr.detectChanges();
               this.cerrarModal();
-              alert('Período actualizado');
+              this.mostrarNotificacion('Período actualizado');
             },
-            error: () => alert('Error al editar período')
+            error: () => this.mostrarNotificacion('Error al actualizar período', 'error')
           });
         } else {
+          const hayPeriodoActivo = this.periodos.some(p => p.estado === 'ACTIVO');
+          if (hayPeriodoActivo) {
+            periodo.estado = 'INACTIVO';
+          } else {
+            periodo.estado = 'ACTIVO';
+          }
           this.periodo.crear(periodo).subscribe({
             next: (periodoCreado) => {
               this.periodos.push(periodoCreado);
               this.periodosFiltrado = [...this.periodos];
               this.cdr.detectChanges();
               this.cerrarModal();
-              alert('Período creado');
+              this.mostrarNotificacion('Período creado');
             },
-            error: () => alert('Error al crear período')
+            error: () => this.mostrarNotificacion('Error al crear período', 'error')
           });
         }
         return; // IMPORTANTÍSIMO: evita que caiga al cierre/alerta genérica
