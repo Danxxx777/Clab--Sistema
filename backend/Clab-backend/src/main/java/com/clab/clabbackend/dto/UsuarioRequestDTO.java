@@ -44,4 +44,4 @@ public class UsuarioRequestDTO {
 
     public List<Integer> getIdsRoles() { return idsRoles; }
     public void setIdsRoles(List<Integer> idsRoles) { this.idsRoles = idsRoles; }
-}
+}// a ver

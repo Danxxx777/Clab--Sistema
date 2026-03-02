@@ -61,3 +61,4 @@ export class RolService {
     return this.http.patch(`${this.apiUrl}/${id}/estado`, { estado: 'INACTIVO' });
   }
 }
+

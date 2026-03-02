@@ -877,7 +877,6 @@ html, body {
     width: 16px; height: 1.5px; background: $muted;
     border-radius: 2px; transition: all 0.3s ease; transform-origin: center;
   }
-
   &:hover .ham-line { background: $neon; }
   &.active {
     border-color: $neon-border; background: $neon-glow;

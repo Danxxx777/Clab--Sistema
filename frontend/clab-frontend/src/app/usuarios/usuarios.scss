@@ -1153,7 +1153,7 @@ html, body {
 
 // =====================
 // ANIMACIONES
-// =====================
+// ====================
 @keyframes pulse {
   0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 6px currentColor; }
   50%       { opacity: 0.4; transform: scale(0.6); box-shadow: none; }
