@@ -29,3 +29,4 @@ public class Rol {
     @Column(name = "estado", length = 10, nullable = false)
     private String estado = "ACTIVO";
 }
+// a ver
