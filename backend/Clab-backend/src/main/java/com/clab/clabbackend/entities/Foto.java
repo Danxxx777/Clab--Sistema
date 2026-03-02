@@ -22,9 +22,11 @@ public class Foto {
     @Column(name = "fecha_subida")
     private LocalDate fechaSubida;
 
-    @Lob
-    @Column(name = "foto_binario", nullable = false)
-    private byte[] fotoBinario;
+    @Column(name = "url_foto", nullable = false)
+    private String urlFoto;
+
+    @Column(name = "public_id", nullable = false)
+    private String publicId;
 
     @Column(name = "estado", length = 15)
     private String estado;

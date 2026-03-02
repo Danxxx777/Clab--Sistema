@@ -21,9 +21,19 @@ public class ReservaController {
         return ResponseEntity.ok(reservaService.listar());
     }
 
+    @GetMapping("/usuario/{id}")
+    public ResponseEntity<List<Map<String, Object>>> listarPorUsuario(@PathVariable Integer id) {
+        return ResponseEntity.ok(reservaService.listarPorUsuario(id));
+    }
+
     @PostMapping("/crear")
     public ResponseEntity<Void> crear(@RequestBody ReservaDTO dto) {
         reservaService.crear(dto);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/crear-admin")
+    public ResponseEntity<Void> crearAdmin(@RequestBody ReservaDTO dto) {
+        reservaService.crearAdmin(dto);
         return ResponseEntity.ok().build();
     }
 

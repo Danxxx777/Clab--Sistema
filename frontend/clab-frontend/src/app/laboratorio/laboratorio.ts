@@ -376,11 +376,11 @@ export class LaboratoriosComponent implements OnInit {
             this.laboratoriosFiltrados = [...this.laboratorios];
             this.cdr.detectChanges();
             this.cerrarModal();
-            this.mostrarNotificacion('✅ Laboratorio actualizado correctamente');
+            this.mostrarNotificacion('Laboratorio actualizado correctamente');
           },
           error: (err) => {
             console.error('Error al editar laboratorio', err);
-            this.mostrarNotificacion('❌ Error al editar el laboratorio', 'error');
+            this.mostrarNotificacion('Error al editar el laboratorio', 'error');
           }
         });
     } else {
@@ -404,11 +404,11 @@ export class LaboratoriosComponent implements OnInit {
           this.laboratoriosFiltrados = [...this.laboratorios];
           this.cdr.detectChanges();
           this.cerrarModal();
-          this.mostrarNotificacion('✅ Laboratorio creado exitosamente');
+          this.mostrarNotificacion('Laboratorio creado exitosamente');
         },
         error: (err) => {
           console.error('Error al crear laboratorio', err);
-          this.mostrarNotificacion('❌ Error al crear el laboratorio', 'error');
+          this.mostrarNotificacion('Error al crear el laboratorio', 'error');
         }
       });
     }
@@ -464,11 +464,11 @@ export class LaboratoriosComponent implements OnInit {
           next: () => {
             this.cerrarModal();
             this.cargarSedes();
-            this.mostrarNotificacion('✅ Sede actualizada correctamente');
+            this.mostrarNotificacion('Sede actualizada correctamente');
           },
           error: (err) => {
             console.error('Error al editar sede', err);
-            this.mostrarNotificacion('❌ Error al editar la sede', 'error');
+            this.mostrarNotificacion('Error al editar la sede', 'error');
           }
         });
     } else {
@@ -476,11 +476,11 @@ export class LaboratoriosComponent implements OnInit {
         next: () => {
           this.cerrarModal();
           this.cargarSedes();
-          this.mostrarNotificacion('✅ Sede creada exitosamente');
+          this.mostrarNotificacion('Sede creada exitosamente');
         },
         error: (err) => {
           console.error('Error al crear sede', err);
-          this.mostrarNotificacion('❌ Error al crear la sede', 'error');
+          this.mostrarNotificacion('Error al crear la sede', 'error');
         }
       });
     }
