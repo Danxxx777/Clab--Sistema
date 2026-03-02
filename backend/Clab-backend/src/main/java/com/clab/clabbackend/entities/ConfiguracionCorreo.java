@@ -16,6 +16,12 @@ public class ConfiguracionCorreo {
     @Column(name = "id_config")
     private Integer idConfig;
 
+    @Column(name = "nombre_display", length = 100)
+    private String nombreDisplay; // 👈 "Correo de recuperación"
+
+    @Column(name = "proposito", length = 50)
+    private String proposito; // 👈 GENERAL, RECUPERACION, NOTIFICACIONES, RESERVAS, REPORTES
+
     @Column(name = "host", length = 100, nullable = false)
     private String host;
 

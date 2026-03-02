@@ -1165,3 +1165,155 @@ html, body {
     pointer-events: none;
   }
 }
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  &-left {
+    display: flex;
+    gap: 8px;
+  }
+
+  &-right {
+    display: flex;
+    gap: 8px;
+  }
+}
+
+.btn-estado-activo {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(46, 204, 113, 0.15);
+  color: #2ecc71;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+  &:hover { background: rgba(46, 204, 113, 0.25); }
+}
+
+.btn-estado-inactivo {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255, 165, 0, 0.15);
+  color: #ffa500;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+  &:hover { background: rgba(255, 165, 0, 0.25); }
+}
+
+.btn-eliminar-modal {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+  &:hover { background: rgba(231, 76, 60, 0.25); }
+}
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+
+  .modal-footer-left {
+    display: flex;
+    gap: 8px;
+  }
+
+  .modal-footer-right {
+    display: flex;
+    gap: 8px;
+    margin-left: auto; // por si no hay botones a la izquierda
+  }
+}
+// =====================
+// USUARIO BANNER (ver/editar)
+// =====================
+.usuario-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: rgba(57, 255, 20, 0.06);
+  border: 1px solid rgba(57, 255, 20, 0.2);
+  border-radius: 10px;
+  margin-bottom: 20px;
+
+  .usuario-banner-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: #6b6b6b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .usuario-banner-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    color: #39ff14;
+    text-shadow: 0 0 12px rgba(57, 255, 20, 0.4);
+  }
+}
+
+// =====================
+// USUARIO PREVIEW (crear)
+// =====================
+.usuario-preview-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  background: #1e1e1e;
+  overflow: hidden;
+  transition: border-color 0.2s;
+
+  .usuario-at {
+    padding: 9px 10px 9px 12px;
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: #39ff14;
+    background: rgba(57, 255, 20, 0.06);
+    border-right: 1px solid #2a2a2a;
+    flex-shrink: 0;
+  }
+
+  .usuario-preview-input {
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-family: 'Space Mono', monospace !important;
+    color: #6b6b6b !important;
+    flex: 1;
+
+    &:not(:placeholder-shown) {
+      color: #f0f0f0 !important;
+    }
+  }
+}
+
+// =====================
+// ERROR EN MODAL
+// =====================
+.config-msg-error {
+  color: #ff6b6b;
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.25);
+  border-left: 3px solid #e74c3c;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 12px;
+}
