@@ -10,15 +10,30 @@ public class RolResponseDTO {
     private String descripcion;
     private LocalDate fechaCreacion;
     private List<RolBDDTO> rolesBD;
+    private String estado;
 
     public RolResponseDTO() {}
 
-    public RolResponseDTO(Integer idRol, String nombreRol, String descripcion, LocalDate fechaCreacion, List<RolBDDTO> rolesBD) {
+    // Constructor anterior — mantenerlo para no romper nada
+    public RolResponseDTO(Integer idRol, String nombreRol, String descripcion,
+                          LocalDate fechaCreacion, List<RolBDDTO> rolesBD) {
         this.idRol = idRol;
         this.nombreRol = nombreRol;
         this.descripcion = descripcion;
         this.fechaCreacion = fechaCreacion;
         this.rolesBD = rolesBD;
+        this.estado = "ACTIVO";
+    }
+
+    // 👈 Constructor nuevo con estado
+    public RolResponseDTO(Integer idRol, String nombreRol, String descripcion,
+                          LocalDate fechaCreacion, List<RolBDDTO> rolesBD, String estado) {
+        this.idRol = idRol;
+        this.nombreRol = nombreRol;
+        this.descripcion = descripcion;
+        this.fechaCreacion = fechaCreacion;
+        this.rolesBD = rolesBD;
+        this.estado = estado;
     }
 
     public Integer getIdRol() { return idRol; }
@@ -35,4 +50,7 @@ public class RolResponseDTO {
 
     public List<RolBDDTO> getRolesBD() { return rolesBD; }
     public void setRolesBD(List<RolBDDTO> rolesBD) { this.rolesBD = rolesBD; }
+
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
 }

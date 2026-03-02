@@ -1,0 +1,302 @@
+<div class="solicitudes-container">
+
+  <!-- DRAWER OVERLAY -->
+  <div class="drawer-overlay" [class.open]="drawerAbierto" (click)="cerrarDrawer()"></div>
+
+  <!-- DRAWER LATERAL -->
+  <div class="drawer" [class.open]="drawerAbierto">
+    <div class="drawer-header">
+      <div class="drawer-brand">
+        CLAB
+        <span>Sistema de Laboratorios</span>
+      </div>
+      <button class="btn-close-drawer" (click)="cerrarDrawer()">×</button>
+    </div>
+    <div class="drawer-user">
+      <div class="drawer-avatar">{{ usuarioLogueado.charAt(0).toUpperCase() }}</div>
+      <div class="drawer-user-info">
+        <div class="dui-name">{{ usuarioLogueado }}</div>
+        <div class="role-badge">
+          <span class="role-dot"></span>
+          {{ rol }}
+        </div>
+      </div>
+    </div>
+    <div class="drawer-section-title">Módulos</div>
+    <div class="drawer-modules">
+      @if(rol === 'Docente' || rol === 'Coordinador') {
+        <div class="drawer-item active-item" (click)="navegar('solicitudes-reserva')">
+          <div class="di-icon"><img src="/solicitud.png" alt="Solicitudes"></div>
+          <div class="di-text"><div class="di-name">Solicitudes de Reserva</div><div class="di-desc">Gestión de solicitudes</div></div>
+        </div>
+      }
+      @if(rol === 'Docente' || rol === 'Coordinador') {
+        <div class="drawer-item" (click)="navegar('reservar')">
+          <div class="di-icon"><img src="/calendario.png" alt="Reservas"></div>
+          <div class="di-text"><div class="di-name">Reservas</div><div class="di-desc">Disponibilidad</div></div>
+        </div>
+      }
+      @if(rol === 'Docente') {
+        <div class="drawer-item" (click)="navegar('asistencia')">
+          <div class="di-icon"><img src="/asistencia.png" alt="Asistencia"></div>
+          <div class="di-text"><div class="di-name">Asistencia</div><div class="di-desc">Control de asistencia</div></div>
+        </div>
+      }
+      <div class="drawer-item" (click)="navegar('notificaciones')">
+        <div class="di-icon"><img src="/campana.png" alt="Notificaciones"></div>
+        <div class="di-text"><div class="di-name">Notificaciones</div><div class="di-desc">Centro de alertas</div></div>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn-logout-drawer" (click)="logout()">🚪 Cerrar sesión</button>
+    </div>
+  </div>
+
+  <!-- TITLE BAR -->
+  <div class="page-title-section">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <button class="btn-hamburger" [class.active]="drawerAbierto" (click)="toggleDrawer()">
+        <div class="ham-line"></div>
+        <div class="ham-line"></div>
+        <div class="ham-line"></div>
+      </button>
+      <h1>Solicitudes de Reserva</h1>
+    </div>
+    <button class="btn-volver" (click)="volver()">← Volver</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-icon sc-blue">📋</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ solicitudes.length }}</span>
+        <span class="stat-label">Total</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon sc-amber">⏳</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ totalPorEstado('PENDIENTE') }}</span>
+        <span class="stat-label">Pendientes</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon sc-green">✅</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ totalPorEstado('APROBADA') }}</span>
+        <span class="stat-label">Aprobadas</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon sc-red">🚫</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ totalPorEstado('RECHAZADA') }}</span>
+        <span class="stat-label">Rechazadas</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-wrapper">
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="filters-group">
+        <select class="filter-select" [(ngModel)]="filtroEstado" (change)="filtrar()">
+          <option value="Todos">Todos los estados</option>
+          <option value="PENDIENTE">Pendiente</option>
+          <option value="APROBADA">Aprobada</option>
+          <option value="RECHAZADA">Rechazada</option>
+        </select>
+      </div>
+
+      <!-- PAGINACIÓN -->
+      <div class="pagination-controls" *ngIf="solicitudesFiltradas.length > 0">
+        <span class="pagination-info-inline">{{ paginaActual }}/{{ totalPaginas }}</span>
+        <button class="btn-pag" (click)="irAPagina(1)" [disabled]="paginaActual === 1">«</button>
+        <button class="btn-pag" (click)="irAPagina(paginaActual - 1)" [disabled]="paginaActual === 1">‹</button>
+        <button class="btn-pag" *ngFor="let p of paginas" [class.active]="p === paginaActual" (click)="irAPagina(p)">{{ p }}</button>
+        <button class="btn-pag" (click)="irAPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">›</button>
+        <button class="btn-pag" (click)="irAPagina(totalPaginas)" [disabled]="paginaActual === totalPaginas">»</button>
+      </div>
+
+      <button class="btn-agregar" (click)="abrirModal()">+ Nueva Solicitud</button>
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+        <tr>
+          <th>LABORATORIO</th>
+          <th>MATERIA</th>
+          <th>FECHA Y HORA</th>
+          <th>ESTUDIANTES</th>
+          <th>ESTADO</th>
+          <th>ACCIONES</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let s of solicitudesPaginadas">
+          <td><strong>{{ s.laboratorio }}</strong></td>
+          <td>{{ s.materia }}</td>
+          <td>
+            <strong>{{ s.fecha }}</strong>
+            <small>{{ s.horaInicio }} – {{ s.horaFin }}</small>
+          </td>
+          <td>{{ s.cantidadEstudiantes }}</td>
+          <td>
+            <span class="badge" [ngClass]="getEstadoClass(s.estado)">{{ s.estado }}</span>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn-action btn-ver" (click)="verDetalle(s)">Ver</button>
+              <button class="btn-action btn-eliminar"
+                      *ngIf="s.estado === 'PENDIENTE'"
+                      (click)="cancelarSolicitud(s)">Cancelar</button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="solicitudesFiltradas.length === 0">
+          <td colspan="6" class="empty-message">No hay solicitudes registradas</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-notif" *ngIf="mostrarNotificacion" [ngClass]="{
+  'toast-exito':     notificacionTipo === 'exito',
+  'toast-error':     notificacionTipo === 'error',
+  'toast-confirmar': notificacionTipo === 'confirmar'
+}">
+  <div class="toast-body">
+    <strong>{{ notificacionTitulo }}</strong>
+    <p>{{ notificacionMensaje }}</p>
+  </div>
+  <div class="toast-actions">
+    <button *ngIf="notificacionTipo === 'confirmar'" class="toast-btn-cancel" (click)="cerrarNotificacion()">Cancelar</button>
+    <button *ngIf="notificacionTipo === 'confirmar'" class="toast-btn-confirm" (click)="confirmarAccion()">Confirmar</button>
+    <button *ngIf="notificacionTipo !== 'confirmar'" class="toast-btn-close" (click)="cerrarNotificacion()">×</button>
+  </div>
+</div>
+
+<!-- MODAL: NUEVA SOLICITUD -->
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>{{ modoModal === 'ver' ? 'Detalle de Solicitud' : 'Nueva Solicitud' }}</h2>
+      <button class="btn-close" (click)="cerrarModal()">×</button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- FILA 1 -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Laboratorio <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
+          <select class="form-control" [(ngModel)]="solicitudActual.laboratorio" [disabled]="modoModal === 'ver'">
+            <option value="">Seleccionar laboratorio</option>
+            <option *ngFor="let lab of laboratorios" [value]="lab">{{ lab }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Materia / Asignatura <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
+          <input class="form-control"
+                 [(ngModel)]="solicitudActual.materia"
+                 [disabled]="modoModal === 'ver'"
+                 placeholder="Ej: Bases de Datos I">
+        </div>
+      </div>
+
+      <!-- FILA 2 -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fecha <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
+          <input type="date" class="form-control"
+                 [(ngModel)]="solicitudActual.fecha"
+                 [disabled]="modoModal === 'ver'">
+        </div>
+        <div class="form-group">
+          <label>Cantidad de Estudiantes <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
+          <input type="number" class="form-control"
+                 [(ngModel)]="solicitudActual.cantidadEstudiantes"
+                 [disabled]="modoModal === 'ver'"
+                 placeholder="Ej: 25" min="1">
+        </div>
+      </div>
+
+      <!-- FILA 3 -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Hora Inicio <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
+          <input type="time" class="form-control"
+                 [(ngModel)]="solicitudActual.horaInicio"
+                 [disabled]="modoModal === 'ver'">
+        </div>
+        <div class="form-group">
+          <label>Hora Fin <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
+          <input type="time" class="form-control"
+                 [(ngModel)]="solicitudActual.horaFin"
+                 [disabled]="modoModal === 'ver'">
+        </div>
+      </div>
+
+      <!-- EQUIPOS -->
+      <div class="form-group full-width" style="margin-bottom:18px">
+        <label>Equipos Específicos</label>
+        <div class="equipos-grid">
+          <div class="equipo-card"
+               *ngFor="let eq of equiposDisponibles"
+               [class.selected]="equipoSeleccionado(eq)"
+               [class.disabled]="modoModal === 'ver'"
+               (click)="modoModal !== 'ver' && toggleEquipo(eq)">
+            <span class="equipo-icon">{{ eq.icono }}</span>
+            <span class="equipo-nombre">{{ eq.nombre }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MOTIVO -->
+      <div class="form-group full-width">
+        <label>Motivo / Descripción <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
+        <textarea class="form-control"
+                  [(ngModel)]="solicitudActual.motivo"
+                  [disabled]="modoModal === 'ver'"
+                  rows="3"
+                  placeholder="Describe el propósito de la reserva..."></textarea>
+      </div>
+
+      <!-- ESTADO (solo ver) -->
+      <div class="form-group full-width" *ngIf="modoModal === 'ver'">
+        <label>Estado</label>
+        <span class="badge" [ngClass]="getEstadoClass(solicitudActual.estado)" style="font-size:12px; padding:5px 14px">
+          {{ solicitudActual.estado }}
+        </span>
+      </div>
+
+      <!-- OBSERVACIONES si fue rechazada -->
+      <div class="form-group full-width" *ngIf="modoModal === 'ver' && solicitudActual.observaciones">
+        <label>Observaciones</label>
+        <div class="obs-box">{{ solicitudActual.observaciones }}</div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModal()">
+        {{ modoModal === 'ver' ? 'Cerrar' : 'Cancelar' }}
+      </button>
+      <button class="btn-guardar" *ngIf="modoModal !== 'ver'" (click)="guardarSolicitud()" [disabled]="guardando">
+        <span *ngIf="!guardando">Enviar Solicitud</span>
+        <span class="btn-dots" *ngIf="guardando">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        </span>
+      </button>
+    </div>
+
+  </div>
+</div>

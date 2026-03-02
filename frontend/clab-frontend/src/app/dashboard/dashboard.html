@@ -49,6 +49,13 @@
         <div class="di-text"><div class="di-name">Reservas</div><div class="di-desc">Disponibilidad</div></div>
       </div>
     }
+    @if(rol === 'Docente' || rol === 'Coordinador') {
+      <div class="drawer-item" (click)="navegar('solicitudes-reserva', 'Cargando Solicitudes...')">
+        <div class="di-icon ic-4"><img src="/solicitud.png" alt="Solicitudes"></div>
+        <div class="di-text"><div class="di-name">Solicitudes de Reserva</div><div class="di-desc">Gestión de solicitudes</div></div>
+      </div>
+    }
+
     @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Coordinador') {
       <div class="drawer-item" (click)="navegar('academico', 'Cargando Académico...')">
         <div class="di-icon ic-5"><img src="/academico.png" alt="Académico"></div>
@@ -116,15 +123,43 @@
         <span class="logo-text">CLAB</span>
       </div>
     </div>
+    <!-- REEMPLAZA el bloque .navbar-right en dashboard.html por este -->
+
     <div class="navbar-right">
-      <div class="role-pill">
-        <span class="role-dot-nav"></span>
-        {{ rolActual }}
+
+      <!-- ROLE PILL — con dropdown si tiene más de un rol -->
+      <div class="role-pill-wrapper" (document:click)="onDocumentClick($event)" #rolWrapper>
+        <div class="role-pill"
+             [class.clickable]="rolesDisponibles.length > 1"
+             (click)="toggleSelectorRol()">
+          <span class="role-dot-nav" [class.pulsing]="cambiandoRol"></span>
+          <span *ngIf="!cambiandoRol">{{ rolActual }}</span>
+          <span *ngIf="cambiandoRol">Cambiando...</span>
+          <span class="role-arrow" *ngIf="rolesDisponibles.length > 1">
+        {{ mostrarSelectorRol ? '▲' : '▼' }}
+      </span>
+        </div>
+
+        <!-- DROPDOWN -->
+        <div class="role-dropdown" *ngIf="mostrarSelectorRol && rolesDisponibles.length > 1">
+          <div class="role-dropdown-title">Cambiar rol</div>
+          <div
+            class="role-dropdown-item"
+            *ngFor="let r of rolesDisponibles"
+            [class.active]="r === rolActual"
+            (click)="cambiarRol(r)">
+            <span class="rdi-dot" [class.active]="r === rolActual"></span>
+            {{ r }}
+            <span class="rdi-check" *ngIf="r === rolActual">✓</span>
+          </div>
+        </div>
       </div>
+
       <div class="user-chip">
         <div class="user-avatar-nav">{{ usuarioLogueado.charAt(0).toUpperCase() }}</div>
         <span class="user-name-nav">{{ usuarioLogueado }}</span>
       </div>
+
     </div>
   </div>
 </nav>
@@ -244,7 +279,17 @@
           </div>
         </div>
       }
-
+      <!-- Módulo: Solicitudes de Reserva -->
+      @if(rol === 'Docente' || rol === 'Coordinador')
+      {
+        <div class="menu-item" (click)="navegar('solicitudes-reserva', 'Cargando Solicitudes...')">
+          <img src="/solicitud.png" alt="Solicitudes" class="menu-icon">
+          <div class="text">
+            <strong>Solicitudes de Reserva</strong>
+            <p>Solicitar y hacer seguimiento de reservas de laboratorio</p>
+          </div>
+        </div>
+      }
       <!-- Módulo 5: Académico -->
       @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Coordinador')
       {
