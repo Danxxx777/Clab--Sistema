@@ -2,20 +2,31 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { ReservaService } from '../services/reserva.service';
+import { LaboratorioService } from '../services/laboratorio.service';
+import { AsignaturaService } from '../services/asignatura.service';
+import { PeriodoService } from '../services/periodo.service';
+import { HorarioService } from '../services/horario.service';
+import { TipoReservaService } from '../services/tipo-reserva.service';
 
 export interface SolicitudReserva {
   id?: number;
-  laboratorio: string;
-  materia: string;
+  cod_laboratorio: number;
+  nombre_laboratorio: string;
+  id_asignatura: number;
+  nombre_asignatura: string;
+  id_periodo: number;
+  nombre_periodo: string;
+  id_horario_academico: number | null;
+  id_tipo_reserva: number;
+  nombre_tipo: string;
   fecha: string;
   horaInicio: string;
   horaFin: string;
   cantidadEstudiantes: number | null;
-  equipos: string[];
   motivo: string;
+  descripcion: string;
   estado: string;
-  observaciones?: string;
 }
 
 @Component({
@@ -29,15 +40,18 @@ export class SolicitudesReservaComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private http: HttpClient,
+    private reservaService: ReservaService,
+    private laboratorioService: LaboratorioService,
+    private asignaturaService: AsignaturaService,
+    private periodoService: PeriodoService,
+    private horarioService: HorarioService,
+    private tipoReservaService: TipoReservaService,
     private cdr: ChangeDetectorRef
   ) {}
 
-  /* =========================
-     ESTADO GENERAL
-  ==========================*/
   usuarioLogueado = '';
   rol = '';
+  idUsuario = 0;
   drawerAbierto = false;
   guardando = false;
 
@@ -55,66 +69,176 @@ export class SolicitudesReservaComponent implements OnInit {
   solicitudesPaginadas: SolicitudReserva[] = [];
   filtroEstado = 'Todos';
 
-  solicitudActual: SolicitudReserva = this.nuevaSolicitud();
+  solicitudActual: any = this.nuevaSolicitud();
 
-  /* =========================
-     PAGINACIÓN
-  ==========================*/
   paginaActual = 1;
   itemsPorPagina = 10;
   totalPaginas = 1;
 
-  /* =========================
-     DATOS
-  ==========================*/
-  // Reemplaza con los laboratorios reales de tu backend
-  laboratorios: string[] = [
-    'Laboratorio A',
-    'Laboratorio B',
-    'Laboratorio C',
-    'Laboratorio D'
-  ];
+  // Listas para selects
+  laboratorios: any[] = [];
+  asignaturas: any[] = [];
+  periodos: any[] = [];
+  horariosAcademicos: any[] = [];
+  tipos: any[] = [];
 
-  equiposDisponibles = [
-    { nombre: 'Proyector',     icono: '📽️' },
-    { nombre: 'Computadoras',  icono: '💻' },
-    { nombre: 'Impresora',     icono: '🖨️' },
-    { nombre: 'Pizarra Smart', icono: '🖥️' },
-    { nombre: 'Cámara Web',    icono: '📷' },
-    { nombre: 'Micrófonos',    icono: '🎙️' }
-  ];
-
-  /* =========================
-     LIFECYCLE
-  ==========================*/
   ngOnInit(): void {
     this.rol = localStorage.getItem('rol') || '';
-    const userData = localStorage.getItem('usuario') || '';
-    try {
-      const parsed = JSON.parse(userData);
-      this.usuarioLogueado = parsed.nombres
-        ? `${parsed.nombres} ${parsed.apellidos}`
-        : parsed.email || userData;
-    } catch {
-      this.usuarioLogueado = userData || 'Usuario';
-    }
+    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+    this.idUsuario = parseInt(localStorage.getItem('idUsuario') || '0');
 
     this.cargarSolicitudes();
+    this.cargarLaboratorios();
+    this.cargarAsignaturas();
+    this.cargarPeriodos();
+    this.cargarTipos();
+    this.cargarTodosLosHorarios();
   }
 
-  /* =========================
-     CARGA
-  ==========================*/
   cargarSolicitudes(): void {
-    // TODO: reemplazar con llamada real al backend
-    // this.http.get<SolicitudReserva[]>('http://localhost:8080/solicitudes').subscribe(...)
-    this.solicitudes = [];
-    this.filtrar();
+    this.reservaService.listarPorUsuario(this.idUsuario).subscribe({
+      next: (data: any[]) => {
+        this.solicitudes = data.map(r => ({
+          id: r.idReserva,
+          cod_laboratorio: r.codLaboratorio,
+          nombre_laboratorio: r.nombreLaboratorio,
+          id_asignatura: r.idAsignatura,
+          nombre_asignatura: r.nombreAsignatura || '-',
+          id_periodo: r.idPeriodo,
+          nombre_periodo: r.nombrePeriodo,
+          id_horario_academico: r.idHorarioAcademico,
+          id_tipo_reserva: r.idTipoReserva,
+          nombre_tipo: r.nombreTipoReserva || '-',
+          fecha: r.fechaReserva,
+          horaInicio: r.horaInicio,
+          horaFin: r.horaFin,
+          cantidadEstudiantes: r.numeroEstudiantes,
+          motivo: r.motivo,
+          descripcion: r.descripcion || '',
+          estado: r.estado
+        }));
+        this.filtrar();
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        console.error('Error cargando solicitudes:', err);
+        this.mostrarAlerta('Error', 'No se pudieron cargar las solicitudes', 'error');
+      }
+    });
   }
 
-  /* =========================
-     FILTRO Y PAGINACIÓN
-  ==========================*/
+  cargarLaboratorios(): void {
+    this.laboratorioService.listar().subscribe({
+      next: (data: any[]) => {
+        this.laboratorios = data.map(l => ({
+          cod_laboratorio: l.codLaboratorio,
+          nombre: l.nombreLab
+        }));
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => console.error('Error cargando laboratorios:', err)
+    });
+  }
+
+  cargarAsignaturas(): void {
+    this.asignaturaService.listar().subscribe({
+      next: (data: any[]) => {
+        this.asignaturas = data.map(a => ({
+          id_asignatura: a.idAsignatura || 0,
+          nombre: a.nombre
+        }));
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => console.error('Error cargando asignaturas:', err)
+    });
+  }
+
+  cargarPeriodos(): void {
+    this.periodoService.listar().subscribe({
+      next: (data: any[]) => {
+        this.periodos = data.map(p => ({
+          id_periodo: p.idPeriodo || 0,
+          nombre_periodo: p.nombrePeriodo
+        }));
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => console.error('Error cargando periodos:', err)
+    });
+  }
+
+  cargarTipos(): void {
+    this.tipoReservaService.listar().subscribe({
+      next: (data: any[]) => {
+        this.tipos = data.map(t => ({
+          id_tipo_reserva: t.idTipoReserva,
+          nombre_tipo: t.nombreTipo
+        }));
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => console.error('Error cargando tipos:', err)
+    });
+  }
+
+  cargarHorariosPorAsignatura(idAsignatura: number): void {
+    this.horarioService.listarPorAsignatura(idAsignatura).subscribe({
+      next: (data: any[]) => {
+        this.horariosAcademicos = data.map(h => ({
+          id_horario_academico: h.idHorarioAcademico,
+          nombre_asignatura: h.nombreAsignatura || '',
+          dia_semana: h.diaSemana,
+          hora_inicio: h.horaInicio,
+          hora_fin: h.horaFin,
+          id_asignatura: h.idAsignatura
+        }));
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => console.error('Error cargando horarios:', err)
+    });
+  }
+
+  cargarTodosLosHorarios(): void {
+    this.horarioService.listar().subscribe({
+      next: (data: any[]) => {
+        this.horariosAcademicos = data.map(h => ({
+          id_horario_academico: h.idHorario,
+          nombre_asignatura: h.nombreAsignatura || '',
+          dia_semana: h.diaSemana,
+          hora_inicio: h.horaInicio,
+          hora_fin: h.horaFin,
+          id_asignatura: h.idAsignatura
+        }));
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => console.error('Error cargando horarios:', err)
+    });
+  }
+
+  onAsignaturaChange(): void {
+    const id = this.solicitudActual.id_asignatura;
+    if (id) {
+      this.cargarHorariosPorAsignatura(id);
+    } else {
+      this.horariosAcademicos = [];
+    }
+  }
+
+  onHorarioChange(): void {
+    const idHorario = this.solicitudActual.id_horario_academico;
+    if (!idHorario) {
+      this.solicitudActual.horaInicio = '';
+      this.solicitudActual.horaFin = '';
+      return;
+    }
+
+    const horario = this.horariosAcademicos.find(h => h.id_horario_academico == idHorario); // 👈 == no ===
+    if (horario) {
+      this.solicitudActual.horaInicio = horario.hora_inicio;
+      this.solicitudActual.horaFin = horario.hora_fin;
+      this.solicitudActual.id_asignatura = horario.id_asignatura;
+      this.cdr.detectChanges();
+    }
+  }
+
   filtrar(): void {
     this.solicitudesFiltradas = this.filtroEstado === 'Todos'
       ? [...this.solicitudes]
@@ -139,23 +263,18 @@ export class SolicitudesReservaComponent implements OnInit {
     return Array.from({ length: this.totalPaginas }, (_, i) => i + 1);
   }
 
-  /* =========================
-     STATS
-  ==========================*/
   totalPorEstado(estado: string): number {
     return this.solicitudes.filter(s => s.estado === estado).length;
   }
 
-  /* =========================
-     MODAL
-  ==========================*/
   abrirModal(): void {
     this.modoModal = 'crear';
     this.solicitudActual = this.nuevaSolicitud();
+    this.cargarTodosLosHorarios();
     this.mostrarModal = true;
   }
 
-  verDetalle(s: SolicitudReserva): void {
+  verDetalle(s: any): void {
     this.modoModal = 'ver';
     this.solicitudActual = { ...s };
     this.mostrarModal = true;
@@ -167,14 +286,11 @@ export class SolicitudesReservaComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  /* =========================
-     GUARDAR
-  ==========================*/
   guardarSolicitud(): void {
     const s = this.solicitudActual;
 
-    if (!s.laboratorio || !s.materia || !s.fecha ||
-      !s.horaInicio || !s.horaFin ||
+    if (!s.cod_laboratorio || !s.id_asignatura || !s.id_periodo ||
+      !s.fecha || !s.horaInicio || !s.horaFin ||
       !s.cantidadEstudiantes || !s.motivo?.trim()) {
       this.mostrarAlerta('Campos incompletos', 'Completa todos los campos obligatorios.', 'error');
       return;
@@ -187,88 +303,95 @@ export class SolicitudesReservaComponent implements OnInit {
 
     this.guardando = true;
 
-    // TODO: reemplazar con llamada real al backend
-    // this.http.post('http://localhost:8080/solicitudes', s).subscribe(...)
-    setTimeout(() => {
-      const nueva: SolicitudReserva = {
-        ...s,
-        id: Date.now(),
-        estado: 'PENDIENTE'
-      };
-      this.solicitudes.unshift(nueva);
-      this.filtrar();
-      this.guardando = false;
-      this.cerrarModal();
-      this.mostrarAlerta('¡Solicitud enviada!', 'Tu solicitud fue enviada y está pendiente de aprobación.', 'exito');
-      this.cdr.detectChanges();
-    }, 600);
-  }
-
-  /* =========================
-     CANCELAR
-  ==========================*/
-  cancelarSolicitud(s: SolicitudReserva): void {
-    this.accionPendiente = () => {
-      // TODO: llamada al backend
-      // this.http.patch(`http://localhost:8080/solicitudes/${s.id}/cancelar`, {}).subscribe(...)
-      s.estado = 'RECHAZADA';
-      this.filtrar();
-      this.mostrarAlerta('Solicitud cancelada', 'La solicitud fue cancelada correctamente.', 'exito');
-      this.cdr.detectChanges();
+    const dto = {
+      codLaboratorio: s.cod_laboratorio,
+      idUsuario: this.idUsuario,
+      idPeriodo: s.id_periodo,
+      idHorarioAcademico: s.id_horario_academico || null,
+      idAsignatura: s.id_asignatura,
+      idTipoReserva: s.id_tipo_reserva || null,
+      fechaReserva: s.fecha,
+      horaInicio: s.horaInicio,
+      horaFin: s.horaFin,
+      motivo: s.motivo,
+      numeroEstudiantes: s.cantidadEstudiantes,
+      descripcion: s.descripcion || ''
     };
-    this.mostrarAlerta('¿Cancelar solicitud?', `¿Estás seguro de cancelar la reserva del ${s.laboratorio}?`, 'confirmar');
+
+    this.reservaService.crear(dto).subscribe({
+      next: () => {
+        this.cargarSolicitudes();
+        this.guardando = false;
+        this.cerrarModal();
+        this.mostrarAlerta('¡Solicitud enviada!', 'Tu solicitud está pendiente de aprobación.', 'exito');
+      },
+      error: (err: any) => {
+        console.error('Error creando solicitud:', err);
+        this.guardando = false;
+        this.mostrarAlerta('Error', err.error?.message || 'No se pudo enviar la solicitud.', 'error');
+      }
+    });
   }
 
-  /* =========================
-     EQUIPOS
-  ==========================*/
-  toggleEquipo(eq: { nombre: string }): void {
-    const idx = this.solicitudActual.equipos.indexOf(eq.nombre);
-    if (idx >= 0) {
-      this.solicitudActual.equipos.splice(idx, 1);
-    } else {
-      this.solicitudActual.equipos.push(eq.nombre);
-    }
+  cancelarSolicitud(s: any): void {
+    this.accionPendiente = () => {
+      const dto = {
+        idReserva: s.id,
+        idUsuarioCancela: this.idUsuario,
+        motivoCancelacion: 'Cancelado por el docente'
+      };
+      this.reservaService.cancelar(dto).subscribe({
+        next: () => {
+          this.cargarSolicitudes();
+          this.mostrarAlerta('Solicitud cancelada', 'La solicitud fue cancelada correctamente.', 'exito');
+        },
+        error: (err: any) => {
+          console.error('Error cancelando:', err);
+          this.mostrarAlerta('Error', 'No se pudo cancelar la solicitud.', 'error');
+        }
+      });
+    };
+    this.mostrarAlerta('¿Cancelar solicitud?', `¿Estás seguro de cancelar la reserva del ${s.nombre_laboratorio}?`, 'confirmar');
   }
 
-  equipoSeleccionado(eq: { nombre: string }): boolean {
-    return this.solicitudActual.equipos.includes(eq.nombre);
-  }
-
-  /* =========================
-     HELPERS
-  ==========================*/
   getEstadoClass(estado?: string): string {
-    switch (estado?.toUpperCase()) {
-      case 'APROBADA':  return 'activo';
-      case 'RECHAZADA': return 'inactivo';
-      case 'PENDIENTE': return 'pendiente';
+    switch (estado?.toLowerCase()) {
+      case 'aprobada':  return 'activo';
+      case 'rechazada': return 'inactivo';
+      case 'cancelada': return 'inactivo';
+      case 'pendiente': return 'pendiente';
       default:          return 'pendiente';
     }
   }
 
-  nuevaSolicitud(): SolicitudReserva {
+  nuevaSolicitud(): any {
     return {
-      laboratorio: '',
-      materia: '',
+      cod_laboratorio: 0,
+      id_asignatura: 0,
+      id_periodo: 0,
+      id_horario_academico: null,
+      id_tipo_reserva: 0,
       fecha: '',
       horaInicio: '',
       horaFin: '',
       cantidadEstudiantes: null,
-      equipos: [],
       motivo: '',
-      estado: 'PENDIENTE'
+      descripcion: '',
+      estado: 'Pendiente'
     };
   }
 
-  /* =========================
-     NOTIFICACIONES
-  ==========================*/
   mostrarAlerta(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'confirmar'): void {
     this.notificacionTitulo = titulo;
     this.notificacionMensaje = mensaje;
     this.notificacionTipo = tipo;
     this.mostrarNotificacion = true;
+    if (tipo !== 'confirmar') {
+      setTimeout(() => {
+        this.mostrarNotificacion = false;
+        this.cdr.detectChanges();
+      }, 3000);
+    }
     this.cdr.detectChanges();
   }
 
@@ -287,23 +410,9 @@ export class SolicitudesReservaComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  /* =========================
-     NAVEGACIÓN
-  ==========================*/
-  volver(): void {
-    this.router.navigate(['/dashboard']);
-  }
-
-  navegar(ruta: string): void {
-    this.cerrarDrawer();
-    this.router.navigate([`/${ruta}`]);
-  }
-
-  logout(): void {
-    localStorage.clear();
-    this.router.navigate(['/login']);
-  }
-
+  volver(): void { this.router.navigate(['/dashboard']); }
+  navegar(ruta: string): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
+  logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
   toggleDrawer(): void  { this.drawerAbierto = !this.drawerAbierto; }
   cerrarDrawer(): void  { this.drawerAbierto = false; }
 }
