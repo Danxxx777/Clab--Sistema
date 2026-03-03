@@ -229,7 +229,7 @@ export class LaboratoriosComponent implements OnInit {
     };
   }
 
-  // NUEVO: Método para manejar la carga de imagen
+  //Metodo para imagenes
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (file) {
@@ -238,13 +238,11 @@ export class LaboratoriosComponent implements OnInit {
         alert('Por favor seleccione un archivo de imagen válido (JPG, PNG, GIF)');
         return;
       }
-
       // Validar tamaño (máximo 5MB)
       if (file.size > 5 * 1024 * 1024) {
         alert('La imagen no debe superar los 5MB');
         return;
       }
-
       // Convertir a base64
       const reader = new FileReader();
       reader.onload = (e: any) => {
@@ -253,21 +251,17 @@ export class LaboratoriosComponent implements OnInit {
       reader.readAsDataURL(file);
     }
   }
-
-  // NUEVO: Método para eliminar la foto
+  //Metodo para eliminar foto
   eliminarFoto(): void {
     this.formularioLab.foto = '';
-    // Resetear el input file
     const fileInput = document.getElementById('fileInput') as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';
     }
   }
-
   volver(): void {
     this.router.navigate(['/dashboard']);
   }
-
   filtrarLaboratorios(): void {
     const busqueda = this.busquedaLaboratorios.toLowerCase();
     this.laboratoriosFiltrados = this.laboratorios.filter(lab => {
@@ -597,11 +591,9 @@ export class LaboratoriosComponent implements OnInit {
 
   verDetalle(item: any): void {
     if (this.tabActiva === 1) {
-      // Es una sede
       this.sedeDetalle = item;
       this.mostrarDetalleSede = true;
     } else {
-      // Es laboratorio o encargado
       console.log('Ver detalle:', item);
     }
   }

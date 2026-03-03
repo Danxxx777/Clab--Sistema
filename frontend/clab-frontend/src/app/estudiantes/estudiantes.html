@@ -301,8 +301,6 @@
     </div>
   </div>
 
-
-
 <!-- MODAL: ESTUDIANTE -->
 <div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'estudiante'" (click)="cerrarModal()">
   <div class="modal" (click)="$event.stopPropagation()">
@@ -371,7 +369,6 @@
   </div>
 </div>
 
-
 <!-- MODAL: MATRÍCULA -->
 <div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'matricula'" (click)="cerrarModal()">
   <div class="modal" (click)="$event.stopPropagation()">
@@ -433,7 +430,6 @@
   </div>
 </div>
 
-
 <!-- MODAL: INSCRIPCIÓN -->
 <div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'inscripcion'" (click)="cerrarModal()">
   <div class="modal" (click)="$event.stopPropagation()">
@@ -486,7 +482,6 @@
     </div>
   </div>
 </div>
-
 
 <!-- MODAL: CONFIRMAR ELIMINAR -->
 <div class="modal-overlay" *ngIf="mostrarConfirmarEliminar" (click)="cerrarModalConfirmar()">

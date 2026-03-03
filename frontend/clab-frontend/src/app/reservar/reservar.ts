@@ -10,9 +10,9 @@ import { AsignaturaService } from '../services/asignatura.service';
 import { PeriodoService } from '../services/periodo.service';
 import { HorarioService } from '../services/horario.service';
 
-/* =========================
+/*
    INTERFACES
-========================= */
+ */
 
 interface Reserva {
   id_reserva: number;
@@ -79,10 +79,9 @@ interface Usuario {
   apellidos: string;
 }
 
-/* =========================
+/*
    COMPONENTE
-========================= */
-
+ */
 @Component({
   selector: 'app-reservar',
   standalone: true,
@@ -103,9 +102,9 @@ export class ReservarComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
 
-  /* =========================
+  /*
      TABS
-  ========================= */
+   */
   tabActiva = 0;
   drawerAbierto = false;
   rol = localStorage.getItem('rol') || '';
@@ -116,9 +115,9 @@ export class ReservarComponent implements OnInit {
     this.tabActiva = tab;
   }
 
-  /* =========================
+  /*
      LISTAS PRINCIPALES
-  ========================= */
+  */
 
   reservas: Reserva[] = [];
   reservasFiltradas: Reserva[] = [];
@@ -126,9 +125,9 @@ export class ReservarComponent implements OnInit {
   tipos: TipoReserva[] = [];
   tiposFiltrados: TipoReserva[] = [];
 
-  /* =========================
+  /*
      LISTAS SELECTS
-  ========================= */
+   */
 
   laboratorios: Laboratorio[] = [];
   asignaturas: Asignatura[] = [];
@@ -136,9 +135,9 @@ export class ReservarComponent implements OnInit {
   horariosAcademicos: HorarioAcademico[] = [];
   usuarios: Usuario[] = [];
 
-  /* =========================
+  /*
      BUSQUEDAS
-  ========================= */
+   */
 
   busquedaReservas = '';
   busquedaTipos = '';
@@ -163,9 +162,9 @@ export class ReservarComponent implements OnInit {
     return this.reservas.filter(r => r.estado === estado).length;
   }
 
-  /* =========================
+  /*
      MODALES - RESERVA / TIPO
-  ========================= */
+  */
 
   mostrarModal = false;
   mostrarConfirmarEliminar = false;
@@ -186,7 +185,7 @@ export class ReservarComponent implements OnInit {
     this.mostrarModal = true;
     this.resetFormularios();
     if (tipo === 'reserva') {
-      this.cargarTodosLosHorarios(); // ← agrega esto
+      this.cargarTodosLosHorarios();
     }
   }
 
@@ -199,9 +198,9 @@ export class ReservarComponent implements OnInit {
     this.mostrarConfirmarEliminar = false;
   }
 
-  /* =========================
+  /*
      MODAL - CANCELAR RESERVA
-  ========================= */
+   */
 
   mostrarModalCancelar = false;
 
@@ -288,9 +287,9 @@ export class ReservarComponent implements OnInit {
     });
   }
 
-  /* =========================
+  /*
      FORMULARIOS
-  ========================= */
+ */
 
   formularioReserva: any = {};
   formularioTipo: any = {};
@@ -319,9 +318,9 @@ export class ReservarComponent implements OnInit {
     };
   }
 
-  /* =========================
+  /*
      CRUD RESERVAS
-  ========================= */
+  */
 
   guardarReserva() {
     if (!this.formularioReserva.cod_laboratorio ||
@@ -383,9 +382,9 @@ export class ReservarComponent implements OnInit {
     this.formularioReserva = { ...res };
   }
 
-  /* =========================
+  /*
      CRUD TIPOS
-  ========================= */
+   */
 
   guardarTipo() {
     if (!this.formularioTipo.nombre_tipo?.trim()) {
@@ -558,9 +557,9 @@ export class ReservarComponent implements OnInit {
     this.router.navigate(['/dashboard']);
   }
 
-  /* =========================
+  /*
      INIT
-  ========================= */
+ */
 
   ngOnInit(): void {
     this.rol = localStorage.getItem('rol') || '';
@@ -643,9 +642,9 @@ export class ReservarComponent implements OnInit {
           id_horario_academico: h.idHorarioAcademico,
           nombre_asignatura: h.nombreAsignatura || '',
           dia_semana: h.diaSemana,
-          hora_inicio: h.horaInicio,    // ← agrega
-          hora_fin: h.horaFin,          // ← agrega
-          id_asignatura: h.idAsignatura // ← agrega
+          hora_inicio: h.horaInicio,
+          hora_fin: h.horaFin,
+          id_asignatura: h.idAsignatura
         }));
         this.cdr.detectChanges();
       },

@@ -1,8 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
-
-// =====================
 // VARIABLES
-// =====================
 $bg:          #111111;
 $surface:     #1a1a1a;
 $card-bg:     #1e1e1e;
@@ -22,9 +19,8 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-// =====================
+
 // HOST / CONTAINER
-// =====================
 :host {
   display: block;
   min-height: 100vh;
@@ -38,9 +34,8 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   padding-bottom: 40px;
 }
 
-// =====================
+
 // PAGE TITLE
-// =====================
 .page-title-section {
   background: $surface;
   border-bottom: 1px solid $border;
@@ -88,9 +83,7 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   }
 }
 
-// =====================
 // TABS
-// =====================
 .tabs-container {
   background: $surface;
   border-bottom: 1px solid $border;
@@ -120,9 +113,8 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   }
 }
 
-// =====================
+
 // CONTENT
-// =====================
 .content-wrapper {
   max-width: 1400px;
   margin: 20px auto;
@@ -131,9 +123,8 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
 
 .tab-content { animation: fadeIn 0.3s ease; }
 
-// =====================
+
 // TOOLBAR
-// =====================
 .toolbar {
   display: flex;
   justify-content: space-between;
@@ -197,9 +188,8 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   }
 }
 
-// =====================
+
 // TABLE
-// =====================
 .table-container {
   background: $card-bg;
   border-radius: 12px;
@@ -264,9 +254,8 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   }
 }
 
-// =====================
+
 // BADGES
-// =====================
 .badge {
   display: inline-block;
   padding: 3px 10px;
@@ -289,9 +278,8 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   }
 }
 
-// =====================
+
 // LAB SI / NO (exclusivo académico)
-// =====================
 .lab-si {
   color: $neon;
   font-weight: 700;
@@ -318,9 +306,8 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   letter-spacing: 0.5px;
 }
 
-// =====================
+
 // ACTION BUTTONS
-// =====================
 .action-buttons {
   display: flex;
   gap: 6px;
@@ -350,9 +337,7 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   }
 }
 
-// =====================
 // MODAL
-// =====================
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -487,9 +472,7 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   }
 }
 
-// =====================
 // FORMS
-// =====================
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -547,9 +530,8 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   }
 }
 
-// =====================
+
 // TOAST
-// =====================
 .toast {
   position: fixed;
   bottom: 24px;
@@ -576,9 +558,8 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   border-left: 3px solid #ff6b6b;
 }
 
-// =====================
+
 // DRAWER OVERLAY
-// =====================
 .drawer-overlay {
   position: fixed;
   inset: 0;
@@ -591,9 +572,8 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   &.open { opacity: 1; pointer-events: all; }
 }
 
-// =====================
+
 // DRAWER
-// =====================
 .drawer {
   position: fixed;
   top: 0; left: 0;
@@ -813,9 +793,8 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   }
 }
 
-// =====================
+
 // HAMBURGER
-// =====================
 .btn-hamburger {
   width: 36px; height: 36px;
   background: transparent;
@@ -857,17 +836,15 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   }
 }
 
-// =====================
+
 // ANIMACIONES
-// =====================
 @keyframes fadeIn    { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp   { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes fadeInUp  { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes pulse     { 0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 6px currentColor; } 50% { opacity: 0.4; transform: scale(0.6); box-shadow: none; } }
 
-// =====================
+
 // RESPONSIVE
-// =====================
 @media (max-width: 768px) {
   .page-title-section { padding: 10px 16px; h1 { font-size: 15px; } }
   .tabs { padding: 0 16px; overflow-x: auto; .tab { padding: 10px 16px; font-size: 12px; white-space: nowrap; } }

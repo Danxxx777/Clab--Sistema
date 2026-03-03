@@ -42,8 +42,6 @@ interface TipoEquipo {
 })
 export class InventarioComponent implements OnInit {
 
-
-
   tabActiva: 'equipos' | 'tipos' = 'equipos';
   drawerAbierto = false;
   rol = localStorage.getItem('rol') || '';
@@ -58,8 +56,6 @@ export class InventarioComponent implements OnInit {
   busquedaTipos = '';
 
   laboratorios: Laboratorio[] = [];
-
-
 
   mostrarModalEquipo = false;
   modoEdicionEquipo = false;
@@ -90,8 +86,6 @@ export class InventarioComponent implements OnInit {
     this.cargarLaboratorios();
   }
 
-
-
   cargarEquipos(): void {
     this.equipoService.listar().subscribe({
       next: (data) => {
@@ -119,7 +113,6 @@ export class InventarioComponent implements OnInit {
       }
     });
   }
-
   cargarTipos(): void {
     this.tipoEquipoService.listar().subscribe({
       next: (data) => {
@@ -137,7 +130,6 @@ export class InventarioComponent implements OnInit {
       }
     });
   }
-
   cargarLaboratorios(): void {
     this.laboratorioService.listar().subscribe({
       next: data => {
@@ -148,7 +140,6 @@ export class InventarioComponent implements OnInit {
       }
     });
   }
-
   mostrarNotificacion(mensaje: string, tipo: 'success' | 'error' = 'success'): void {
     this.toastMensaje = mensaje;
     this.toastTipo = tipo;
@@ -160,8 +151,6 @@ export class InventarioComponent implements OnInit {
     }, 2000);
   }
 
-
-
   filtrarEquipos(): void {
     const b = this.busquedaEquipos.toLowerCase();
     this.equiposFiltrados = this.equipos.filter(e =>
@@ -171,7 +160,6 @@ export class InventarioComponent implements OnInit {
       e.nombreLaboratorio.toLowerCase().includes(b)
     );
   }
-
   filtrarTipos(): void {
     const b = this.busquedaTipos.toLowerCase();
     this.tiposFiltrados = this.tiposEquipo.filter(t =>
@@ -179,30 +167,23 @@ export class InventarioComponent implements OnInit {
     );
   }
 
-
-
   abrirModalEquipo(): void {
     this.modoEdicionEquipo = false;
     this.idEditando = null;
     this.formEquipo = this.nuevoFormulario();
     this.mostrarModalEquipo = true;
   }
-
   editarEquipo(e: Equipo): void {
     this.modoEdicionEquipo = true;
     this.idEditando = e.id;
     this.formEquipo = { ...e };
     this.mostrarModalEquipo = true;
   }
-
   verEquipo(e: Equipo): void {
     this.equipoDetalle = { ...e };
     this.mostrarDetalleEquipo = true;
   }
-
   guardarEquipo(): void {
-
-
     if (
       !this.formEquipo.noSerie ||
       !this.formEquipo.nombre ||
@@ -212,7 +193,6 @@ export class InventarioComponent implements OnInit {
       this.mostrarNotificacion('Complete los campos obligatorios', 'error');
       return;
     }
-
 
     const dto: EquipoDTO = {
       numeroSerie: this.formEquipo.noSerie,
@@ -225,8 +205,6 @@ export class InventarioComponent implements OnInit {
       ubicacionFisica: this.formEquipo.ubicacionFisica,
       fechaAdquisicion: this.formEquipo.fechaAdquisicion
     };
-
-
 
     if (this.modoEdicionEquipo && this.idEditando) {
       this.equipoService.editar(this.idEditando, dto).subscribe({
@@ -242,8 +220,6 @@ export class InventarioComponent implements OnInit {
       });
       return;
     }
-
-
     this.equipoService.crear(dto).subscribe({
       next: () => {
         this.cargarEquipos();
@@ -256,7 +232,6 @@ export class InventarioComponent implements OnInit {
       }
     });
   }
-
 
   eliminarEquipo(e: Equipo): void {
     if (!confirm('¿Eliminar equipo?')) return;
@@ -272,16 +247,12 @@ export class InventarioComponent implements OnInit {
       }
     });
   }
-
   cerrarModalEquipo(): void {
     this.mostrarModalEquipo = false;
   }
-
   cerrarDetalleEquipo(): void {
     this.mostrarDetalleEquipo = false;
   }
-
-
 
   eliminarTipo(t: TipoEquipo): void {
     if (!confirm('¿Eliminar tipo de equipo?')) return;
@@ -351,15 +322,9 @@ export class InventarioComponent implements OnInit {
     });
   }
 
-
-
   cerrarModalTipo(): void {
     this.mostrarModalTipo = false;
   }
-
-
-
-
   mostrarModalTipo = false;
   modoEdicionTipo = false;
   idTipoEditando: number | null = null;
@@ -368,9 +333,6 @@ export class InventarioComponent implements OnInit {
     nombre: '',
     descripcion: ''
   };
-
-
-
 
   cambiarTab(tab: 'equipos' | 'tipos'): void {
     this.tabActiva = tab;
