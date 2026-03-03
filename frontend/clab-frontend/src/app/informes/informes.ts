@@ -36,18 +36,15 @@ export class InformesComponent {
   generarReporteUso() {
     console.log('Generando reporte de uso:', this.reporteUso);
     alert(`Generando reporte de uso de laboratorios\n\nPeríodo: ${this.reporteUso.periodo}\nLaboratorio: ${this.reporteUso.laboratorio}\n\nEsta función estará conectada al backend para generar el PDF.`);
-    // Aquí irá la lógica para llamar al backend y generar el PDF
   }
 
   generarReporteFallas() {
     console.log('Generando reporte de fallas:', this.reporteFallas);
     alert(`Generando reporte de fallas\n\nPeríodo: ${this.reporteFallas.periodo}\nEstado: ${this.reporteFallas.estado}\n\nEsta función estará conectada al backend para generar el PDF.`);
-    // Aquí irá la lógica para llamar al backend y generar el PDF
   }
 
   generarReporteInventario() {
     console.log('Generando reporte de inventario:', this.reporteInventario);
     alert(`Generando reporte de inventario\n\nTipo: ${this.reporteInventario.tipo}\nLaboratorio: ${this.reporteInventario.laboratorio}\n\nEsta función estará conectada al backend para generar el PDF.`);
-    // Aquí irá la lógica para llamar al backend y generar el PDF
   }
 }

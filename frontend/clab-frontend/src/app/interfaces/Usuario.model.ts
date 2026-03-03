@@ -7,9 +7,9 @@ export interface Usuario {
   telefono?: string;
   usuario: string;
   contrasenia?: string;
-  idsRoles?: number[];        // 👈 antes idRol
+  idsRoles?: number[];
   roles?: { idRol: number; nombreRol: string }[];
-  rolNombre?: string;         // se mantiene para mostrar en tabla (primer rol)
+  rolNombre?: string;
   estado?: string;
   fechaRegistro?: string;
 }
