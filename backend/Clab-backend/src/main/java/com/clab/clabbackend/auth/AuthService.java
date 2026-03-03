@@ -7,15 +7,17 @@ import com.clab.clabbackend.entities.UsuarioRol;
 import com.clab.clabbackend.repository.UsuarioRepository;
 import com.clab.clabbackend.repository.UsuarioRolRepository;
 import com.clab.clabbackend.security.JwtService;
+import com.clab.clabbackend.services.EmailService;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
-import com.clab.clabbackend.services.EmailService;
 
 @Service
 public class AuthService {
@@ -27,6 +29,7 @@ public class AuthService {
     private final UsuarioRolRepository usuarioRolRepository;
     private final EmailService emailService;
 
+    // Constructor - inyección de dependencias
     public AuthService(
             PasswordEncoder passwordEncoder,
             AuthenticationManager authenticationManager,
@@ -43,41 +46,36 @@ public class AuthService {
         this.emailService = emailService;
     }
 
+
+    // LOGIN
+    // Autentica usuario y genera token JWT
     public AuthResponseDTO login(LoginRequestDTO request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsuario(), request.getContrasenia())
-        );
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsuario(), request.getContrasenia()));
+        Usuario usuario = usuarioRepository.findByUsuarioAndEstado(request.getUsuario(), "ACTIVO").orElseThrow(() -> new RuntimeException("Usuario no encontrado o inactivo"));
 
-        Usuario usuario = usuarioRepository
-                .findByUsuarioAndEstado(request.getUsuario(), "ACTIVO")
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado o inactivo"));
-
-        List<UsuarioRol> rolesVigentes = usuarioRolRepository
-                .findAllByUsuario_IdUsuarioAndVigenteTrue(usuario.getIdUsuario())
+        List<UsuarioRol> rolesVigentes = usuarioRolRepository.findAllByUsuario_IdUsuarioAndVigenteTrue(usuario.getIdUsuario())
                 .stream()
                 .sorted(Comparator.comparing(UsuarioRol::getFechaAsignacion))
                 .toList();
-
-        if (rolesVigentes.isEmpty())
+        if (rolesVigentes.isEmpty()) {
             throw new RuntimeException("El usuario no tiene rol asignado");
+        }
 
         String rolPrincipal = rolesVigentes.get(0).getRol().getNombreRol();
-
-        List<String> rolesDisponibles = rolesVigentes.stream()
-                .map(ur -> ur.getRol().getNombreRol())
-                .toList();
+        List<String> rolesDisponibles = rolesVigentes.stream().map(ur -> ur.getRol().getNombreRol()).toList();
 
         String token = jwtService.generarToken(usuario.getIdUsuario(), rolPrincipal);
+
         return new AuthResponseDTO(token, usuario.getNombres(), usuario.getApellidos(), rolPrincipal, usuario.getIdUsuario(), rolesDisponibles);
     }
 
+    // CAMBIAR ROL
+    // Genera nuevo token con el rol seleccionado
     public AuthResponseDTO cambiarRol(Integer idUsuario, String nombreRol) {
-        Usuario usuario = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        List<UsuarioRol> rolesVigentes = usuarioRolRepository
-                .findAllByUsuario_IdUsuarioAndVigenteTrue(idUsuario);
+        Usuario usuario = usuarioRepository.findById(idUsuario).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
+        List<UsuarioRol> rolesVigentes = usuarioRolRepository.findAllByUsuario_IdUsuarioAndVigenteTrue(idUsuario);
         rolesVigentes.stream()
                 .filter(ur -> ur.getRol().getNombreRol().equals(nombreRol))
                 .findFirst()
@@ -88,14 +86,27 @@ public class AuthService {
                 .toList();
 
         String token = jwtService.generarToken(idUsuario, nombreRol);
-        return new AuthResponseDTO(token, usuario.getNombres(), usuario.getApellidos(), nombreRol, idUsuario, rolesDisponibles);
+
+        return new AuthResponseDTO(
+                token,
+                usuario.getNombres(),
+                usuario.getApellidos(),
+                nombreRol,
+                idUsuario,
+                rolesDisponibles
+        );
     }
 
+    // RECUPERACIÓN DE CONTRASEÑA
+    // Genera código y lo envía al correo
     public void solicitarRecuperacion(String email) {
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("No existe ningún usuario con ese correo"));
 
-        String codigo = String.format("%06d", new Random().nextInt(999999));
+        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("No existe ningún usuario con ese correo"));
+
+        String codigo = String.format("%06d",
+                new Random().nextInt(999999)
+        );
+
         usuario.setTokenRecuperacion(codigo);
         usuario.setExpiracionToken(LocalDateTime.now().plusMinutes(15));
         usuarioRepository.save(usuario);
@@ -106,29 +117,31 @@ public class AuthService {
             usuario.setTokenRecuperacion(null);
             usuario.setExpiracionToken(null);
             usuarioRepository.save(usuario);
-            throw new RuntimeException("No se pudo enviar el correo: " + e.getMessage());
+            throw new RuntimeException(
+                    "No se pudo enviar el correo: " + e.getMessage()
+            );
         }
     }
 
+    // Verifica que el código sea válido y no esté expirado
     public boolean verificarCodigo(String email, String codigo) {
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         if (usuario.getTokenRecuperacion() == null ||
                 !usuario.getTokenRecuperacion().equals(codigo)) {
             throw new RuntimeException("Código incorrecto");
         }
-
         if (usuario.getExpiracionToken().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("El código ha expirado. Solicita uno nuevo.");
         }
-
         return true;
     }
 
+    // Permite cambiar la contraseña si el código es válido
     public void resetPassword(String email, String codigo, String nuevaPassword) {
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         if (usuario.getTokenRecuperacion() == null ||
                 !usuario.getTokenRecuperacion().equals(codigo)) {
@@ -138,11 +151,9 @@ public class AuthService {
         if (usuario.getExpiracionToken().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("El código ha expirado. Solicita uno nuevo.");
         }
-
         usuario.setContrasenia(passwordEncoder.encode(nuevaPassword));
         usuario.setTokenRecuperacion(null);
         usuario.setExpiracionToken(null);
         usuarioRepository.save(usuario);
     }
 }
-// a ver

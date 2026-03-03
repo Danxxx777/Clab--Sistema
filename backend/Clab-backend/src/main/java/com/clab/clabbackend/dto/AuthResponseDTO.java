@@ -15,4 +15,3 @@ public class AuthResponseDTO {
     private Integer idUsuario;
     private List<String> rolesDisponibles;;
 }
-// a ver

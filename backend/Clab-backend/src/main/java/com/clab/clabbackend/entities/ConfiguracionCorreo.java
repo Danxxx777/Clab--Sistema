@@ -17,10 +17,10 @@ public class ConfiguracionCorreo {
     private Integer idConfig;
 
     @Column(name = "nombre_display", length = 100)
-    private String nombreDisplay; // 👈 "Correo de recuperación"
+    private String nombreDisplay;
 
     @Column(name = "proposito", length = 50)
-    private String proposito; // 👈 GENERAL, RECUPERACION, NOTIFICACIONES, RESERVAS, REPORTES
+    private String proposito; // GENERAL, RECUPERACION, NOTIFICACIONES, RESERVAS, REPORTES
 
     @Column(name = "host", length = 100, nullable = false)
     private String host;
@@ -42,6 +42,22 @@ public class ConfiguracionCorreo {
 
     @Column(name = "starttls_habilitado", nullable = false)
     private Boolean starttlsHabilitado = true;
+
+
+    @Column(name = "ssl_habilitado", nullable = false, columnDefinition = "boolean default false")
+    private Boolean sslHabilitado = false;
+
+
+    @Column(name = "protocolo", length = 10, nullable = false, columnDefinition = "varchar(10) default 'SMTP'")
+    private String protocolo = "SMTP";
+
+
+    @Column(name = "timeout_ms", nullable = false, columnDefinition = "integer default 5000")
+    private Integer timeoutMs = 5000;
+
+
+    @Column(name = "proveedor", length = 30)
+    private String proveedor; // GMAIL | OUTLOOK | YAHOO | CUSTOM
 
     @Column(name = "activo", nullable = false)
     private Boolean activo = true;

@@ -887,3 +887,186 @@ html, body { overflow: hidden; height: 100%; }
   .correos-grid { grid-template-columns: 1fr; }
   .form-row { grid-template-columns: 1fr; }
 }
+// =====================================================
+// EXTRAS — agregar al final de configuracion-correo.scss
+// =====================================================
+
+// Badge de protocolo en la tarjeta
+.protocolo-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: rgba(255,255,255,0.08);
+  color: #aaa;
+  border: 1px solid rgba(255,255,255,0.1);
+
+  &.ssl {
+    background: rgba(255, 80, 80, 0.15);
+    color: #ff6b6b;
+    border-color: rgba(255, 80, 80, 0.3);
+  }
+  &.tls {
+    background: rgba(57, 255, 20, 0.12);
+    color: #39ff14;
+    border-color: rgba(57, 255, 20, 0.25);
+  }
+}
+
+// Botón probar en tarjeta
+.btn-card-probar {
+  background: rgba(57, 255, 20, 0.08);
+  color: #39ff14;
+  border: 1px solid rgba(57, 255, 20, 0.25);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 80px;
+
+  &:hover:not(:disabled) {
+    background: rgba(57, 255, 20, 0.18);
+    box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Secciones del modal
+.form-section {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+
+  &:last-of-type { border-bottom: none; margin-bottom: 0; }
+}
+
+.form-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #39ff14;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+// Tabs de proveedor
+.proveedor-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.proveedor-tab {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.04);
+  color: #aaa;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover { border-color: rgba(57,255,20,0.4); color: #39ff14; }
+  &.active {
+    background: rgba(57,255,20,0.12);
+    border-color: #39ff14;
+    color: #39ff14;
+    box-shadow: 0 0 8px rgba(57,255,20,0.2);
+  }
+}
+
+.preset-nota {
+  font-size: 12px;
+  color: #888;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 4px;
+}
+
+// Opciones de seguridad
+.seguridad-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.seg-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.03);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+
+  &:hover { border-color: rgba(57,255,20,0.3); }
+  &.active {
+    border-color: #39ff14;
+    background: rgba(57,255,20,0.08);
+    box-shadow: 0 0 10px rgba(57,255,20,0.1);
+  }
+}
+
+.seg-icon { font-size: 20px; }
+
+.seg-info {
+  flex: 1;
+  .seg-name { font-size: 13px; font-weight: 700; color: #eee; }
+  .seg-desc { font-size: 11px; color: #777; margin-top: 2px; }
+}
+
+.seg-check {
+  font-size: 14px;
+  color: #39ff14;
+  font-weight: 700;
+}
+
+// Modal más ancho para correo
+.modal-correo {
+  max-width: 680px;
+  width: 95%;
+}
+
+.hint-inline {
+  font-size: 11px;
+  color: #777;
+  font-weight: 400;
+  margin-left: 6px;
+}
+
+// dots loading
+.btn-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: dot-bounce 1.2s infinite;
+    &:nth-child(2) { animation-delay: 0.2s; }
+    &:nth-child(3) { animation-delay: 0.4s; }
+  }
+}
+
+@keyframes dot-bounce {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
