@@ -14,7 +14,6 @@ public class RolResponseDTO {
 
     public RolResponseDTO() {}
 
-    // Constructor anterior — mantenerlo para no romper nada
     public RolResponseDTO(Integer idRol, String nombreRol, String descripcion,
                           LocalDate fechaCreacion, List<RolBDDTO> rolesBD) {
         this.idRol = idRol;
@@ -25,7 +24,7 @@ public class RolResponseDTO {
         this.estado = "ACTIVO";
     }
 
-    // 👈 Constructor nuevo con estado
+
     public RolResponseDTO(Integer idRol, String nombreRol, String descripcion,
                           LocalDate fechaCreacion, List<RolBDDTO> rolesBD, String estado) {
         this.idRol = idRol;
@@ -53,4 +52,4 @@ public class RolResponseDTO {
 
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
-}// a ver
+}

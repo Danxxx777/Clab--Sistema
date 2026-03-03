@@ -6,38 +6,45 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/carreras")
-@CrossOrigin(origins = "http://localhost:4200")
+@RequestMapping("/carreras") // Ruta base del recurso carreras
+@CrossOrigin(origins = "http://localhost:4200") // Permite peticiones desde Angular
 public class CarreraController {
 
+    // Servicio que contiene la lógica de negocio
     private final CarreraService carreraService;
 
+    // Constructor para inyectar el servicio
     public CarreraController(CarreraService carreraService) {
         this.carreraService = carreraService;
     }
 
+    // Obtiene la lista de todas las carreras
     @GetMapping
     public ResponseEntity<?> listar() {
         return ResponseEntity.ok(carreraService.listar());
     }
 
+    // Obtiene la lista de coordinadores de carrera
     @GetMapping("/coordinadores")
     public ResponseEntity<?> listarCoordinadores() {
         return ResponseEntity.ok(carreraService.listarCoordinadores());
     }
 
+    // Crea una nueva carrera
     @PostMapping
     public ResponseEntity<?> crear(@RequestBody CarreraDTO dto) {
         carreraService.crear(dto);
         return ResponseEntity.ok().build();
     }
 
+    // Actualiza una carrera existente por su ID
     @PutMapping("/{id}")
     public ResponseEntity<?> editar(@PathVariable Integer id, @RequestBody CarreraDTO dto) {
         carreraService.editar(id, dto);
         return ResponseEntity.ok().build();
     }
 
+    // Elimina una carrera por su ID
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminar(@PathVariable Integer id) {
         carreraService.eliminar(id);
