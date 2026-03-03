@@ -125,7 +125,6 @@ export class ReportarComponent implements OnInit {
   }
 
   cargarLaboratorios(): void {
-    // TODO: this.laboratorioService.listar().subscribe(data => this.laboratorios = data);
     this.laboratorios = [];
   }
 
@@ -156,11 +155,9 @@ export class ReportarComponent implements OnInit {
     }
   }
 
-  // ── TAB 0: Uso de laboratorios (campos de Reserva relevantes) ──
+  // ── TAB 0: Uso de laboratorios ──
   generarReporteUso(): void {
-    // TODO: this.reporteService.usoLaboratorios(this.filtros).subscribe(...)
 
-    // Datos de ejemplo alineados con Reserva
     this.datosReporte = [
       {
         laboratorio: { nombreLab: 'Lab. Programación' },
@@ -192,9 +189,8 @@ export class ReportarComponent implements OnInit {
     this.mostrarNotificacion('✅ Reporte generado correctamente');
   }
 
-  // ── TAB 1: Equipos (campos de Equipo) ──
+  // ── TAB 1: Equipos ──
   generarReporteEquipos(): void {
-    // TODO: this.equipoService.reporte(this.filtros).subscribe(...)
 
     this.datosReporte = [
       {
@@ -235,9 +231,8 @@ export class ReportarComponent implements OnInit {
     this.mostrarNotificacion('✅ Reporte generado correctamente');
   }
 
-  // ── TAB 2: Fallas (campos de ReporteFallas) ──
+  // ── TAB 2: Fallas  ──
   generarReporteFallas(): void {
-    // TODO: this.fallaService.reporte(this.filtros).subscribe(...)
 
     this.datosReporte = [
       {
@@ -260,9 +255,8 @@ export class ReportarComponent implements OnInit {
     this.mostrarNotificacion('✅ Reporte generado correctamente');
   }
 
-  // ── TAB 3: Usuarios (campos de Usuario) ──
+  // ── TAB 3: Usuarios  ──
   generarReporteUsuarios(): void {
-    // TODO: this.usuarioService.reporte(this.filtros).subscribe(...)
 
     this.datosReporte = [
       {
@@ -295,9 +289,8 @@ export class ReportarComponent implements OnInit {
     this.mostrarNotificacion('✅ Reporte generado correctamente');
   }
 
-  // ── TAB 4: Reservas (campos de Reserva) ──
+  // ── TAB 4: Reservas ──
   generarReporteReservas(): void {
-    // TODO: this.reservaService.reporte(this.filtros).subscribe(...)
 
     this.datosReporte = [
       {
@@ -343,7 +336,7 @@ export class ReportarComponent implements OnInit {
   }
 
   exportarPDF(): void {
-    // TODO: implementar exportación real
+
     this.mostrarNotificacion('📄 Exportando a PDF...');
     setTimeout(() => {
       this.mostrarNotificacion('✅ PDF generado exitosamente');
@@ -354,7 +347,7 @@ export class ReportarComponent implements OnInit {
     const e = estado?.toLowerCase() || '';
     if (['operativo', 'activo', 'aprobada', 'completada'].includes(e)) return 'badge-activo';
     if (['mantenimiento', 'pendiente'].includes(e)) return 'badge-mantenimiento';
-    return 'badge-inactivo'; // inactivo, fuera, cancelada
+    return 'badge-inactivo';
   }
 
   mostrarNotificacion(mensaje: string, tipo: 'success' | 'error' = 'success'): void {

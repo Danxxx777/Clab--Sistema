@@ -13,7 +13,7 @@ export interface RolView {
   descripcion?: string;
   fechaCreacion?: string;
   rolesBD?: RolBD[];
-  estado?: string;  // 👈
+  estado?: string;
 }
 
 export interface RolRequest {

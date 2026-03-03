@@ -291,8 +291,6 @@
 
   </div>
 </div>
-
-
 <!-- MODAL: RESERVA (crear / editar) -->
 <div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'reserva'" (click)="cerrarModal()">
   <div class="modal modal-large" (click)="$event.stopPropagation()">
@@ -440,7 +438,6 @@
   </div>
 </div>
 
-
 <!-- MODAL: CANCELAR RESERVA -->
 <div class="modal-overlay" *ngIf="mostrarModalCancelar" (click)="cerrarModalCancelar()">
   <div class="modal modal-cancelar" (click)="$event.stopPropagation()">
@@ -464,7 +461,6 @@
                     placeholder="Describa el motivo de la cancelación..."></textarea>
         </div>
       </div>
-
     </div>
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cerrarModalCancelar()">Volver</button>
@@ -472,8 +468,6 @@
     </div>
   </div>
 </div>
-
-
 <!-- MODAL: TIPO DE RESERVA -->
 <div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'tipo'" (click)="cerrarModal()">
   <div class="modal" (click)="$event.stopPropagation()">
@@ -491,7 +485,6 @@
                  placeholder="Ej: Clase Regular">
         </div>
       </div>
-
       <div class="form-row">
         <div class="form-group full-width">
           <label>Descripción</label>
@@ -501,7 +494,6 @@
                     placeholder="Descripción del tipo de reserva..."></textarea>
         </div>
       </div>
-
       <div class="form-row">
         <div class="form-group">
           <label>Estado <span class="required">*</span></label>
@@ -511,7 +503,6 @@
           </select>
         </div>
       </div>
-
     </div>
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
@@ -519,7 +510,6 @@
     </div>
   </div>
 </div>
-
 
 <!-- MODAL: CONFIRMAR ELIMINAR TIPO -->
 <div class="modal-overlay" *ngIf="mostrarConfirmarEliminar" (click)="cerrarModalConfirmar()">
@@ -538,7 +528,6 @@
     </div>
   </div>
 </div>
-
 <!-- TOAST NOTIFICACIÓN -->
 <div
   class="toast"

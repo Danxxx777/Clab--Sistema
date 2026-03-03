@@ -230,7 +230,7 @@ export class SolicitudesReservaComponent implements OnInit {
       return;
     }
 
-    const horario = this.horariosAcademicos.find(h => h.id_horario_academico == idHorario); // 👈 == no ===
+    const horario = this.horariosAcademicos.find(h => h.id_horario_academico == idHorario);
     if (horario) {
       this.solicitudActual.horaInicio = horario.hora_inicio;
       this.solicitudActual.horaFin = horario.hora_fin;

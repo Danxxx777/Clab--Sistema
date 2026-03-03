@@ -648,24 +648,17 @@
           </div>
         </div>
       </div>
-
-
-
     </div>
-
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
       <button class="btn-guardar" (click)="guardar()">Guardar</button>
     </div>
-
   </div>
 </div>
-
 <div
   class="toast"
   *ngIf="mostrarToast"
   [class.toast-success]="toastTipo === 'success'"
   [class.toast-error]="toastTipo === 'error'">
-
   {{ toastMensaje }}
 </div>

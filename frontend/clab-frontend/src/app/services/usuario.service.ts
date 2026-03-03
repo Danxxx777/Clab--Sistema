@@ -10,7 +10,7 @@ export interface UsuarioRequest {
   telefono?: string;
   contrasenia: string;
   idsRoles: number[];
-  usuario?: string;// 👈 antes idRol
+  usuario?: string;
 }
 
 export interface UsuarioResponse {
@@ -23,7 +23,7 @@ export interface UsuarioResponse {
   usuario: string;
   estado: string;
   fechaRegistro: string;
-  roles: { idRol: number; nombreRol: string }[]; // 👈 antes idRol + nombreRol
+  roles: { idRol: number; nombreRol: string }[];
 }
 
 @Injectable({
