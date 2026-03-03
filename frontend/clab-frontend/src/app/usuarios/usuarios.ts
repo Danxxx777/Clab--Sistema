@@ -71,32 +71,32 @@ export class UsuariosComponent implements OnInit {
   // Preview del usuario generado
   usuarioPreview = '';
 
-  /* =========================
+  /*
      PAGINACIÓN USUARIOS
-  ==========================*/
+  */
   paginaActual = 1;
   itemsPorPagina = 10;
   totalPaginas = 1;
   usuariosPaginados: Usuario[] = [];
 
-  /* =========================
+  /*
      PAGINACIÓN ROLES
-  ==========================*/
+ */
   paginaRoles = 1;
   itemsPorPaginaRoles = 10;
   totalPaginasRoles = 1;
   rolesPaginados: RolView[] = [];
 
-  /* =========================
+  /*
      DRAWER
-  ==========================*/
+ */
   drawerAbierto = false;
   toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
   cerrarDrawer(): void { this.drawerAbierto = false; }
 
-  /* =========================
+  /*
      LIFECYCLE
-  ==========================*/
+  */
   ngOnInit(): void {
     this.rol = localStorage.getItem('rol') || '';
 
@@ -123,9 +123,9 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
-  /* =========================
+  /*
      NAVEGACIÓN
-  ==========================*/
+  */
   volver(): void { this.router.navigate(['/dashboard']); }
   navegar(ruta: string, _texto: string): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
   logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
@@ -138,14 +138,10 @@ export class UsuariosComponent implements OnInit {
     this.actualizarPaginacionRoles();
   }
 
-  /* =========================
+  /*
      GENERACIÓN DE USUARIO
-  ==========================*/
-  /**
-   * Genera el nombre de usuario a partir de nombre y apellido.
-   * Formato: nombre.apellido — si ya existe, agrega sufijo numérico secuencial.
-   * Excluye el usuario actual (en edición) de las colisiones.
-   */
+  */
+
   generarNombreUsuario(nombres: string, apellidos: string, idExcluir?: number): string {
     const nombre = this.normalizarTexto(nombres.split(' ')[0]);
     const apellido = this.normalizarTexto(apellidos.split(' ')[0]);
@@ -180,13 +176,13 @@ export class UsuariosComponent implements OnInit {
     this.usuarioPreview = this.generarNombreUsuario(
       this.usuarioActual.nombres,
       this.usuarioActual.apellidos,
-      this.usuarioActual.id  // excluir al propio usuario en edición
+      this.usuarioActual.id
     );
   }
 
-  /* =========================
+  /*
      USUARIOS — CARGA
-  ==========================*/
+ */
   cargarUsuarios(): void {
     this.usuarioService.listar().subscribe({
       next: (data: UsuarioResponse[]) => {
@@ -217,9 +213,9 @@ export class UsuariosComponent implements OnInit {
 
     return `${roles[0]}, ${roles[1].charAt(0)}...`;
   }
-  /* =========================
+  /*
      USUARIOS — MODAL
-  ==========================*/
+*/
   abrirModalUsuario(modo: 'crear' | 'editar' | 'ver', u?: Usuario): void {
     this.modoModal = modo;
     this.errorModal = '';
@@ -272,9 +268,9 @@ export class UsuariosComponent implements OnInit {
     return this.usuarioActual?.idsRoles?.includes(idRol) ?? false;
   }
 
-  /* =========================
+  /*
      USUARIOS — GUARDAR
-  ==========================*/
+  */
   guardarUsuario(): void {
     this.errorModal = '';
     const esCrear = this.modoModal === 'crear';
@@ -377,9 +373,9 @@ export class UsuariosComponent implements OnInit {
     this.mostrarAlerta('¿Desactivar usuario?', `¿Desactivar a ${u.nombres} ${u.apellidos}?`, 'confirmar');
   }
 
-  /* =========================
+  /*
      FILTRADO Y PAGINACIÓN
-  ==========================*/
+ */
   filtrarUsuarios(): void {
     const texto = this.busqueda.toLowerCase();
     this.usuariosFiltrados = this.usuarios.filter(u =>
@@ -408,9 +404,9 @@ export class UsuariosComponent implements OnInit {
     return Array.from({ length: this.totalPaginas }, (_, i) => i + 1);
   }
 
-  /* =========================
+  /*
      ROLES
-  ==========================*/
+ */
   cargarRoles(): void {
     this.rolService.listar().subscribe({
       next: (data: RolResponse[]) => {
@@ -547,9 +543,9 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
-  /* =========================
+  /*
      PERMISOS / ROLES BD
-  ==========================*/
+  */
   cargarPermisos(): void {
     this.http.get<any[]>('http://localhost:8080/permisos').subscribe({
       next: (data) => { this.permisosDisponibles = data; },
@@ -579,9 +575,9 @@ export class UsuariosComponent implements OnInit {
     else this.rolesBDSeleccionados.push(nombre);
   }
 
-  /* =========================
+  /*
      UTILIDADES
-  ==========================*/
+*/
   getEstadoClass(estado?: string): string {
     return estado === 'Activo' || estado === 'ACTIVO' ? 'activo' : 'inactivo';
   }
