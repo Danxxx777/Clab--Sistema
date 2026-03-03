@@ -1,8 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
-// =====================
+
 // VARIABLES
-// =====================
+
 $bg:          #111111;
 $surface:     #1a1a1a;
 $card-bg:     #1e1e1e;
@@ -23,9 +23,9 @@ $blue:        #3b82f6;
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-// =====================
+
 // CONTAINER
-// =====================
+
 .inventario-container {
   font-family: 'Space Grotesk', sans-serif;
   background: $bg;
@@ -33,9 +33,9 @@ $blue:        #3b82f6;
   padding-bottom: 40px;
 }
 
-// =====================
+
 // HEADER
-// =====================
+
 .header {
   background: $surface;
   border-bottom: 1px solid $border;
@@ -97,9 +97,9 @@ $blue:        #3b82f6;
   }
 }
 
-// =====================
+
 // PAGE TITLE
-// =====================
+
 .page-title-section {
   background: $surface;
   border-bottom: 1px solid $border;
@@ -147,9 +147,9 @@ $blue:        #3b82f6;
   }
 }
 
-// =====================
+
 // TABS
-// =====================
+
 .tabs-container {
   background: $surface;
   border-bottom: 1px solid $border;
@@ -187,9 +187,9 @@ $blue:        #3b82f6;
   }
 }
 
-// =====================
+
 // CONTENT
-// =====================
+
 .content-wrapper {
   max-width: 1400px;
   margin: 20px auto;
@@ -200,9 +200,8 @@ $blue:        #3b82f6;
   animation: fadeIn 0.3s ease;
 }
 
-// =====================
+
 // TOOLBAR
-// =====================
 .toolbar {
   display: flex;
   justify-content: space-between;
@@ -267,9 +266,9 @@ $blue:        #3b82f6;
   }
 }
 
-// =====================
+
 // TABLE
-// =====================
+
 .table-container {
   background: $card-bg;
   border-radius: 12px;
@@ -328,9 +327,9 @@ $blue:        #3b82f6;
   }
 }
 
-// =====================
+
 // TABLE IMAGE
-// =====================
+
 .table-image {
   width: 52px;
   height: 52px;
@@ -363,9 +362,9 @@ $blue:        #3b82f6;
   color: $muted;
 }
 
-// =====================
+
 // BADGES
-// =====================
+
 .badge {
   display: inline-block;
   padding: 3px 10px;
@@ -397,9 +396,9 @@ $blue:        #3b82f6;
   }
 }
 
-// =====================
+
 // ACTION BUTTONS
-// =====================
+
 .action-buttons {
   display: flex;
   gap: 6px;
@@ -435,9 +434,9 @@ $blue:        #3b82f6;
   }
 }
 
-// =====================
+
 // MODAL
-// =====================
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -579,9 +578,9 @@ $blue:        #3b82f6;
   }
 }
 
-// =====================
+
 // FORMS
-// =====================
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -660,9 +659,9 @@ $blue:        #3b82f6;
   }
 }
 
-// =====================
+
 // IMAGE UPLOAD
-// =====================
+
 .image-upload-container { margin-top: 8px; }
 
 .file-input { display: none; }
@@ -741,9 +740,9 @@ $blue:        #3b82f6;
   &:hover { background: $neon-dim; }
 }
 
-// =====================
+
 // TOAST
-// =====================
+
 .toast {
   position: fixed;
   bottom: 24px;
@@ -770,9 +769,9 @@ $blue:        #3b82f6;
   border-left: 3px solid #ff6b6b;
 }
 
-// =====================
+
 // MODAL DETALLE
-// =====================
+
 .modal-detalle { max-width: 600px; }
 
 .detalle-grid {
@@ -807,9 +806,9 @@ $blue:        #3b82f6;
   }
 }
 
-// =====================
+
 // MODAL DETALLE SEDE
-// =====================
+
 .modal-detalle-sede {
   max-width: 520px;
   padding: 0;
@@ -917,9 +916,9 @@ $blue:        #3b82f6;
   }
 }
 
-// =====================
+
 // DRAWER OVERLAY
-// =====================
+
 .drawer-overlay {
   position: fixed;
   inset: 0;
@@ -1151,9 +1150,9 @@ $blue:        #3b82f6;
   }
 }
 
-// =====================
+
 // HAMBURGER
-// =====================
+
 .btn-hamburger {
   width: 36px; height: 36px;
   background: transparent;
@@ -1195,18 +1194,18 @@ $blue:        #3b82f6;
   }
 }
 
-// =====================
+
 // ANIMACIONES
-// =====================
+
 @keyframes fadeIn    { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp   { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes fadeInUp  { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes slideIn   { from { transform: translateX(300px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 @keyframes pulse     { 0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 6px currentColor; } 50% { opacity: 0.4; transform: scale(0.6); box-shadow: none; } }
 
-// =====================
+
 // RESPONSIVE
-// =====================
+
 @media (max-width: 768px) {
   .header { padding: 14px 20px; flex-direction: column; gap: 12px; .header-right { width: 100%; .btn-volver { width: 100%; } } }
   .page-title-section { padding: 10px 16px; h1 { font-size: 15px; } }

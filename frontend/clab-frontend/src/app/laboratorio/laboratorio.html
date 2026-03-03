@@ -22,13 +22,13 @@
     </div>
   </div>
 
-  <div class="drawer-section-title">Módulos</div>
+  <div class="drawer-section-title">Módulos </div>
 
   <div class="drawer-modules">
     @if(rol === 'Administradorr' || rol === 'Decano') {
       <div class="drawer-item" (click)="navegar('usuarios', '')">
         <div class="di-icon"><img src="/user.png" alt="Usuarios"></div>
-        <div class="di-text"><div class="di-name">Usuarios</div><div class="di-desc">Gestión de accesos y roles</div></div>
+        <div class="di-text"><div class="di-name">Usuarios </div><div class="di-desc">Gestión de accesos y roles</div></div>
       </div>
     }
     @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
