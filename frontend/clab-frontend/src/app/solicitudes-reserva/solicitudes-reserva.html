@@ -228,7 +228,7 @@
         </div>
         <div class="form-group">
           <label>Horario Académico</label>
-          <!-- 👇 Agregado (change)="onHorarioChange()" -->
+
           <select *ngIf="modoModal !== 'ver'" class="form-control"
                   [(ngModel)]="solicitudActual.id_horario_academico"
                   (change)="onHorarioChange()">
@@ -242,7 +242,6 @@
           </div>
         </div>
       </div>
-
       <!-- FILA 3: Tipo de Reserva + Estudiantes -->
       <div class="form-row">
         <div class="form-group">
@@ -261,7 +260,6 @@
                  placeholder="Ej: 25" min="1">
         </div>
       </div>
-
       <!-- FILA 4: Fecha + Hora Inicio -->
       <div class="form-row">
         <div class="form-group">
@@ -272,25 +270,21 @@
         </div>
         <div class="form-group">
           <label>Hora Inicio <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
-          <!-- 👇 Se bloquea si hay horario académico seleccionado -->
           <input type="time" class="form-control"
                  [(ngModel)]="solicitudActual.horaInicio"
                  [disabled]="modoModal === 'ver' || solicitudActual.id_horario_academico">
         </div>
       </div>
-
       <!-- FILA 5: Hora Fin -->
       <div class="form-row">
         <div class="form-group">
           <label>Hora Fin <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
-          <!-- 👇 Se bloquea si hay horario académico seleccionado -->
           <input type="time" class="form-control"
                  [(ngModel)]="solicitudActual.horaFin"
                  [disabled]="modoModal === 'ver' || solicitudActual.id_horario_academico">
         </div>
         <div class="form-group"></div>
       </div>
-
       <!-- MOTIVO -->
       <div class="form-group full-width">
         <label>Motivo <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
@@ -300,7 +294,6 @@
                   rows="2"
                   placeholder="Describe el propósito de la reserva..."></textarea>
       </div>
-
       <!-- DESCRIPCIÓN -->
       <div class="form-group full-width">
         <label>Descripción</label>
@@ -310,7 +303,6 @@
                   rows="2"
                   placeholder="Información adicional..."></textarea>
       </div>
-
       <!-- ESTADO (solo ver) -->
       <div class="form-group full-width" *ngIf="modoModal === 'ver'">
         <label>Estado</label>
@@ -319,9 +311,7 @@
           {{ solicitudActual.estado }}
         </span>
       </div>
-
     </div>
-
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cerrarModal()">
         {{ modoModal === 'ver' ? 'Cerrar' : 'Cancelar' }}

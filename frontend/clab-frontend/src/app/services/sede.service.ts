@@ -13,20 +13,17 @@ export class SedeService {
   listar() {
     return this.http.get<any[]>(`${this.apiUrl}/listar`);
   }
-
   crear(sede: Sedes) {
     return this.http.post<Sedes>(
       `${this.apiUrl}/crear`,
       sede
     );
   }
-
   editar(id: number, sede: Sedes) {
     return this.http.put<Sedes>(
       `${this.apiUrl}/actualizar/${id}`,
       sede
     );
-
   }
   eliminar(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/eliminar/${id}`,{ responseType: 'text' });

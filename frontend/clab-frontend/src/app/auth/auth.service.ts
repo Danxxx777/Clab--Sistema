@@ -22,7 +22,7 @@ export class AuthService {
         localStorage.setItem('rol', response.rol);
         localStorage.setItem('usuario', `${response.nombres.split(' ')[0]} ${response.apellidos.split(' ')[0]}`);
         localStorage.setItem('idUsuario', response.idUsuario);
-        localStorage.setItem('rolesDisponibles', JSON.stringify(response.rolesDisponibles ?? [])); // 👈 nuevo
+        localStorage.setItem('rolesDisponibles', JSON.stringify(response.rolesDisponibles ?? []));
       })
     );
   }
@@ -65,4 +65,4 @@ export class AuthService {
   }
 
 }
-// a ver
+

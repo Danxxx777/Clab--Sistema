@@ -189,8 +189,6 @@ export class AcademicoComponent implements OnInit {
       default: return '';
     }
   }
-
-
   filtrarPeriodos(): void {
     const busqueda = this.busquedaPeriodos.toLowerCase();
     this.periodosFiltrado = this.periodos.filter(periodo =>
@@ -198,7 +196,6 @@ export class AcademicoComponent implements OnInit {
       periodo.estado.toLowerCase().includes(busqueda)
     );
   }
-
   filtrarCarreras(): void {
     const busqueda = this.busquedaCarreras.toLowerCase();
     this.carrerasFiltradas = this.carreras.filter(c =>
@@ -207,7 +204,6 @@ export class AcademicoComponent implements OnInit {
       c.estado.toLowerCase().includes(busqueda)
     );
   }
-
   filtrarAsignaturas(): void {
     const busqueda = this.busquedaAsignaturas.toLowerCase();
     this.asignaturasFiltradas = this.asignaturas.filter(a =>
@@ -216,7 +212,6 @@ export class AcademicoComponent implements OnInit {
       a.estado.toLowerCase().includes(busqueda)
     );
   }
-
   filtrarFacultades(): void {
     const busqueda = this.busquedaFacultades.toLowerCase();
     this.facultadesFiltradas = this.facultades.filter(f =>
@@ -225,7 +220,6 @@ export class AcademicoComponent implements OnInit {
       f.estado.toLowerCase().includes(busqueda)
     );
   }
-
   filtrarHorarios(): void {
     const busqueda = this.busquedaHorarios.toLowerCase();
     this.horariosFiltrados = this.horarios.filter(h =>
@@ -235,7 +229,6 @@ export class AcademicoComponent implements OnInit {
       h.diaSemana.toLowerCase().includes(busqueda)
     );
   }
-
   cargarFacultades(): void {
     this.facultadService.listar().subscribe({
       next: (data) => {
@@ -246,7 +239,6 @@ export class AcademicoComponent implements OnInit {
       error: (err) => console.error('Error al cargar facultades', err)
     });
   }
-
   cargarDecanos(): void {
     this.facultadService.listarDecanos().subscribe({
       next: (data) => {
@@ -256,7 +248,6 @@ export class AcademicoComponent implements OnInit {
       error: (err) => console.error('Error al cargar decanos', err)
     });
   }
-
   cargarCarreras(): void {
     this.carreraService.listar().subscribe({
       next: (data) => {
@@ -267,7 +258,6 @@ export class AcademicoComponent implements OnInit {
       error: (err) => console.error('Error al cargar carreras', err)
     });
   }
-
   cargarCoordinadores(): void {
     this.carreraService.listarCoordinadores().subscribe({
       next: (data) => {
@@ -277,7 +267,6 @@ export class AcademicoComponent implements OnInit {
       error: (err) => console.error('Error al cargar coordinadores', err)
     });
   }
-
   cargarAsignaturas(): void {
     this.asignaturaService.listar().subscribe({
       next: (data) => {
@@ -288,7 +277,6 @@ export class AcademicoComponent implements OnInit {
       error: (err) => console.error('Error al cargar asignaturas', err)
     });
   }
-
   cargarHorarios(): void {
     this.horarioService.listar().subscribe({
       next: (data) => {
@@ -299,7 +287,6 @@ export class AcademicoComponent implements OnInit {
       error: (err) => console.error('Error al cargar horarios', err)
     });
   }
-
   cargarDocentes(): void {
     this.horarioService.listarDocentes().subscribe({
       next: (data) => {
@@ -309,8 +296,6 @@ export class AcademicoComponent implements OnInit {
       error: (err) => console.error('Error al cargar docentes', err)
     });
   }
-
-
   agregarNuevo(tabIndex: number) {
     this.modoEdicion = false;
     this.indiceEdicion = -1;
@@ -338,7 +323,6 @@ export class AcademicoComponent implements OnInit {
     this.itemDetalle = {};
     this.tipoDetalle = '';
   }
-
 
   editar(item: any, index: number, tipo: string) {
     this.modoEdicion = true;
@@ -453,15 +437,10 @@ export class AcademicoComponent implements OnInit {
           break;
       }
     }
-
-
   }
-
   guardar() {
     if (!this.validarFormulario()) return;
-
     switch (this.tipoEdicion) {
-
       case 'periodo': {
         const periodo: Periodo = {
           nombrePeriodo: this.formularioPeriodo.nombre,
@@ -470,9 +449,7 @@ export class AcademicoComponent implements OnInit {
           fechaCreacion: this.formularioPeriodo.fechaCreacion,
           estado: this.formularioPeriodo.estado
         };
-
         const id = this.modoEdicion ? this.periodos[this.indiceEdicion]?.idPeriodo : null;
-
         if (this.modoEdicion && id) {
           this.periodo.editar(id, periodo).subscribe({
             next: (periodoActualizado) => {
@@ -502,22 +479,18 @@ export class AcademicoComponent implements OnInit {
             error: () => this.mostrarNotificacion('Error al crear período', 'error')
           });
         }
-        return; // IMPORTANTÍSIMO: evita que caiga al cierre/alerta genérica
+        return;
       }
-
       case 'facultad': {
-
         const payload: FacultadDTO = {
           nombre: this.formularioFacultad.nombre,
           descripcion: this.formularioFacultad.descripcion,
           idDecano: this.formularioFacultad.idDecano,
           estado: this.formularioFacultad.estado
         };
-
         const id = this.modoEdicion
           ? this.facultades[this.indiceEdicion]?.idFacultad
           : null;
-
         if (this.modoEdicion && id) {
 
           this.facultadService.editar(id, payload).subscribe({
@@ -530,7 +503,6 @@ export class AcademicoComponent implements OnInit {
               this.mostrarNotificacion('Error al actualizar facultad', 'error');
             }
           });
-
         } else {
 
           this.facultadService.crear(payload).subscribe({
@@ -543,12 +515,9 @@ export class AcademicoComponent implements OnInit {
               this.mostrarNotificacion('Error al crear facultad', 'error');
             }
           });
-
         }
-
-        return; // MUY IMPORTANTE
+        return;
       }
-
       case 'carrera': {
         const payload: CarreraDTO = {
           nombre: this.formularioCarrera.nombre,
@@ -556,7 +525,6 @@ export class AcademicoComponent implements OnInit {
           idCoordinador: this.formularioCarrera.idCoordinador,
           estado: this.formularioCarrera.estado
         };
-
         const id = this.modoEdicion ? this.carreras[this.indiceEdicion]?.idCarrera : null;
 
         if (this.modoEdicion && id) {
@@ -738,15 +706,12 @@ export class AcademicoComponent implements OnInit {
         }
         break;
     }
-
     return true;
   }
-
   cerrarModal() {
     this.mostrarModal = false;
     this.limpiarFormularios();
   }
-
   limpiarFormularios() {
     this.formularioPeriodo = {
       nombre: '',
