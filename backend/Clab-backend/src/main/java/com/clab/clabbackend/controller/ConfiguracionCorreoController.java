@@ -2,67 +2,64 @@ package com.clab.clabbackend.controller;
 
 import com.clab.clabbackend.entities.ConfiguracionCorreo;
 import com.clab.clabbackend.services.ConfiguracionCorreoService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/configuracion/correo")
-@CrossOrigin(origins = "http://localhost:4200")
+@RequestMapping("/configuracion-correo")
+@RequiredArgsConstructor
 public class ConfiguracionCorreoController {
 
     private final ConfiguracionCorreoService service;
 
-    public ConfiguracionCorreoController(ConfiguracionCorreoService service) {
-        this.service = service;
-    }
-
-    // Listar todos
-    @GetMapping("/listar")
-    public List<ConfiguracionCorreo> listar() {
-        return service.listar();
-    }
-
-    // Obtener por propósito (para compatibilidad con dashboard)
     @GetMapping
-    public ConfiguracionCorreo obtener() {
-        return service.obtenerPorProposito("GENERAL");
+    public ResponseEntity<List<ConfiguracionCorreo>> listar() {
+        return ResponseEntity.ok(service.listar());
     }
 
-    // Crear nuevo
     @PostMapping
-    public ConfiguracionCorreo crear(@RequestBody ConfiguracionCorreo config) {
-        return service.crear(config);
+    public ResponseEntity<ConfiguracionCorreo> crear(@RequestBody ConfiguracionCorreo config) {
+        return ResponseEntity.ok(service.crear(config));
     }
 
-    // Actualizar
     @PutMapping("/{id}")
-    public ConfiguracionCorreo actualizar(@PathVariable Integer id,
-                                          @RequestBody ConfiguracionCorreo config) {
-        return service.actualizar(id, config);
+    public ResponseEntity<ConfiguracionCorreo> actualizar(
+            @PathVariable Integer id,
+            @RequestBody ConfiguracionCorreo config) {
+        return ResponseEntity.ok(service.actualizar(id, config));
     }
 
-    // Cambiar estado activo/inactivo
     @PatchMapping("/{id}/estado")
-    public ResponseEntity<?> cambiarEstado(@PathVariable Integer id,
-                                           @RequestBody Map<String, Boolean> body) {
+    public ResponseEntity<ConfiguracionCorreo> cambiarEstado(
+            @PathVariable Integer id,
+            @RequestParam Boolean activo) {
+        return ResponseEntity.ok(service.cambiarEstado(id, activo));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
+        service.eliminar(id);
+        return ResponseEntity.ok().build();
+    }
+
+    // ✅ Probar configuración SMTP — envía correo de prueba al remitente
+    @PostMapping("/{id}/probar")
+    public ResponseEntity<?> probar(@PathVariable Integer id) {
         try {
-            Boolean activo = body.get("activo");
-            return ResponseEntity.ok(service.cambiarEstado(id, activo));
-        } catch (Exception e) {
+            service.probar(id);
+            return ResponseEntity.ok(Map.of("mensaje", "Correo de prueba enviado correctamente."));
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
-    // Eliminar
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable Integer id) {
-        try {
-            service.eliminar(id);
-            return ResponseEntity.ok(Map.of("mensaje", "Configuración eliminada"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    // ✅ Obtener presets de proveedores conocidos
+    @GetMapping("/presets")
+    public ResponseEntity<List<Map<String, Object>>> presets() {
+        return ResponseEntity.ok(service.obtenerPresets());
     }
 }

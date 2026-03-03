@@ -5,6 +5,7 @@ import com.clab.clabbackend.services.ReporteFallasService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.Map;
 
@@ -15,16 +16,20 @@ public class ReporteFallasController {
 
     private final ReporteFallasService reporteService;
 
+    // Lista todos los reportes de fallas
     @GetMapping("/listar")
     public ResponseEntity<List<Map<String, Object>>> listar() {
         return ResponseEntity.ok(reporteService.listar());
     }
 
+    // Crea un nuevo reporte de fallas
     @PostMapping("/crear")
     public ResponseEntity<Void> crear(@RequestBody ReporteFallasDTO dto) {
         reporteService.crear(dto);
         return ResponseEntity.ok().build();
     }
+
+    // Elimina un reporte de fallas por su ID
     @DeleteMapping("/eliminar/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         reporteService.eliminar(id);
