@@ -8,6 +8,6 @@ import java.util.Optional;
 
 public interface ConfiguracionCorreoRepository extends JpaRepository<ConfiguracionCorreo, Integer> {
     Optional<ConfiguracionCorreo> findFirstByActivoTrue();
-    Optional<ConfiguracionCorreo> findFirstByPropositoAndActivoTrue(String proposito); // 👈
+    Optional<ConfiguracionCorreo> findFirstByPropositoAndActivoTrue(String proposito);
     List<ConfiguracionCorreo> findAllByOrderByIdConfigAsc();
 }

@@ -108,7 +108,7 @@ public class RolService {
                     rol.getDescripcion(),
                     rol.getFechaCreacion(),
                     rolesBD,
-                    rol.getEstado() != null ? rol.getEstado() : "ACTIVO" // 👈
+                    rol.getEstado() != null ? rol.getEstado() : "ACTIVO"
             );
         }).toList();
     }
@@ -212,4 +212,3 @@ public class RolService {
                 .toList();
     }
 }
-// a ver

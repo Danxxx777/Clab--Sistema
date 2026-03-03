@@ -46,44 +46,10 @@
         <div class="di-text"><div class="di-name">Académico</div><div class="di-desc">Períodos y carreras</div></div>
       </div>
     }
-    @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano') {
-      <div class="drawer-item" (click)="navegar('estudiantes')">
-        <div class="di-icon"><img src="/estudiantes.png"></div>
-        <div class="di-text"><div class="di-name">Estudiantes</div><div class="di-desc">Matrículas e inscripciones</div></div>
-      </div>
-    }
-    @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Decano') {
-      <div class="drawer-item" (click)="navegar('asistencia')">
-        <div class="di-icon"><img src="/asistencia.png"></div>
-        <div class="di-text"><div class="di-name">Asistencia</div><div class="di-desc">Control de asistencia</div></div>
-      </div>
-    }
-    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
-      <div class="drawer-item" (click)="navegar('reporte-fallas')">
-        <div class="di-icon"><img src="/fallas.png"></div>
-        <div class="di-text"><div class="di-name">Reportes de Fallas</div><div class="di-desc">Seguimiento de equipos</div></div>
-      </div>
-    }
     @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
       <div class="drawer-item" (click)="navegar('bloqueos')">
         <div class="di-icon"><img src="/bloqueos.png"></div>
         <div class="di-text"><div class="di-name">Bloqueos</div><div class="di-desc">Gestión de conflictos</div></div>
-      </div>
-    }
-    <div class="drawer-item" (click)="navegar('notificaciones')">
-      <div class="di-icon"><img src="/campana.png"></div>
-      <div class="di-text"><div class="di-name">Notificaciones</div><div class="di-desc">Centro de alertas</div></div>
-    </div>
-    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
-      <div class="drawer-item" (click)="navegar('reportesuso')">
-        <div class="di-icon"><img src="/uso.png"></div>
-        <div class="di-text"><div class="di-name">Reportes de Uso</div><div class="di-desc">Estadísticas</div></div>
-      </div>
-    }
-    @if(rol === 'Administradorr' || rol === 'Decano') {
-      <div class="drawer-item" (click)="navegar('auditoria')">
-        <div class="di-icon"><img src="/auditoria.png"></div>
-        <div class="di-text"><div class="di-name">Auditoría</div><div class="di-desc">Trazabilidad</div></div>
       </div>
     }
     @if(rol === 'Administradorr') {
@@ -135,9 +101,14 @@
             <div class="correo-nombre">{{ c.nombreDisplay }}</div>
             <div class="correo-proposito-label">{{ getLabelProposito(c.proposito) }}</div>
           </div>
-          <span class="correo-estado-badge" [class.activo]="c.activo" [class.inactivo]="!c.activo">
-            {{ c.activo ? 'Activo' : 'Inactivo' }}
-          </span>
+          <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+            <span class="correo-estado-badge" [class.activo]="c.activo" [class.inactivo]="!c.activo">
+              {{ c.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+            <span class="protocolo-badge" [class.ssl]="c.sslHabilitado" [class.tls]="!c.sslHabilitado && c.starttlsHabilitado">
+              {{ getProtocoloBadge(c) }}
+            </span>
+          </div>
         </div>
 
         <div class="correo-card-body">
@@ -153,13 +124,24 @@
             <span class="correo-field-label">Remitente</span>
             <span class="correo-field-value">{{ c.nombreRemitente || '—' }}</span>
           </div>
+          <div class="correo-field">
+            <span class="correo-field-label">Proveedor</span>
+            <span class="correo-field-value">{{ c.proveedor || 'CUSTOM' }}</span>
+          </div>
         </div>
 
         <div class="correo-card-footer">
+          <button class="btn-card-probar"
+                  (click)="probarConfig(c)"
+                  [disabled]="probandoId === c.idConfig">
+            <span *ngIf="probandoId !== c.idConfig">🧪 Probar</span>
+            <span *ngIf="probandoId === c.idConfig" class="btn-dots">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            </span>
+          </button>
           <button class="btn-card-editar" (click)="abrirModalEditar(c)">✏️ Editar</button>
           <button class="btn-card-estado"
-                  [class.activar]="!c.activo"
-                  [class.desactivar]="c.activo"
+                  [class.activar]="!c.activo" [class.desactivar]="c.activo"
                   (click)="cambiarEstado(c)">
             {{ c.activo ? '⊘ Desactivar' : '✓ Activar' }}
           </button>
@@ -174,7 +156,7 @@
 
 <!-- MODAL CREAR/EDITAR -->
 <div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
-  <div class="modal" (click)="$event.stopPropagation()">
+  <div class="modal modal-correo" (click)="$event.stopPropagation()">
 
     <div class="modal-header">
       <h2>{{ modoModal === 'crear' ? 'Nueva Configuración' : 'Editar Configuración' }}</h2>
@@ -182,71 +164,130 @@
     </div>
 
     <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Nombre <span class="required">*</span></label>
-          <input class="form-control" [(ngModel)]="configActual.nombreDisplay"
-                 placeholder="Ej: Correo de recuperación">
+
+      <!-- SELECTOR DE PROVEEDOR -->
+      <div class="form-section">
+        <div class="form-section-title">📡 Proveedor</div>
+        <div class="proveedor-tabs">
+          <button *ngFor="let p of proveedores"
+                  class="proveedor-tab"
+                  [class.active]="proveedorSeleccionado === p"
+                  (click)="proveedorSeleccionado = p; aplicarPreset()">
+            {{ p }}
+          </button>
         </div>
-        <div class="form-group">
-          <label>Propósito <span class="required">*</span></label>
-          <select class="form-control" [(ngModel)]="configActual.proposito">
-            <option *ngFor="let p of propositos" [value]="p.value">{{ p.icon }} {{ p.label }}</option>
-          </select>
+        <div class="preset-nota" *ngIf="notaPreset">
+          💡 {{ notaPreset }}
         </div>
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label>Host SMTP <span class="required">*</span></label>
-          <input class="form-control" [(ngModel)]="configActual.host" placeholder="smtp.gmail.com">
-        </div>
-        <div class="form-group">
-          <label>Puerto <span class="required">*</span></label>
-          <input class="form-control" type="number" [(ngModel)]="configActual.puerto">
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label>Email remitente <span class="required">*</span></label>
-          <input class="form-control" type="email" [(ngModel)]="configActual.emailRemitente"
-                 placeholder="correo@gmail.com">
-        </div>
-        <div class="form-group">
-          <label>Nombre remitente</label>
-          <input class="form-control" [(ngModel)]="configActual.nombreRemitente"
-                 placeholder="CLAB Sistema">
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group full-width">
-          <label>Contraseña de aplicación <span class="required">*</span></label>
-          <div class="password-wrapper">
-            <input class="form-control" [type]="mostrarPassword ? 'text' : 'password'"
-                   [(ngModel)]="configActual.passwordRemitente" placeholder="••••••••••••••••">
-            <button class="btn-toggle-pass" (click)="mostrarPassword = !mostrarPassword">
-              <img src="/ojo.png" alt="Ver" class="icon-ojo">
-            </button>
+      <!-- DATOS BÁSICOS -->
+      <div class="form-section">
+        <div class="form-section-title">📋 Datos básicos</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre <span class="required">*</span></label>
+            <input class="form-control" [(ngModel)]="configActual.nombreDisplay"
+                   placeholder="Ej: Correo de recuperación">
           </div>
-          <small class="hint">Usa una contraseña de aplicación de Gmail, no tu contraseña normal.</small>
+          <div class="form-group">
+            <label>Propósito <span class="required">*</span></label>
+            <select class="form-control" [(ngModel)]="configActual.proposito">
+              <option *ngFor="let p of propositos" [value]="p.value">{{ p.icon }} {{ p.label }}</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      <div class="form-row">
-        <div class="form-group full-width">
-          <div class="checks-row">
-            <label class="check-label">
-              <input type="checkbox" [(ngModel)]="configActual.authHabilitado"> Autenticación SMTP
-            </label>
-            <label class="check-label">
-              <input type="checkbox" [(ngModel)]="configActual.starttlsHabilitado"> STARTTLS habilitado
-            </label>
-            <label class="check-label">
-              <input type="checkbox" [(ngModel)]="configActual.activo"> Activo
-            </label>
+      <!-- SERVIDOR -->
+      <div class="form-section">
+        <div class="form-section-title">🖥️ Servidor SMTP</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Host SMTP <span class="required">*</span></label>
+            <input class="form-control" [(ngModel)]="configActual.host" placeholder="smtp.gmail.com">
           </div>
+          <div class="form-group">
+            <label>Puerto <span class="required">*</span></label>
+            <input class="form-control" type="number" [(ngModel)]="configActual.puerto"
+                   (change)="onPuertoChange()">
+          </div>
+        </div>
+
+        <!-- SEGURIDAD -->
+        <div class="seguridad-row">
+          <div class="seg-option" [class.active]="configActual.sslHabilitado"
+               (click)="configActual.sslHabilitado=true; configActual.starttlsHabilitado=false; configActual.puerto=465">
+            <div class="seg-icon">🔒</div>
+            <div class="seg-info">
+              <div class="seg-name">SSL</div>
+              <div class="seg-desc">Puerto 465 — cifrado desde inicio</div>
+            </div>
+            <div class="seg-check" *ngIf="configActual.sslHabilitado">✓</div>
+          </div>
+          <div class="seg-option" [class.active]="configActual.starttlsHabilitado && !configActual.sslHabilitado"
+               (click)="configActual.sslHabilitado=false; configActual.starttlsHabilitado=true; configActual.puerto=587">
+            <div class="seg-icon">🔐</div>
+            <div class="seg-info">
+              <div class="seg-name">STARTTLS</div>
+              <div class="seg-desc">Puerto 587 — negocia TLS</div>
+            </div>
+            <div class="seg-check" *ngIf="configActual.starttlsHabilitado && !configActual.sslHabilitado">✓</div>
+          </div>
+          <div class="seg-option" [class.active]="!configActual.sslHabilitado && !configActual.starttlsHabilitado"
+               (click)="configActual.sslHabilitado=false; configActual.starttlsHabilitado=false">
+            <div class="seg-icon">📤</div>
+            <div class="seg-info">
+              <div class="seg-name">Sin cifrado</div>
+              <div class="seg-desc">Solo para entornos internos</div>
+            </div>
+            <div class="seg-check" *ngIf="!configActual.sslHabilitado && !configActual.starttlsHabilitado">✓</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CREDENCIALES -->
+      <div class="form-section">
+        <div class="form-section-title">🔑 Credenciales</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email remitente <span class="required">*</span></label>
+            <input class="form-control" type="email" [(ngModel)]="configActual.emailRemitente"
+                   placeholder="correo@gmail.com">
+          </div>
+          <div class="form-group">
+            <label>Nombre remitente</label>
+            <input class="form-control" [(ngModel)]="configActual.nombreRemitente" placeholder="CLAB Sistema">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label>
+              Contraseña de aplicación
+              <span class="required" *ngIf="modoModal === 'crear'">*</span>
+              <span class="hint-inline" *ngIf="modoModal === 'editar'">(dejar vacío para no cambiar)</span>
+            </label>
+            <div class="password-wrapper">
+              <input class="form-control" [type]="mostrarPassword ? 'text' : 'password'"
+                     [(ngModel)]="configActual.passwordRemitente" placeholder="••••••••••••••••">
+              <button class="btn-toggle-pass" (click)="mostrarPassword = !mostrarPassword">
+                <img src="/ojo.png" alt="Ver" class="icon-ojo">
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OPCIONES -->
+      <div class="form-section">
+        <div class="form-section-title">⚙️ Opciones</div>
+        <div class="checks-row">
+          <label class="check-label">
+            <input type="checkbox" [(ngModel)]="configActual.authHabilitado"> Autenticación SMTP
+          </label>
+          <label class="check-label">
+            <input type="checkbox" [(ngModel)]="configActual.activo"> Activo
+          </label>
         </div>
       </div>
 
