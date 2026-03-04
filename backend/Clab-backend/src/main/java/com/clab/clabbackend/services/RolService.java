@@ -258,4 +258,13 @@ public class RolService {
                 })
                 .collect(java.util.stream.Collectors.toList());
     }
+    @Transactional(readOnly = true)
+    public List<String> listarEsquemas() {
+        return entityManager.createNativeQuery(
+                "SELECT schema_name FROM information_schema.schemata " +
+                        "WHERE schema_name NOT IN ('pg_catalog', 'information_schema') " +
+                        "AND schema_name NOT LIKE 'pg_%' " +
+                        "ORDER BY schema_name"
+        ).getResultList();
+    }
 }
