@@ -11,7 +11,6 @@ import com.clab.clabbackend.repository.UsuarioRolRepository;
 import com.clab.clabbackend.security.JwtService;
 import com.clab.clabbackend.services.AuditoriaService;
 import com.clab.clabbackend.services.EmailService;
-
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -35,17 +34,15 @@ public class AuthService {
     private final RolPermisoRepository rolPermisoRepository;
     private final AuditoriaService auditoriaService;
 
-    public AuthService(
-            PasswordEncoder passwordEncoder,
-            AuthenticationManager authenticationManager,
-            JwtService jwtService,
-            UsuarioRepository usuarioRepository,
-            UsuarioRolRepository usuarioRolRepository,
-            EmailService emailService,
-            RolRepository rolRepository,
-            RolPermisoRepository rolPermisoRepository,
-            AuditoriaService auditoriaService
-    ) {
+    public AuthService(PasswordEncoder passwordEncoder,
+                       AuthenticationManager authenticationManager,
+                       JwtService jwtService,
+                       UsuarioRepository usuarioRepository,
+                       UsuarioRolRepository usuarioRolRepository,
+                       EmailService emailService,
+                       RolRepository rolRepository,
+                       RolPermisoRepository rolPermisoRepository,
+                       AuditoriaService auditoriaService) {
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
@@ -63,12 +60,11 @@ public class AuthService {
                         .findByRol_IdRolAndVigenteTrue(rol.getIdRol())
                         .stream()
                         .map(rp -> rp.getPermiso().getNombrePermiso())
-                        .toList()
-                )
+                        .toList())
                 .orElse(List.of());
     }
 
-    // LOGIN
+    // ─── LOGIN ───────────────────────────────────────────────────────────────
     public AuthResponseDTO login(LoginRequestDTO request, String ip) {
         try {
             authenticationManager.authenticate(
@@ -90,9 +86,7 @@ public class AuthService {
                 .sorted(Comparator.comparing(UsuarioRol::getFechaAsignacion))
                 .toList();
 
-        if (rolesVigentes.isEmpty()) {
-            throw new RuntimeException("El usuario no tiene rol asignado");
-        }
+        if (rolesVigentes.isEmpty()) throw new RuntimeException("El usuario no tiene rol asignado");
 
         String rolPrincipal = rolesVigentes.get(0).getRol().getNombreRol();
         List<String> rolesDisponibles = rolesVigentes.stream()
@@ -101,15 +95,13 @@ public class AuthService {
         List<String> permisos = obtenerPermisosDeRol(rolPrincipal);
         String token = jwtService.generarToken(usuario.getIdUsuario(), rolPrincipal, permisos);
 
-        // Registrar sesión activa (expira en 1 hora igual que el token)
+        // Registrar sesión via SP
         auditoriaService.registrarSesion(
-                usuario.getIdUsuario(),
-                usuario.getUsuario(),
-                token, ip,
-                LocalDateTime.now().plusHours(1)
+                usuario.getIdUsuario(), usuario.getUsuario(),
+                token, ip, LocalDateTime.now().plusHours(1)
         );
 
-        // Auditoría de login exitoso
+        // Auditoría via SP
         auditoriaService.registrarExito(
                 usuario.getIdUsuario(), usuario.getUsuario(),
                 "LOGIN", "AUTH", "u_usuario",
@@ -120,7 +112,7 @@ public class AuthService {
                 rolPrincipal, usuario.getIdUsuario(), rolesDisponibles);
     }
 
-    // CAMBIAR ROL
+    // ─── CAMBIAR ROL ─────────────────────────────────────────────────────────
     public AuthResponseDTO cambiarRol(Integer idUsuario, String nombreRol, String ip) {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -150,17 +142,13 @@ public class AuthService {
                 nombreRol, idUsuario, rolesDisponibles);
     }
 
-    // LOGOUT
+    // ─── LOGOUT ──────────────────────────────────────────────────────────────
     public void logout(String token, Integer idUsuario, String ip) {
-        auditoriaService.cerrarSesion(token);
-        usuarioRepository.findById(idUsuario).ifPresent(u ->
-                auditoriaService.registrarExito(idUsuario, u.getUsuario(),
-                        "LOGOUT", "AUTH", "u_sesion_activa",
-                        idUsuario, "Cierre de sesión", ip)
-        );
+        // SP registra sesión inactiva y auditoría en un solo paso
+        auditoriaService.cerrarSesion(token, idUsuario, ip);
     }
 
-    // RECUPERACIÓN DE CONTRASEÑA
+    // ─── RECUPERACIÓN DE CONTRASEÑA ──────────────────────────────────────────
     public void solicitarRecuperacion(String email) {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("No existe ningún usuario con ese correo"));
@@ -183,7 +171,6 @@ public class AuthService {
     public boolean verificarCodigo(String email, String codigo) {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
         if (usuario.getTokenRecuperacion() == null || !usuario.getTokenRecuperacion().equals(codigo))
             throw new RuntimeException("Código incorrecto");
         if (usuario.getExpiracionToken().isBefore(LocalDateTime.now()))
@@ -194,12 +181,10 @@ public class AuthService {
     public void resetPassword(String email, String codigo, String nuevaPassword) {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
         if (usuario.getTokenRecuperacion() == null || !usuario.getTokenRecuperacion().equals(codigo))
             throw new RuntimeException("Código inválido");
         if (usuario.getExpiracionToken().isBefore(LocalDateTime.now()))
             throw new RuntimeException("El código ha expirado. Solicita uno nuevo.");
-
         usuario.setContrasenia(passwordEncoder.encode(nuevaPassword));
         usuario.setTokenRecuperacion(null);
         usuario.setExpiracionToken(null);

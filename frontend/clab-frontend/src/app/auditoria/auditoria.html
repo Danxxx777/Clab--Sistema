@@ -159,7 +159,7 @@
     <div class="tab-content" *ngIf="tabActiva === 1">
       <div class="toolbar">
         <div class="filters-group"></div>
-        <button class="btn-agregar" (click)="cargarSesiones()">↻ Actualizar</button>
+        <button class="btn-agregar" (click)="tabActiva === 1 ? cargarSesiones() : cargarAuditorias()">↻ Actualizar</button>
       </div>
 
       <div class="table-container">
