@@ -134,4 +134,8 @@ public class RolController {
     public ResponseEntity<List<Map<String, Object>>> obtenerPermisosEsquemas(@PathVariable Integer idRolBd) {
         return ResponseEntity.ok(rolService.obtenerPermisosEsquemas(idRolBd));
     }
+    @GetMapping("/esquemas")
+    public ResponseEntity<List<String>> listarEsquemas() {
+        return ResponseEntity.ok(rolService.listarEsquemas());
+    }
 }
