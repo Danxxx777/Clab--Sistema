@@ -11,12 +11,15 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.core.annotation.Order;
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
 @Order(1)
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
 
@@ -28,7 +31,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        boolean shouldSkip = path.startsWith("/auth")
+        return path.startsWith("/auth")
                 || path.startsWith("/api/test")
                 || path.startsWith("/equipos")
                 || path.startsWith("/tipos-equipo")
@@ -40,15 +43,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 || path.startsWith("/carreras")
                 || path.startsWith("/asignaturas")
                 || path.startsWith("/horarios");
-        return shouldSkip;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+
         if ("OPTIONS".equals(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;
         }
+
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
@@ -56,15 +61,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Claims claims = jwtService.obtenerClaims(token);
                 String username = claims.getSubject();
                 String rol = claims.get("rol", String.class);
+
+                List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+
+                // Agregar rol como authority
+                if (rol != null) {
+                    authorities.add(new SimpleGrantedAuthority("ROLE_" + rol.toUpperCase()));
+                }
+
+                // Agregar permisos como authorities
+                List<?> permisos = claims.get("permisos", List.class);
+                if (permisos != null) {
+                    for (Object permiso : permisos) {
+                        authorities.add(new SimpleGrantedAuthority("PERMISO_" + permiso.toString().toUpperCase()));
+                    }
+                }
+
                 UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(
-                                username,
-                                null,
-                                List.of(new SimpleGrantedAuthority("ROLE_" + rol))
-                        );
+                        new UsernamePasswordAuthenticationToken(username, null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(auth);
+
             } catch (Exception e) {
-                System.out.println(" Error validando token: " + e.getMessage());
+                System.out.println("Error validando token: " + e.getMessage());
                 SecurityContextHolder.clearContext();
             }
         }
