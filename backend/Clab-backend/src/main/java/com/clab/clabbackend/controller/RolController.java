@@ -71,4 +71,9 @@ public class RolController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+    @GetMapping("/roles-bd/{idRolBd}/permisos-esquemas")
+    public ResponseEntity<List<Map<String, Object>>> obtenerPermisosEsquemas(
+            @PathVariable Integer idRolBd) {
+        return ResponseEntity.ok(rolService.obtenerPermisosEsquemas(idRolBd));
+    }
 }

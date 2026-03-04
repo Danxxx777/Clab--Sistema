@@ -1,5 +1,8 @@
 package com.clab.clabbackend.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +30,18 @@ public class RolRequestDTO {
         this.permisos = permisos != null ? permisos : new ArrayList<>();
     }
 
+    // Si es clase con Lombok:
+    @Getter
+    @Setter
+    private List<RolBdEsquemaPermisoDTO> permisosEsquemas;
+
+    public List<RolBdEsquemaPermisoDTO> getPermisosEsquemas() {
+        return permisosEsquemas;
+    }
+    public void setPermisosEsquemas(List<RolBdEsquemaPermisoDTO> permisosEsquemas) {
+        this.permisosEsquemas = permisosEsquemas;
+    }
+
     public String getNombreRol() {
         return nombreRol;
     }
@@ -52,6 +67,6 @@ public class RolRequestDTO {
     }
 
     public String getEstado() { return estado; }
+
     public void setEstado(String estado) { this.estado = estado; }
 }
-// a ver
