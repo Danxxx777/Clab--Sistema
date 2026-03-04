@@ -10,17 +10,20 @@ public class UsuarioRequestDTO {
     private String email;
     private String telefono;
     private String contrasenia;
+    private String usuario;
     private List<Integer> idsRoles;
 
     public UsuarioRequestDTO() {}
 
-    public UsuarioRequestDTO(String identidad, String nombres, String apellidos, String email, String telefono, String contrasenia, List<Integer> idsRoles) {
+    public UsuarioRequestDTO(String identidad, String nombres, String apellidos, String email,
+                             String telefono, String contrasenia, String usuario, List<Integer> idsRoles) {
         this.identidad = identidad;
         this.nombres = nombres;
         this.apellidos = apellidos;
         this.email = email;
         this.telefono = telefono;
         this.contrasenia = contrasenia;
+        this.usuario = usuario;
         this.idsRoles = idsRoles;
     }
 
@@ -42,6 +45,9 @@ public class UsuarioRequestDTO {
     public String getContrasenia() { return contrasenia; }
     public void setContrasenia(String contrasenia) { this.contrasenia = contrasenia; }
 
+    public String getUsuario() { return usuario; }
+    public void setUsuario(String usuario) { this.usuario = usuario; }
+
     public List<Integer> getIdsRoles() { return idsRoles; }
     public void setIdsRoles(List<Integer> idsRoles) { this.idsRoles = idsRoles; }
-}// a ver
+}
