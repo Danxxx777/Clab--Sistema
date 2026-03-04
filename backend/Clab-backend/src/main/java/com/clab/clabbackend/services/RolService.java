@@ -1,6 +1,7 @@
 package com.clab.clabbackend.services;
 
 import com.clab.clabbackend.dto.RolBDDTO;
+import com.clab.clabbackend.dto.RolBdEsquemaPermisoDTO;
 import com.clab.clabbackend.dto.RolRequestDTO;
 import com.clab.clabbackend.dto.RolResponseDTO;
 import com.clab.clabbackend.entities.*;
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 import jakarta.persistence.EntityManager;
 import com.clab.clabbackend.repository.RolRolBDRepository;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class RolService {
@@ -30,6 +32,9 @@ public class RolService {
     private UsuarioRolRepository UsuarioRolRepository;
     @Autowired
     private RolRolBDRepository rolRolBDRepository;
+
+    @Autowired
+    private RolBdEsquemaPermisoRepository rolBdEsquemaPermisoRepository;
 
     private void sincronizarRolesBD() {
         List<String> rolesPostgres = entityManager.createNativeQuery(
@@ -87,8 +92,9 @@ public class RolService {
                 rolRolBDRepository.save(relacion);
             }
         }
-
+        asignarPermisosEsquemas(dto.getPermisosEsquemas());
         return rolGuardado;
+
     }
 
     public List<RolResponseDTO> listar() {
@@ -147,7 +153,7 @@ public class RolService {
                 rolRolBDRepository.save(relacion);
             }
         }
-
+        asignarPermisosEsquemas(dto.getPermisosEsquemas());
         return rolActualizado;
     }
 
@@ -210,5 +216,46 @@ public class RolService {
                 .stream()
                 .map(rp -> rp.getPermiso().getIdPermiso())
                 .toList();
+    }
+
+    private void asignarPermisosEsquemas(List<RolBdEsquemaPermisoDTO> permisos) {
+        if (permisos == null || permisos.isEmpty()) {
+            return;
+        }
+
+        // Desactivar esquemas previos de cada rolBD involucrado
+        permisos.stream()
+                .map(RolBdEsquemaPermisoDTO::idRolBd)
+                .distinct()
+                .forEach(idRolBd ->
+                        entityManager.createNativeQuery(
+                                "UPDATE usuarios.u_rol_bd_esquema_permiso SET vigente = false WHERE id_rol_bd = " + idRolBd
+                        ).executeUpdate()
+                );
+
+        // Insertar/actualizar los nuevos
+        for (RolBdEsquemaPermisoDTO p : permisos) {
+            rolBDRepository.spAsignarPermisos(
+                    p.idRolBd(), p.nombreRolBd(), p.nombreEsquema(),
+                    p.select(), p.insert(), p.update(), p.delete()
+            );
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> obtenerPermisosEsquemas(Integer idRolBd) {
+        return rolBdEsquemaPermisoRepository
+                .findByRolBd_IdRolBdAndVigenteTrue(idRolBd)
+                .stream()
+                .map(r -> {
+                    Map<String, Object> m = new java.util.HashMap<>();
+                    m.put("nombreEsquema", r.getNombreEsquema());
+                    m.put("select",        r.isPermisoSelect());
+                    m.put("insert",        r.isPermisoInsert());
+                    m.put("update",        r.isPermisoUpdate());
+                    m.put("delete",        r.isPermisoDelete());
+                    return m;
+                })
+                .collect(java.util.stream.Collectors.toList());
     }
 }
