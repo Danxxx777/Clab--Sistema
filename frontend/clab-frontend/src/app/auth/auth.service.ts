@@ -28,10 +28,21 @@ export class AuthService {
   }
 
   logout() {
+    const token = localStorage.getItem('token');
+    const idUsuario = localStorage.getItem('idUsuario');
+
+    if (token && idUsuario) {
+      this.http.post(`${this.apiUrl}/logout`, {
+        token,
+        idUsuario: parseInt(idUsuario)
+      }).subscribe();
+    }
+
     localStorage.removeItem('token');
     localStorage.removeItem('rol');
     localStorage.removeItem('loggedIn');
     localStorage.removeItem('rolesDisponibles');
+    localStorage.removeItem('idUsuario');
   }
 
   isLoggedIn(): boolean {
