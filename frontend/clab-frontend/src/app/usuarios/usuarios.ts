@@ -117,6 +117,7 @@ export class UsuariosComponent implements OnInit {
     this.cargarUsuarios();
     this.cargarRoles();
     this.cargarPermisos();
+    this.cargarEsquemas();
 
     this.rolService.listarRolesBD().subscribe(data => {
       this.rolesBDDisponibles = data;
@@ -642,11 +643,13 @@ export class UsuariosComponent implements OnInit {
     return Object.keys(this.permisosEsquema);
   }
 
-  readonly esquemas = [
-    'academico', 'inventario', 'laboratorios', 'notificaciones',
-    'organizacion', 'public', 'recursos', 'reportes',
-    'reservas', 'seguridad', 'seguridad_bd', 'usuarios'
-  ];
+  esquemas: string[] = [];
+  cargarEsquemas(): void {
+    this.http.get<string[]>('http://localhost:8080/roles/esquemas').subscribe({
+      next: (data) => { this.esquemas = data; },
+      error: err => console.error('Error cargando esquemas', err)
+    });
+  }
 
   permisosEsquema: Record<string, {
     select: boolean; insert: boolean; update: boolean; delete: boolean;
