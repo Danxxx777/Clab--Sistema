@@ -4,9 +4,11 @@ import com.clab.clabbackend.entities.Auditoria;
 import com.clab.clabbackend.entities.SesionActiva;
 import com.clab.clabbackend.repository.AuditoriaRepository;
 import com.clab.clabbackend.repository.SesionActivaRepository;
+import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -19,47 +21,84 @@ public class AuditoriaService {
 
     private final AuditoriaRepository auditoriaRepository;
     private final SesionActivaRepository sesionActivaRepository;
+    private final EntityManager entityManager;
 
     public AuditoriaService(AuditoriaRepository auditoriaRepository,
-                            SesionActivaRepository sesionActivaRepository) {
+                            SesionActivaRepository sesionActivaRepository,
+                            EntityManager entityManager) {
         this.auditoriaRepository = auditoriaRepository;
         this.sesionActivaRepository = sesionActivaRepository;
+        this.entityManager = entityManager;
     }
 
-    // ─── AUDITORÍA ────────────────────────────────────────────────
+    // ─── AUDITORÍA via SP ────────────────────────────────────────────────────
 
+    @Transactional
     public void registrar(Integer idUsuario, String usuario, String accion,
                           String modulo, String tablaAfectada,
-                          Integer idRegistroAfectado, String descripcion,
+                          Integer idRegistro, String descripcion,
                           String ip, String resultado) {
-        Auditoria a = new Auditoria();
-        a.setIdUsuario(idUsuario);
-        a.setUsuario(usuario);
-        a.setAccion(accion);
-        a.setModulo(modulo);
-        a.setTablaAfectada(tablaAfectada);
-        a.setIdRegistroAfectado(idRegistroAfectado);
-        a.setDescripcion(descripcion);
-        a.setIp(ip);
-        a.setResultado(resultado != null ? resultado : "EXITOSO");
-        a.setFechaHora(LocalDateTime.now());
-        auditoriaRepository.save(a);
+        entityManager.createNativeQuery(
+                        "CALL usuarios.sp_registrar_auditoria(:idUsuario, :usuario, :accion, :modulo, " +
+                                ":tabla, :idRegistro, :descripcion, :ip, :resultado)"
+                )
+                .setParameter("idUsuario",   idUsuario)
+                .setParameter("usuario",     usuario)
+                .setParameter("accion",      accion)
+                .setParameter("modulo",      modulo)
+                .setParameter("tabla",       tablaAfectada)
+                .setParameter("idRegistro",  idRegistro)
+                .setParameter("descripcion", descripcion)
+                .setParameter("ip",          ip)
+                .setParameter("resultado",   resultado != null ? resultado : "EXITOSO")
+                .executeUpdate();
     }
-
-    // Versión simplificada para acciones exitosas
+    @Transactional
     public void registrarExito(Integer idUsuario, String usuario, String accion,
-                               String modulo, String tablaAfectada,
-                               Integer idRegistroAfectado, String descripcion, String ip) {
-        registrar(idUsuario, usuario, accion, modulo, tablaAfectada,
-                idRegistroAfectado, descripcion, ip, "EXITOSO");
+                               String modulo, String tabla, Integer idRegistro,
+                               String descripcion, String ip) {
+        registrar(idUsuario, usuario, accion, modulo, tabla, idRegistro, descripcion, ip, "EXITOSO");
     }
-
-    // Para accesos denegados o errores
+    @Transactional
     public void registrarFallo(Integer idUsuario, String usuario, String accion,
                                String modulo, String descripcion, String ip) {
-        registrar(idUsuario, usuario, accion, modulo, null,
-                null, descripcion, ip, "FALLIDO");
+        registrar(idUsuario, usuario, accion, modulo, null, null, descripcion, ip, "FALLIDO");
     }
+
+    // ─── SESIONES via SP ─────────────────────────────────────────────────────
+
+    @Transactional
+    public void registrarSesion(Integer idUsuario, String usuario,
+                                String token, String ip, LocalDateTime expira) {
+        entityManager.createNativeQuery(
+                        "CALL usuarios.sp_registrar_sesion(:idUsuario, :usuario, :tokenHash, :ip, :expira)"
+                )
+                .setParameter("idUsuario",  idUsuario)
+                .setParameter("usuario",    usuario)
+                .setParameter("tokenHash",  hashToken(token))
+                .setParameter("ip",         ip)
+                .setParameter("expira",     expira)
+                .executeUpdate();
+    }
+
+    @Transactional
+    public void cerrarSesion(String token, Integer idUsuario, String ip) {
+        entityManager.createNativeQuery(
+                        "CALL usuarios.sp_cerrar_sesion(:tokenHash, :idUsuario, :ip)"
+                )
+                .setParameter("tokenHash",  hashToken(token))
+                .setParameter("idUsuario",  idUsuario)
+                .setParameter("ip",         ip)
+                .executeUpdate();
+    }
+
+    @Scheduled(fixedRate = 300000)
+    @Transactional
+    public void limpiarSesionesExpiradas() {
+        entityManager.createNativeQuery("CALL usuarios.sp_expirar_sesiones()").executeUpdate();
+    }
+
+    // ─── CONSULTAS ───────────────────────────────────────────────────────────
 
     public List<Auditoria> listarTodo() {
         return auditoriaRepository.findAllByOrderByFechaHoraDesc();
@@ -73,52 +112,15 @@ public class AuditoriaService {
         return auditoriaRepository.findByModuloOrderByFechaHoraDesc(modulo);
     }
 
-    // ─── SESIONES ACTIVAS ─────────────────────────────────────────
-
-    public void registrarSesion(Integer idUsuario, String usuario,
-                                String token, String ip, LocalDateTime expira) {
-        // Invalidar sesiones anteriores del mismo usuario
-        List<SesionActiva> sesionesAnteriores =
-                sesionActivaRepository.findByIdUsuarioAndActivaTrue(idUsuario);
-        sesionesAnteriores.forEach(s -> s.setActiva(false));
-        sesionActivaRepository.saveAll(sesionesAnteriores);
-
-        SesionActiva sesion = new SesionActiva();
-        sesion.setIdUsuario(idUsuario);
-        sesion.setUsuario(usuario);
-        sesion.setTokenHash(hashToken(token));
-        sesion.setIp(ip);
-        sesion.setFechaInicio(LocalDateTime.now());
-        sesion.setFechaExpira(expira);
-        sesion.setActiva(true);
-        sesionActivaRepository.save(sesion);
-    }
-
-    public void cerrarSesion(String token) {
-        sesionActivaRepository.findByTokenHash(hashToken(token))
-                .ifPresent(s -> {
-                    s.setActiva(false);
-                    sesionActivaRepository.save(s);
-                });
-    }
-
     public List<SesionActiva> listarSesionesActivas() {
         return sesionActivaRepository.findByActivaTrueOrderByFechaInicioDesc();
     }
 
-    // Expira sesiones vencidas cada 5 minutos
-    @Scheduled(fixedRate = 300000)
-    public void limpiarSesionesExpiradas() {
-        sesionActivaRepository.expirarSesionesVencidas(LocalDateTime.now());
-    }
-
-    // ─── UTILIDADES ──────────────────────────────────────────────
+    // ─── UTILIDADES ──────────────────────────────────────────────────────────
 
     public String obtenerIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty()) {
-            ip = request.getRemoteAddr();
-        }
+        if (ip == null || ip.isEmpty()) ip = request.getRemoteAddr();
         return ip;
     }
 
