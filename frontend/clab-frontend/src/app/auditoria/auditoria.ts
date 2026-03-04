@@ -146,5 +146,12 @@ export class AuditoriaComponent implements OnInit {
   cerrarDrawer(): void { this.drawerAbierto = false; }
   volver(): void { this.router.navigate(['/dashboard']); }
   navegar(ruta: string): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
+  actualizar(): void {
+    if (this.tabActiva === 0) {
+      this.cargarAuditorias();
+    } else {
+      this.cargarSesiones();
+    }
+  }
   logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
 }
