@@ -1,5 +1,6 @@
 package com.clab.clabbackend.entities;
 
+import com.clab.clabbackend.util.PasswordEncriptadoConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "configuracion_correo", schema = "usuarios")
+@Table(name = "c_configuracion_correo", schema = "configuracion")
 public class ConfiguracionCorreo {
 
     @Id
@@ -31,7 +32,8 @@ public class ConfiguracionCorreo {
     @Column(name = "email_remitente", length = 100, nullable = false)
     private String emailRemitente;
 
-    @Column(name = "password_remitente", length = 200, nullable = false)
+    @Convert(converter = PasswordEncriptadoConverter.class)
+    @Column(name = "password_remitente", length = 500, nullable = false)
     private String passwordRemitente;
 
     @Column(name = "nombre_remitente", length = 100)

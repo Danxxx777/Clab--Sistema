@@ -338,16 +338,71 @@
           <input type="date" class="form-control" [(ngModel)]="rolActual.fechaCreacion" disabled>
         </div>
       </div>
-      <div class="roles-bd-section">
-        <label>Roles de Base de Datos</label>
-        <div class="roles-bd-grid">
-          <div class="rol-bd-card" *ngFor="let rolBD of rolesBDDisponibles"
-               [class.selected]="rolesBDSeleccionados.includes(rolBD.nombreRolBd)"
-               (click)="toggleRolBD(rolBD.nombreRolBd)">
-            <div class="rol-bd-name">{{ rolBD.nombreRolBd }}</div>
-            <div class="rol-bd-desc" *ngIf="rolBD.descripcion">{{ rolBD.descripcion }}</div>
+
+      <!-- LAYOUT 2 COLUMNAS -->
+      <div class="roles-esquemas-layout">
+
+        <!-- IZQUIERDA: Roles BD -->
+        <div class="col-roles-bd">
+          <label class="col-label">Roles de Base de Datos</label>
+          <div class="roles-bd-list">
+            <div class="rol-bd-card" *ngFor="let rolBD of rolesBDDisponibles"
+                 [class.selected]="rolesBDSeleccionados.includes(rolBD.nombreRolBd)"
+                 (click)="toggleRolBD(rolBD.nombreRolBd)">
+              <div class="rol-bd-name">{{ rolBD.nombreRolBd }}</div>
+              <div class="rol-bd-desc" *ngIf="rolBD.descripcion">{{ rolBD.descripcion }}</div>
+            </div>
           </div>
         </div>
+
+        <!-- DERECHA: Esquemas -->
+        <div class="col-esquemas" *ngIf="rolesBDSeleccionados.length > 0; else sinRolBD">
+          <label class="col-label">Permisos por Esquema</label>
+          <div class="esquemas-chips">
+            <div class="esquema-chip"
+                 *ngFor="let esq of esquemas"
+                 [class.activo]="esquemaActivo(esq)"
+                 (click)="toggleEsquema(esq)">
+              <span class="chip-dot" *ngIf="esquemaActivo(esq)">●</span>
+              {{ esq }}
+            </div>
+          </div>
+          <div class="permisos-panel" *ngFor="let esq of esquemasConfigurados">
+            <div class="pp-header">
+              <span>🗄</span>
+              <strong>{{ esq }}</strong>
+              <button class="pp-remove" (click)="toggleEsquema(esq)">×</button>
+            </div>
+            <div class="pp-checks">
+              <label class="pp-check select">
+                <input type="checkbox" [(ngModel)]="permisosEsquema[esq].select">
+                <span>SELECT</span>
+              </label>
+              <label class="pp-check insert">
+                <input type="checkbox" [(ngModel)]="permisosEsquema[esq].insert">
+                <span>INSERT</span>
+              </label>
+              <label class="pp-check update">
+                <input type="checkbox" [(ngModel)]="permisosEsquema[esq].update">
+                <span>UPDATE</span>
+              </label>
+              <label class="pp-check delete">
+                <input type="checkbox" [(ngModel)]="permisosEsquema[esq].delete">
+                <span>DELETE</span>
+              </label>
+            </div>
+          </div>
+          <p class="esquemas-hint" *ngIf="esquemasConfigurados.length === 0">
+            Selecciona un esquema para configurar sus permisos
+          </p>
+        </div>
+
+        <ng-template #sinRolBD>
+          <div class="col-esquemas col-esquemas-empty">
+            <span>Selecciona un rol de BD para configurar esquemas</span>
+          </div>
+        </ng-template>
+
       </div>
     </div>
     <div class="modal-footer">

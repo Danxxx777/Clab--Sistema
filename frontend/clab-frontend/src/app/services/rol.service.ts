@@ -22,6 +22,15 @@ export interface RolRequest {
   descripcion?: string;
   permisos: number[];
   rolesBD: string[];
+  permisosEsquemas?: {       // ← agregar esto
+    idRolBd: number;
+    nombreRolBd: string;
+    nombreEsquema: string;
+    select: boolean;
+    insert: boolean;
+    update: boolean;
+    delete: boolean;
+  }[];
 }
 
 @Injectable({
@@ -62,6 +71,9 @@ export class RolService {
   }
   cambiarEstado(id: number, estado: string): Observable<any> {
     return this.http.patch(`${this.apiUrl}/${id}/estado`, { estado });
+  }
+  obtenerPermisosEsquemas(idRolBd: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/roles-bd/${idRolBd}/permisos-esquemas`);
   }
 }
 
