@@ -18,28 +18,12 @@ const PRESETS: Record<string, any> = {
     sslHabilitado: false, starttlsHabilitado: true, protocolo: 'SMTP',
     nota: 'Requiere contraseña de aplicación (activa 2FA en tu cuenta Google)'
   },
-  OUTLOOK: {
-    host: 'smtp.office365.com', puerto: 587,
-    sslHabilitado: false, starttlsHabilitado: true, protocolo: 'SMTP',
-    nota: 'Usa tu contraseña normal de Microsoft'
-  },
-  YAHOO: {
-    host: 'smtp.mail.yahoo.com', puerto: 465,
-    sslHabilitado: true, starttlsHabilitado: false, protocolo: 'SMTP',
-    nota: 'Requiere contraseña de aplicación de Yahoo'
-  },
-  HOTMAIL: {
-    host: 'smtp.live.com', puerto: 587,
-    sslHabilitado: false, starttlsHabilitado: true, protocolo: 'SMTP',
-    nota: 'Misma configuración que Outlook'
-  },
   CUSTOM: {
     host: '', puerto: 587,
     sslHabilitado: false, starttlsHabilitado: true, protocolo: 'SMTP',
     nota: 'Configura manualmente según tu proveedor SMTP'
   }
 };
-
 @Component({
   selector: 'app-configuracion-correo',
   standalone: true,
