@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {SedeService} from '../services/sede.service';
+
 import { LaboratorioService } from '../services/laboratorio.service';
 
 
@@ -132,7 +133,7 @@ export class LaboratoriosComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Error cargando sedes', err);
+        console.error('Error cargando sedes.....', err);
       }
     });
   }
@@ -145,7 +146,7 @@ export class LaboratoriosComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Error cargando laboratorios', err);
+        console.error('Error cargando laboratorios....', err);
       }
     });
   }
