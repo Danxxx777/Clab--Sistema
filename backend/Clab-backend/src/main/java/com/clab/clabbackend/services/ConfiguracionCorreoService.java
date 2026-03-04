@@ -19,12 +19,10 @@ public class ConfiguracionCorreoService {
         this.emailService = emailService;
     }
 
-    // Listar todos
     public List<ConfiguracionCorreo> listar() {
         return repo.findAllByOrderByIdConfigAsc();
     }
 
-    // Obtener por propósito con fallback a GENERAL
     public ConfiguracionCorreo obtenerPorProposito(String proposito) {
         return repo.findFirstByPropositoAndActivoTrue(proposito)
                 .orElseGet(() -> repo.findFirstByPropositoAndActivoTrue("GENERAL")
@@ -32,24 +30,14 @@ public class ConfiguracionCorreoService {
                                 "No hay configuración de correo activa")));
     }
 
-    // Crear nuevo
     public ConfiguracionCorreo crear(ConfiguracionCorreo config) {
-        // Auto-detectar proveedor si no viene
         if (config.getProveedor() == null || config.getProveedor().isBlank()) {
             config.setProveedor(detectarProveedor(config.getHost()));
         }
-        // Auto-configurar SSL según puerto
-        if (config.getPuerto() != null && config.getPuerto() == 465) {
-            config.setSslHabilitado(true);
-            config.setStarttlsHabilitado(false);
-        } else if (config.getPuerto() != null && config.getPuerto() == 587) {
-            config.setSslHabilitado(false);
-            config.setStarttlsHabilitado(true);
-        }
+        ajustarSslPorPuerto(config, config.getPuerto());
         return repo.save(config);
     }
 
-    // Actualizar
     public ConfiguracionCorreo actualizar(Integer id, ConfiguracionCorreo nueva) {
         ConfiguracionCorreo actual = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Configuración no encontrada"));
@@ -69,24 +57,14 @@ public class ConfiguracionCorreoService {
                 ? nueva.getProveedor()
                 : detectarProveedor(nueva.getHost()));
 
-        // Solo actualizar contraseña si viene una nueva
         if (nueva.getPasswordRemitente() != null && !nueva.getPasswordRemitente().isBlank()) {
             actual.setPasswordRemitente(nueva.getPasswordRemitente());
         }
 
-        // Auto-ajustar SSL/STARTTLS según puerto
-        if (nueva.getPuerto() != null && nueva.getPuerto() == 465) {
-            actual.setSslHabilitado(true);
-            actual.setStarttlsHabilitado(false);
-        } else if (nueva.getPuerto() != null && nueva.getPuerto() == 587) {
-            actual.setSslHabilitado(false);
-            actual.setStarttlsHabilitado(true);
-        }
-
+        ajustarSslPorPuerto(actual, nueva.getPuerto());
         return repo.save(actual);
     }
 
-    // Cambiar estado activo/inactivo
     public ConfiguracionCorreo cambiarEstado(Integer id, Boolean activo) {
         ConfiguracionCorreo config = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Configuración no encontrada"));
@@ -94,79 +72,53 @@ public class ConfiguracionCorreoService {
         return repo.save(config);
     }
 
-    // Eliminar
     public void eliminar(Integer id) {
         repo.deleteById(id);
     }
 
-    // Probar configuración
     public void probar(Integer id) {
         emailService.probarConfiguracion(id);
     }
 
+    //  Solo Gmail y Custom
     public List<Map<String, Object>> obtenerPresets() {
         return List.of(
                 Map.of(
-                        "proveedor",  "GMAIL",
-                        "nombre",     "Gmail",
-                        "host",       "smtp.gmail.com",
-                        "puertoSSL",  465,
-                        "puertoTLS",  587,
-                        "ssl",        false,
-                        "starttls",   true,
-                        "nota",       "Requiere contraseña de aplicación (2FA activado)"
+                        "proveedor", "GMAIL",
+                        "nombre",    "Gmail",
+                        "host",      "smtp.gmail.com",
+                        "puertoTLS", 587,
+                        "ssl",       false,
+                        "starttls",  true,
+                        "nota",      "Requiere contraseña de aplicación (activa 2FA en tu cuenta Google)"
                 ),
                 Map.of(
-                        "proveedor",  "OUTLOOK",
-                        "nombre",     "Outlook / Office 365",
-                        "host",       "smtp.office365.com",
-                        "puertoSSL",  465,
-                        "puertoTLS",  587,
-                        "ssl",        false,
-                        "starttls",   true,
-                        "nota",       "Usar smtp.office365.com con STARTTLS"
-                ),
-                Map.of(
-                        "proveedor",  "YAHOO",
-                        "nombre",     "Yahoo Mail",
-                        "host",       "smtp.mail.yahoo.com",
-                        "puertoSSL",  465,
-                        "puertoTLS",  587,
-                        "ssl",        true,
-                        "starttls",   false,
-                        "nota",       "Requiere contraseña de aplicación"
-                ),
-                Map.of(
-                        "proveedor",  "HOTMAIL",
-                        "nombre",     "Hotmail",
-                        "host",       "smtp.live.com",
-                        "puertoSSL",  465,
-                        "puertoTLS",  587,
-                        "ssl",        false,
-                        "starttls",   true,
-                        "nota",       "Misma configuración que Outlook"
-                ),
-                Map.of(
-                        "proveedor",  "CUSTOM",
-                        "nombre",     "Servidor personalizado",
-                        "host",       "",
-                        "puertoSSL",  465,
-                        "puertoTLS",  587,
-                        "ssl",        false,
-                        "starttls",   true,
-                        "nota",       "Configura manualmente según tu proveedor"
+                        "proveedor", "CUSTOM",
+                        "nombre",    "Servidor personalizado",
+                        "host",      "",
+                        "puertoTLS", 587,
+                        "ssl",       false,
+                        "starttls",  true,
+                        "nota",      "Configura manualmente según tu proveedor SMTP"
                 )
         );
     }
 
-    // UTILIDAD: detectar proveedor por host
+    // Solo Gmail detectado, el resto es CUSTOM
     private String detectarProveedor(String host) {
         if (host == null) return "CUSTOM";
-        String h = host.toLowerCase();
-        if (h.contains("gmail"))                                    return "GMAIL";
-        if (h.contains("outlook") || h.contains("office365"))      return "OUTLOOK";
-        if (h.contains("yahoo"))                                    return "YAHOO";
-        if (h.contains("hotmail") || h.contains("live.com"))       return "HOTMAIL";
-        return "CUSTOM";
+        return host.toLowerCase().contains("gmail") ? "GMAIL" : "CUSTOM";
+    }
+
+    // Método auxiliar para no repetir lógica SSL/STARTTLS
+    private void ajustarSslPorPuerto(ConfiguracionCorreo config, Integer puerto) {
+        if (puerto == null) return;
+        if (puerto == 465) {
+            config.setSslHabilitado(true);
+            config.setStarttlsHabilitado(false);
+        } else if (puerto == 587) {
+            config.setSslHabilitado(false);
+            config.setStarttlsHabilitado(true);
+        }
     }
 }

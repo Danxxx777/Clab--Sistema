@@ -56,9 +56,10 @@ public class UsuarioService {
                 dto.getEmail(),
                 dto.getTelefono(),
                 usuarioBd,
-                passwordSistema,
-                passwordBd,
-                primerRol
+                passwordSistema,  // bcrypt
+                passwordBd,       // texto plano para CREATE USER en BD
+                "ACTIVO",         // p_estado
+                primerRol         // p_id_rol
         );
 
         Usuario usuarioCreado = usuarioRepository.findByUsuario(usuarioBd)

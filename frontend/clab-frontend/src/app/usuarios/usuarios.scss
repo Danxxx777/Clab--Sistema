@@ -536,7 +536,7 @@ html, body {
   border: 1px solid $border;
   border-radius: 14px;
   width: 100%;
-  max-width: 600px;
+  max-width: 780px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -1316,4 +1316,342 @@ html, body {
   font-size: 13px;
   font-weight: 600;
   margin-top: 12px;
+}
+// =====================
+// ESQUEMAS + PERMISOS
+// =====================
+.esquemas-section {
+  margin-top: 20px;
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: $muted;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-family: 'Space Mono', monospace;
+    display: block;
+    margin-bottom: 10px;
+  }
+}
+
+.esquemas-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.esquema-chip {
+  padding: 5px 12px;
+  border: 1px solid $border;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  color: $muted;
+  background: $card-bg;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Space Mono', monospace;
+
+  &:hover {
+    border-color: $neon-border;
+    color: $text;
+    background: $neon-glow;
+  }
+
+  &.activo {
+    border-color: $neon-border;
+    color: $neon;
+    background: $neon-dim;
+
+    .chip-dot { font-size: 8px; }
+  }
+}
+
+.permisos-panel {
+  background: $card-bg;
+  border: 1px solid $border;
+  border-left: 2px solid $neon-border;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  transition: border-color 0.2s;
+
+  &:hover { border-color: $neon-border; }
+
+  .pp-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+
+    .pp-schema-icon { font-size: 14px; }
+
+    strong {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: $text;
+      flex: 1;
+    }
+
+    .pp-remove {
+      background: transparent;
+      border: 1px solid $border;
+      color: $muted;
+      width: 20px; height: 20px;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: all 0.2s;
+
+      &:hover {
+        border-color: rgba(231,76,60,0.4);
+        color: #ff6b6b;
+        background: $red-dim;
+      }
+    }
+  }
+
+  .pp-checks {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+
+    .pp-check {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: 'Space Mono', monospace;
+
+      input[type="checkbox"] {
+        width: 14px; height: 14px;
+        cursor: pointer;
+        accent-color: $neon;
+      }
+
+      &.select span { color: #4ade80; }
+      &.insert span { color: #60a5fa; }
+      &.update span { color: #fbbf24; }
+      &.delete span { color: #f87171; }
+    }
+  }
+}
+
+.esquemas-hint {
+  font-size: 11px;
+  color: $muted2;
+  font-family: 'Space Mono', monospace;
+  text-align: center;
+  padding: 12px;
+  border: 1px dashed $border;
+  border-radius: 8px;
+  margin-top: 4px;
+}
+// =====================
+// LAYOUT 2 COLUMNAS ROL MODAL
+// =====================
+.roles-esquemas-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 16px;
+  min-height: 300px;
+}
+
+.col-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: $muted;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-family: 'Space Mono', monospace;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.col-roles-bd {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  .roles-bd-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 4px;
+
+    &::-webkit-scrollbar { width: 3px; }
+    &::-webkit-scrollbar-thumb { background: $border; border-radius: 3px; }
+  }
+
+  .rol-bd-card {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid $border;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: $card-bg;
+    min-height: auto;
+    text-align: left;
+
+    &:hover {
+      border-color: $neon-border;
+      background: $neon-glow;
+    }
+
+    &.selected {
+      background: $neon-dim;
+      border-color: $neon-border;
+      box-shadow: 0 0 12px $neon-glow;
+      .rol-bd-name { color: $neon; }
+      .rol-bd-desc { color: rgba(57,255,20,0.6); }
+    }
+
+    .rol-bd-name { font-size: 12px; font-weight: 700; color: $text; }
+    .rol-bd-desc { font-size: 10px; color: $muted; margin-top: 3px; }
+  }
+}
+
+.col-esquemas {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid $border;
+  border-radius: 10px;
+  padding: 12px;
+  background: $card-bg;
+  overflow-y: auto;
+  max-height: 380px;
+
+  &::-webkit-scrollbar { width: 3px; }
+  &::-webkit-scrollbar-thumb { background: $border; border-radius: 3px; }
+
+  &.col-esquemas-empty {
+    align-items: center;
+    justify-content: center;
+    span {
+      font-size: 11px;
+      color: $muted2;
+      font-family: 'Space Mono', monospace;
+      text-align: center;
+    }
+  }
+}
+
+.esquemas-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.esquema-chip {
+  padding: 4px 10px;
+  border: 1px solid $border;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 600;
+  color: $muted;
+  background: $surface;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Space Mono', monospace;
+
+  &:hover { border-color: $neon-border; color: $text; background: $neon-glow; }
+
+  &.activo {
+    border-color: $neon-border;
+    color: $neon;
+    background: $neon-dim;
+    .chip-dot { font-size: 7px; }
+  }
+}
+
+.permisos-panel {
+  background: $surface;
+  border: 1px solid $border;
+  border-left: 2px solid $neon-border;
+  border-radius: 7px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+
+  .pp-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+
+    strong {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: $text;
+      flex: 1;
+    }
+
+    .pp-remove {
+      background: transparent;
+      border: 1px solid $border;
+      color: $muted;
+      width: 18px; height: 18px;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: all 0.2s;
+
+      &:hover { border-color: rgba(231,76,60,0.4); color: #ff6b6b; background: $red-dim; }
+    }
+  }
+
+  .pp-checks {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+
+    .pp-check {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'Space Mono', monospace;
+
+      input[type="checkbox"] { width: 13px; height: 13px; cursor: pointer; accent-color: $neon; }
+
+      &.select span { color: #4ade80; }
+      &.insert span { color: #60a5fa; }
+      &.update span { color: #fbbf24; }
+      &.delete span { color: #f87171; }
+    }
+  }
+}
+
+.esquemas-hint {
+  font-size: 10px;
+  color: $muted2;
+  font-family: 'Space Mono', monospace;
+  text-align: center;
+  padding: 10px;
+  border: 1px dashed $border;
+  border-radius: 7px;
+  margin-top: 4px;
 }
