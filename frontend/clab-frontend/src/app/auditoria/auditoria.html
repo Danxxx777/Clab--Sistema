@@ -1,10 +1,195 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Title</title>
-</head>
-<body>
+<div class="auditoria-container">
 
-</body>
-</html>
+  <!-- DRAWER OVERLAY -->
+  <div class="drawer-overlay" [class.open]="drawerAbierto" (click)="cerrarDrawer()"></div>
+
+  <!-- DRAWER LATERAL -->
+  <div class="drawer" [class.open]="drawerAbierto">
+    <div class="drawer-header">
+      <div class="drawer-brand">CLAB<span>Sistema de Laboratorios</span></div>
+      <button class="btn-close-drawer" (click)="cerrarDrawer()">×</button>
+    </div>
+    <div class="drawer-user">
+      <div class="drawer-avatar">{{ usuarioLogueado.charAt(0).toUpperCase() }}</div>
+      <div class="drawer-user-info">
+        <div class="dui-name">{{ usuarioLogueado }}</div>
+        <div class="role-badge"><span class="role-dot"></span>{{ rol }}</div>
+      </div>
+    </div>
+    <div class="drawer-section-title">Módulos</div>
+    <div class="drawer-modules">
+      <div class="drawer-item" (click)="navegar('usuarios')">
+        <div class="di-icon"><img src="/user.png" alt="Usuarios"></div>
+        <div class="di-text"><div class="di-name">Usuarios</div><div class="di-desc">Gestión de accesos y roles</div></div>
+      </div>
+      <div class="drawer-item" (click)="navegar('laboratorios')">
+        <div class="di-icon"><img src="/laboratorio.png" alt="Laboratorios"></div>
+        <div class="di-text"><div class="di-name">Laboratorios</div><div class="di-desc">Sedes y encargados</div></div>
+      </div>
+      <div class="drawer-item active" (click)="navegar('auditoria')">
+        <div class="di-icon"><img src="/auditoria.png" alt="Auditoría"></div>
+        <div class="di-text"><div class="di-name">Auditoría</div><div class="di-desc">Trazabilidad</div></div>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn-logout-drawer" (click)="logout()">🚪 Cerrar sesión</button>
+    </div>
+  </div>
+
+  <!-- TITLE -->
+  <div class="page-title-section">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <button class="btn-hamburger" [class.active]="drawerAbierto" (click)="toggleDrawer()">
+        <div class="ham-line"></div>
+        <div class="ham-line"></div>
+        <div class="ham-line"></div>
+      </button>
+      <h1>Auditoría del Sistema</h1>
+    </div>
+    <button class="btn-volver" (click)="volver()">← Volver</button>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-container">
+    <div class="tabs">
+      <button class="tab" [class.active]="tabActiva === 0" (click)="cambiarTab(0)">Registros</button>
+      <button class="tab" [class.active]="tabActiva === 1" (click)="cambiarTab(1)">Sesiones Activas</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-icon sc-blue">📋</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ auditorias.length }}</span>
+        <span class="stat-label">Total Registros</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon sc-green">✅</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ totalExitosos }}</span>
+        <span class="stat-label">Exitosos</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon sc-red">🚫</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ totalFallidos }}</span>
+        <span class="stat-label">Fallidos</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon sc-purple">👥</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ sesionesActivas.length }}</span>
+        <span class="stat-label">Sesiones Activas</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-wrapper">
+
+    <!-- TAB 0: REGISTROS -->
+    <div class="tab-content" *ngIf="tabActiva === 0">
+      <div class="toolbar">
+        <div class="filters-group">
+          <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" [(ngModel)]="busqueda"
+                   (input)="filtrar()" placeholder="Buscar por usuario, acción o módulo">
+          </div>
+          <select class="filter-select" [(ngModel)]="filtroModulo" (change)="filtrar()">
+            <option value="Todos">Todos los módulos</option>
+            <option *ngFor="let m of modulos" [value]="m">{{ m }}</option>
+          </select>
+          <select class="filter-select" [(ngModel)]="filtroResultado" (change)="filtrar()">
+            <option value="Todos">Todos los resultados</option>
+            <option value="EXITOSO">Exitoso</option>
+            <option value="FALLIDO">Fallido</option>
+          </select>
+        </div>
+        <div class="pagination-controls" *ngIf="auditoriasFiltradas.length > 0">
+          <span class="pagination-info-inline">{{ paginaActual }}/{{ totalPaginas }}</span>
+          <button class="btn-pag" (click)="irAPagina(1)" [disabled]="paginaActual === 1">«</button>
+          <button class="btn-pag" (click)="irAPagina(paginaActual - 1)" [disabled]="paginaActual === 1">‹</button>
+          <button class="btn-pag" *ngFor="let p of paginas" [class.active]="p === paginaActual" (click)="irAPagina(p)">{{ p }}</button>
+          <button class="btn-pag" (click)="irAPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">›</button>
+          <button class="btn-pag" (click)="irAPagina(totalPaginas)" [disabled]="paginaActual === totalPaginas">»</button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th>USUARIO</th>
+            <th>ACCIÓN</th>
+            <th>MÓDULO</th>
+            <th>DESCRIPCIÓN</th>
+            <th>IP</th>
+            <th>RESULTADO</th>
+            <th>FECHA</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let a of auditoriasPaginadas">
+            <td><strong>{{ a.usuario || 'Sistema' }}</strong></td>
+            <td><span class="badge accion-badge">{{ a.accion }}</span></td>
+            <td>{{ a.modulo }}</td>
+            <td>{{ a.descripcion }}</td>
+            <td><small>{{ a.ip }}</small></td>
+            <td>
+                <span class="badge" [ngClass]="a.resultado === 'EXITOSO' ? 'activo' : 'inactivo'">
+                  {{ a.resultado }}
+                </span>
+            </td>
+            <td><small>{{ a.fechaHora | date:'dd/MM/yyyy HH:mm:ss' }}</small></td>
+          </tr>
+          <tr *ngIf="auditoriasFiltradas.length === 0">
+            <td colspan="7" class="empty-message">No hay registros de auditoría</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 1: SESIONES ACTIVAS -->
+    <div class="tab-content" *ngIf="tabActiva === 1">
+      <div class="toolbar">
+        <div class="filters-group"></div>
+        <button class="btn-agregar" (click)="cargarSesiones()">↻ Actualizar</button>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th>USUARIO</th>
+            <th>IP</th>
+            <th>INICIO DE SESIÓN</th>
+            <th>EXPIRA</th>
+            <th>ESTADO</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let s of sesionesActivas">
+            <td><strong>{{ s.usuario }}</strong></td>
+            <td><small>{{ s.ip }}</small></td>
+            <td><small>{{ s.fechaInicio | date:'dd/MM/yyyy HH:mm:ss' }}</small></td>
+            <td><small>{{ s.fechaExpira | date:'dd/MM/yyyy HH:mm:ss' }}</small></td>
+            <td>
+              <span class="badge activo">ACTIVA</span>
+            </td>
+          </tr>
+          <tr *ngIf="sesionesActivas.length === 0">
+            <td colspan="5" class="empty-message">No hay sesiones activas en este momento</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>

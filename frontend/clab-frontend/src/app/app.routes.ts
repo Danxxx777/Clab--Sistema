@@ -22,6 +22,7 @@ import { ConfiguracionCorreoComponent } from './configuracion-correo/configuraci
 
 import { authGuard } from './auth/auth.guard';
 import {SolicitudesReservaComponent} from './solicitudes-reserva/solicitudes-reserva';
+import {AuditoriaComponent} from './auditoria/auditoria';
 
 export const routes: Routes = [
 
@@ -49,7 +50,7 @@ export const routes: Routes = [
   { path: 'usuarios',       component: UsuariosComponent,       canActivate: [authGuard] },
   { path: 'configuracion-correo', component: ConfiguracionCorreoComponent, canActivate: [authGuard] },
   { path: 'reporte-fallas', component: ReporteFallasComponent,  canActivate: [authGuard] },
-  { path: 'solicitudes-reserva',  component: SolicitudesReservaComponent,  canActivate: [authGuard] }, // 👈
-
+  { path: 'solicitudes-reserva',  component: SolicitudesReservaComponent,  canActivate: [authGuard] },
+  { path: 'auditoria', component: AuditoriaComponent },
   { path: '**', redirectTo: 'dashboard' }
 ];
