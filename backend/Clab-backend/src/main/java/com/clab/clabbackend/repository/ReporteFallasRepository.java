@@ -29,4 +29,9 @@ public interface ReporteFallasRepository extends JpaRepository<ReporteFallas, In
     @Modifying
     @Query(value = "CALL reportes.sp_eliminar_reporte(:idReporte)", nativeQuery = true)
     void eliminar(Integer idReporte);
+
+    // ReporteFallasRepository.java — AGREGAR
+    @Query(value = "SELECT * FROM reportes.fn_datos_notificacion_falla_reciente(:codLaboratorio, :idUsuario)",
+            nativeQuery = true)
+    Object[] obtenerDatosNotificacion(Integer codLaboratorio, Integer idUsuario);
 }

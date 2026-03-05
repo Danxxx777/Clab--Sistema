@@ -302,8 +302,13 @@
       }
 
       <!-- Módulo 10: Notificaciones -->
-      <div class="menu-item " (click)="navegar('notificaciones', 'Cargando Notificaciones...')">
-        <img src="/campana.png" alt="Notificaciones" class="menu-icon">
+      <div class="menu-item" (click)="navegar('notificaciones', 'Cargando Notificaciones...')">
+        <div class="menu-icon-wrapper">
+          <img src="/campana.png" alt="Notificaciones" class="menu-icon">
+          @if(noLeidas > 0) {
+            <span class="notif-badge">{{ noLeidas > 99 ? '99+' : noLeidas }}</span>
+          }
+        </div>
         <div class="text">
           <strong>Notificaciones</strong>
           <p>Centro de notificaciones y alertas</p>
