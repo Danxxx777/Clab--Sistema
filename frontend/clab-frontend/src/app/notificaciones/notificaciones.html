@@ -83,45 +83,202 @@
   </div>
 </div>
 
-<div class="notificaciones-page">
+<div class="notif-page">
 
-  <div class="page-title-section">
-    <div style="display:flex; align-items:center; gap:14px;">
+  <!-- HEADER -->
+  <div class="notif-header">
+    <div class="notif-header-left">
       <button class="btn-hamburger" [class.active]="drawerAbierto" (click)="toggleDrawer()">
-        <div class="ham-line"></div>
-        <div class="ham-line"></div>
-        <div class="ham-line"></div>
+        <div class="ham-line"></div><div class="ham-line"></div><div class="ham-line"></div>
       </button>
-      <h1>Notificaciones</h1>
+      <div>
+        <div class="notif-title-row">
+          <h1>Notificaciones</h1>
+          @if(totalNoLeidas > 0) {
+            <span class="notif-badge-header">{{ totalNoLeidas }}</span>
+          }
+        </div>
+        <p class="notif-subtitle">Centro de alertas del sistema</p>
+      </div>
     </div>
     <button class="btn-volver" (click)="volver()">← Volver</button>
   </div>
 
-  <div class="content-wrapper">
-    <div class="card">
-      <h2>NOTIFICACIONES</h2>
-
-      <div class="notification success">
-        <div class="icon">⚠️</div>
-        <div class="content">
-          <strong>Nueva falla detectada</strong>
-          <span>PC Lab A presenta error de encendido</span>
-          <small>09/01/2026 · 23:40</small>
-        </div>
-        <span class="badge new">NUEVA</span>
+  <!-- STATS -->
+  <div class="notif-stats">
+    <div class="stat-card">
+      <div class="stat-icon">🔔</div>
+      <div class="stat-info">
+        <div class="stat-num">{{ notificaciones.length }}</div>
+        <div class="stat-label">Total</div>
       </div>
-
-      <div class="notification info">
-        <div class="icon">✅</div>
-        <div class="content">
-          <strong>Reporte resuelto</strong>
-          <span>Falla de red corregida en Lab B</span>
-          <small>09/01/2026 · 18:15</small>
-        </div>
-        <span class="badge done">OK</span>
+    </div>
+    <div class="stat-card warn">
+      <div class="stat-icon">📭</div>
+      <div class="stat-info">
+        <div class="stat-num">{{ totalNoLeidas }}</div>
+        <div class="stat-label">Sin leer</div>
       </div>
-
+    </div>
+    <div class="stat-card ok">
+      <div class="stat-icon">✅</div>
+      <div class="stat-info">
+        <div class="stat-num">{{ notificaciones.length - totalNoLeidas }}</div>
+        <div class="stat-label">Leídas</div>
+      </div>
+    </div>
+    <div class="stat-card alert">
+      <div class="stat-icon">⚠️</div>
+      <div class="stat-info">
+        <div class="stat-num">{{ contarPorTipo('FALLA') }}</div>
+        <div class="stat-label">Fallas activas</div>
+      </div>
     </div>
   </div>
 
+  <!-- CONTROLES -->
+  <div class="notif-controles">
+    <!-- Pestañas -->
+    <div class="pestanas">
+      <button class="pestana" [class.active]="pestanaActiva === 'TODAS'" (click)="setPestana('TODAS')">
+        Todas <span class="pestana-num">{{ notificaciones.length }}</span>
+      </button>
+      <button class="pestana" [class.active]="pestanaActiva === 'NO_LEIDA'" (click)="setPestana('NO_LEIDA')">
+        Sin leer
+        @if(totalNoLeidas > 0) { <span class="pestana-num warn">{{ totalNoLeidas }}</span> }
+      </button>
+      <button class="pestana" [class.active]="pestanaActiva === 'LEIDA'" (click)="setPestana('LEIDA')">
+        Leídas
+      </button>
+    </div>
+
+    <!-- Filtros + acción -->
+    <div class="controles-row">
+      <div class="tipo-filtros">
+        <button class="tipo-btn" [class.active]="filtroTipo === 'TODOS'" (click)="setFiltroTipo('TODOS')">Todos</button>
+        <button class="tipo-btn falla" [class.active]="filtroTipo === 'FALLA'" (click)="setFiltroTipo('FALLA')">
+          ⚠️ Fallas
+          @if(contarPorTipo('FALLA') > 0) { <span class="tipo-badge">{{ contarPorTipo('FALLA') }}</span> }
+        </button>
+        <button class="tipo-btn reserva" [class.active]="filtroTipo === 'RESERVA'" (click)="setFiltroTipo('RESERVA')">
+          📅 Reservas
+          @if(contarPorTipo('RESERVA') > 0) { <span class="tipo-badge">{{ contarPorTipo('RESERVA') }}</span> }
+        </button>
+        <button class="tipo-btn bloqueo" [class.active]="filtroTipo === 'BLOQUEO'" (click)="setFiltroTipo('BLOQUEO')">
+          🚫 Bloqueos
+          @if(contarPorTipo('BLOQUEO') > 0) { <span class="tipo-badge">{{ contarPorTipo('BLOQUEO') }}</span> }
+        </button>
+        <button class="tipo-btn resuelta" [class.active]="filtroTipo === 'FALLA_RESUELTA'" (click)="setFiltroTipo('FALLA_RESUELTA')">
+          ✅ Resueltas
+        </button>
+      </div>
+      @if(totalNoLeidas > 0) {
+        <button class="btn-marcar-todas" (click)="marcarTodasLeidas()">✓ Marcar todas como leídas</button>
+      }
+    </div>
+  </div>
+
+  <!-- LISTA -->
+  <div class="notif-contenido">
+
+    @if(cargando) {
+      <div class="notif-estado">
+        <div class="spinner"></div>
+        <span>Cargando notificaciones...</span>
+      </div>
+    }
+
+    @if(error) {
+      <div class="notif-estado error">⚠️ {{ error }}</div>
+    }
+
+    @if(!cargando && !error && notificacionesFiltradas.length === 0) {
+      <div class="notif-estado vacio">
+        <span class="vacio-icon">🔕</span>
+        <p>No hay notificaciones en esta categoría</p>
+      </div>
+    }
+
+    @if(!cargando && notificacionesHoy.length > 0) {
+      <div class="grupo-header">
+        <span class="grupo-linea"></span>
+        <span class="grupo-label">Hoy</span>
+        <span class="grupo-linea"></span>
+      </div>
+      @for(n of notificacionesHoy; track n.idNotificacion) {
+        <div class="notif-item {{ getClase(n.tipoNotificacion) }}" [class.leida]="n.estado === 'LEIDA'" (click)="marcarLeida(n.idNotificacion)">
+          <div class="notif-item-barra"></div>
+          <div class="notif-item-icono">{{ getIcono(n.tipoNotificacion) }}</div>
+          <div class="notif-item-body">
+            <span class="notif-item-asunto">{{ n.asunto }}</span>
+            <span class="notif-item-fecha">{{ n.fechaCreacion | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="notif-item-estado">
+            @if(n.estado === 'NO_LEIDA') {
+              <span class="estado-dot nueva"></span>
+              <span class="estado-label nueva">Nueva</span>
+            } @else {
+              <span class="estado-dot leida"></span>
+              <span class="estado-label leida">Leída</span>
+            }
+          </div>
+        </div>
+      }
+    }
+
+    @if(!cargando && notificacionesSemana.length > 0) {
+      <div class="grupo-header">
+        <span class="grupo-linea"></span>
+        <span class="grupo-label">Esta semana</span>
+        <span class="grupo-linea"></span>
+      </div>
+      @for(n of notificacionesSemana; track n.idNotificacion) {
+        <div class="notif-item {{ getClase(n.tipoNotificacion) }}" [class.leida]="n.estado === 'LEIDA'" (click)="marcarLeida(n.idNotificacion)">
+          <div class="notif-item-barra"></div>
+          <div class="notif-item-icono">{{ getIcono(n.tipoNotificacion) }}</div>
+          <div class="notif-item-body">
+            <span class="notif-item-asunto">{{ n.asunto }}</span>
+            <span class="notif-item-fecha">{{ n.fechaCreacion | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="notif-item-estado">
+            @if(n.estado === 'NO_LEIDA') {
+              <span class="estado-dot nueva"></span>
+              <span class="estado-label nueva">Nueva</span>
+            } @else {
+              <span class="estado-dot leida"></span>
+              <span class="estado-label leida">Leída</span>
+            }
+          </div>
+        </div>
+      }
+    }
+
+    @if(!cargando && notificacionesAnteriores.length > 0) {
+      <div class="grupo-header">
+        <span class="grupo-linea"></span>
+        <span class="grupo-label">Anteriores</span>
+        <span class="grupo-linea"></span>
+      </div>
+      @for(n of notificacionesAnteriores; track n.idNotificacion) {
+        <div class="notif-item {{ getClase(n.tipoNotificacion) }}" [class.leida]="n.estado === 'LEIDA'" (click)="marcarLeida(n.idNotificacion)">
+          <div class="notif-item-barra"></div>
+          <div class="notif-item-icono">{{ getIcono(n.tipoNotificacion) }}</div>
+          <div class="notif-item-body">
+            <span class="notif-item-asunto">{{ n.asunto }}</span>
+            <span class="notif-item-fecha">{{ n.fechaCreacion | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="notif-item-estado">
+            @if(n.estado === 'NO_LEIDA') {
+              <span class="estado-dot nueva"></span>
+              <span class="estado-label nueva">Nueva</span>
+            } @else {
+              <span class="estado-dot leida"></span>
+              <span class="estado-label leida">Leída</span>
+            }
+          </div>
+        </div>
+      }
+    }
+
+  </div>
 </div>
