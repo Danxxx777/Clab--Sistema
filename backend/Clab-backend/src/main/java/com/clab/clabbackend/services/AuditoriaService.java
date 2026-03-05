@@ -62,7 +62,7 @@ public class AuditoriaService {
     @Transactional
     public void registrarFallo(Integer idUsuario, String usuario, String accion,
                                String modulo, String descripcion, String ip) {
-        registrar(idUsuario, usuario, accion, modulo, null, null, descripcion, ip, "FALLIDO");
+        registrar(idUsuario, usuario, accion, modulo, "N/A", null, descripcion, ip, "FALLIDO");
     }
 
     // ─── SESIONES via SP ─────────────────────────────────────────────────────

@@ -325,10 +325,31 @@ export class SolicitudesReservaComponent implements OnInit {
         this.cerrarModal();
         this.mostrarAlerta('¡Solicitud enviada!', 'Tu solicitud está pendiente de aprobación.', 'exito');
       },
+      // ✅ BLOQUE ERROR CORREGIDO
       error: (err: any) => {
         console.error('Error creando solicitud:', err);
         this.guardando = false;
-        this.mostrarAlerta('Error', err.error?.message || 'No se pudo enviar la solicitud.', 'error');
+
+        // Extraer el mensaje real del backend
+        const rawMsg: string =
+          err.error?.mensaje ||
+          err.error?.message ||
+          err.error?.error ||
+          '';
+
+        let mensajeUsuario = 'No se pudo enviar la solicitud.';
+
+        if (rawMsg.toLowerCase().includes('ya está reservado')) {
+          mensajeUsuario = 'Este laboratorio ya está reservado en ese horario. Elige otro horario o laboratorio.';
+        } else if (rawMsg.toLowerCase().includes('bloqueado')) {
+          mensajeUsuario = 'El laboratorio está bloqueado y no puede recibir reservas.';
+        } else if (rawMsg.toLowerCase().includes('horario')) {
+          mensajeUsuario = 'El horario seleccionado no es válido.';
+        } else if (rawMsg) {
+          mensajeUsuario = rawMsg;
+        }
+
+        this.mostrarAlerta('No se pudo reservar', mensajeUsuario, 'error');
       }
     });
   }
