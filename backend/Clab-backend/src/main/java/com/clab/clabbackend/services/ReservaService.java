@@ -3,13 +3,13 @@ package com.clab.clabbackend.services;
 import com.clab.clabbackend.dto.CancelacionDTO;
 import com.clab.clabbackend.dto.ReservaDTO;
 import com.clab.clabbackend.repository.ReservaRepository;
+import com.clab.clabbackend.repository.UsuarioRepository;
+import com.clab.clabbackend.repository.UsuarioRolRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
 import java.sql.Time;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,11 +20,13 @@ import java.util.stream.Collectors;
 public class ReservaService {
 
     private final ReservaRepository reservaRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final UsuarioRolRepository usuarioRolRepository;
+    private final NotificacionService notificacionService;
 
     // LISTAR
     public List<Map<String, Object>> listar() {
         List<Object[]> resultados = reservaRepository.listarReservas();
-
         return resultados.stream().map(r -> {
             Map<String, Object> reserva = new HashMap<>();
             reserva.put("idReserva", r[0]);
@@ -39,20 +41,15 @@ public class ReservaService {
             reserva.put("nombreAsignatura", r[9]);
             reserva.put("idTipoReserva", r[10]);
             reserva.put("nombreTipoReserva", r[11]);
-
             reserva.put("fechaReserva", r[12] != null ? ((Date) r[12]).toLocalDate() : null);
-
             reserva.put("horaInicio", r[13] != null ? ((Time) r[13]).toLocalTime() : null);
             reserva.put("horaFin", r[14] != null ? ((Time) r[14]).toLocalTime() : null);
-
             reserva.put("motivo", r[15]);
             reserva.put("numeroEstudiantes", r[16]);
             reserva.put("estado", r[17]);
             reserva.put("descripcion", r[18]);
-
             reserva.put("fechaSolicitud", r[19] != null ? ((Date) r[19]).toLocalDate() : null);
             reserva.put("fechaConfirmacion", r[20] != null ? ((Date) r[20]).toLocalDate() : null);
-
             return reserva;
         }).collect(Collectors.toList());
     }
@@ -89,48 +86,27 @@ public class ReservaService {
     // CREAR
     public void crear(ReservaDTO dto) {
         reservaRepository.insertar(
-                dto.getCodLaboratorio(),
-                dto.getIdUsuario(),
-                dto.getIdPeriodo(),
-                dto.getIdHorarioAcademico(),
-                dto.getIdAsignatura(),
-                dto.getIdTipoReserva(),
-                dto.getFechaReserva(),
-                dto.getHoraInicio(),
-                dto.getHoraFin(),
-                dto.getMotivo(),
-                dto.getNumeroEstudiantes(),
-                dto.getDescripcion()
+                dto.getCodLaboratorio(), dto.getIdUsuario(), dto.getIdPeriodo(),
+                dto.getIdHorarioAcademico(), dto.getIdAsignatura(), dto.getIdTipoReserva(),
+                dto.getFechaReserva(), dto.getHoraInicio(), dto.getHoraFin(),
+                dto.getMotivo(), dto.getNumeroEstudiantes(), dto.getDescripcion()
         );
     }
 
     public void crearAdmin(ReservaDTO dto) {
         reservaRepository.insertarAdmin(
-                dto.getCodLaboratorio(),
-                dto.getIdUsuario(),
-                dto.getIdPeriodo(),
-                dto.getIdHorarioAcademico(),
-                dto.getIdAsignatura(),
-                dto.getIdTipoReserva(),
-                dto.getFechaReserva(),
-                dto.getHoraInicio(),
-                dto.getHoraFin(),
-                dto.getMotivo(),
-                dto.getNumeroEstudiantes(),
-                dto.getDescripcion()
+                dto.getCodLaboratorio(), dto.getIdUsuario(), dto.getIdPeriodo(),
+                dto.getIdHorarioAcademico(), dto.getIdAsignatura(), dto.getIdTipoReserva(),
+                dto.getFechaReserva(), dto.getHoraInicio(), dto.getHoraFin(),
+                dto.getMotivo(), dto.getNumeroEstudiantes(), dto.getDescripcion()
         );
     }
 
     // ACTUALIZAR
     public void actualizar(Integer id, ReservaDTO dto) {
         reservaRepository.actualizar(
-                id,
-                dto.getFechaReserva(),
-                dto.getHoraInicio(),
-                dto.getHoraFin(),
-                dto.getMotivo(),
-                dto.getNumeroEstudiantes(),
-                dto.getDescripcion()
+                id, dto.getFechaReserva(), dto.getHoraInicio(), dto.getHoraFin(),
+                dto.getMotivo(), dto.getNumeroEstudiantes(), dto.getDescripcion()
         );
     }
 
@@ -143,13 +119,66 @@ public class ReservaService {
         );
     }
 
-    // APROBAR
+    // APROBAR — obtener datos ANTES de aprobar, luego notificar
     public void aprobar(Integer id) {
+        Object[] datos = reservaRepository.obtenerDatosNotificacion(id);
         reservaRepository.aprobar(id);
+
+        try {
+            if (datos != null) {
+                String labNombre = (String) datos[0];
+                String email     = (String) datos[1];
+                String fecha     = datos[3] != null ? datos[3].toString() : "";
+                String hora      = datos[4] != null ? datos[4].toString() : "";
+
+                // ✅ Notificar al Docente solicitante
+                usuarioRepository.findByEmail(email).ifPresent(usuario ->
+                        notificacionService.notificarReservaAprobada(
+                                usuario, labNombre, fecha, hora)
+                );
+
+                // ✅ Notificar a Administradores
+                usuarioRolRepository.findUsuariosByRolNombre("Administradorr")
+                        .forEach(admin ->
+                                notificacionService.crearNotificacion(
+                                        admin, "RESERVA",
+                                        "Reserva aprobada en " + labNombre,
+                                        "Se aprobó una reserva para el " + fecha + " a las " + hora,
+                                        "SISTEMA", "Administradorr")
+                        );
+            }
+        } catch (Exception e) {
+            System.err.println("Error notificación aprobación: " + e.getMessage());
+        }
     }
 
-    // RECHAZAR
     public void rechazar(Integer id) {
+        Object[] datos = reservaRepository.obtenerDatosNotificacion(id);
         reservaRepository.rechazar(id);
+
+        try {
+            if (datos != null) {
+                String labNombre = (String) datos[0];
+                String email     = (String) datos[1];
+
+                // ✅ Notificar al Docente solicitante
+                usuarioRepository.findByEmail(email).ifPresent(usuario ->
+                        notificacionService.notificarReservaRechazada(
+                                usuario, labNombre, "Solicitud no aprobada")
+                );
+
+                // ✅ Notificar a Administradores
+                usuarioRolRepository.findUsuariosByRolNombre("Administradorr")
+                        .forEach(admin ->
+                                notificacionService.crearNotificacion(
+                                        admin, "RESERVA",
+                                        "Reserva rechazada en " + labNombre,
+                                        "Se rechazó una solicitud de reserva en " + labNombre,
+                                        "SISTEMA", "Administradorr")
+                        );
+            }
+        } catch (Exception e) {
+            System.err.println("Error notificación rechazo: " + e.getMessage());
+        }
     }
 }

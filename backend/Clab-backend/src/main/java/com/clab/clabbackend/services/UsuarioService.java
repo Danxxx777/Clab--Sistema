@@ -9,8 +9,6 @@ import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
-import java.math.BigInteger;
 import java.util.List;
 
 @Service
@@ -18,14 +16,17 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final EntityManager entityManager;
-    private final UsuarioRolRepository usuarioRolRepository; // ← línea 1
+    private final UsuarioRolRepository usuarioRolRepository;
+    private final NotificacionService notificacionService; // ← inyectado
 
     public UsuarioService(UsuarioRepository usuarioRepository,
                           EntityManager entityManager,
-                          UsuarioRolRepository usuarioRolRepository) { // ← línea 2
+                          UsuarioRolRepository usuarioRolRepository,
+                          NotificacionService notificacionService) { // ← agregado al constructor
         this.usuarioRepository = usuarioRepository;
         this.entityManager = entityManager;
-        this.usuarioRolRepository = usuarioRolRepository; // ← línea 3
+        this.usuarioRolRepository = usuarioRolRepository;
+        this.notificacionService = notificacionService; // ← asignado
     }
 
     // ─── LISTAR ──────────────────────────────────────────────────────────────
@@ -39,10 +40,9 @@ public class UsuarioService {
     @Transactional
     public UsuarioResponseDTO crear(UsuarioRequestDTO dto,
                                     Integer actorId, String actorUsuario, String ip) {
-        // Usamos función wrapper que retorna el id generado
         Object result = entityManager.createNativeQuery(
                         "SELECT usuarios.fn_crear_usuario(:identidad, :nombres, :apellidos, :email, " +
-                                ":telefono, :usuario, :contrasenia, :idsRoles::integer[], :actorId, :actorUsuario, :ip)"
+                                ":telefono, :usuario, :contrasenia, CAST(:idsRoles AS integer[]), :actorId, :actorUsuario, :ip)"
                 )
                 .setParameter("identidad",    dto.getIdentidad())
                 .setParameter("nombres",      dto.getNombres())
@@ -58,8 +58,23 @@ public class UsuarioService {
                 .getSingleResult();
 
         Integer idGenerado = ((Number) result).intValue();
-        return usuarioRepository.findById(idGenerado).map(this::toDTO)
+        UsuarioResponseDTO response = usuarioRepository.findById(idGenerado)
+                .map(this::toDTO)
                 .orElseThrow(() -> new RuntimeException("Usuario creado pero no encontrado"));
+
+        // ✅ Notificar a todos los Administradores del nuevo usuario
+        try {
+            String nombreCompleto = dto.getNombres() + " " + dto.getApellidos();
+            usuarioRolRepository.findUsuariosByRolNombre("Administradorr")
+                    .forEach(admin ->
+                            notificacionService.notificarAdminUsuarioNuevo(
+                                    admin, nombreCompleto)
+                    );
+        } catch (Exception e) {
+            System.err.println("Error notificación nuevo usuario: " + e.getMessage());
+        }
+
+        return response;
     }
 
     // ─── ACTUALIZAR via SP ────────────────────────────────────────────────────
@@ -68,7 +83,7 @@ public class UsuarioService {
                                          Integer actorId, String actorUsuario, String ip) {
         entityManager.createNativeQuery(
                         "CALL usuarios.sp_actualizar_usuario(:idUsuario, :identidad, :nombres, :apellidos, " +
-                                ":email, :telefono, :usuario, :idsRoles::integer[], :actorId, :actorUsuario, :ip)"
+                                ":email, :telefono, :usuario, CAST(:idsRoles AS integer[]), :actorId, :actorUsuario, :ip)"
                 )
                 .setParameter("idUsuario",    id)
                 .setParameter("identidad",    dto.getIdentidad())
@@ -124,11 +139,9 @@ public class UsuarioService {
         var rolesVigentes = usuarioRolRepository
                 .findAllByUsuario_IdUsuarioAndVigenteTrue(u.getIdUsuario());
 
-        // Rol principal para la tabla
         rolesVigentes.stream().findFirst()
                 .ifPresent(ur -> dto.setRol(ur.getRol().getNombreRol()));
 
-        // Lista completa para el modal de edición
         dto.setRoles(rolesVigentes.stream()
                 .map(ur -> new UsuarioResponseDTO.RolInfo(
                         ur.getRol().getIdRol(),
