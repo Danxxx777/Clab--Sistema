@@ -145,7 +145,11 @@ export class AuditoriaComponent implements OnInit {
   toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
   cerrarDrawer(): void { this.drawerAbierto = false; }
   volver(): void { this.router.navigate(['/dashboard']); }
-  navegar(ruta: string): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
+  navegar(ruta: string, mensaje: string = '') {
+
+    console.log(mensaje);
+    this.router.navigate([ruta]);
+  }
   actualizar(): void {
     if (this.tabActiva === 0) {
       this.cargarAuditorias();
