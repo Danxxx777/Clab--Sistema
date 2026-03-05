@@ -1,0 +1,188 @@
+<div class="tab-content">
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="filters-group"></div>
+    <div class="pagination-controls" *ngIf="roles.length > 0">
+      <span class="pagination-info-inline">{{ paginaRoles }}/{{ totalPaginasRoles }}</span>
+      <button class="btn-pag" (click)="irAPaginaRoles(1)" [disabled]="paginaRoles === 1">«</button>
+      <button class="btn-pag" (click)="irAPaginaRoles(paginaRoles - 1)" [disabled]="paginaRoles === 1">‹</button>
+      <button class="btn-pag" *ngFor="let p of paginasRoles"
+              [class.active]="p === paginaRoles" (click)="irAPaginaRoles(p)">{{ p }}</button>
+      <button class="btn-pag" (click)="irAPaginaRoles(paginaRoles + 1)" [disabled]="paginaRoles === totalPaginasRoles">›</button>
+      <button class="btn-pag" (click)="irAPaginaRoles(totalPaginasRoles)" [disabled]="paginaRoles === totalPaginasRoles">»</button>
+    </div>
+    <button class="btn-agregar" (click)="abrirModalRol('crear')">+ Nuevo Rol</button>
+  </div>
+
+  <!-- TABLA -->
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+      <tr>
+        <th>ROL</th>
+        <th>DESCRIPCIÓN</th>
+        <th>ESTADO</th>
+        <th>FECHA CREACIÓN</th>
+        <th>ACCIONES</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let r of rolesPaginados">
+        <td><strong>{{ r.nombre }}</strong></td>
+        <td>{{ r.descripcion }}</td>
+        <td><span class="badge" [ngClass]="getEstadoClass(r.estado)">{{ r.estado ?? 'ACTIVO' }}</span></td>
+        <td>{{ r.fechaCreacion }}</td>
+        <td>
+          <div class="action-buttons">
+            <button class="btn-action btn-editar" (click)="abrirModalRol('editar', r)">Editar</button>
+            <button class="btn-action btn-eliminar" (click)="desactivarRol(r)">Desactivar</button>
+          </div>
+        </td>
+      </tr>
+      <tr *ngIf="roles.length === 0">
+        <td colspan="5" class="empty-message">No hay roles registrados</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast-notif" *ngIf="mostrarNotificacion" [ngClass]="{
+  'toast-exito':     notificacionTipo === 'exito',
+  'toast-error':     notificacionTipo === 'error',
+  'toast-confirmar': notificacionTipo === 'confirmar'
+}">
+  <div class="toast-icon">
+    <span *ngIf="notificacionTipo === 'exito'">✅</span>
+    <span *ngIf="notificacionTipo === 'error'">❌</span>
+    <span *ngIf="notificacionTipo === 'confirmar'">⚠️</span>
+  </div>
+  <div class="toast-body">
+    <strong>{{ notificacionTitulo }}</strong>
+    <p>{{ notificacionMensaje }}</p>
+  </div>
+  <div class="toast-actions">
+    <button *ngIf="notificacionTipo === 'confirmar'" class="toast-btn-cancel" (click)="cerrarNotificacion()">Cancelar</button>
+    <button *ngIf="notificacionTipo === 'confirmar'" class="toast-btn-confirm" (click)="confirmarAccion()">Confirmar</button>
+    <button *ngIf="notificacionTipo !== 'confirmar'" class="toast-btn-close" (click)="cerrarNotificacion()">×</button>
+  </div>
+</div>
+
+<!-- MODAL: ROL -->
+<div class="modal-overlay" *ngIf="mostrarModalRol" (click)="cerrarModalRol()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ modoModal === 'crear' ? 'Nuevo Rol' : 'Editar Rol' }}</h2>
+      <button class="btn-close" (click)="cerrarModalRol()">×</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nombre del Rol <span class="required">*</span></label>
+          <input class="form-control" [(ngModel)]="rolActual.nombre" name="nombreRol">
+        </div>
+        <div class="form-group">
+          <label>Descripción</label>
+          <input class="form-control" [(ngModel)]="rolActual.descripcion" name="descripcion">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>Fecha de Creación</label>
+          <input type="date" class="form-control" [(ngModel)]="rolActual.fechaCreacion" disabled>
+        </div>
+      </div>
+
+      <div class="roles-esquemas-layout">
+
+        <!-- IZQUIERDA: Roles BD -->
+        <div class="col-roles-bd">
+          <label class="col-label">Roles de Base de Datos</label>
+          <div class="roles-bd-list">
+            <div class="rol-bd-card"
+                 *ngFor="let rolBD of rolesBDDisponibles"
+                 [class.selected]="rolesBDSeleccionados.includes(rolBD.nombreRolBd)"
+                 (click)="toggleRolBD(rolBD.nombreRolBd)">
+              <div class="rol-bd-name">{{ rolBD.nombreRolBd }}</div>
+              <div class="rol-bd-desc" *ngIf="rolBD.descripcion">{{ rolBD.descripcion }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DERECHA: Esquemas -->
+        <div class="col-esquemas" *ngIf="rolesBDSeleccionados.length > 0; else sinRolBD">
+          <label class="col-label">Permisos por Esquema</label>
+          <div class="esquemas-chips">
+            <div class="esquema-chip"
+                 *ngFor="let esq of esquemas"
+                 [class.activo]="esquemaActivo(esq)"
+                 (click)="toggleEsquema(esq)">
+              <span class="chip-dot" *ngIf="esquemaActivo(esq)">●</span>
+              {{ esq }}
+            </div>
+          </div>
+          <div class="permisos-panel" *ngFor="let esq of esquemasConfigurados">
+            <div class="pp-header">
+              <span>🗄</span>
+              <strong>{{ esq }}</strong>
+              <button class="pp-remove" (click)="toggleEsquema(esq)">×</button>
+            </div>
+            <div class="pp-checks">
+              <label class="pp-check select">
+                <input type="checkbox" [(ngModel)]="permisosEsquema[esq].select">
+                <span>SELECT</span>
+              </label>
+              <label class="pp-check insert">
+                <input type="checkbox" [(ngModel)]="permisosEsquema[esq].insert">
+                <span>INSERT</span>
+              </label>
+              <label class="pp-check update">
+                <input type="checkbox" [(ngModel)]="permisosEsquema[esq].update">
+                <span>UPDATE</span>
+              </label>
+              <label class="pp-check delete">
+                <input type="checkbox" [(ngModel)]="permisosEsquema[esq].delete">
+                <span>DELETE</span>
+              </label>
+            </div>
+          </div>
+          <p class="esquemas-hint" *ngIf="esquemasConfigurados.length === 0">
+            Selecciona un esquema para configurar sus permisos
+          </p>
+        </div>
+
+        <ng-template #sinRolBD>
+          <div class="col-esquemas col-esquemas-empty">
+            <span>Selecciona un rol de BD para configurar esquemas</span>
+          </div>
+        </ng-template>
+
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <div class="modal-footer-left" *ngIf="modoModal === 'editar'">
+        <button class="btn-estado-activo"
+                *ngIf="rolActual.estado !== 'ACTIVO'"
+                (click)="cambiarEstadoRol('ACTIVO')">✓ Activar</button>
+        <button class="btn-estado-inactivo"
+                *ngIf="rolActual.estado === 'ACTIVO' || !rolActual.estado"
+                (click)="cambiarEstadoRol('INACTIVO')">⊘ Desactivar</button>
+      </div>
+      <div class="modal-footer-right">
+        <button class="btn-cancelar" (click)="cerrarModalRol()">Cancelar</button>
+        <button class="btn-guardar" (click)="guardarRol()" [disabled]="guardandoRol">
+          <span *ngIf="!guardandoRol">{{ modoModal === 'crear' ? 'Guardar' : 'Actualizar' }}</span>
+          <span class="btn-dots" *ngIf="guardandoRol">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

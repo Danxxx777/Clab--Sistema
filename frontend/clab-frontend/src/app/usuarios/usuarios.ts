@@ -2,20 +2,20 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 
-import { RolService, RolRequest, RolResponse, RolBD } from '../services/rol.service';
+import { RolService, RolResponse } from '../services/rol.service';
 import { UsuarioService, UsuarioRequest, UsuarioResponse } from '../services/usuario.service';
 
 import { Usuario } from '../interfaces/Usuario.model';
 import { RolView } from '../interfaces/Rol.model';
 import { Auditoria } from '../interfaces/Auditoria.model';
 
+import { RolesComponent } from '../roles/roles';  // ← hijo
 
 @Component({
   selector: 'app-usuarios',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RolesComponent],     // ← registrado aquí
   templateUrl: './usuarios.html',
   styleUrls: ['./usuarios.scss']
 })
@@ -25,14 +25,12 @@ export class UsuariosComponent implements OnInit {
     private router: Router,
     private rolService: RolService,
     private usuarioService: UsuarioService,
-    private cdr: ChangeDetectorRef,
-    private http: HttpClient
+    private cdr: ChangeDetectorRef
   ) {}
 
   /* =========================
      ESTADO GENERAL
-  ==========================*/
-  guardandoRol = false;
+  ========================== */
   guardandoUsuario = false;
   mostrarNotificacion = false;
   notificacionTitulo = '';
@@ -43,60 +41,36 @@ export class UsuariosComponent implements OnInit {
 
   tabActiva = 0;
   mostrarModalUsuario = false;
-  mostrarModalRol = false;
   modoModal: 'crear' | 'editar' | 'ver' = 'crear';
 
   usuarioActual!: Usuario;
-  rolActual!: RolView;
-
   usuarios: Usuario[] = [];
   usuariosFiltrados: Usuario[] = [];
-  roles: RolView[] = [];
+  roles: RolView[] = [];        // solo para el filtro dropdown
   auditorias: Auditoria[] = [];
-
-  permisosDisponibles: any[] = [];
-  permisosSeleccionados: number[] = [];
 
   busqueda = '';
   filtroEstado = 'Todos';
   filtroRol: number | 'Todos' = 'Todos';
 
-  rolesBDDisponibles: RolBD[] = [];
-  rolesBDSeleccionados: string[] = [];
-  rolesBD: string[] = [];
-
   usuarioLogueado = '';
   rol = '';
-
-  // Preview del usuario generado
   usuarioPreview = '';
 
-  /*
-     PAGINACIÓN USUARIOS
-  */
+  /* PAGINACIÓN */
   paginaActual = 1;
   itemsPorPagina = 10;
   totalPaginas = 1;
   usuariosPaginados: Usuario[] = [];
 
-  /*
-     PAGINACIÓN ROLES
- */
-  paginaRoles = 1;
-  itemsPorPaginaRoles = 10;
-  totalPaginasRoles = 1;
-  rolesPaginados: RolView[] = [];
-
-  /*
-     DRAWER
- */
+  /* DRAWER */
   drawerAbierto = false;
   toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
   cerrarDrawer(): void { this.drawerAbierto = false; }
 
-  /*
+  /* =========================
      LIFECYCLE
-  */
+  ========================== */
   ngOnInit(): void {
     this.rol = localStorage.getItem('rol') || '';
 
@@ -116,17 +90,11 @@ export class UsuariosComponent implements OnInit {
 
     this.cargarUsuarios();
     this.cargarRoles();
-    this.cargarPermisos();
-    this.cargarEsquemas();
-
-    this.rolService.listarRolesBD().subscribe(data => {
-      this.rolesBDDisponibles = data;
-    });
   }
 
-  /*
+  /* =========================
      NAVEGACIÓN
-  */
+  ========================== */
   volver(): void { this.router.navigate(['/dashboard']); }
   navegar(ruta: string, _texto: string): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
   logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
@@ -134,27 +102,22 @@ export class UsuariosComponent implements OnInit {
   cambiarTab(index: number): void {
     this.tabActiva = index;
     this.paginaActual = 1;
-    this.paginaRoles = 1;
     this.actualizarPaginacion();
-    this.actualizarPaginacionRoles();
   }
 
-  /*
+  /* =========================
      GENERACIÓN DE USUARIO
-  */
-
+  ========================== */
   generarNombreUsuario(nombres: string, apellidos: string, idExcluir?: number): string {
     const nombre = this.normalizarTexto(nombres.split(' ')[0]);
     const apellido = this.normalizarTexto(apellidos.split(' ')[0]);
     const base = `${nombre}.${apellido}`;
 
-    // Usuarios existentes con ese prefijo, excluyendo al usuario que se edita
     const existentes = this.usuarios
       .filter(u => u.id !== idExcluir && u.usuario?.startsWith(base))
       .map(u => u.usuario || '');
 
     if (!existentes.includes(base)) return base;
-
     let contador = 1;
     while (existentes.includes(`${base}${contador}`)) contador++;
     return `${base}${contador}`;
@@ -168,7 +131,6 @@ export class UsuariosComponent implements OnInit {
       .replace(/[^a-z0-9]/g, '');
   }
 
-  /** Se llama en tiempo real cuando el usuario escribe nombre/apellido en el modal */
   previewUsuario(): void {
     if (!this.usuarioActual?.nombres || !this.usuarioActual?.apellidos) {
       this.usuarioPreview = '';
@@ -181,9 +143,9 @@ export class UsuariosComponent implements OnInit {
     );
   }
 
-  /*
-     USUARIOS — CARGA
- */
+  /* =========================
+     CARGA DE DATOS
+  ========================== */
   cargarUsuarios(): void {
     this.usuarioService.listar().subscribe({
       next: (data: UsuarioResponse[]) => {
@@ -207,16 +169,46 @@ export class UsuariosComponent implements OnInit {
       error: err => console.error('Error cargando usuarios', err)
     });
   }
+
+  // Solo para el dropdown de filtro
+  cargarRoles(): void {
+    this.rolService.listar().subscribe({
+      next: (data: RolResponse[]) => {
+        this.roles = data
+          .filter(r => r.estado === 'ACTIVO')
+          .map(r => ({
+            id: r.idRol,
+            nombre: r.nombreRol,
+            descripcion: r.descripcion,
+            fechaCreacion: r.fechaCreacion,
+            rolesBD: r.rolesBD ?? [],
+            estado: r.estado ?? 'ACTIVO'
+          }));
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   getRolResumido(rolNombre: string | undefined): string {
     if (!rolNombre) return 'Sin rol';
     const roles = rolNombre.split(',').map(r => r.trim());
     if (roles.length <= 1) return rolNombre;
-
     return `${roles[0]}, ${roles[1].charAt(0)}...`;
   }
-  /*
-     USUARIOS — MODAL
-*/
+
+  /* =========================
+     GETTERS
+  ========================== */
+  get rolesActivos(): RolView[] {
+    return this.roles.filter(r => r.estado === 'ACTIVO');
+  }
+
+  get usuariosActivos(): number { return this.usuarios.filter(u => u.estado?.toUpperCase() === 'ACTIVO').length; }
+  get usuariosInactivos(): number { return this.usuarios.filter(u => u.estado?.toUpperCase() !== 'ACTIVO').length; }
+
+  /* =========================
+     MODAL USUARIO
+  ========================== */
   abrirModalUsuario(modo: 'crear' | 'editar' | 'ver', u?: Usuario): void {
     this.modoModal = modo;
     this.errorModal = '';
@@ -229,7 +221,6 @@ export class UsuariosComponent implements OnInit {
         contrasenia: '', idsRoles: [], estado: 'ACTIVO'
       };
     } else if (u) {
-      // Clonar profundamente para no mutar la lista original
       this.usuarioActual = {
         id: u.id,
         identidad: u.identidad ?? '',
@@ -269,14 +260,13 @@ export class UsuariosComponent implements OnInit {
     return this.usuarioActual?.idsRoles?.includes(idRol) ?? false;
   }
 
-  /*
-     USUARIOS — GUARDAR
-  */
+  /* =========================
+     GUARDAR USUARIO
+  ========================== */
   guardarUsuario(): void {
     this.errorModal = '';
     const esCrear = this.modoModal === 'crear';
 
-    // Validaciones de campos
     if (!this.usuarioActual.identidad?.trim()) { this.errorModal = 'La identidad es obligatoria.'; return; }
     if (!this.usuarioActual.nombres?.trim())   { this.errorModal = 'Los nombres son obligatorios.'; return; }
     if (!this.usuarioActual.apellidos?.trim()) { this.errorModal = 'Los apellidos son obligatorios.'; return; }
@@ -285,14 +275,12 @@ export class UsuariosComponent implements OnInit {
     if (!this.usuarioActual.idsRoles?.length)  { this.errorModal = 'Selecciona al menos un rol.'; return; }
     if (esCrear && !this.usuarioActual.contrasenia?.trim()) { this.errorModal = 'La contraseña es obligatoria.'; return; }
 
-    // Validar email único
     const emailDuplicado = this.usuarios.some(u =>
       u.email?.toLowerCase() === this.usuarioActual.email?.toLowerCase() &&
       u.id !== this.usuarioActual.id
     );
     if (emailDuplicado) { this.errorModal = 'Ya existe un usuario con ese email.'; return; }
 
-    // Generar nombre de usuario automáticamente
     const usuarioGenerado = this.generarNombreUsuario(
       this.usuarioActual.nombres,
       this.usuarioActual.apellidos,
@@ -374,9 +362,9 @@ export class UsuariosComponent implements OnInit {
     this.mostrarAlerta('¿Desactivar usuario?', `¿Desactivar a ${u.nombres} ${u.apellidos}?`, 'confirmar');
   }
 
-  /*
+  /* =========================
      FILTRADO Y PAGINACIÓN
- */
+  ========================== */
   filtrarUsuarios(): void {
     const texto = this.busqueda.toLowerCase();
     this.usuariosFiltrados = this.usuarios.filter(u =>
@@ -405,258 +393,9 @@ export class UsuariosComponent implements OnInit {
     return Array.from({ length: this.totalPaginas }, (_, i) => i + 1);
   }
 
-  /*
-     ROLES
- */
-  cargarRoles(): void {
-    this.rolService.listar().subscribe({
-      next: (data: RolResponse[]) => {
-        this.roles = data.map(r => ({
-          id: r.idRol,
-          nombre: r.nombreRol,
-          descripcion: r.descripcion,
-          fechaCreacion: r.fechaCreacion,
-          rolesBD: r.rolesBD ?? [],
-          estado: r.estado ?? 'ACTIVO'
-        }));
-        this.actualizarPaginacionRoles();
-        this.cdr.detectChanges();
-      }
-    });
-  }
-  get rolesActivos(): RolView[] {
-    return this.roles.filter(r => r.estado === 'ACTIVO');
-  }
-  actualizarPaginacionRoles(): void {
-    this.totalPaginasRoles = Math.max(1, Math.ceil(this.roles.length / this.itemsPorPaginaRoles));
-    const inicio = (this.paginaRoles - 1) * this.itemsPorPaginaRoles;
-    this.rolesPaginados = this.roles.slice(inicio, inicio + this.itemsPorPaginaRoles);
-    this.cdr.detectChanges();
-  }
-
-  irAPaginaRoles(pagina: number): void {
-    if (pagina < 1 || pagina > this.totalPaginasRoles) return;
-    this.paginaRoles = pagina;
-    this.actualizarPaginacionRoles();
-  }
-
-  get paginasRoles(): number[] {
-    return Array.from({ length: this.totalPaginasRoles }, (_, i) => i + 1);
-  }
-
-  abrirModalRol(modo: 'crear' | 'editar', r?: RolView): void {
-    this.modoModal = modo;
-    this.permisosSeleccionados = [];
-    this.rolesBDSeleccionados = [];
-    this.permisosEsquema = {};
-
-    if (modo === 'crear') {
-      this.rolActual = {
-        nombre: '', descripcion: '',
-        fechaCreacion: new Date().toISOString().substring(0, 10)
-      };
-    } else if (r) {
-      this.rolActual = { ...r };
-      if (r.id) {
-        this.rolService.listar().subscribe({
-          next: (data) => {
-            const rolActualizado = data.find(x => x.idRol === r.id);
-            this.rolesBDSeleccionados = rolActualizado?.rolesBD?.map(rb => rb.nombreRolBd) ?? [];
-
-            // Cargar permisos de esquemas para cada rol BD
-            this.permisosEsquema = {};
-            (rolActualizado?.rolesBD ?? []).forEach(rolBd => {
-              this.rolService.obtenerPermisosEsquemas(rolBd.idRolBd).subscribe({
-                next: (permisos: any[]) => {
-                  permisos.forEach(p => {
-                    this.permisosEsquema[p.nombreEsquema] = {
-                      select: p.select,
-                      insert: p.insert,
-                      update: p.update,
-                      delete: p.delete
-                    };
-                  });
-                  this.cdr.detectChanges();
-                }
-              });
-            });
-
-            this.cdr.detectChanges();
-          }
-        });
-
-        this.rolService.obtenerPermisos(r.id).subscribe({
-          next: (ids: number[]) => { this.permisosSeleccionados = ids; this.cdr.detectChanges(); }
-        });
-      }
-    }
-
-    this.cargarRolesBD();
-    this.mostrarModalRol = true;
-  }
-  guardarRol(): void {
-    if (!this.rolActual.nombre?.trim()) {
-      this.mostrarAlerta('Campo requerido', 'El nombre del rol es obligatorio.', 'error');
-      return;
-    }
-
-    // ← VALIDACIÓN AQUÍ, ANTES DEL PAYLOAD
-    const esquemaSinPermisos = Object.entries(this.permisosEsquema)
-      .find(([_, p]) => !p.select && !p.insert && !p.update && !p.delete);
-
-    if (esquemaSinPermisos) {
-      this.mostrarAlerta(
-        'Permiso requerido',
-        `El esquema "${esquemaSinPermisos[0]}" no tiene ningún permiso seleccionado.`,
-        'error'
-      );
-      return;
-    }
-
-    const payload: RolRequest = {
-      nombreRol: this.rolActual.nombre,
-      descripcion: this.rolActual.descripcion,
-      permisos: this.permisosSeleccionados,
-      rolesBD: this.rolesBDSeleccionados,
-      permisosEsquemas: this.rolesBDSeleccionados.flatMap(nombreRolBd => {
-        const rolBd = this.rolesBDDisponibles.find(r => r.nombreRolBd === nombreRolBd);
-        if (!rolBd || !rolBd.idRolBd) return []; // ← skip si no encuentra
-        console.log('rolesBDDisponibles:', this.rolesBDDisponibles);
-        console.log('rolesBDSeleccionados:', this.rolesBDSeleccionados);
-        return Object.entries(this.permisosEsquema)
-          .filter(([_, p]) => p.select || p.insert || p.update || p.delete)
-          .map(([esquema, p]) => ({
-            idRolBd: rolBd.idRolBd,
-            nombreRolBd,
-            nombreEsquema: esquema,
-            select: p.select,
-            insert: p.insert,
-            update: p.update,
-            delete: p.delete
-          }));
-      })
-    };
-
-    this.guardandoRol = true;
-
-    const request$ = this.modoModal === 'crear'
-      ? this.rolService.crear(payload)
-      : this.rolService.actualizar(this.rolActual.id!, payload);
-
-    request$.subscribe({
-      next: () => {
-        this.guardandoRol = false;
-        this.cerrarModalRol();
-        this.cargarRoles();
-        this.mostrarAlerta('¡Rol guardado!', `El rol "${payload.nombreRol}" fue guardado correctamente.`, 'exito');
-      },
-      error: () => {
-        this.guardandoRol = false;
-        this.mostrarAlerta('Error', 'No se pudo guardar el rol.', 'error');
-      }
-    });
-  }
-  desactivarRol(r: RolView): void {
-    if (!r.id) return;
-    this.accionPendiente = () => {
-      this.rolService.desactivar(r.id!).subscribe(() => {
-        this.cargarRoles();
-        this.registrarAuditoria('Desactivar rol', 'Roles');
-        this.mostrarAlerta('Rol desactivado', `El rol "${r.nombre}" fue desactivado.`, 'exito');
-      });
-    };
-    this.mostrarAlerta('¿Desactivar rol?', `¿Desactivar el rol "${r.nombre}"?`, 'confirmar');
-  }
-
-  cerrarModalRol(): void {
-    this.mostrarModalRol = false;
-    this.guardandoRol = false;
-    this.permisosSeleccionados = [];
-    this.rolActual = { nombre: '', descripcion: '', fechaCreacion: '' };
-    this.permisosEsquema = {};
-    this.cdr.detectChanges();
-  }
-
-  cambiarEstadoRol(estado: string): void {
-    if (!this.rolActual.id) return;
-    this.rolService.cambiarEstado(this.rolActual.id, estado).subscribe({
-      next: () => {
-        this.rolActual.estado = estado;
-        this.cargarRoles();
-        this.cdr.detectChanges();
-        this.mostrarAlerta(
-          estado === 'ACTIVO' ? '¡Rol activado!' : 'Rol desactivado',
-          `El rol "${this.rolActual.nombre}" fue ${estado === 'ACTIVO' ? 'activado' : 'desactivado'}.`,
-          'exito'
-        );
-      },
-      error: () => this.mostrarAlerta('Error', 'No se pudo cambiar el estado.', 'error')
-    });
-  }
-
-  /*
-     PERMISOS / ROLES BD
-  */
-  cargarPermisos(): void {
-    this.http.get<any[]>('http://localhost:8080/permisos').subscribe({
-      next: (data) => { this.permisosDisponibles = data; },
-      error: err => console.error('Error cargando permisos', err)
-    });
-  }
-
-  togglePermiso(idPermiso: number): void {
-    const idx = this.permisosSeleccionados.indexOf(idPermiso);
-    if (idx >= 0) this.permisosSeleccionados.splice(idx, 1);
-    else this.permisosSeleccionados.push(idPermiso);
-  }
-
-  esPermisoSeleccionado(idPermiso: number): boolean {
-    return this.permisosSeleccionados.includes(idPermiso);
-  }
-
-  cargarRolesBD(): void {
-    this.http.get<string[]>('http://localhost:8080/roles/roles-bd').subscribe(data => {
-      this.rolesBD = data;
-    });
-  }
-
-  toggleRolBD(nombre: string): void {
-    const idx = this.rolesBDSeleccionados.indexOf(nombre);
-    if (idx >= 0) this.rolesBDSeleccionados.splice(idx, 1);
-    else this.rolesBDSeleccionados.push(nombre);
-  }
-  toggleEsquema(esquema: string): void {
-    if (this.permisosEsquema[esquema]) {
-      delete this.permisosEsquema[esquema];
-    } else {
-      this.permisosEsquema[esquema] = {
-        select: false, insert: false, update: false, delete: false
-      };
-    }
-  }
-
-  esquemaActivo(esquema: string): boolean {
-    return !!this.permisosEsquema[esquema];
-  }
-
-  get esquemasConfigurados(): string[] {
-    return Object.keys(this.permisosEsquema);
-  }
-
-  esquemas: string[] = [];
-  cargarEsquemas(): void {
-    this.http.get<string[]>('http://localhost:8080/roles/esquemas').subscribe({
-      next: (data) => { this.esquemas = data; },
-      error: err => console.error('Error cargando esquemas', err)
-    });
-  }
-
-  permisosEsquema: Record<string, {
-    select: boolean; insert: boolean; update: boolean; delete: boolean;
-  }> = {};
-  /*
+  /* =========================
      UTILIDADES
-*/
+  ========================== */
   getEstadoClass(estado?: string): string {
     return estado === 'Activo' || estado === 'ACTIVO' ? 'activo' : 'inactivo';
   }
@@ -684,7 +423,4 @@ export class UsuariosComponent implements OnInit {
     if (this.accionPendiente) { this.accionPendiente(); this.accionPendiente = null; }
     this.cdr.detectChanges();
   }
-
-  get usuariosActivos(): number { return this.usuarios.filter(u => u.estado?.toUpperCase() === 'ACTIVO').length; }
-  get usuariosInactivos(): number { return this.usuarios.filter(u => u.estado?.toUpperCase() !== 'ACTIVO').length; }
 }
