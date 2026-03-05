@@ -23,9 +23,7 @@ export class RolesComponent implements OnInit {
     private http: HttpClient
   ) {}
 
-  /* =========================
-     ESTADO GENERAL
-  ========================== */
+  /* == ESTADO GENERAL==*/
   guardandoRol = false;
   mostrarNotificacion = false;
   notificacionTitulo = '';
@@ -58,9 +56,7 @@ export class RolesComponent implements OnInit {
   totalPaginasRoles = 1;
   rolesPaginados: RolView[] = [];
 
-  /* =========================
-     LIFECYCLE
-  ========================== */
+  /* ==LIFECYCLE==*/
   ngOnInit(): void {
     this.cargarRoles();
     this.cargarPermisos();
@@ -70,9 +66,7 @@ export class RolesComponent implements OnInit {
     });
   }
 
-  /* =========================
-     CARGA DE DATOS
-  ========================== */
+  /* ==CARGA DE DATOS==*/
   cargarRoles(): void {
     this.rolService.listar().subscribe({
       next: (data: RolResponse[]) => {
@@ -110,16 +104,12 @@ export class RolesComponent implements OnInit {
     });
   }
 
-  /* =========================
-     GETTERS
-  ========================== */
+  /* ==GETTERS== */
   get esquemasConfigurados(): string[] {
     return Object.keys(this.permisosEsquema);
   }
 
-  /* =========================
-     PAGINACIÓN
-  ========================== */
+  /* ==PAGINACIÓN==*/
   actualizarPaginacionRoles(): void {
     this.totalPaginasRoles = Math.max(1, Math.ceil(this.roles.length / this.itemsPorPaginaRoles));
     const inicio = (this.paginaRoles - 1) * this.itemsPorPaginaRoles;
@@ -137,9 +127,7 @@ export class RolesComponent implements OnInit {
     return Array.from({ length: this.totalPaginasRoles }, (_, i) => i + 1);
   }
 
-  /* =========================
-     MODAL ROL
-  ========================== */
+  /* == MODAL ROL== */
   abrirModalRol(modo: 'crear' | 'editar', r?: RolView): void {
     this.modoModal = modo;
     this.permisosSeleccionados = [];
@@ -194,9 +182,7 @@ export class RolesComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  /* =========================
-     GUARDAR ROL
-  ========================== */
+  /* == GUARDAR ROL== */
   guardarRol(): void {
     if (!this.rolActual.nombre?.trim()) {
       this.mostrarAlerta('Campo requerido', 'El nombre del rol es obligatorio.', 'error');
@@ -279,9 +265,7 @@ export class RolesComponent implements OnInit {
     });
   }
 
-  /* =========================
-     PERMISOS / ROLES BD / ESQUEMAS
-  ========================== */
+  /* ==PERMISOS / ROLES BD / ESQUEMAS== */
   togglePermiso(idPermiso: number): void {
     const idx = this.permisosSeleccionados.indexOf(idPermiso);
     if (idx >= 0) this.permisosSeleccionados.splice(idx, 1);
@@ -310,9 +294,7 @@ export class RolesComponent implements OnInit {
     return !!this.permisosEsquema[esquema];
   }
 
-  /* =========================
-     UTILIDADES
-  ========================== */
+  /* ==UTILIDADES == */
   getEstadoClass(estado?: string): string {
     return estado === 'Activo' || estado === 'ACTIVO' ? 'activo' : 'inactivo';
   }

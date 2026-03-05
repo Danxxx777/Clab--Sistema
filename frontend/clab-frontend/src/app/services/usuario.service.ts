@@ -19,11 +19,12 @@ export interface UsuarioResponse {
   nombres: string;
   apellidos: string;
   email: string;
-  telefono?: string;
+  telefono: string;
   usuario: string;
   estado: string;
   fechaRegistro: string;
-  roles: { idRol: number; nombreRol: string }[];
+  rol?: string;
+  roles?: { idRol: number; nombreRol: string }[];
 }
 
 @Injectable({

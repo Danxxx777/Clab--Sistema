@@ -19,6 +19,7 @@ public class UsuarioResponseDTO {
     private String usuario;
     private String estado;
     private LocalDate fechaRegistro;
+    private String rol;
     private List<RolInfo> roles;
 
     @Getter
