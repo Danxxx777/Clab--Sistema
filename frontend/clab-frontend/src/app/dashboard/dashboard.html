@@ -219,7 +219,7 @@
       }
 
       <!-- Módulo 4: Reservas -->
-      @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano')
+      @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano' || rol === 'Encargado_Lab')
       {
         <div class="menu-item" (click)="navegar('reservar', 'Cargando Reservas...')">
           <img src="/calendario.png" alt="Calendario" class="menu-icon">
@@ -229,8 +229,9 @@
           </div>
         </div>
       }
+
       <!-- Módulo: Solicitudes de Reserva -->
-      @if(rol === 'Docente' || rol === 'Coordinador' || rol === 'Decano' || rol === 'Administradorr')
+      @if(rol === 'Docente' || rol === 'Coordinador' || rol === 'Decano' || rol === 'Administradorr' || rol === 'Encargado_Lab')
       {
         <div class="menu-item" (click)="navegar('solicitudes-reserva', 'Cargando Solicitudes...')">
           <img src="/solicitud.png" alt="Solicitudes" class="menu-icon">
@@ -253,7 +254,7 @@
       }
 
       <!-- Módulo 6: Estudiantes -->
-      @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano')
+      @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano' || rol === 'Encargado_Lab')
       {
         <div class="menu-item" (click)="navegar('estudiantes', 'Cargando Estudiantes...')">
           <img src="/estudiantes.png" alt="Estudiantes" class="menu-icon">
