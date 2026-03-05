@@ -4,9 +4,11 @@ import com.clab.clabbackend.dto.UsuarioRequestDTO;
 import com.clab.clabbackend.dto.UsuarioResponseDTO;
 import com.clab.clabbackend.entities.Usuario;
 import com.clab.clabbackend.repository.UsuarioRepository;
+import com.clab.clabbackend.repository.UsuarioRolRepository;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.math.BigInteger;
 import java.util.List;
@@ -16,10 +18,14 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final EntityManager entityManager;
+    private final UsuarioRolRepository usuarioRolRepository; // ← línea 1
 
-    public UsuarioService(UsuarioRepository usuarioRepository, EntityManager entityManager) {
+    public UsuarioService(UsuarioRepository usuarioRepository,
+                          EntityManager entityManager,
+                          UsuarioRolRepository usuarioRolRepository) { // ← línea 2
         this.usuarioRepository = usuarioRepository;
         this.entityManager = entityManager;
+        this.usuarioRolRepository = usuarioRolRepository; // ← línea 3
     }
 
     // ─── LISTAR ──────────────────────────────────────────────────────────────
@@ -114,6 +120,22 @@ public class UsuarioService {
         dto.setUsuario(u.getUsuario());
         dto.setEstado(u.getEstado());
         dto.setFechaRegistro(u.getFechaRegistro());
+
+        var rolesVigentes = usuarioRolRepository
+                .findAllByUsuario_IdUsuarioAndVigenteTrue(u.getIdUsuario());
+
+        // Rol principal para la tabla
+        rolesVigentes.stream().findFirst()
+                .ifPresent(ur -> dto.setRol(ur.getRol().getNombreRol()));
+
+        // Lista completa para el modal de edición
+        dto.setRoles(rolesVigentes.stream()
+                .map(ur -> new UsuarioResponseDTO.RolInfo(
+                        ur.getRol().getIdRol(),
+                        ur.getRol().getNombreRol()
+                ))
+                .toList());
+
         return dto;
     }
 }

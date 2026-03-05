@@ -11,7 +11,6 @@ import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -53,13 +52,11 @@ public class RolController {
     }
 
     @GetMapping("/listar")
-    @PreAuthorize("hasAuthority('PERMISO_LEER')")
     public List<RolResponseDTO> listar() {
         return rolService.listar();
     }
 
     @PostMapping("/crear")
-    @PreAuthorize("hasAuthority('PERMISO_CREAR')")
     public Rol crear(@RequestBody RolRequestDTO dto, HttpServletRequest request) {
         Rol resultado = rolService.crear(dto);
         auditoriaService.registrarExito(
@@ -72,7 +69,6 @@ public class RolController {
     }
 
     @PutMapping("/actualizar/{id}")
-    @PreAuthorize("hasAuthority('PERMISO_EDITAR')")
     public Rol actualizar(@PathVariable Integer id, @RequestBody RolRequestDTO dto,
                           HttpServletRequest request) {
         Rol resultado = rolService.actualizar(id, dto);
@@ -86,7 +82,6 @@ public class RolController {
     }
 
     @DeleteMapping("/eliminar/{id}")
-    @PreAuthorize("hasAuthority('PERMISO_ELIMINAR')")
     public void eliminar(@PathVariable Integer id, HttpServletRequest request) {
         auditoriaService.registrarExito(
                 obtenerIdUsuario(request), obtenerUsuario(request),
@@ -98,19 +93,16 @@ public class RolController {
     }
 
     @GetMapping("/{id}/permisos")
-    @PreAuthorize("hasAuthority('PERMISO_LEER')")
     public List<Integer> obtenerPermisos(@PathVariable Integer id) {
         return rolService.obtenerPermisosActivos(id);
     }
 
     @GetMapping("/roles-bd")
-    @PreAuthorize("hasAuthority('PERMISO_LEER')")
     public List<RolBDDTO> listarRolesBD() {
         return rolService.listarRolesBD();
     }
 
     @PatchMapping("/{id}/estado")
-    @PreAuthorize("hasAuthority('PERMISO_EDITAR')")
     public ResponseEntity<?> cambiarEstado(@PathVariable Integer id,
                                            @RequestBody Map<String, String> body,
                                            HttpServletRequest request) {
@@ -130,7 +122,6 @@ public class RolController {
     }
 
     @GetMapping("/roles-bd/{idRolBd}/permisos-esquemas")
-    @PreAuthorize("hasAuthority('PERMISO_LEER')")
     public ResponseEntity<List<Map<String, Object>>> obtenerPermisosEsquemas(@PathVariable Integer idRolBd) {
         return ResponseEntity.ok(rolService.obtenerPermisosEsquemas(idRolBd));
     }
