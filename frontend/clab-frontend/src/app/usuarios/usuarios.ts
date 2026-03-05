@@ -10,12 +10,12 @@ import { Usuario } from '../interfaces/Usuario.model';
 import { RolView } from '../interfaces/Rol.model';
 import { Auditoria } from '../interfaces/Auditoria.model';
 
-import { RolesComponent } from '../roles/roles';  // ← hijo
+import { RolesComponent } from '../roles/roles';
 
 @Component({
   selector: 'app-usuarios',
   standalone: true,
-  imports: [CommonModule, FormsModule, RolesComponent],     // ← registrado aquí
+  imports: [CommonModule, FormsModule, RolesComponent],
   templateUrl: './usuarios.html',
   styleUrls: ['./usuarios.scss']
 })
@@ -28,9 +28,7 @@ export class UsuariosComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
 
-  /* =========================
-     ESTADO GENERAL
-  ========================== */
+  /* ==ESTADO GENERAL== */
   guardandoUsuario = false;
   mostrarNotificacion = false;
   notificacionTitulo = '';
@@ -46,7 +44,7 @@ export class UsuariosComponent implements OnInit {
   usuarioActual!: Usuario;
   usuarios: Usuario[] = [];
   usuariosFiltrados: Usuario[] = [];
-  roles: RolView[] = [];        // solo para el filtro dropdown
+  roles: RolView[] = [];
   auditorias: Auditoria[] = [];
 
   busqueda = '';
@@ -68,9 +66,7 @@ export class UsuariosComponent implements OnInit {
   toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
   cerrarDrawer(): void { this.drawerAbierto = false; }
 
-  /* =========================
-     LIFECYCLE
-  ========================== */
+  /* ==LIFECYCLE== */
   ngOnInit(): void {
     this.rol = localStorage.getItem('rol') || '';
 
@@ -92,9 +88,7 @@ export class UsuariosComponent implements OnInit {
     this.cargarRoles();
   }
 
-  /* =========================
-     NAVEGACIÓN
-  ========================== */
+  /* ==NAVEGACIÓN== */
   volver(): void { this.router.navigate(['/dashboard']); }
   navegar(ruta: string, _texto: string): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
   logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
@@ -105,9 +99,7 @@ export class UsuariosComponent implements OnInit {
     this.actualizarPaginacion();
   }
 
-  /* =========================
-     GENERACIÓN DE USUARIO
-  ========================== */
+  /* ==GENERACIÓN DE USUARIO== */
   generarNombreUsuario(nombres: string, apellidos: string, idExcluir?: number): string {
     const nombre = this.normalizarTexto(nombres.split(' ')[0]);
     const apellido = this.normalizarTexto(apellidos.split(' ')[0]);
@@ -143,9 +135,7 @@ export class UsuariosComponent implements OnInit {
     );
   }
 
-  /* =========================
-     CARGA DE DATOS
-  ========================== */
+  /* ==CARGA DE DATOS== */
   cargarUsuarios(): void {
     this.usuarioService.listar().subscribe({
       next: (data: UsuarioResponse[]) => {
@@ -159,7 +149,7 @@ export class UsuariosComponent implements OnInit {
           usuario: u.usuario,
           idsRoles: u.roles?.map(r => r.idRol) ?? [],
           roles: u.roles ?? [],
-          rolNombre: u.roles?.map(r => r.nombreRol).join(', ') || 'Sin rol',
+          rolNombre: u.rol || u.roles?.map(r => r.nombreRol).join(', ') || 'Sin rol',
           estado: u.estado,
           fechaRegistro: u.fechaRegistro
         }));
@@ -196,9 +186,7 @@ export class UsuariosComponent implements OnInit {
     return `${roles[0]}, ${roles[1].charAt(0)}...`;
   }
 
-  /* =========================
-     GETTERS
-  ========================== */
+  /* ==GETTERS== */
   get rolesActivos(): RolView[] {
     return this.roles.filter(r => r.estado === 'ACTIVO');
   }
@@ -206,9 +194,7 @@ export class UsuariosComponent implements OnInit {
   get usuariosActivos(): number { return this.usuarios.filter(u => u.estado?.toUpperCase() === 'ACTIVO').length; }
   get usuariosInactivos(): number { return this.usuarios.filter(u => u.estado?.toUpperCase() !== 'ACTIVO').length; }
 
-  /* =========================
-     MODAL USUARIO
-  ========================== */
+  /* ==MODAL USUARIO== */
   abrirModalUsuario(modo: 'crear' | 'editar' | 'ver', u?: Usuario): void {
     this.modoModal = modo;
     this.errorModal = '';
@@ -260,9 +246,7 @@ export class UsuariosComponent implements OnInit {
     return this.usuarioActual?.idsRoles?.includes(idRol) ?? false;
   }
 
-  /* =========================
-     GUARDAR USUARIO
-  ========================== */
+  /* ==GUARDAR USUARIO== */
   guardarUsuario(): void {
     this.errorModal = '';
     const esCrear = this.modoModal === 'crear';
@@ -362,9 +346,7 @@ export class UsuariosComponent implements OnInit {
     this.mostrarAlerta('¿Desactivar usuario?', `¿Desactivar a ${u.nombres} ${u.apellidos}?`, 'confirmar');
   }
 
-  /* =========================
-     FILTRADO Y PAGINACIÓN
-  ========================== */
+  /* ==FILTRADO Y PAGINACIÓN== */
   filtrarUsuarios(): void {
     const texto = this.busqueda.toLowerCase();
     this.usuariosFiltrados = this.usuarios.filter(u =>
@@ -393,9 +375,7 @@ export class UsuariosComponent implements OnInit {
     return Array.from({ length: this.totalPaginas }, (_, i) => i + 1);
   }
 
-  /* =========================
-     UTILIDADES
-  ========================== */
+  /* ==UTILIDADES== */
   getEstadoClass(estado?: string): string {
     return estado === 'Activo' || estado === 'ACTIVO' ? 'activo' : 'inactivo';
   }
