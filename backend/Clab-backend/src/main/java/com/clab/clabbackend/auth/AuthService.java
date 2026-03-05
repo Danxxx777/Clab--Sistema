@@ -55,8 +55,7 @@ public class AuthService {
     }
 
     private List<String> obtenerPermisosDeRol(String nombreRol) {
-        return rolRepository.findByNombreRolIgnoreCase(nombreRol)
-                .map(rol -> rolPermisoRepository
+        return rolRepository.findByNombreRolIgnoreCase(nombreRol).map(rol -> rolPermisoRepository
                         .findByRol_IdRolAndVigenteTrue(rol.getIdRol())
                         .stream()
                         .map(rp -> rp.getPermiso().getNombrePermiso())

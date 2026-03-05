@@ -8,6 +8,9 @@ import java.util.Optional;
 
 public interface UsuarioRolRepository extends JpaRepository<UsuarioRol, Integer> {
     Optional<UsuarioRol> findByUsuario_IdUsuarioAndVigenteTrue(Integer idUsuario);
-    List<UsuarioRol> findAllByUsuario_IdUsuarioAndVigenteTrue(Integer idUsuario); // 👈 nuevo
+
+    List<UsuarioRol> findAllByUsuario_IdUsuarioAndVigenteTrue(Integer idUsuario);
+
     void deleteByRol_IdRol(Integer idRol);
-}// a ver
+
+}

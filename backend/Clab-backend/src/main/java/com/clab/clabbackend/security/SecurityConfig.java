@@ -45,6 +45,8 @@ public class SecurityConfig {
                         .requestMatchers("/asignaturas/**").permitAll()
                         .requestMatchers("/horarios/**").permitAll()
                         .requestMatchers("/tipos-bloqueos/**").permitAll()
+                        .requestMatchers("/usuarios/**").authenticated()
+                        .requestMatchers("/roles/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
