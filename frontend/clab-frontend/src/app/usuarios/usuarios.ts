@@ -149,7 +149,7 @@ export class UsuariosComponent implements OnInit {
           usuario: u.usuario,
           idsRoles: u.roles?.map(r => r.idRol) ?? [],
           roles: u.roles ?? [],
-          rolNombre: u.roles?.map(r => r.nombreRol).join(', ') || 'Sin rol',
+          rolNombre: u.rol || u.roles?.map(r => r.nombreRol).join(', ') || 'Sin rol',
           estado: u.estado,
           fechaRegistro: u.fechaRegistro
         }));

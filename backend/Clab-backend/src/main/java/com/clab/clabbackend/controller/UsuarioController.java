@@ -7,7 +7,6 @@ import com.clab.clabbackend.services.AuditoriaService;
 import com.clab.clabbackend.services.UsuarioService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -51,13 +50,11 @@ public class UsuarioController {
     }
 
     @GetMapping("/listar")
-    @PreAuthorize("hasAuthority('PERMISO_LEER')")
     public List<UsuarioResponseDTO> listar() {
         return usuarioService.listar();
     }
 
     @PostMapping("/crear")
-    @PreAuthorize("hasAuthority('PERMISO_CREAR')")
     public UsuarioResponseDTO crear(@RequestBody UsuarioRequestDTO dto, HttpServletRequest request) {
         return usuarioService.crear(dto,
                 obtenerIdUsuario(request),
@@ -66,7 +63,6 @@ public class UsuarioController {
     }
 
     @PutMapping("/actualizar/{id}")
-    @PreAuthorize("hasAuthority('PERMISO_EDITAR')")
     public UsuarioResponseDTO actualizar(@PathVariable Integer id,
                                          @RequestBody UsuarioRequestDTO dto,
                                          HttpServletRequest request) {
@@ -77,7 +73,6 @@ public class UsuarioController {
     }
 
     @PutMapping("/desactivar/{id}")
-    @PreAuthorize("hasAuthority('PERMISO_EDITAR')")
     public void desactivar(@PathVariable Integer id, HttpServletRequest request) {
         usuarioService.desactivar(id,
                 obtenerIdUsuario(request),
