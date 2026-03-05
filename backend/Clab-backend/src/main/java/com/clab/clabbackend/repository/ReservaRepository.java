@@ -106,4 +106,9 @@ public interface ReservaRepository extends JpaRepository<Reserva, Integer> {
     @Modifying
     @Query(value = "CALL reservas.sp_rechazar_reserva(:idReserva)", nativeQuery = true)
     void rechazar(Integer idReserva);
+
+    // ReservaRepository.java — AGREGAR
+    @Query(value = "SELECT * FROM reservas.fn_datos_notificacion_reserva(:idReserva)",
+            nativeQuery = true)
+    Object[] obtenerDatosNotificacion(Integer idReserva);
 }

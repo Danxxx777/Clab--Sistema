@@ -265,11 +265,9 @@ export class UsuariosComponent implements OnInit {
     );
     if (emailDuplicado) { this.errorModal = 'Ya existe un usuario con ese email.'; return; }
 
-    const usuarioGenerado = this.generarNombreUsuario(
-      this.usuarioActual.nombres,
-      this.usuarioActual.apellidos,
-      this.usuarioActual.id
-    );
+    const usuarioGenerado = this.modoModal === 'crear'
+      ? this.generarNombreUsuario(this.usuarioActual.nombres, this.usuarioActual.apellidos)
+      : this.usuarioActual.usuario;  // ← preservar el username existente
 
     const payload: UsuarioRequest = {
       identidad: this.usuarioActual.identidad.trim(),
@@ -278,7 +276,7 @@ export class UsuariosComponent implements OnInit {
       email: this.usuarioActual.email.trim(),
       telefono: this.usuarioActual.telefono ?? '',
       contrasenia: this.usuarioActual.contrasenia ?? '',
-      usuario: usuarioGenerado,
+      usuario: usuarioGenerado,  // ahora es seguro
       idsRoles: this.usuarioActual.idsRoles ?? []
     };
 
