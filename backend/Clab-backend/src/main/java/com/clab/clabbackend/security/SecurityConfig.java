@@ -47,6 +47,7 @@ public class SecurityConfig {
                         .requestMatchers("/tipos-bloqueos/**").permitAll()
                         .requestMatchers("/usuarios/**").authenticated()
                         .requestMatchers("/roles/**").authenticated()
+                        .requestMatchers("/bloqueos/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
