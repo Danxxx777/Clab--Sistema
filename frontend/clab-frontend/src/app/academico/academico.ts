@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,6 +8,7 @@ import {FacultadService, FacultadDTO} from '../services/facultad.service';
 import { CarreraService, CarreraDTO } from '../services/carrera.service';
 import { AsignaturaService, AsignaturaDTO } from '../services/asignatura.service';
 import { HorarioService, HorarioDTO } from '../services/horario.service';
+import { NgZone } from '@angular/core';
 
 @Component({
   selector: 'app-academico',
@@ -57,18 +58,21 @@ export class AcademicoComponent implements OnInit {
   mostrarToast = false;
   toastMensaje = '';
   toastTipo: 'success' | 'error' = 'success';
+  errorModal = '';
 
   mostrarNotificacion(mensaje: string, tipo: 'success' | 'error' = 'success'): void {
-    this.toastMensaje = mensaje;
-    this.toastTipo = tipo;
-    this.mostrarToast = true;
-
-    setTimeout(() => {
-      this.mostrarToast = false;
+    this.ngZone.run(() => {
+      this.toastMensaje = mensaje;
+      this.toastTipo = tipo;
+      this.mostrarToast = true;
       this.cdr.detectChanges();
-    }, 2000);
-  }
 
+      setTimeout(() => {
+        this.mostrarToast = false;
+        this.cdr.detectChanges();
+      }, 3000);
+    });
+  }
 
   mostrarDetalle = false;
   tipoDetalle = '';
@@ -129,24 +133,29 @@ export class AcademicoComponent implements OnInit {
     '19:00', '20:00'
   ];
 
-  constructor(private router: Router,
-              private periodo: PeriodoService,
-              private facultadService: FacultadService,
-              private carreraService: CarreraService,
-              private asignaturaService: AsignaturaService,
-              private horarioService: HorarioService,
-              private cdr: ChangeDetectorRef) {}
+  constructor(
+    private router: Router,
+    private periodo: PeriodoService,
+    private facultadService: FacultadService,
+    private carreraService: CarreraService,
+    private asignaturaService: AsignaturaService,
+    private horarioService: HorarioService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
+  ) {}
 
   cargarPeriodos(): void {
     this.periodo.listar().subscribe({
       next: (data) => {
-        this.periodos = data;
-        this.periodosFiltrado = [...data];
+        this.periodos = data.sort((a, b) => {
+          if (a.estado === 'ACTIVO' && b.estado !== 'ACTIVO') return -1;
+          if (a.estado !== 'ACTIVO' && b.estado === 'ACTIVO') return 1;
+          return (b.idPeriodo ?? 0) - (a.idPeriodo ?? 0);
+        });
+        this.periodosFiltrado = [...this.periodos];
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('Error al cargar períodos', err);
-      }
+      error: (err) => console.error('Error al cargar períodos', err)
     });
   }
 
@@ -383,63 +392,64 @@ export class AcademicoComponent implements OnInit {
   }
 
   eliminar(item: any, index: number, tipo: string) {
-    const confirmacion = confirm(`¿Está seguro que desea eliminar este ${tipo}?\n\n${item.nombre || item.asignatura}`);
+    if (!confirm(`¿Está seguro que desea eliminar este ${tipo}?`)) return;
 
-    if (confirmacion) {
-      switch(tipo) {
-        case 'periodo':
-          this.periodo.eliminar(item.idPeriodo).subscribe({
-            next: () => {
-              this.periodos.splice(index, 1);
-              this.filtrarPeriodos();
-              this.cdr.detectChanges();
-              this.mostrarNotificacion('Período eliminado correctamente');
-            }
-          });
-          break;
-        case 'carrera':
-          this.carreraService.eliminar(item.idCarrera).subscribe({
-            next: () => {
-              this.cargarCarreras();
-              this.mostrarNotificacion('Carrera eliminada correctamente');
-            },
-            error: () => this.mostrarNotificacion('Error al eliminar carrera', 'error')
-          });
-          break;
-        case 'asignatura':
-          this.asignaturaService.eliminar(item.idAsignatura).subscribe({
-            next: () => {
-              this.cargarAsignaturas();
-              this.mostrarNotificacion('Asignatura eliminada correctamente');
-            },
-            error: () => this.mostrarNotificacion('Error al eliminar asignatura', 'error')
-          });
-          break;
-        case 'facultad':
-          this.facultadService.eliminar(item.idFacultad).subscribe({
-            next: () => {
-              this.cargarFacultades();
-              this.mostrarNotificacion('Facultad eliminada correctamente');
-            },
-            error: () => {
-              this.mostrarNotificacion('Error al eliminar facultad', 'error');
-            }
-          });
-          break;
-        case 'horario':
-          this.horarioService.eliminar(item.idHorario).subscribe({
-            next: () => {
-              this.cargarHorarios();
-              this.mostrarNotificacion('Horario eliminado correctamente');
-            },
-            error: () => this.mostrarNotificacion('Error al eliminar horario', 'error')
-          });
-          break;
-      }
+    switch(tipo) {
+      case 'periodo':
+        this.periodo.eliminar(item.idPeriodo).subscribe({
+          next: () => {
+            this.cargarPeriodos();
+            this.mostrarNotificacion('✅ Período eliminado correctamente');
+            this.cdr.detectChanges();
+          },
+          error: () => this.mostrarNotificacion('❌ Error al eliminar período', 'error')
+        });
+        break;
+      case 'carrera':
+        this.carreraService.eliminar(item.idCarrera).subscribe({
+          next: () => {
+            this.cargarCarreras();
+            this.mostrarNotificacion('✅ Carrera eliminada correctamente');
+            this.cdr.detectChanges();
+          },
+          error: () => this.mostrarNotificacion('❌ Error al eliminar carrera', 'error')
+        });
+        break;
+      case 'asignatura':
+        this.asignaturaService.eliminar(item.idAsignatura).subscribe({
+          next: () => {
+            this.cargarAsignaturas();
+            this.mostrarNotificacion('✅ Asignatura eliminada correctamente');
+            this.cdr.detectChanges();
+          },
+          error: () => this.mostrarNotificacion('❌ Error al eliminar asignatura', 'error')
+        });
+        break;
+      case 'facultad':
+        this.facultadService.eliminar(item.idFacultad).subscribe({
+          next: () => {
+            this.cargarFacultades();
+            this.mostrarNotificacion('✅ Facultad eliminada correctamente');
+            this.cdr.detectChanges();
+          },
+          error: () => this.mostrarNotificacion('❌ Error al eliminar facultad', 'error')
+        });
+        break;
+      case 'horario':
+        this.horarioService.eliminar(item.idHorario).subscribe({
+          next: () => {
+            this.cargarHorarios();
+            this.mostrarNotificacion('✅ Horario eliminado correctamente');
+            this.cdr.detectChanges();
+          },
+          error: () => this.mostrarNotificacion('❌ Error al eliminar horario', 'error')
+        });
+        break;
     }
   }
   guardar() {
     if (!this.validarFormulario()) return;
+
     switch (this.tipoEdicion) {
       case 'periodo': {
         const periodo: Periodo = {
@@ -452,31 +462,23 @@ export class AcademicoComponent implements OnInit {
         const id = this.modoEdicion ? this.periodos[this.indiceEdicion]?.idPeriodo : null;
         if (this.modoEdicion && id) {
           this.periodo.editar(id, periodo).subscribe({
-            next: (periodoActualizado) => {
-              this.periodos[this.indiceEdicion] = periodoActualizado;
-              this.periodosFiltrado = [...this.periodos];
-              this.cdr.detectChanges();
+            next: () => {
+              this.cargarPeriodos();
+              this.mostrarNotificacion('✅ Período actualizado correctamente');
               this.cerrarModal();
-              this.mostrarNotificacion('Período actualizado');
             },
-            error: () => this.mostrarNotificacion('Error al actualizar período', 'error')
+            error: () => this.mostrarNotificacion('❌ Error al actualizar período', 'error')
           });
         } else {
           const hayPeriodoActivo = this.periodos.some(p => p.estado === 'ACTIVO');
-          if (hayPeriodoActivo) {
-            periodo.estado = 'INACTIVO';
-          } else {
-            periodo.estado = 'ACTIVO';
-          }
+          periodo.estado = hayPeriodoActivo ? 'INACTIVO' : 'ACTIVO';
           this.periodo.crear(periodo).subscribe({
-            next: (periodoCreado) => {
-              this.periodos.push(periodoCreado);
-              this.periodosFiltrado = [...this.periodos];
-              this.cdr.detectChanges();
+            next: () => {
+              this.cargarPeriodos();
+              this.mostrarNotificacion('✅ Período creado correctamente');
               this.cerrarModal();
-              this.mostrarNotificacion('Período creado');
             },
-            error: () => this.mostrarNotificacion('Error al crear período', 'error')
+            error: () => this.mostrarNotificacion('❌ Error al crear período', 'error')
           });
         }
         return;
@@ -488,32 +490,24 @@ export class AcademicoComponent implements OnInit {
           idDecano: this.formularioFacultad.idDecano,
           estado: this.formularioFacultad.estado
         };
-        const id = this.modoEdicion
-          ? this.facultades[this.indiceEdicion]?.idFacultad
-          : null;
+        const id = this.modoEdicion ? this.facultades[this.indiceEdicion]?.idFacultad : null;
         if (this.modoEdicion && id) {
-
           this.facultadService.editar(id, payload).subscribe({
             next: () => {
               this.cargarFacultades();
+              this.mostrarNotificacion('✅ Facultad actualizada correctamente');
               this.cerrarModal();
-              this.mostrarNotificacion('Facultad actualizada correctamente');
             },
-            error: () => {
-              this.mostrarNotificacion('Error al actualizar facultad', 'error');
-            }
+            error: () => this.mostrarNotificacion('❌ Error al actualizar facultad', 'error')
           });
         } else {
-
           this.facultadService.crear(payload).subscribe({
             next: () => {
               this.cargarFacultades();
+              this.mostrarNotificacion('✅ Facultad creada correctamente');
               this.cerrarModal();
-              this.mostrarNotificacion('Facultad creada correctamente');
             },
-            error: () => {
-              this.mostrarNotificacion('Error al crear facultad', 'error');
-            }
+            error: () => this.mostrarNotificacion('❌ Error al crear facultad', 'error')
           });
         }
         return;
@@ -526,29 +520,27 @@ export class AcademicoComponent implements OnInit {
           estado: this.formularioCarrera.estado
         };
         const id = this.modoEdicion ? this.carreras[this.indiceEdicion]?.idCarrera : null;
-
         if (this.modoEdicion && id) {
           this.carreraService.editar(id, payload).subscribe({
             next: () => {
               this.cargarCarreras();
+              this.mostrarNotificacion('✅ Carrera actualizada correctamente');
               this.cerrarModal();
-              this.mostrarNotificacion('Carrera actualizada correctamente');
             },
-            error: () => this.mostrarNotificacion('Error al actualizar carrera', 'error')
+            error: () => this.mostrarNotificacion('❌ Error al actualizar carrera', 'error')
           });
         } else {
           this.carreraService.crear(payload).subscribe({
             next: () => {
               this.cargarCarreras();
+              this.mostrarNotificacion('✅ Carrera creada correctamente');
               this.cerrarModal();
-              this.mostrarNotificacion('Carrera creada correctamente');
             },
-            error: () => this.mostrarNotificacion('Error al crear carrera', 'error')
+            error: () => this.mostrarNotificacion('❌ Error al crear carrera', 'error')
           });
         }
         return;
       }
-
       case 'asignatura': {
         const payload: AsignaturaDTO = {
           nombre: this.formularioAsignatura.nombre,
@@ -558,31 +550,28 @@ export class AcademicoComponent implements OnInit {
           requiereLaboratorio: this.formularioAsignatura.requiereLaboratorio,
           estado: this.formularioAsignatura.estado
         };
-
         const id = this.modoEdicion ? this.asignaturas[this.indiceEdicion]?.idAsignatura : null;
-
         if (this.modoEdicion && id) {
           this.asignaturaService.editar(id, payload).subscribe({
             next: () => {
               this.cargarAsignaturas();
+              this.mostrarNotificacion('✅ Asignatura actualizada correctamente');
               this.cerrarModal();
-              this.mostrarNotificacion('Asignatura actualizada correctamente');
             },
-            error: () => this.mostrarNotificacion('Error al actualizar asignatura', 'error')
+            error: () => this.mostrarNotificacion('❌ Error al actualizar asignatura', 'error')
           });
         } else {
           this.asignaturaService.crear(payload).subscribe({
             next: () => {
               this.cargarAsignaturas();
+              this.mostrarNotificacion('✅ Asignatura creada correctamente');
               this.cerrarModal();
-              this.mostrarNotificacion('Asignatura creada correctamente');
             },
-            error: () => this.mostrarNotificacion('Error al crear asignatura', 'error')
+            error: () => this.mostrarNotificacion('❌ Error al crear asignatura', 'error')
           });
         }
         return;
       }
-
       case 'horario': {
         const payload: HorarioDTO = {
           idPeriodo: this.formularioHorario.idPeriodo,
@@ -594,123 +583,104 @@ export class AcademicoComponent implements OnInit {
           numeroEstudiantes: this.formularioHorario.numeroEstudiantes,
           estado: this.formularioHorario.estado
         };
-
         const id = this.modoEdicion ? this.horarios[this.indiceEdicion]?.idHorario : null;
-
         if (this.modoEdicion && id) {
           this.horarioService.editar(id, payload).subscribe({
             next: () => {
               this.cargarHorarios();
+              this.mostrarNotificacion('✅ Horario actualizado correctamente');
               this.cerrarModal();
-              this.mostrarNotificacion('Horario actualizado correctamente');
             },
-            error: () => this.mostrarNotificacion('Error al actualizar horario', 'error')
+            error: () => this.mostrarNotificacion('❌ Error al actualizar horario', 'error')
           });
         } else {
           this.horarioService.crear(payload).subscribe({
             next: () => {
               this.cargarHorarios();
+              this.mostrarNotificacion('✅ Horario creado correctamente');
               this.cerrarModal();
-              this.mostrarNotificacion('Horario creado correctamente');
             },
-            error: () => this.mostrarNotificacion('Error al crear horario', 'error')
+            error: () => this.mostrarNotificacion('❌ Error al crear horario', 'error')
           });
         }
         return;
       }
     }
   }
-
   validarFormulario(): boolean {
+    this.errorModal = '';
     switch(this.tipoEdicion) {
       case 'periodo':
         if (!this.formularioPeriodo.nombre.trim()) {
-          alert('El nombre del período es requerido');
-          return false;
+          this.errorModal = 'El nombre del período es requerido.'; return false;
         }
         if (!this.formularioPeriodo.fechaInicio || !this.formularioPeriodo.fechaFin) {
-          alert('Las fechas son requeridas');
-          return false;
+          this.errorModal = 'Las fechas de inicio y fin son requeridas.'; return false;
         }
         if (new Date(this.formularioPeriodo.fechaInicio) >= new Date(this.formularioPeriodo.fechaFin)) {
-          alert('La fecha de inicio debe ser anterior a la fecha de fin.');
-          return false;
+          this.errorModal = 'La fecha de inicio debe ser anterior a la fecha de fin.'; return false;
         }
         break;
-
       case 'carrera':
         if (!this.formularioCarrera.nombre.trim()) {
-          alert('El nombre de la carrera es requerido');
-          return false;
+          this.errorModal = 'El nombre de la carrera es requerido.'; return false;
         }
         if (!this.formularioCarrera.idFacultad || this.formularioCarrera.idFacultad === 0) {
-          alert('La facultad es requerida');
-          return false;
+          this.errorModal = 'La facultad es requerida.'; return false;
         }
         break;
-
       case 'asignatura':
         if (!this.formularioAsignatura.nombre.trim()) {
-          alert('El nombre de la asignatura es requerido');
-          return false;
+          this.errorModal = 'El nombre de la asignatura es requerido.'; return false;
         }
         if (!this.formularioAsignatura.idCarrera || this.formularioAsignatura.idCarrera === 0) {
-          alert('La carrera es requerida');
-          return false;
+          this.errorModal = 'La carrera es requerida.'; return false;
         }
         if (this.formularioAsignatura.nivel < 1 || this.formularioAsignatura.nivel > 10) {
-          alert('El nivel debe estar entre 1 y 10');
-          return false;
+          this.errorModal = 'El nivel debe estar entre 1 y 10.'; return false;
         }
         if (this.formularioAsignatura.horasSemanales < 1 || this.formularioAsignatura.horasSemanales > 20) {
-          alert('Las horas semanales deben estar entre 1 y 20');
-          return false;
+          this.errorModal = 'Las horas semanales deben estar entre 1 y 20.'; return false;
         }
         break;
-
       case 'facultad':
         if (!this.formularioFacultad.nombre.trim()) {
-          alert('El nombre de la facultad es requerido');
-          return false;
+          this.errorModal = 'El nombre de la facultad es requerido.'; return false;
         }
         if (!this.formularioFacultad.idDecano || this.formularioFacultad.idDecano === 0) {
-          alert('El decano es requerido');
-          return false;
+          this.errorModal = 'El decano es requerido.'; return false;
         }
         break;
-
       case 'horario':
         if (!this.formularioHorario.idPeriodo || this.formularioHorario.idPeriodo === 0) {
-          alert('El período académico es requerido');
-          return false;
+          this.errorModal = 'El período académico es requerido.'; return false;
         }
         if (!this.formularioHorario.idAsignatura || this.formularioHorario.idAsignatura === 0) {
-          alert('La asignatura es requerida');
-          return false;
+          this.errorModal = 'La asignatura es requerida.'; return false;
         }
         if (!this.formularioHorario.idDocente || this.formularioHorario.idDocente === 0) {
-          alert('El docente es requerido');
-          return false;
+          this.errorModal = 'El docente es requerido.'; return false;
         }
         if (!this.formularioHorario.diaSemana) {
-          alert('El día de la semana es requerido');
-          return false;
+          this.errorModal = 'El día de la semana es requerido.'; return false;
         }
         if (!this.formularioHorario.horaInicio || !this.formularioHorario.horaFin) {
-          alert('Las horas son requeridas');
-          return false;
+          this.errorModal = 'Las horas de inicio y fin son requeridas.'; return false;
         }
         if (this.formularioHorario.horaInicio >= this.formularioHorario.horaFin) {
-          alert('La hora de inicio debe ser anterior a la hora de fin');
-          return false;
+          this.errorModal = 'La hora de inicio debe ser anterior a la hora de fin.'; return false;
         }
         break;
     }
     return true;
   }
   cerrarModal() {
-    this.mostrarModal = false;
-    this.limpiarFormularios();
+    setTimeout(() => {
+      this.mostrarModal = false;
+      this.errorModal = '';
+      this.limpiarFormularios();
+      this.cdr.detectChanges();
+    }, 800);
   }
   limpiarFormularios() {
     this.formularioPeriodo = {
