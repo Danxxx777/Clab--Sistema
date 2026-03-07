@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 interface Notificacion {
@@ -11,13 +12,14 @@ interface Notificacion {
   estado: string;
   fechaCreacion: string;
   fechaEnvio: string | null;
+  emailOrigen: string | null;
   usuario: { idUsuario: number; nombres: string; email: string; };
 }
 
 @Component({
   selector: 'app-notificaciones',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './notificaciones.html',
   styleUrls: ['./notificaciones.scss']
 })
@@ -34,6 +36,12 @@ export class NotificacionesComponent implements OnInit {
   // Filtros
   pestanaActiva: 'TODAS' | 'NO_LEIDA' | 'LEIDA' = 'TODAS';
   filtroTipo: string = 'TODOS';
+
+  // Modal responder
+  modalResponderAbierto = false;
+  notifAResponder: Notificacion | null = null;
+  mensajeRespuesta = '';
+  enviandoRespuesta = false;
 
   private apiUrl = 'http://localhost:8080';
 
@@ -101,8 +109,7 @@ export class NotificacionesComponent implements OnInit {
     hace7.setDate(hoy.getDate() - 7);
     return this.notificacionesFiltradas.filter(n => {
       const fecha = new Date(n.fechaCreacion);
-      return n.fechaCreacion !== hoyStr &&
-        fecha >= hace7 && fecha <= hoy;
+      return n.fechaCreacion !== hoyStr && fecha >= hace7 && fecha <= hoy;
     });
   }
 
@@ -115,7 +122,7 @@ export class NotificacionesComponent implements OnInit {
     });
   }
 
-  // ── Contadores para badges ────────────────────────────────────────
+  // ── Contadores ───────────────────────────────────────────────────
 
   get totalNoLeidas(): number {
     return this.notificaciones.filter(n => n.estado === 'NO_LEIDA').length;
@@ -156,6 +163,57 @@ export class NotificacionesComponent implements OnInit {
     });
   }
 
+  eliminar(id: number, event: Event): void {
+    event.stopPropagation();
+    this.http.delete(
+      `${this.apiUrl}/notificaciones/eliminar/${id}`,
+      { headers: this.getHeaders() }
+    ).subscribe({
+      next: () => {
+        this.notificaciones = this.notificaciones.filter(n => n.idNotificacion !== id);
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error eliminando:', err)
+    });
+  }
+
+  abrirResponder(n: Notificacion, event: Event): void {
+    event.stopPropagation();
+    this.notifAResponder = n;
+    this.mensajeRespuesta = '';
+    this.modalResponderAbierto = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarResponder(): void {
+    this.modalResponderAbierto = false;
+    this.notifAResponder = null;
+    this.mensajeRespuesta = '';
+    this.cdr.detectChanges();
+  }
+
+  confirmarRespuesta(): void {
+    if (!this.notifAResponder || !this.mensajeRespuesta.trim()) return;
+    this.enviandoRespuesta = true;
+
+    this.http.post(
+      `${this.apiUrl}/notificaciones/responder/${this.notifAResponder.idNotificacion}`,
+      { mensaje: this.mensajeRespuesta },
+      { headers: this.getHeaders() }
+    ).subscribe({
+      next: () => {
+        this.enviandoRespuesta = false;
+        this.cerrarResponder();
+      },
+      error: (err) => {
+        console.error('Error enviando respuesta:', err);
+        this.enviandoRespuesta = false;
+      }
+    });
+  }
+
+  // ── Filtros UI ───────────────────────────────────────────────────
+
   setPestana(p: 'TODAS' | 'NO_LEIDA' | 'LEIDA'): void {
     this.pestanaActiva = p;
     this.cdr.detectChanges();
@@ -187,6 +245,8 @@ export class NotificacionesComponent implements OnInit {
       default:               return '🔔';
     }
   }
+
+  // ── Navegación ───────────────────────────────────────────────────
 
   toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
   cerrarDrawer(): void { this.drawerAbierto = false; }
