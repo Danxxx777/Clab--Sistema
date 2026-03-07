@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/permisos")
-@CrossOrigin
+
 public class PermisoController {
 
     // Repositorio para acceder a la base de datos

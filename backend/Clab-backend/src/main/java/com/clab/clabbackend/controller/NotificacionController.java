@@ -36,14 +36,12 @@ public class NotificacionController {
         return null;
     }
 
-    // GET /notificaciones/mis-notificaciones
     // Retorna todas las notificaciones del usuario logueado
     @GetMapping("/mis-notificaciones")
     public ResponseEntity<List<Notificacion>> getMisNotificaciones(
             HttpServletRequest request) {
         Usuario usuario = obtenerUsuarioActual(request);
         if (usuario == null) return ResponseEntity.status(401).build();
-
         // Leer el rol del JWT
         String header = request.getHeader("Authorization");
         Claims claims = jwtService.obtenerClaims(header.substring(7));
@@ -54,7 +52,6 @@ public class NotificacionController {
         );
     }
 
-    // GET /notificaciones/no-leidas/count
     // Retorna el número de notificaciones no leídas (para el badge del dashboard)
     @GetMapping("/no-leidas/count")
     public ResponseEntity<Map<String, Long>> contarNoLeidas(
@@ -67,7 +64,6 @@ public class NotificacionController {
         return ResponseEntity.ok(Map.of("noLeidas", count));
     }
 
-    // PUT /notificaciones/leer/{id}
     // Marca una notificación como leída
     @PutMapping("/leer/{id}")
     public ResponseEntity<Void> marcarLeida(@PathVariable Integer id,
@@ -80,7 +76,6 @@ public class NotificacionController {
         return ResponseEntity.ok().build();
     }
 
-    // PUT /notificaciones/leer-todas
     // Marca todas las notificaciones del usuario como leídas
     @PutMapping("/leer-todas")
     public ResponseEntity<Void> marcarTodasLeidas(HttpServletRequest request) {
