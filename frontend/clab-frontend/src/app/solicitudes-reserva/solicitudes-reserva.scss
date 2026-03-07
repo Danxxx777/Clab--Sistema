@@ -853,3 +853,13 @@ html, body {
   .equipos-grid { grid-template-columns: repeat(3, 1fr); }
   .modal { max-width: 95%; }
 }
+
+.bloqueo-aviso {
+  background: rgba(255, 107, 107, 0.15);
+  border: 1px solid #ff6b6b;
+  border-radius: 8px;
+  color: #ff6b6b;
+  padding: 12px 20px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
