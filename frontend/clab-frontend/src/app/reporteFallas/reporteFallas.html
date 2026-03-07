@@ -202,10 +202,8 @@
 
           <td>
             <div class="action-buttons">
-              <button class="btn-action btn-eliminar"
-                      (click)="eliminarReporte(reporte.idReporte)">
-                <i class="bi bi-trash"></i> Eliminar
-              </button>
+              <button class="btn-action btn-ver" (click)="verDetalle(reporte)">Ver</button>
+              <button class="btn-action btn-eliminar" (click)="confirmarEliminar(reporte.idReporte)">Eliminar</button>
             </div>
           </td>
         </tr>
@@ -299,5 +297,65 @@
           </button>
         </div>
       </form>
+
     </div>
   </div>
+<!-- MODAL VER DETALLE -->
+<div class="modal-overlay" *ngIf="mostrarModalDetalle" (click)="cerrarDetalle()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Detalle del Reporte #{{ reporteDetalle?.idReporte }}</h2>
+      <button class="btn-close" (click)="cerrarDetalle()">×</button>
+    </div>
+    <div class="modal-body" *ngIf="reporteDetalle">
+      <div class="form-group">
+        <label>Laboratorio</label>
+        <input type="text" class="form-control" [value]="reporteDetalle.laboratorio?.nombreLab" disabled>
+      </div>
+      <div class="form-group">
+        <label>Equipo</label>
+        <input type="text" class="form-control" [value]="reporteDetalle.equipo?.nombreEquipo + ' — ' + reporteDetalle.equipo?.marca + ' ' + reporteDetalle.equipo?.modelo" disabled>
+      </div>
+      <div class="form-group">
+        <label>Usuario</label>
+        <input type="text" class="form-control" [value]="reporteDetalle.usuario?.email" disabled>
+      </div>
+      <div class="form-group">
+        <label>Fecha</label>
+        <input type="text" class="form-control" [value]="formatearFecha(reporteDetalle.fechaReporte)" disabled>
+      </div>
+      <div class="form-group">
+        <label>Descripción de la Falla</label>
+        <textarea class="form-control" rows="5" disabled>{{ reporteDetalle.descripcionFalla }}</textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarDetalle()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR ELIMINAR -->
+<div class="modal-overlay" *ngIf="mostrarModalConfirmar" (click)="cancelarEliminar()">
+  <div class="modal modal-confirm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Confirmar eliminación</h2>
+      <button class="btn-close" (click)="cancelarEliminar()">×</button>
+    </div>
+    <div class="modal-body">
+      <p>¿Está seguro que desea eliminar el reporte <strong>#{{ idAEliminar }}</strong>?</p>
+      <p class="warning-text">Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cancelarEliminar()">Cancelar</button>
+      <button class="btn-eliminar-confirm" (click)="ejecutarEliminar()">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" *ngIf="mostrarToast"
+     [class.toast-success]="toastTipo === 'success'"
+     [class.toast-error]="toastTipo === 'error'">
+  {{ toastMensaje }}
+</div>
