@@ -154,7 +154,7 @@ export class DashboardComponent implements OnInit {
 
   @ViewChild('rolWrapper') rolWrapper!: ElementRef;
 
-  onDocumentClick(event: MouseEvent): void {
+  onDocumentClick(event: Event): void {
     if (this.rolWrapper && !this.rolWrapper.nativeElement.contains(event.target)) {
       this.cerrarSelectorRol();
     }
