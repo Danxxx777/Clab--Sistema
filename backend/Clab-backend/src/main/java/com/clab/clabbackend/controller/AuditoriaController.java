@@ -26,7 +26,6 @@ public class AuditoriaController {
     }
 
     // ─── HELPERS JWT ─────────────────────────────────────────────────────────
-
     private Integer obtenerIdUsuario(HttpServletRequest request) {
         try {
             String header = request.getHeader("Authorization");
@@ -51,7 +50,6 @@ public class AuditoriaController {
     }
 
     // ─── ENDPOINTS ───────────────────────────────────────────────────────────
-
     @GetMapping("/listar")
     public ResponseEntity<List<Auditoria>> listar() {
         return ResponseEntity.ok(auditoriaService.listarTodo());
@@ -76,12 +74,7 @@ public class AuditoriaController {
     public ResponseEntity<?> forzarLogout(@PathVariable Integer idUsuario,
                                           HttpServletRequest request) {
         try {
-            auditoriaService.forzarLogout(
-                    idUsuario,
-                    obtenerIdUsuario(request),
-                    obtenerUsuario(request),
-                    auditoriaService.obtenerIp(request)
-            );
+            auditoriaService.forzarLogout(idUsuario, obtenerIdUsuario(request), obtenerUsuario(request), auditoriaService.obtenerIp(request));
             return ResponseEntity.ok(Map.of("mensaje", "Sesión cerrada correctamente"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

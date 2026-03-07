@@ -6,11 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/carreras") // Ruta base del recurso carreras
-@CrossOrigin(origins = "http://localhost:4200") // Permite peticiones desde Angular
+@RequestMapping("/carreras")
 public class CarreraController {
 
-    // Servicio que contiene la lógica de negocio
     private final CarreraService carreraService;
 
     // Constructor para inyectar el servicio

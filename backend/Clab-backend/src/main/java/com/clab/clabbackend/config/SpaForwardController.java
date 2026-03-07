@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class SpaForwardController {
 
-    // Redirige las rutas del frontend (Angular SPA) hacia index.html para que el enrutador de Angular las maneje
+    // Redirige las rutas del frontend  hacia index.html para que el enrutador de Angular las maneje
     @RequestMapping({
             "/",
             "/usuarios",

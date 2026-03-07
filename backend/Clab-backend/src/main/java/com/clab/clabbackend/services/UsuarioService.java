@@ -17,16 +17,19 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final EntityManager entityManager;
     private final UsuarioRolRepository usuarioRolRepository;
-    private final NotificacionService notificacionService; // ← inyectado
+    private final NotificacionService notificacionService;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     public UsuarioService(UsuarioRepository usuarioRepository,
                           EntityManager entityManager,
                           UsuarioRolRepository usuarioRolRepository,
-                          NotificacionService notificacionService) { // ← agregado al constructor
+                          NotificacionService notificacionService,
+                          org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.entityManager = entityManager;
         this.usuarioRolRepository = usuarioRolRepository;
-        this.notificacionService = notificacionService; // ← asignado
+        this.notificacionService = notificacionService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     // ─── LISTAR ──────────────────────────────────────────────────────────────
@@ -50,7 +53,7 @@ public class UsuarioService {
                 .setParameter("email",        dto.getEmail())
                 .setParameter("telefono",     dto.getTelefono())
                 .setParameter("usuario",      dto.getUsuario())
-                .setParameter("contrasenia",  dto.getContrasenia())
+                .setParameter("contrasenia", passwordEncoder.encode(dto.getContrasenia()))
                 .setParameter("idsRoles",     idsRolesArray(dto))
                 .setParameter("actorId",      actorId)
                 .setParameter("actorUsuario", actorUsuario)
@@ -62,7 +65,7 @@ public class UsuarioService {
                 .map(this::toDTO)
                 .orElseThrow(() -> new RuntimeException("Usuario creado pero no encontrado"));
 
-        // ✅ Notificar a todos los Administradores del nuevo usuario
+        //  Notificar a todos los Administradores del nuevo usuario
         try {
             String nombreCompleto = dto.getNombres() + " " + dto.getApellidos();
             usuarioRolRepository.findUsuariosByRolNombre("Administradorr")
@@ -136,19 +139,14 @@ public class UsuarioService {
         dto.setEstado(u.getEstado());
         dto.setFechaRegistro(u.getFechaRegistro());
 
-        var rolesVigentes = usuarioRolRepository
-                .findAllByUsuario_IdUsuarioAndVigenteTrue(u.getIdUsuario());
-
-        rolesVigentes.stream().findFirst()
-                .ifPresent(ur -> dto.setRol(ur.getRol().getNombreRol()));
-
+        var rolesVigentes = usuarioRolRepository.findAllByUsuario_IdUsuarioAndVigenteTrue(u.getIdUsuario());
+        rolesVigentes.stream().findFirst().ifPresent(ur -> dto.setRol(ur.getRol().getNombreRol()));
         dto.setRoles(rolesVigentes.stream()
                 .map(ur -> new UsuarioResponseDTO.RolInfo(
                         ur.getRol().getIdRol(),
                         ur.getRol().getNombreRol()
                 ))
                 .toList());
-
         return dto;
     }
 }
