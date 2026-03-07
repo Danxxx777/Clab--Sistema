@@ -105,8 +105,8 @@ export class ReservarComponent implements OnInit {
    */
   tabActiva = 0;
   drawerAbierto = false;
-  rol = localStorage.getItem('rol') || '';
-  usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+  rol = sessionStorage.getItem('rol') || '';
+  usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
   idUsuario= 0;
   reservaDetalle: any = null;
   mostrarModalDetalle = false;
@@ -556,7 +556,7 @@ export class ReservarComponent implements OnInit {
   }
 
   logout(): void {
-    localStorage.clear();
+    sessionStorage.clear();
     this.router.navigate(['/login']);
   }
   volver() {
@@ -568,8 +568,8 @@ export class ReservarComponent implements OnInit {
  */
 
   ngOnInit(): void {
-    this.rol = localStorage.getItem('rol') || '';
-    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+    this.rol = sessionStorage.getItem('rol') || '';
+    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
     this.cargarTipos();
     this.cargarReservas();
     this.cargarLaboratorios();
@@ -583,7 +583,7 @@ export class ReservarComponent implements OnInit {
     this.usuarios = [];
 
     this.reservasFiltradas = [...this.reservas];
-    this.idUsuario = parseInt(localStorage.getItem('idUsuario') || '0');
+    this.idUsuario = parseInt(sessionStorage.getItem('idUsuario') || '0');
   }
 
   cargarTipos(): void {

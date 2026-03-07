@@ -34,10 +34,8 @@ public class ConfiguracionCorreoService {
         if (config.getProveedor() == null || config.getProveedor().isBlank()) {
             config.setProveedor(detectarProveedor(config.getHost()));
         }
-        ajustarSslPorPuerto(config, config.getPuerto());
         return repo.save(config);
     }
-
     public ConfiguracionCorreo actualizar(Integer id, ConfiguracionCorreo nueva) {
         ConfiguracionCorreo actual = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Configuración no encontrada"));
@@ -61,7 +59,6 @@ public class ConfiguracionCorreoService {
             actual.setPasswordRemitente(nueva.getPasswordRemitente());
         }
 
-        ajustarSslPorPuerto(actual, nueva.getPuerto());
         return repo.save(actual);
     }
 

@@ -2,7 +2,7 @@ import { HttpInterceptorFn } from '@angular/common/http';
 
 export const JwtInterceptor: HttpInterceptorFn = (req, next) => {
 
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
 
   if (token) {
     req = req.clone({

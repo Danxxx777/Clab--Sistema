@@ -1,5 +1,6 @@
 package com.clab.clabbackend.security;
 
+import com.clab.clabbackend.repository.SesionActivaRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -13,7 +14,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.core.annotation.Order;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 @Component
@@ -22,10 +26,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
+    private final SesionActivaRepository sesionActivaRepository;
 
-    public JwtAuthenticationFilter(JwtService jwtService, CustomUserDetailsService userDetailsService) {
+    public JwtAuthenticationFilter(JwtService jwtService,
+                                   CustomUserDetailsService userDetailsService,
+                                   SesionActivaRepository sesionActivaRepository) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
+        this.sesionActivaRepository = sesionActivaRepository;
     }
 
     @Override
@@ -43,7 +51,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 || path.startsWith("/carreras")
                 || path.startsWith("/asignaturas")
                 || path.startsWith("/horarios")
-                || path.startsWith("/bloqueos");
+                || path.startsWith("/bloqueos")
+                || path.startsWith("/auditoria");
     }
 
     @Override
@@ -60,17 +69,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = header.substring(7);
             try {
                 Claims claims = jwtService.obtenerClaims(token);
+
+                // ─── Validar sesión activa en BD ─────────────────────────
+                String tokenHash = hashToken(token);
+                boolean sesionValida = sesionActivaRepository
+                        .findByTokenHash(tokenHash)
+                        .map(s -> Boolean.TRUE.equals(s.getActiva()))
+                        .orElse(false);
+
+                if (!sesionValida) {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write(
+                            "{\"status\":401,\"error\":\"Sesión inválida\",\"mensaje\":\"Tu sesión fue cerrada. Inicia sesión nuevamente.\"}"
+                    );
+                    return;
+                }
+                // ─────────────────────────────────────────────────────────
+
                 String username = claims.getSubject();
                 String rol = claims.get("rol", String.class);
 
                 List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
-                // Agregar rol como authority
                 if (rol != null) {
                     authorities.add(new SimpleGrantedAuthority("ROLE_" + rol.toUpperCase()));
                 }
 
-                // Agregar permisos como authorities
                 List<?> permisos = claims.get("permisos", List.class);
                 if (permisos != null) {
                     for (Object permiso : permisos) {
@@ -89,5 +114,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private String hashToken(String token) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(token.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(hash);
+        } catch (Exception e) {
+            return token.substring(0, Math.min(token.length(), 255));
+        }
     }
 }

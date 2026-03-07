@@ -46,11 +46,11 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
-    this.rol = localStorage.getItem('rol');
-    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
-    this.rolActual = localStorage.getItem('rol') || '';
+    this.rol = sessionStorage.getItem('rol');
+    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
+    this.rolActual = sessionStorage.getItem('rol') || '';
 
-    const rolesGuardados = localStorage.getItem('rolesDisponibles');
+    const rolesGuardados = sessionStorage.getItem('rolesDisponibles');
     if (rolesGuardados) {
       this.rolesDisponibles = JSON.parse(rolesGuardados);
     }
@@ -66,7 +66,7 @@ export class DashboardComponent implements OnInit {
   // ── Notificaciones ───────────────────────────────────────────────
 
   private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token') || '';
+    const token = sessionStorage.getItem('token') || '';
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 
@@ -103,16 +103,16 @@ export class DashboardComponent implements OnInit {
 
     this.cambiandoRol = true;
     this.mostrarSelectorRol = false;
-    const idUsuario = parseInt(localStorage.getItem('idUsuario') || '0');
+    const idUsuario = parseInt(sessionStorage.getItem('idUsuario') || '0');
 
     this.http.post<any>(`${this.apiUrl}/auth/cambiar-rol`, {
       idUsuario,
       nombreRol
     }).subscribe({
       next: (res) => {
-        localStorage.setItem('token', res.token);
-        localStorage.setItem('rol', res.rol);
-        localStorage.setItem('rolesDisponibles', JSON.stringify(res.rolesDisponibles));
+        sessionStorage.setItem('token', res.token);
+        sessionStorage.setItem('rol', res.rol);
+        sessionStorage.setItem('rolesDisponibles', JSON.stringify(res.rolesDisponibles));
 
         this.rol = res.rol;
         this.rolActual = res.rol;

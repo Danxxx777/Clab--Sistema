@@ -222,7 +222,7 @@
     <div class="tab-content" *ngIf="tabActiva === 1">
       <div class="toolbar">
         <div class="filters-group"></div>
-        <button class="btn-agregar" (click)="tabActiva === 1 ? cargarSesiones() : cargarAuditorias()">↻ Actualizar</button>
+        <button class="btn-agregar" (click)="cargarSesiones()">↻ Actualizar</button>
       </div>
 
       <div class="table-container">
@@ -234,6 +234,7 @@
             <th>INICIO DE SESIÓN</th>
             <th>EXPIRA</th>
             <th>ESTADO</th>
+            <th>ACCIONES</th>
           </tr>
           </thead>
           <tbody>
@@ -242,12 +243,17 @@
             <td><small>{{ s.ip }}</small></td>
             <td><small>{{ s.fechaInicio | date:'dd/MM/yyyy HH:mm:ss' }}</small></td>
             <td><small>{{ s.fechaExpira | date:'dd/MM/yyyy HH:mm:ss' }}</small></td>
+            <td><span class="badge activo">ACTIVA</span></td>
             <td>
-              <span class="badge activo">ACTIVA</span>
+              <button class="btn-forzar-logout"
+                      (click)="forzarLogout(s)"
+                      [disabled]="forzandoLogout === s.idUsuario">
+                {{ forzandoLogout === s.idUsuario ? 'Cerrando...' : 'Forzar cierre' }}
+              </button>
             </td>
           </tr>
           <tr *ngIf="sesionesActivas.length === 0">
-            <td colspan="5" class="empty-message">No hay sesiones activas en este momento</td>
+            <td colspan="6" class="empty-message">No hay sesiones activas en este momento</td>
           </tr>
           </tbody>
         </table>
@@ -255,4 +261,36 @@
     </div>
 
   </div>
+
+  <!-- MODAL FORZAR LOGOUT -->
+  <div class="modal-overlay" *ngIf="modalForzarAbierto" (click)="cancelarForzar()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-icon">⚠</div>
+      <h3 class="modal-titulo">Forzar cierre de sesión</h3>
+      <p class="modal-desc">
+        ¿Estás seguro de cerrar la sesión de <strong>{{ sesionAForzar?.usuario }}</strong>?
+        Esta acción quedará registrada en auditoría.
+      </p>
+      <div class="modal-actions">
+        <button class="btn-cancelar-modal" (click)="cancelarForzar()">Cancelar</button>
+        <button class="btn-confirmar-forzar"
+                (click)="confirmarForzar()"
+                [disabled]="forzandoLogout !== null">
+          {{ forzandoLogout !== null ? 'Cerrando...' : 'Sí, cerrar sesión' }}
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- MODAL ERROR -->
+  <div class="modal-overlay" *ngIf="modalErrorAbierto" (click)="modalErrorAbierto = false">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-icon">🚫</div>
+      <h3 class="modal-titulo" style="color:#ff4444">Acción no permitida</h3>
+      <p class="modal-desc">{{ modalErrorMensaje }}</p>
+      <div class="modal-actions">
+        <button class="btn-confirmar-forzar" (click)="modalErrorAbierto = false">Entendido</button>
+      </div>
+    </div>
+  </div>
+
 </div>

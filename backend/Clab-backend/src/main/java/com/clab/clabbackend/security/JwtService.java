@@ -23,9 +23,10 @@ public class JwtService {
         );
     }
 
-    public String generarToken(Integer idUsuario, String rol, List<String> permisos) {
+    public String generarToken(Integer idUsuario, String usuario, String rol, List<String> permisos) {
         return Jwts.builder()
                 .subject(idUsuario.toString())
+                .claim("usuario", usuario)
                 .claim("rol", rol)
                 .claim("permisos", permisos)
                 .issuedAt(new Date())

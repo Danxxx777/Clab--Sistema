@@ -21,8 +21,8 @@ export class AcademicoComponent implements OnInit {
 
   tabActiva = 0;
   drawerAbierto = false;
-  rol = localStorage.getItem('rol') || '';
-  usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+  rol = sessionStorage.getItem('rol') || '';
+  usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
 
 
   periodos: Periodo[] = [];
@@ -160,8 +160,8 @@ export class AcademicoComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.rol = localStorage.getItem('rol') || '';
-    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+    this.rol = sessionStorage.getItem('rol') || '';
+    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
     console.log('Módulo Académico cargado');
     this.cargarPeriodos();
     this.cargarFacultades();

@@ -33,6 +33,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable()).cors(cors -> cors.configurationSource(corsConfigurationSource())).sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/auditoria/**").permitAll()
                         .requestMatchers("/api/test/**").permitAll()
                         .requestMatchers("/equipos/**").permitAll()
                         .requestMatchers("/tipos-equipo/**").permitAll()
@@ -48,6 +49,7 @@ public class SecurityConfig {
                         .requestMatchers("/usuarios/**").authenticated()
                         .requestMatchers("/roles/**").authenticated()
                         .requestMatchers("/bloqueos/**").permitAll()
+                        .requestMatchers("/auditoria/forzar-logout/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
