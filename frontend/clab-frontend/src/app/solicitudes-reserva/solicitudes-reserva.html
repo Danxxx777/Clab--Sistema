@@ -120,7 +120,16 @@
         <button class="btn-pag" (click)="irAPagina(totalPaginas)" [disabled]="paginaActual === totalPaginas">»</button>
       </div>
 
-      <button class="btn-agregar" (click)="abrirModal()">+ Nueva Solicitud</button>
+      <!-- cambia el botón Nueva Solicitud -->
+      <button class="btn-agregar"
+              (click)="abrirModal()"
+              [disabled]="usuarioBloqueado"
+              [title]="usuarioBloqueado ? 'Bloqueado por inasistencias' : ''">
+        {{ usuarioBloqueado ? '🔒 Bloqueado' : '+ Nueva Solicitud' }}
+      </button>
+      <div class="bloqueo-aviso" *ngIf="usuarioBloqueado">
+        ⚠️ Tu cuenta está bloqueada por inasistencias consecutivas. Contacta al encargado del laboratorio para ser desbloqueado.
+      </div>
     </div>
 
     <!-- TABLA -->

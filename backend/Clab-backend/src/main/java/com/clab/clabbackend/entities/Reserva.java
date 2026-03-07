@@ -67,4 +67,7 @@ public class Reserva {
 
     @Column(name = "fecha_confirmacion")
     private LocalDate fechaConfirmacion;
+
+    @Column(name = "asistio")
+    private Boolean asistio;
 }

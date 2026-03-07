@@ -9,6 +9,7 @@ import { LaboratorioService } from '../services/laboratorio.service';
 import { AsignaturaService } from '../services/asignatura.service';
 import { PeriodoService } from '../services/periodo.service';
 import { HorarioService } from '../services/horario.service';
+import { AsistenciaUsuarioService } from '../services/asistencia-usuario.service';
 
 /*INTERFACES*/
 
@@ -97,7 +98,8 @@ export class ReservarComponent implements OnInit {
     private asignaturaService: AsignaturaService,
     private periodoService: PeriodoService,
     private horarioService: HorarioService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private asistenciaUsuarioService: AsistenciaUsuarioService
   ) {}
 
   /*
@@ -113,6 +115,11 @@ export class ReservarComponent implements OnInit {
 
   cambiarTab(tab: number) {
     this.tabActiva = tab;
+    if(tab === 2)
+    {
+      this.cargarReservasHoy();
+      this.cargarUsuariosBloqueados();
+    }
   }
 
   /*
@@ -141,6 +148,9 @@ export class ReservarComponent implements OnInit {
 
   busquedaReservas = '';
   busquedaTipos = '';
+
+  reservasHoy: any[] = [];
+  usuariosBloqueados: any[] = [];
 
   filtrarReservas() {
     const texto = this.busquedaReservas.toLowerCase();
@@ -584,6 +594,11 @@ export class ReservarComponent implements OnInit {
 
     this.reservasFiltradas = [...this.reservas];
     this.idUsuario = parseInt(sessionStorage.getItem('idUsuario') || '0');
+
+    if (this.rol === 'Encargado_Lab') {
+      this.cargarReservasHoy();
+      this.cargarUsuariosBloqueados();
+    }
   }
 
   cargarTipos(): void {
@@ -665,5 +680,86 @@ export class ReservarComponent implements OnInit {
     } else {
       this.horariosAcademicos = [];
     }
+  }
+
+  cargarReservasHoy(): void {
+    this.asistenciaUsuarioService.listarReservasHoy().subscribe({
+      next: (data) => {
+        this.reservasHoy = data.map(r => ({
+          ...r,
+          asistio: r.asistio === true || r.asistio === 'true' ? true :
+            r.asistio === false || r.asistio === 'false' ? false : null
+        }));
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error cargando reservas de hoy:', err)
+    });
+  }
+
+  cargarUsuariosBloqueados(): void {
+    this.asistenciaUsuarioService.listarBloqueados().subscribe({
+      next: (data) => {
+        this.usuariosBloqueados = data;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error cargando bloqueados:', err)
+    });
+  }
+
+  registrarAsistencia(reserva: any): void {
+    this.asistenciaUsuarioService.registrarAsistencia(
+      reserva.idReserva,
+      reserva.idUsuario, undefined
+    ).subscribe({
+      next: () => {
+        this.mostrarNotificacion('✅ Asistencia registrada correctamente');
+        this.cargarReservasHoy();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error registrando asistencia:', err);
+        this.mostrarNotificacion('❌ Error al registrar asistencia', 'error');
+      }
+    });
+  }
+
+  registrarFalta(reserva: any): void {
+    this.asistenciaUsuarioService.registrarFalta(
+      reserva.idReserva,
+      reserva.idUsuario
+    ).subscribe({
+      next: () => {
+        this.asistenciaUsuarioService.usuarioBloqueado(reserva.idUsuario).subscribe({
+          next: (bloqueado) => {
+            if (bloqueado) {
+              this.mostrarNotificacion(`⚠️ Usuario ${reserva.nombreUsuario} bloqueado por inasistencias`, 'error');
+            } else {
+              this.mostrarNotificacion(`📋 Falta registrada para ${reserva.nombreUsuario}`);
+            }
+            this.cargarReservasHoy();
+            this.cargarUsuariosBloqueados();
+            this.cdr.detectChanges();
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Error registrando falta:', err);
+        this.mostrarNotificacion('❌ Error al registrar falta', 'error');
+      }
+    });
+  }
+
+  desbloquearUsuario(idUsuario: number): void {
+    this.asistenciaUsuarioService.desbloquearUsuario(idUsuario).subscribe({
+      next: () => {
+        this.mostrarNotificacion('✅ Usuario desbloqueado correctamente');
+        this.cargarUsuariosBloqueados();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error desbloqueando usuario:', err);
+        this.mostrarNotificacion('❌ Error al desbloquear usuario', 'error');
+      }
+    });
   }
 }
