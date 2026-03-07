@@ -65,8 +65,8 @@ export class ConfiguracionCorreoComponent implements OnInit {
   constructor(private router: Router, private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    this.rol = localStorage.getItem('rol') || '';
-    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+    this.rol = sessionStorage.getItem('rol') || '';
+    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
     this.cargarConfigs();
   }
 
@@ -226,5 +226,5 @@ export class ConfiguracionCorreoComponent implements OnInit {
   cerrarDrawer(): void { this.drawerAbierto = false; }
   navegar(ruta: string): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
   volver(): void { this.router.navigate(['/dashboard']); }
-  logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
+  logout(): void { sessionStorage.clear(); this.router.navigate(['/login']); }
 }

@@ -3,7 +3,7 @@ import { catchError, throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
 
   const cloned = token ? req.clone({
     setHeaders: { Authorization: `Bearer ${token}` }
@@ -16,7 +16,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         mostrarToast(mensaje, 'error');
       } else if (error.status === 401) {
         mostrarToast('Tu sesión ha expirado. Inicia sesión nuevamente.', 'warning');
-        localStorage.clear();
+        sessionStorage.clear();
         window.location.href = '/login';
       } else if (error.status === 500) {
         mostrarToast('Error interno del servidor. Intenta de nuevo.', 'error');

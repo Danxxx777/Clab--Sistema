@@ -53,12 +53,14 @@ public class AuditoriaService {
                 .setParameter("resultado",   resultado != null ? resultado : "EXITOSO")
                 .executeUpdate();
     }
+
     @Transactional
     public void registrarExito(Integer idUsuario, String usuario, String accion,
                                String modulo, String tabla, Integer idRegistro,
                                String descripcion, String ip) {
         registrar(idUsuario, usuario, accion, modulo, tabla, idRegistro, descripcion, ip, "EXITOSO");
     }
+
     @Transactional
     public void registrarFallo(Integer idUsuario, String usuario, String accion,
                                String modulo, String descripcion, String ip) {
@@ -89,6 +91,18 @@ public class AuditoriaService {
                 .setParameter("tokenHash",  hashToken(token))
                 .setParameter("idUsuario",  idUsuario)
                 .setParameter("ip",         ip)
+                .executeUpdate();
+    }
+
+    @Transactional
+    public void forzarLogout(Integer idUsuarioTarget, Integer actorId, String actorUsuario, String ip) {
+        entityManager.createNativeQuery(
+                        "CALL usuarios.sp_forzar_logout(:idTarget, :actorId, :actorUsuario, :ip)"
+                )
+                .setParameter("idTarget",      idUsuarioTarget)
+                .setParameter("actorId",       actorId)
+                .setParameter("actorUsuario",  actorUsuario)
+                .setParameter("ip",            ip)
                 .executeUpdate();
     }
 

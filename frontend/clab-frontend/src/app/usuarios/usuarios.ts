@@ -68,9 +68,9 @@ export class UsuariosComponent implements OnInit {
 
   /* ==LIFECYCLE== */
   ngOnInit(): void {
-    this.rol = localStorage.getItem('rol') || '';
+    this.rol = sessionStorage.getItem('rol') || '';
 
-    const userData = localStorage.getItem('usuario') || localStorage.getItem('user');
+    const userData = sessionStorage.getItem('usuario') || sessionStorage.getItem('user');
     if (userData) {
       try {
         const parsed = JSON.parse(userData);
@@ -91,7 +91,7 @@ export class UsuariosComponent implements OnInit {
   /* ==NAVEGACIÓN== */
   volver(): void { this.router.navigate(['/dashboard']); }
   navegar(ruta: string, _texto: string): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
-  logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
+  logout(): void { sessionStorage.clear(); this.router.navigate(['/login']); }
 
   cambiarTab(index: number): void {
     this.tabActiva = index;
