@@ -24,17 +24,13 @@ public class BloqueoLabController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> crear(
-            @RequestBody BloqueoLabDTO dto,
-            @RequestHeader("id-usuario") Integer idUsuario) {
+    public ResponseEntity<Void> crear(@RequestBody BloqueoLabDTO dto, @RequestHeader("id-usuario") Integer idUsuario) {
         bloqueoLabService.crear(dto, idUsuario);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> actualizar(
-            @PathVariable Integer id,
-            @RequestBody BloqueoLabDTO dto) {
+    public ResponseEntity<Void> actualizar(@PathVariable Integer id, @RequestBody BloqueoLabDTO dto) {
         bloqueoLabService.actualizar(id, dto);
         return ResponseEntity.ok().build();
     }

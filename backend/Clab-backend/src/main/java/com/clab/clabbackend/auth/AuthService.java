@@ -42,7 +42,8 @@ public class AuthService {
                        EmailService emailService,
                        RolRepository rolRepository,
                        RolPermisoRepository rolPermisoRepository,
-                       AuditoriaService auditoriaService) {
+                       AuditoriaService auditoriaService)
+    {
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;

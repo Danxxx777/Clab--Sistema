@@ -46,7 +46,7 @@ public class ConfiguracionCorreoController {
         return ResponseEntity.ok().build();
     }
 
-    // ✅ Probar configuración SMTP — envía correo de prueba al remitente
+    //  Probar configuración SMTP — envía correo de prueba al remitente
     @PostMapping("/{id}/probar")
     public ResponseEntity<?> probar(@PathVariable Integer id) {
         try {
@@ -57,7 +57,7 @@ public class ConfiguracionCorreoController {
         }
     }
 
-    // ✅ Obtener presets de proveedores conocidos
+    //  Obtener presets de proveedores conocidos
     @GetMapping("/presets")
     public ResponseEntity<List<Map<String, Object>>> presets() {
         return ResponseEntity.ok(service.obtenerPresets());
