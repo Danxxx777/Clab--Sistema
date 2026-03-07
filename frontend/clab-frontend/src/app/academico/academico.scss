@@ -859,3 +859,13 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   .modal-body { padding: 18px; }
   .modal-footer { padding: 12px 18px; flex-direction: column; button { width: 100%; } }
 }
+.config-msg-error {
+  color: #ff6b6b;
+  font-size: 12px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(231, 76, 60, 0.08);
+  border: 1px solid rgba(231, 76, 60, 0.2);
+  border-radius: 6px;
+  font-family: 'Space Grotesk', sans-serif;
+}

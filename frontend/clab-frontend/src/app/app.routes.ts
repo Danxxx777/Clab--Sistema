@@ -20,20 +20,22 @@ import { VerificarCodigoComponent } from './auth/verificar-codigo/verificar-codi
 import { ResetPasswordComponent } from './auth/reset-password/reset-password';
 import { ConfiguracionCorreoComponent } from './configuracion-correo/configuracion-correo';
 
-import { authGuard } from './auth/auth.guard';
+import { authGuard, guestGuard } from './auth/auth.guard';
 import {SolicitudesReservaComponent} from './solicitudes-reserva/solicitudes-reserva';
 import {AuditoriaComponent} from './auditoria/auditoria';
 import {RolesComponent} from './roles/roles';
+
 
 export const routes: Routes = [
 
   { path: '', redirectTo: 'login', pathMatch: 'full' },
 
   // RUTAS PÚBLICAS
-  { path: 'login', component: LoginComponent },
-  { path: 'forgot-password', component: ForgotPasswordComponent },
-  { path: 'verificar-codigo', component: VerificarCodigoComponent },
-  { path: 'reset-password', component: ResetPasswordComponent },
+  { path: 'login',             component: LoginComponent,             canActivate: [guestGuard] },
+  { path: 'forgot-password',   component: ForgotPasswordComponent,   canActivate: [guestGuard] },
+  { path: 'verificar-codigo',  component: VerificarCodigoComponent,  canActivate: [guestGuard] },
+  { path: 'reset-password',    component: ResetPasswordComponent,    canActivate: [guestGuard] },
+
 
   // RUTAS PROTEGIDAS
   { path: 'dashboard',      component: DashboardComponent,     canActivate: [authGuard] },
@@ -51,8 +53,8 @@ export const routes: Routes = [
   { path: 'usuarios',       component: UsuariosComponent,       canActivate: [authGuard] },
   { path: 'configuracion-correo', component: ConfiguracionCorreoComponent, canActivate: [authGuard] },
   { path: 'reporte-fallas', component: ReporteFallasComponent,  canActivate: [authGuard] },
-  { path: 'solicitudes-reserva',  component: SolicitudesReservaComponent,  canActivate: [authGuard] },
-  { path: 'auditoria', component: AuditoriaComponent },
-  { path: 'roles', component: RolesComponent },
+  { path: 'solicitudes-reserva', component: SolicitudesReservaComponent, canActivate: [authGuard] },
+  { path: 'auditoria',      component: AuditoriaComponent,      canActivate: [authGuard] },
+  { path: 'roles',          component: RolesComponent,          canActivate: [authGuard] },
   { path: '**', redirectTo: 'dashboard' }
 ];
