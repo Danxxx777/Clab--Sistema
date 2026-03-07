@@ -270,12 +270,16 @@
         <div class="form-group">
           <label>Identidad <span class="required">*</span></label>
           <input class="form-control" [(ngModel)]="usuarioActual.identidad" name="identidad"
-                 [disabled]="modoModal === 'ver'">
+                 [disabled]="modoModal === 'ver'"
+                 maxlength="13"
+                 (keypress)="$event.charCode >= 48 && $event.charCode <= 57 || $event.preventDefault()">
         </div>
         <div class="form-group">
           <label>Nombres <span class="required">*</span></label>
           <input class="form-control" [(ngModel)]="usuarioActual.nombres" name="nombres"
-                 [disabled]="modoModal === 'ver'" (input)="previewUsuario()">
+                 [disabled]="modoModal === 'ver'" (input)="previewUsuario()"
+                 maxlength="100"
+                 (keypress)="soloLetras($event)">
         </div>
       </div>
 
@@ -283,12 +287,15 @@
         <div class="form-group">
           <label>Apellidos <span class="required">*</span></label>
           <input class="form-control" [(ngModel)]="usuarioActual.apellidos" name="apellidos"
-                 [disabled]="modoModal === 'ver'" (input)="previewUsuario()">
+                 [disabled]="modoModal === 'ver'" (input)="previewUsuario()"
+                 maxlength="100"
+                 (keypress)="soloLetras($event)">
         </div>
         <div class="form-group">
           <label>Email <span class="required">*</span></label>
           <input type="email" class="form-control" [(ngModel)]="usuarioActual.email" name="email"
-                 [disabled]="modoModal === 'ver'">
+                 [disabled]="modoModal === 'ver'"
+                 maxlength="150">
         </div>
       </div>
 
@@ -296,7 +303,9 @@
         <div class="form-group">
           <label>Teléfono</label>
           <input class="form-control" [(ngModel)]="usuarioActual.telefono" name="telefono"
-                 [disabled]="modoModal === 'ver'">
+                 [disabled]="modoModal === 'ver'"
+                 maxlength="15"
+                 (keypress)="soloTelefono($event)">
         </div>
         <div class="form-group">
           <label>Usuario del sistema <span class="form-hint">(generado automáticamente)</span></label>
@@ -312,7 +321,8 @@
       <div class="form-row" *ngIf="modoModal === 'crear'">
         <div class="form-group full-width">
           <label>Contraseña <span class="required">*</span></label>
-          <input type="password" class="form-control" [(ngModel)]="usuarioActual.contrasenia" name="contrasenia">
+          <input type="password" class="form-control" [(ngModel)]="usuarioActual.contrasenia" name="contrasenia"
+                 maxlength="100">
         </div>
       </div>
 
