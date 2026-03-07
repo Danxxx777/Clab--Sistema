@@ -46,8 +46,8 @@ export class ReporteFallasComponent implements OnInit {
   idAEliminar: number | null = null;
 
   drawerAbierto = false;
-  rol = localStorage.getItem('rol') || '';
-  usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+  rol = sessionStorage.getItem('rol') || '';
+  usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
   cargando = false;
 
   mostrarToast = false;
@@ -64,8 +64,8 @@ export class ReporteFallasComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.rol = localStorage.getItem('rol') || '';
-    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+    this.rol = sessionStorage.getItem('rol') || '';
+    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
     this.inicializarFormulario();
     this.cargarLaboratorios();
     this.cargarReportes();
@@ -225,7 +225,7 @@ export class ReporteFallasComponent implements OnInit {
       codLaboratorio: Number(this.reporteForm.get('codLaboratorio')?.value),
       idEquipo: Number(this.reporteForm.get('idEquipo')?.value),
       descripcionFalla: this.reporteForm.get('descripcionFalla')?.value,
-      idUsuario: Number(localStorage.getItem('idUsuario'))
+      idUsuario: Number(sessionStorage.getItem('idUsuario'))
     };
     this.reporteService.crear(reporteDTO).subscribe({
       next: () => {
@@ -244,7 +244,7 @@ export class ReporteFallasComponent implements OnInit {
   toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
   cerrarDrawer(): void { this.drawerAbierto = false; }
   navegar(ruta: string, texto: string): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
-  logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
+  logout(): void { sessionStorage.clear(); this.router.navigate(['/login']); }
   volver(): void { this.router.navigate(['/dashboard']); }
   formatearFecha(fecha: any): string { if (!fecha) return ''; return new Date(fecha).toLocaleDateString('es-ES'); }
 }

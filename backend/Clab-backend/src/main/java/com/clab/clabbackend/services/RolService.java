@@ -32,9 +32,22 @@ public class RolService {
     private UsuarioRolRepository UsuarioRolRepository;
     @Autowired
     private RolRolBDRepository rolRolBDRepository;
-
     @Autowired
     private RolBdEsquemaPermisoRepository rolBdEsquemaPermisoRepository;
+
+    // ─── CONTEXT ─────────────────────────────────────────────────────────────
+
+    private void setActorContext(Integer actorId, String actorUsuario) {
+        entityManager.createNativeQuery(
+                        "SELECT set_config('clab.actor_id', :id, true), " +
+                                "set_config('clab.actor_usuario', :usuario, true)"
+                )
+                .setParameter("id",      actorId != null ? actorId.toString() : "0")
+                .setParameter("usuario", actorUsuario != null ? actorUsuario : "Sistema")
+                .getSingleResult();
+    }
+
+    // ─── SYNC BD ─────────────────────────────────────────────────────────────
 
     private void sincronizarRolesBD() {
         List<String> rolesPostgres = entityManager.createNativeQuery(
@@ -51,8 +64,11 @@ public class RolService {
         }
     }
 
+    // ─── CREAR ───────────────────────────────────────────────────────────────
+
     @Transactional
-    public Rol crear(RolRequestDTO dto) {
+    public Rol crear(RolRequestDTO dto, Integer actorId, String actorUsuario) {
+        setActorContext(actorId, actorUsuario);
         sincronizarRolesBD();
 
         if (dto.getNombreRol() == null || dto.getNombreRol().trim().isEmpty()) {
@@ -72,7 +88,6 @@ public class RolService {
                 .findByNombreRolIgnoreCase(nombre)
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado después de ejecutar SP"));
 
-        // Estado inicial siempre ACTIVO
         rolGuardado.setEstado("ACTIVO");
         rolRepository.save(rolGuardado);
 
@@ -94,8 +109,9 @@ public class RolService {
         }
         asignarPermisosEsquemas(dto.getPermisosEsquemas());
         return rolGuardado;
-
     }
+
+    // ─── LISTAR ──────────────────────────────────────────────────────────────
 
     public List<RolResponseDTO> listar() {
         return rolRepository.findByNombreRolNotLike("clab_%").stream().map(rol -> {
@@ -119,8 +135,11 @@ public class RolService {
         }).toList();
     }
 
+    // ─── ACTUALIZAR ──────────────────────────────────────────────────────────
+
     @Transactional
-    public Rol actualizar(Integer id, RolRequestDTO dto) {
+    public Rol actualizar(Integer id, RolRequestDTO dto, Integer actorId, String actorUsuario) {
+        setActorContext(actorId, actorUsuario);
         sincronizarRolesBD();
 
         Rol rol = rolRepository.findById(id)
@@ -128,7 +147,6 @@ public class RolService {
         rol.setNombreRol(dto.getNombreRol().trim());
         rol.setDescripcion(dto.getDescripcion());
 
-        // Mantener estado actual si no viene en el dto
         if (dto.getEstado() != null && !dto.getEstado().isBlank()) {
             rol.setEstado(dto.getEstado());
         }
@@ -157,9 +175,12 @@ public class RolService {
         return rolActualizado;
     }
 
-    // 👈 Nuevo método para cambiar estado
+    // ─── CAMBIAR ESTADO ──────────────────────────────────────────────────────
+
     @Transactional
-    public void cambiarEstado(Integer id, String estado) {
+    public void cambiarEstado(Integer id, String estado, Integer actorId, String actorUsuario) {
+        setActorContext(actorId, actorUsuario);
+
         Rol rol = rolRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
         if (!estado.equals("ACTIVO") && !estado.equals("INACTIVO")) {
@@ -169,8 +190,12 @@ public class RolService {
         rolRepository.save(rol);
     }
 
+    // ─── ELIMINAR ────────────────────────────────────────────────────────────
+
     @Transactional
-    public void eliminar(Integer id) {
+    public void eliminar(Integer id, Integer actorId, String actorUsuario) {
+        setActorContext(actorId, actorUsuario);
+
         Rol rol = rolRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
 
@@ -183,6 +208,8 @@ public class RolService {
                 "DROP ROLE IF EXISTS \"" + rol.getNombreRol().toLowerCase() + "\""
         ).executeUpdate();
     }
+
+    // ─── HELPERS ─────────────────────────────────────────────────────────────
 
     private void guardarPermisos(Rol rol, List<Integer> permisosIds) {
         if (permisosIds == null) return;
@@ -219,11 +246,8 @@ public class RolService {
     }
 
     private void asignarPermisosEsquemas(List<RolBdEsquemaPermisoDTO> permisos) {
-        if (permisos == null || permisos.isEmpty()) {
-            return;
-        }
+        if (permisos == null || permisos.isEmpty()) return;
 
-        // Desactivar esquemas previos de cada rolBD involucrado
         permisos.stream()
                 .map(RolBdEsquemaPermisoDTO::idRolBd)
                 .distinct()
@@ -233,7 +257,6 @@ public class RolService {
                         ).executeUpdate()
                 );
 
-        // Insertar/actualizar los nuevos
         for (RolBdEsquemaPermisoDTO p : permisos) {
             rolBDRepository.spAsignarPermisos(
                     p.idRolBd(), p.nombreRolBd(), p.nombreEsquema(),
@@ -258,6 +281,7 @@ public class RolService {
                 })
                 .collect(java.util.stream.Collectors.toList());
     }
+
     @Transactional(readOnly = true)
     public List<String> listarEsquemas() {
         return entityManager.createNativeQuery(

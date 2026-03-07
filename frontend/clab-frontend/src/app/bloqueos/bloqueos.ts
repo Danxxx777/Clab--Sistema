@@ -42,8 +42,8 @@ export class BloqueosComponent implements OnInit {
   formTipo: TipoBloqueDTO = { nombreTipo: '', descripcion: '', estado: '' };
 
   drawerAbierto = false;
-  rol = localStorage.getItem('rol') || '';
-  usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+  rol = sessionStorage.getItem('rol') || '';
+  usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
 
   mostrarToast = false;
   toastMensaje = '';
@@ -103,8 +103,8 @@ export class BloqueosComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.rol = localStorage.getItem('rol') || '';
-    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+    this.rol = sessionStorage.getItem('rol') || '';
+    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
     this.cargarTiposBloqueo();
     this.cargarLaboratorios();
     this.cargarBloqueos();
@@ -325,7 +325,7 @@ export class BloqueosComponent implements OnInit {
   }
 
   logout(): void {
-    localStorage.clear();
+    sessionStorage.clear();
     this.router.navigate(['/login']);
   }
 

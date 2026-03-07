@@ -92,7 +92,7 @@ public class AuthService {
                 .map(ur -> ur.getRol().getNombreRol()).toList();
 
         List<String> permisos = obtenerPermisosDeRol(rolPrincipal);
-        String token = jwtService.generarToken(usuario.getIdUsuario(), rolPrincipal, permisos);
+        String token = jwtService.generarToken(usuario.getIdUsuario(), usuario.getUsuario(), rolPrincipal, permisos);
 
         // Registrar sesión via SP
         auditoriaService.registrarSesion(
@@ -128,7 +128,7 @@ public class AuthService {
                 .map(ur -> ur.getRol().getNombreRol()).toList();
 
         List<String> permisos = obtenerPermisosDeRol(nombreRol);
-        String token = jwtService.generarToken(idUsuario, nombreRol, permisos);
+        String token = jwtService.generarToken(idUsuario, usuario.getUsuario(), nombreRol, permisos);
 
         auditoriaService.registrarSesion(idUsuario, usuario.getUsuario(),
                 token, ip, LocalDateTime.now().plusHours(1));
