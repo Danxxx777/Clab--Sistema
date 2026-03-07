@@ -251,14 +251,45 @@ export class UsuariosComponent implements OnInit {
     this.errorModal = '';
     const esCrear = this.modoModal === 'crear';
 
+    // Campos obligatorios
     if (!this.usuarioActual.identidad?.trim()) { this.errorModal = 'La identidad es obligatoria.'; return; }
     if (!this.usuarioActual.nombres?.trim())   { this.errorModal = 'Los nombres son obligatorios.'; return; }
     if (!this.usuarioActual.apellidos?.trim()) { this.errorModal = 'Los apellidos son obligatorios.'; return; }
     if (!this.usuarioActual.email?.trim())     { this.errorModal = 'El email es obligatorio.'; return; }
-    if (!this.esEmailValido(this.usuarioActual.email)) { this.errorModal = 'El formato del email no es válido.'; return; }
-    if (!this.usuarioActual.idsRoles?.length)  { this.errorModal = 'Selecciona al menos un rol.'; return; }
-    if (esCrear && !this.usuarioActual.contrasenia?.trim()) { this.errorModal = 'La contraseña es obligatoria.'; return; }
 
+    // Validar identidad: 10 dígitos (cédula) o 13 (RUC)
+    if (!/^\d{10}(\d{3})?$/.test(this.usuarioActual.identidad.trim())) {
+      this.errorModal = 'La identidad debe tener 10 dígitos (cédula) o 13 (RUC).'; return;
+    }
+
+    // Validar nombres y apellidos: solo letras, tildes, ñ y espacios
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(this.usuarioActual.nombres.trim())) {
+      this.errorModal = 'Los nombres solo deben contener letras.'; return;
+    }
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(this.usuarioActual.apellidos.trim())) {
+      this.errorModal = 'Los apellidos solo deben contener letras.'; return;
+    }
+
+    // Validar email
+    if (!this.esEmailValido(this.usuarioActual.email)) { this.errorModal = 'El formato del email no es válido.'; return; }
+
+    // Validar teléfono (opcional, pero si se ingresó debe ser válido)
+    if (this.usuarioActual.telefono?.trim()) {
+      if (!/^\+?[0-9]{7,15}$/.test(this.usuarioActual.telefono.trim())) {
+        this.errorModal = 'El teléfono no tiene un formato válido.'; return;
+      }
+    }
+
+    // Validar contraseña mínima al crear
+    if (esCrear && !this.usuarioActual.contrasenia?.trim()) { this.errorModal = 'La contraseña es obligatoria.'; return; }
+    if (esCrear && this.usuarioActual.contrasenia!.trim().length < 8) {
+      this.errorModal = 'La contraseña debe tener al menos 8 caracteres.'; return;
+    }
+
+    // Validar roles
+    if (!this.usuarioActual.idsRoles?.length) { this.errorModal = 'Selecciona al menos un rol.'; return; }
+
+    // Validar email duplicado
     const emailDuplicado = this.usuarios.some(u =>
       u.email?.toLowerCase() === this.usuarioActual.email?.toLowerCase() &&
       u.id !== this.usuarioActual.id
@@ -267,17 +298,17 @@ export class UsuariosComponent implements OnInit {
 
     const usuarioGenerado = this.modoModal === 'crear'
       ? this.generarNombreUsuario(this.usuarioActual.nombres, this.usuarioActual.apellidos)
-      : this.usuarioActual.usuario;  // ← preservar el username existente
+      : this.usuarioActual.usuario;
 
     const payload: UsuarioRequest = {
-      identidad: this.usuarioActual.identidad.trim(),
-      nombres: this.usuarioActual.nombres.trim(),
-      apellidos: this.usuarioActual.apellidos.trim(),
-      email: this.usuarioActual.email.trim(),
-      telefono: this.usuarioActual.telefono ?? '',
+      identidad:  this.usuarioActual.identidad.trim(),
+      nombres:    this.usuarioActual.nombres.trim(),
+      apellidos:  this.usuarioActual.apellidos.trim(),
+      email:      this.usuarioActual.email.trim(),
+      telefono:   this.usuarioActual.telefono?.trim() ?? '',
       contrasenia: this.usuarioActual.contrasenia ?? '',
-      usuario: usuarioGenerado,  // ahora es seguro
-      idsRoles: this.usuarioActual.idsRoles ?? []
+      usuario:    usuarioGenerado,
+      idsRoles:   this.usuarioActual.idsRoles ?? []
     };
 
     this.guardandoUsuario = true;
@@ -331,7 +362,6 @@ export class UsuariosComponent implements OnInit {
   private esEmailValido(email: string): boolean {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
-
   desactivarUsuario(u: Usuario): void {
     if (!u.id) return;
     this.accionPendiente = () => {
@@ -401,4 +431,20 @@ export class UsuariosComponent implements OnInit {
     if (this.accionPendiente) { this.accionPendiente(); this.accionPendiente = null; }
     this.cdr.detectChanges();
   }
+  soloLetras(event: KeyboardEvent): void {
+    const char = event.key;
+    // Permite letras (incluyendo tildes y ñ), espacios y teclas de control
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]$/.test(char)) {
+      event.preventDefault();
+    }
+  }
+
+  soloTelefono(event: KeyboardEvent): void {
+    const char = event.key;
+    // Permite números y + (para código de país)
+    if (!/^[0-9+]$/.test(char)) {
+      event.preventDefault();
+    }
+  }
+
 }

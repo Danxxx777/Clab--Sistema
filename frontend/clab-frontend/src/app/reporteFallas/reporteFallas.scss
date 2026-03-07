@@ -390,10 +390,46 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   overflow-y: auto;
   flex: 1;
 
-  &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-thumb { background: $border; border-radius: 4px; }
+  p {
+    color: $text;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 8px;
+
+    strong { color: #ff6b6b; }
+    &.warning-text { color: #ff6b6b; font-size: 12px; font-style: italic; }
+  }
+}
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 13px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 13px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  animation: fadeInUp 0.3s ease;
+  z-index: 9999;
+  font-family: 'Space Grotesk', sans-serif;
 }
 
+.toast-success {
+  background: $surface;
+  color: $neon;
+  border: 1px solid $border;
+  border-left: 3px solid $neon;
+}
+
+.toast-error {
+  background: $surface;
+  color: #ff6b6b;
+  border: 1px solid $border;
+  border-left: 3px solid #ff6b6b;
+}
+.modal-confirm .modal-body {
+  padding: 24px 24px 8px;
+}
 .modal-footer {
   padding: 16px 24px;
   border-top: 1px solid $border;
@@ -813,4 +849,28 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   .modal-header { padding: 16px 18px; h2 { font-size: 14px; } }
   .modal-body { padding: 18px; }
   .modal-footer { padding: 12px 18px; flex-direction: column; button { width: 100%; } }
+}
+.btn-action.btn-ver {
+  background: $neon-glow !important;
+  color: $neon !important;
+  border: 1px solid $neon-border !important;
+  &:hover { background: $neon-dim !important; }
+}
+.btn-eliminar-confirm {
+  background: $red-dim;
+  color: #ff6b6b;
+  border: 1px solid rgba(231,76,60,0.25);
+  padding: 9px 22px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Space Grotesk', sans-serif;
+  &:hover { background: rgba(231,76,60,0.25); transform: translateY(-2px); }
+}
+.modal-footer .btn-eliminar-confirm {
+  background: $red-dim !important;
+  color: #ff6b6b !important;
+  border: 1px solid rgba(231,76,60,0.25) !important;
 }

@@ -10,9 +10,7 @@ import { AsignaturaService } from '../services/asignatura.service';
 import { PeriodoService } from '../services/periodo.service';
 import { HorarioService } from '../services/horario.service';
 
-/*
-   INTERFACES
- */
+/*INTERFACES*/
 
 interface Reserva {
   id_reserva: number;
@@ -110,6 +108,8 @@ export class ReservarComponent implements OnInit {
   rol = localStorage.getItem('rol') || '';
   usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
   idUsuario= 0;
+  reservaDetalle: any = null;
+  mostrarModalDetalle = false;
 
   cambiarTab(tab: number) {
     this.tabActiva = tab;
@@ -538,8 +538,14 @@ export class ReservarComponent implements OnInit {
     return estado.toLowerCase();
   }
 
-  verDetalle(res: Reserva) {
-    console.log('Detalle:', res);
+  verDetalle(res: Reserva): void {
+    this.reservaDetalle = res;
+    this.mostrarModalDetalle = true;
+  }
+
+  cerrarModalDetalle(): void {
+    this.mostrarModalDetalle = false;
+    this.reservaDetalle = null;
   }
   toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
   cerrarDrawer(): void { this.drawerAbierto = false; }
