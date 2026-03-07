@@ -17,19 +17,20 @@ export class AuthService {
       contrasenia
     }).pipe(
       tap(response => {
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('loggedIn', 'true');
-        localStorage.setItem('rol', response.rol);
-        localStorage.setItem('usuario', `${response.nombres.split(' ')[0]} ${response.apellidos.split(' ')[0]}`);
-        localStorage.setItem('idUsuario', response.idUsuario);
-        localStorage.setItem('rolesDisponibles', JSON.stringify(response.rolesDisponibles ?? []));
+        sessionStorage.setItem('token', response.token);
+        sessionStorage.setItem('loggedIn', 'true');
+        sessionStorage.setItem('rol', response.rol);
+        sessionStorage.setItem('usuario', `${response.nombres.split(' ')[0]} ${response.apellidos.split(' ')[0]}`);
+        sessionStorage.setItem('idUsuario', response.idUsuario);
+        sessionStorage.setItem('rolesDisponibles', JSON.stringify(response.rolesDisponibles ?? []));
+
       })
     );
   }
 
   logout() {
-    const token = localStorage.getItem('token');
-    const idUsuario = localStorage.getItem('idUsuario');
+    const token = sessionStorage.getItem('token');
+    const idUsuario = sessionStorage.getItem('idUsuario');
 
     if (token && idUsuario) {
       this.http.post(`${this.apiUrl}/logout`, {
@@ -38,21 +39,26 @@ export class AuthService {
       }).subscribe();
     }
 
-    localStorage.removeItem('token');
-    localStorage.removeItem('rol');
-    localStorage.removeItem('loggedIn');
-    localStorage.removeItem('rolesDisponibles');
-    localStorage.removeItem('idUsuario');
+    this.limpiarSesionLocal();
+  }
+
+  limpiarSesionLocal(): void {
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('rol');
+    sessionStorage.removeItem('loggedIn');
+    sessionStorage.removeItem('rolesDisponibles');
+    sessionStorage.removeItem('idUsuario');
+    sessionStorage.removeItem('usuario');
   }
 
   isLoggedIn(): boolean {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     return !!token;
   }
 
 
   getRol(): string | null {
-    return localStorage.getItem('rol');
+    return sessionStorage.getItem('rol');
   }
 
   esAdministrador(): boolean {

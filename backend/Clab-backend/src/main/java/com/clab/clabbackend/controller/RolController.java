@@ -5,7 +5,6 @@ import com.clab.clabbackend.dto.RolRequestDTO;
 import com.clab.clabbackend.dto.RolResponseDTO;
 import com.clab.clabbackend.entities.Rol;
 import com.clab.clabbackend.security.JwtService;
-import com.clab.clabbackend.services.AuditoriaService;
 import com.clab.clabbackend.services.RolService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,16 +23,18 @@ public class RolController {
     private RolService rolService;
 
     @Autowired
-    private AuditoriaService auditoriaService;
-
-    @Autowired
     private JwtService jwtService;
+
+    // ─── HELPERS JWT ─────────────────────────────────────────────────────────
 
     private Integer obtenerIdUsuario(HttpServletRequest request) {
         try {
             String header = request.getHeader("Authorization");
             if (header != null && header.startsWith("Bearer ")) {
                 Claims claims = jwtService.obtenerClaims(header.substring(7));
+                Object idObj = claims.get("idUsuario");
+                if (idObj != null) return Integer.parseInt(idObj.toString());
+                // fallback: subject suele ser el id en algunos setups
                 return Integer.parseInt(claims.getSubject());
             }
         } catch (Exception ignored) {}
@@ -45,11 +46,17 @@ public class RolController {
             String header = request.getHeader("Authorization");
             if (header != null && header.startsWith("Bearer ")) {
                 Claims claims = jwtService.obtenerClaims(header.substring(7));
-                return claims.getSubject();
+                // Buscar el claim con el username
+                Object usuarioObj = claims.get("usuario");
+                if (usuarioObj != null) return usuarioObj.toString();
+                Object subObj = claims.get("sub");
+                if (subObj != null) return subObj.toString();
             }
         } catch (Exception ignored) {}
         return "desconocido";
     }
+
+    // ─── ENDPOINTS ───────────────────────────────────────────────────────────
 
     @GetMapping("/listar")
     public List<RolResponseDTO> listar() {
@@ -58,38 +65,18 @@ public class RolController {
 
     @PostMapping("/crear")
     public Rol crear(@RequestBody RolRequestDTO dto, HttpServletRequest request) {
-        Rol resultado = rolService.crear(dto);
-        auditoriaService.registrarExito(
-                obtenerIdUsuario(request), obtenerUsuario(request),
-                "CREAR_ROL", "ROLES", "u_rol",
-                resultado.getIdRol(), "Creó el rol: " + dto.getNombreRol(),
-                auditoriaService.obtenerIp(request)
-        );
-        return resultado;
+        return rolService.crear(dto, obtenerIdUsuario(request), obtenerUsuario(request));
     }
 
     @PutMapping("/actualizar/{id}")
     public Rol actualizar(@PathVariable Integer id, @RequestBody RolRequestDTO dto,
                           HttpServletRequest request) {
-        Rol resultado = rolService.actualizar(id, dto);
-        auditoriaService.registrarExito(
-                obtenerIdUsuario(request), obtenerUsuario(request),
-                "EDITAR_ROL", "ROLES", "u_rol",
-                id, "Actualizó el rol: " + dto.getNombreRol(),
-                auditoriaService.obtenerIp(request)
-        );
-        return resultado;
+        return rolService.actualizar(id, dto, obtenerIdUsuario(request), obtenerUsuario(request));
     }
 
     @DeleteMapping("/eliminar/{id}")
     public void eliminar(@PathVariable Integer id, HttpServletRequest request) {
-        auditoriaService.registrarExito(
-                obtenerIdUsuario(request), obtenerUsuario(request),
-                "ELIMINAR_ROL", "ROLES", "u_rol",
-                id, "Eliminó el rol con id: " + id,
-                auditoriaService.obtenerIp(request)
-        );
-        rolService.eliminar(id);
+        rolService.eliminar(id, obtenerIdUsuario(request), obtenerUsuario(request));
     }
 
     @GetMapping("/{id}/permisos")
@@ -108,13 +95,7 @@ public class RolController {
                                            HttpServletRequest request) {
         try {
             String estado = body.get("estado");
-            rolService.cambiarEstado(id, estado);
-            auditoriaService.registrarExito(
-                    obtenerIdUsuario(request), obtenerUsuario(request),
-                    "CAMBIAR_ESTADO_ROL", "ROLES", "u_rol",
-                    id, "Cambió estado del rol " + id + " a: " + estado,
-                    auditoriaService.obtenerIp(request)
-            );
+            rolService.cambiarEstado(id, estado, obtenerIdUsuario(request), obtenerUsuario(request));
             return ResponseEntity.ok(Map.of("mensaje", "Estado actualizado a " + estado));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -125,6 +106,7 @@ public class RolController {
     public ResponseEntity<List<Map<String, Object>>> obtenerPermisosEsquemas(@PathVariable Integer idRolBd) {
         return ResponseEntity.ok(rolService.obtenerPermisosEsquemas(idRolBd));
     }
+
     @GetMapping("/esquemas")
     public ResponseEntity<List<String>> listarEsquemas() {
         return ResponseEntity.ok(rolService.listarEsquemas());

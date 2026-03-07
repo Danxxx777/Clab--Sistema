@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 const API = 'http://localhost:8080';
 
@@ -62,11 +62,17 @@ export class AuditoriaComponent implements OnInit {
   itemsPorPagina = 15;
   totalPaginas = 1;
 
+  forzandoLogout: number | null = null; // idUsuario en proceso
+  sesionAForzar: SesionActivaItem | null = null;
+  modalForzarAbierto = false;
+  modalErrorAbierto = false;
+  modalErrorMensaje = '';
+
   readonly modulos = ['AUTH', 'USUARIOS', 'ROLES', 'EQUIPOS', 'LABORATORIOS', 'RESERVAS', 'HORARIOS', 'REPORTES'];
 
   ngOnInit(): void {
-    this.rol = localStorage.getItem('rol') || '';
-    const userData = localStorage.getItem('usuario') || localStorage.getItem('user');
+    this.rol = sessionStorage.getItem('rol') || '';
+    const userData = sessionStorage.getItem('usuario') || sessionStorage.getItem('user');
     if (userData) {
       try {
         const parsed = JSON.parse(userData);
@@ -80,8 +86,13 @@ export class AuditoriaComponent implements OnInit {
     this.cargarSesiones();
   }
 
+  private getHeaders(): HttpHeaders {
+    const token = sessionStorage.getItem('token') || '';
+    return new HttpHeaders({ Authorization: `Bearer ${token}` });
+  }
+
   cargarAuditorias(): void {
-    this.http.get<AuditoriaItem[]>(`${API}/auditoria/listar`).subscribe({
+    this.http.get<AuditoriaItem[]>(`${API}/auditoria/listar`, { headers: this.getHeaders() }).subscribe({
       next: (data) => {
         this.auditorias = data;
         this.filtrar();
@@ -92,12 +103,52 @@ export class AuditoriaComponent implements OnInit {
   }
 
   cargarSesiones(): void {
-    this.http.get<SesionActivaItem[]>(`${API}/auditoria/sesiones-activas`).subscribe({
+    this.http.get<SesionActivaItem[]>(`${API}/auditoria/sesiones-activas`, { headers: this.getHeaders() }).subscribe({
       next: (data) => {
         this.sesionesActivas = data;
         this.cdr.detectChanges();
       },
       error: err => console.error('Error cargando sesiones', err)
+    });
+  }
+
+  forzarLogout(sesion: SesionActivaItem): void {
+    const miId = sessionStorage.getItem('idUsuario');
+    if (miId && sesion.idUsuario === parseInt(miId)) {
+      this.modalErrorMensaje = 'No puedes cerrar tu propia sesión desde aquí.';
+      this.modalErrorAbierto = true;
+      return;
+    }
+    this.sesionAForzar = sesion;
+    this.modalForzarAbierto = true;
+  }
+
+  cancelarForzar(): void {
+    this.sesionAForzar = null;
+    this.modalForzarAbierto = false;
+  }
+
+  confirmarForzar(): void {
+    if (!this.sesionAForzar?.idUsuario) return;
+    this.forzandoLogout = this.sesionAForzar.idUsuario;
+
+    this.http.post(
+      `${API}/auditoria/forzar-logout/${this.sesionAForzar.idUsuario}`,
+      {},
+      { headers: this.getHeaders() }
+    ).subscribe({
+      next: () => {
+        this.forzandoLogout = null;
+        this.modalForzarAbierto = false;
+        this.sesionAForzar = null;
+        this.cargarSesiones();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.forzandoLogout = null;
+        this.modalForzarAbierto = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -146,16 +197,12 @@ export class AuditoriaComponent implements OnInit {
   cerrarDrawer(): void { this.drawerAbierto = false; }
   volver(): void { this.router.navigate(['/dashboard']); }
   navegar(ruta: string, mensaje: string = '') {
-
     console.log(mensaje);
     this.router.navigate([ruta]);
   }
   actualizar(): void {
-    if (this.tabActiva === 0) {
-      this.cargarAuditorias();
-    } else {
-      this.cargarSesiones();
-    }
+    if (this.tabActiva === 0) this.cargarAuditorias();
+    else this.cargarSesiones();
   }
-  logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
+  logout(): void { sessionStorage.clear(); this.router.navigate(['/login']); }
 }

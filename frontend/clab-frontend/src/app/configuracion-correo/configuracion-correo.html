@@ -234,15 +234,6 @@
             </div>
             <div class="seg-check" *ngIf="configActual.starttlsHabilitado && !configActual.sslHabilitado">✓</div>
           </div>
-          <div class="seg-option" [class.active]="!configActual.sslHabilitado && !configActual.starttlsHabilitado"
-               (click)="configActual.sslHabilitado=false; configActual.starttlsHabilitado=false">
-            <div class="seg-icon">📤</div>
-            <div class="seg-info">
-              <div class="seg-name">Sin cifrado</div>
-              <div class="seg-desc">Solo para entornos internos</div>
-            </div>
-            <div class="seg-check" *ngIf="!configActual.sslHabilitado && !configActual.starttlsHabilitado">✓</div>
-          </div>
         </div>
       </div>
 
