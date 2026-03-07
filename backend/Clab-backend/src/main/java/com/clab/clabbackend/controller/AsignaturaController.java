@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AsignaturaController {
 
-    // Servicio que contiene la lógica de negocio
     private final AsignaturaService asignaturaService;
     // Obtiene la lista de todas las asignaturas
     @GetMapping
