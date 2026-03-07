@@ -110,8 +110,8 @@ export class LaboratoriosComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) { }
   drawerAbierto = false;
-  rol = localStorage.getItem('rol') || '';
-  usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+  rol = sessionStorage.getItem('rol') || '';
+  usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
 
   toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
   cerrarDrawer(): void { this.drawerAbierto = false; }
@@ -122,7 +122,7 @@ export class LaboratoriosComponent implements OnInit {
   }
 
   logout(): void {
-    localStorage.clear();
+    sessionStorage.clear();
     this.router.navigate(['/login']);
   }
   cargarSedes(): void {
@@ -168,8 +168,8 @@ export class LaboratoriosComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.rol = localStorage.getItem('rol') || '';
-    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+    this.rol = sessionStorage.getItem('rol') || '';
+    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
     this.cargarLaboratorios();
     this.cargarSedes();
     this.encargadosFiltrados = [...this.encargados];

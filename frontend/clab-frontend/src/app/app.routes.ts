@@ -56,5 +56,5 @@ export const routes: Routes = [
   { path: 'solicitudes-reserva', component: SolicitudesReservaComponent, canActivate: [authGuard] },
   { path: 'auditoria',      component: AuditoriaComponent,      canActivate: [authGuard] },
   { path: 'roles',          component: RolesComponent,          canActivate: [authGuard] },
-  { path: '**', redirectTo: 'dashboard' }
+  { path: '**', redirectTo: 'login' }
 ];
