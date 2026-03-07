@@ -8,6 +8,7 @@ import { AsignaturaService } from '../services/asignatura.service';
 import { PeriodoService } from '../services/periodo.service';
 import { HorarioService } from '../services/horario.service';
 import { TipoReservaService } from '../services/tipo-reserva.service';
+import { AsistenciaUsuarioService } from '../services/asistencia-usuario.service';
 
 export interface SolicitudReserva {
   id?: number;
@@ -46,7 +47,8 @@ export class SolicitudesReservaComponent implements OnInit {
     private periodoService: PeriodoService,
     private horarioService: HorarioService,
     private tipoReservaService: TipoReservaService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private asistenciaUsuarioService: AsistenciaUsuarioService
   ) {}
 
   usuarioLogueado = '';
@@ -82,6 +84,8 @@ export class SolicitudesReservaComponent implements OnInit {
   horariosAcademicos: any[] = [];
   tipos: any[] = [];
 
+  usuarioBloqueado = false;
+
   ngOnInit(): void {
     this.rol = sessionStorage.getItem('rol') || '';
     this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
@@ -93,6 +97,17 @@ export class SolicitudesReservaComponent implements OnInit {
     this.cargarPeriodos();
     this.cargarTipos();
     this.cargarTodosLosHorarios();
+    this.verificarBloqueoUsuario();
+  }
+
+  verificarBloqueoUsuario(): void {
+    this.asistenciaUsuarioService.usuarioBloqueado(this.idUsuario).subscribe({
+      next: (bloqueado) => {
+        this.usuarioBloqueado = bloqueado;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error verificando bloqueo:', err)
+    });
   }
 
   cargarSolicitudes(): void {
@@ -287,6 +302,14 @@ export class SolicitudesReservaComponent implements OnInit {
   }
 
   guardarSolicitud(): void {
+    if (this.usuarioBloqueado) {
+      this.mostrarAlerta(
+        '🔒 Usuario bloqueado',
+        'Tienes 2 inasistencias consecutivas. No puedes realizar solicitudes de reserva hasta ser desbloqueado.',
+        'error'
+      );
+      return;
+    }
     const s = this.solicitudActual;
 
     if (!s.cod_laboratorio || !s.id_asignatura || !s.id_periodo ||
