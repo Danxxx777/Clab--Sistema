@@ -159,6 +159,9 @@
     <div class="tabs">
       <button class="tab" [class.active]="tabActiva === 0" (click)="cambiarTab(0)">Reservas</button>
       <button class="tab" [class.active]="tabActiva === 1" (click)="cambiarTab(1)">Tipos de Reserva</button>
+      @if(rol === 'Encargado_Lab') {
+        <button class="tab" [class.active]="tabActiva === 2" (click)="cambiarTab(2)">Control de Asistencia</button>
+      }
     </div>
   </div>
 
@@ -286,6 +289,102 @@
         </table>
       </div>
     </div>
+
+    <!-- TAB 2: CONTROL DE ASISTENCIA (solo Encargado_Lab) -->
+    @if(rol === 'Encargado_Lab') {
+      <div class="tab-content" *ngIf="tabActiva === 2">
+
+        <!-- RESERVAS DE HOY -->
+        <div class="asistencia-section">
+          <h3 class="section-title"> Reservas de Hoy</h3>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+              <tr>
+                <th>DOCENTE</th>
+                <th>LABORATORIO</th>
+                <th>HORA INICIO</th>
+                <th>HORA FIN</th>
+                <th>ASIGNATURA</th>
+                <th>ESTUDIANTES</th>
+                <th>ASISTENCIA</th>
+                <th>ACCIONES</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let res of reservasHoy">
+                <td><strong>{{ res.nombreUsuario }}</strong></td>
+                <td>{{ res.nombreLaboratorio }}</td>
+                <td>{{ res.horaInicio }}</td>
+                <td>{{ res.horaFin }}</td>
+                <td>{{ res.nombreAsignatura }}</td>
+                <td>{{ res.numeroEstudiantes }}</td>
+                <td>
+                <span class="badge"
+                      [class.badge-activo]="res.asistio === true"
+                      [class.badge-falta]="res.asistio === false"
+                      [class.badge-pendiente]="res.asistio === null || res.asistio === undefined">
+                  {{ res.asistio === true ? 'Asistió' : res.asistio === false ? 'Falta' : 'Pendiente' }}
+                </span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn-action btn-aprobar"
+                            [disabled]="res.asistio === true"
+                            (click)="registrarAsistencia(res)">
+                      Asistencia
+                    </button>
+                    <button class="btn-action btn-rechazar"
+                            [disabled]="res.asistio === true"
+                            (click)="registrarFalta(res)">
+                      Falta
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="reservasHoy.length === 0">
+                <td colspan="8" class="empty-message">No hay reservas para hoy</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- USUARIOS BLOQUEADOS -->
+        <div class="asistencia-section" style="margin-top: 32px;">
+          <h3 class="section-title"> Usuarios Bloqueados</h3>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+              <tr>
+                <th>DOCENTE</th>
+                <th>MOTIVO</th>
+                <th>FECHA BLOQUEO</th>
+                <th>ACCIONES</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let bloqueado of usuariosBloqueados">
+                <td><strong>{{ bloqueado.nombreUsuario }}</strong></td>
+                <td>{{ bloqueado.motivo }}</td>
+                <td>{{ bloqueado.fechaBloqueo }}</td>
+                <td>
+                  <button class="btn-action btn-aprobar"
+                          (click)="desbloquearUsuario(bloqueado.idUsuario)">
+                    Desbloquear
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="usuariosBloqueados.length === 0">
+                <td colspan="4" class="empty-message">No hay usuarios bloqueados</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    }
 
   </div>
 </div>
