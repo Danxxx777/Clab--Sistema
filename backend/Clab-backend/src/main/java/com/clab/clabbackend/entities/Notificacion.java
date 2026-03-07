@@ -44,4 +44,7 @@ public class Notificacion {
 
     @Column(name = "rol_destino", length = 50) // ← nuevo
     private String rolDestino;
+
+    @Column(name = "email_origen", length = 100)
+    private String emailOrigen;
 }
