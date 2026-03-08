@@ -9,26 +9,7 @@ import { PeriodoService } from '../services/periodo.service';
 import { HorarioService } from '../services/horario.service';
 import { TipoReservaService } from '../services/tipo-reserva.service';
 import { AsistenciaUsuarioService } from '../services/asistencia-usuario.service';
-
-export interface SolicitudReserva {
-  id?: number;
-  cod_laboratorio: number;
-  nombre_laboratorio: string;
-  id_asignatura: number;
-  nombre_asignatura: string;
-  id_periodo: number;
-  nombre_periodo: string;
-  id_horario_academico: number | null;
-  id_tipo_reserva: number;
-  nombre_tipo: string;
-  fecha: string;
-  horaInicio: string;
-  horaFin: string;
-  cantidadEstudiantes: number | null;
-  motivo: string;
-  descripcion: string;
-  estado: string;
-}
+import {SolicitudReserva} from '../interfaces/SolicitudReserva.model'
 
 @Component({
   selector: 'app-solicitudes-reserva',

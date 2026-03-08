@@ -3,10 +3,11 @@ package com.clab.clabbackend.services;
 import com.clab.clabbackend.entities.Notificacion;
 import com.clab.clabbackend.entities.Usuario;
 import com.clab.clabbackend.repository.NotificacionRepository;
+import com.clab.clabbackend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -15,8 +16,8 @@ public class NotificacionService {
 
     private final NotificacionRepository notificacionRepo;
     private final EmailService emailService;
+    private final UsuarioRepository usuarioRepo;
 
-    // ── Método central ────────────────────────────────────────────────
     public void crearNotificacion(Usuario destinatario, String tipoNotificacion,
                                   String asunto, String mensajeHTML,
                                   String canal, String rolDestino, String emailOrigen) {
@@ -26,8 +27,8 @@ public class NotificacionService {
         n.setAsunto(asunto);
         n.setMensaje(mensajeHTML);
         n.setCanal(canal);
-        n.setEstado("NO_LEIDA");
-        n.setFechaCreacion(LocalDate.now());
+        n.setEstado("NO_LEIDA");   // ← siempre NO_LEIDA para el in-app
+        n.setFechaCreacion(LocalDateTime.now());
         n.setRolDestino(rolDestino);
         n.setEmailOrigen(emailOrigen);
 
@@ -35,24 +36,22 @@ public class NotificacionService {
             try {
                 emailService.enviarCorreo("NOTIFICACIONES",
                         destinatario.getEmail(), asunto, mensajeHTML);
-                n.setEstado("ENVIADA");
-                n.setFechaEnvio(LocalDate.now());
+                n.setFechaEnvio(LocalDateTime.now());
+                // NO cambies el estado — solo registra la fecha de envío
             } catch (Exception e) {
-                n.setEstado("ERROR_ENVIO");
+                // log si quieres, pero no rompas el estado
+                System.err.println("Error enviando email: " + e.getMessage());
             }
         }
 
         notificacionRepo.save(n);
     }
 
-    // Sobrecarga sin emailOrigen para notificaciones que no son de fallas
     public void crearNotificacion(Usuario destinatario, String tipoNotificacion,
                                   String asunto, String mensajeHTML,
                                   String canal, String rolDestino) {
         crearNotificacion(destinatario, tipoNotificacion, asunto, mensajeHTML, canal, rolDestino, null);
     }
-
-    // ── Notificaciones por evento ──────────────────────────────────────
 
     public void notificarNuevaFalla(Usuario encargado, String labNombre,
                                     String descripcion, String reportador,
@@ -64,7 +63,7 @@ public class NotificacionService {
                         "<br><b>Reportado por:</b> " + reportador +
                         "<br><b>Descripción:</b> " + descripcion,
                 "Ver Reporte #" + fallaId);
-        crearNotificacion(encargado, "FALLA", asunto, html, "AMBOS", "Encargado_Lab", emailReportador);
+        crearNotificacion(encargado, "FALLA", asunto, html, "AMBOS", "Encargado de Laboratorio", emailReportador);
     }
 
     public void notificarAdminNuevaFalla(Usuario admin, String labNombre,
@@ -144,19 +143,21 @@ public class NotificacionService {
     // ── Métodos para el frontend ───────────────────────────────────────
 
     public List<Notificacion> getMisNotificaciones(Usuario usuario, String rol) {
-        List<Notificacion> todas = notificacionRepo.findByUsuarioOrderByFechaCreacionDesc(usuario);
-
-        if ("Administradorr".equals(rol)) {
-            return todas;
-        }
+        List<Notificacion> todas = notificacionRepo
+                .findByUsuarioOrderByFechaCreacionDesc(usuario);
 
         return todas.stream()
                 .filter(n -> n.getRolDestino() == null || n.getRolDestino().equals(rol))
                 .toList();
     }
 
-    public long contarNoLeidas(Usuario usuario) {
-        return notificacionRepo.countByUsuarioAndEstado(usuario, "NO_LEIDA");
+    public long contarNoLeidas(Usuario usuario, String rol) {
+        List<Notificacion> noLeidas = notificacionRepo
+                .findByUsuarioAndEstadoOrderByFechaCreacionDesc(usuario, "NO_LEIDA");
+
+        return noLeidas.stream()
+                .filter(n -> n.getRolDestino() == null || n.getRolDestino().equals(rol))
+                .count();
     }
 
     public void marcarComoLeida(Integer id) {
@@ -194,10 +195,21 @@ public class NotificacionService {
             } catch (Exception e) {
                 System.err.println("Error enviando respuesta: " + e.getMessage());
             }
+
+            // ── Buscar al docente por email y crear notificación in-app ──
+            usuarioRepo.findByEmail(emailDestino).ifPresent(docente -> {
+                crearNotificacion(
+                        docente,
+                        "FALLA_RESUELTA",
+                        asunto,
+                        html,
+                        "SISTEMA",
+                        "Docente",
+                        remitente.getEmail()
+                );
+            });
         });
     }
-
-    // ── Builder HTML ───────────────────────────────────────────────────
     private String buildHtml(String titulo, String color,
                              String subtitulo, String contenido, String botonTexto) {
         return "<div style='font-family:Arial,sans-serif;padding:20px;max-width:500px;'>" +
@@ -208,5 +220,17 @@ public class NotificacionService {
                 "</div>" +
                 "<hr><small>Sistema de Gestión de Laboratorios — CLAB</small>" +
                 "</div>";
+    }
+    public void notificarDecanoNuevaFalla(Usuario decano, String labNombre,
+                                          String descripcion, String reportador,
+                                          String emailReportador, Integer fallaId) {
+        String asunto = "Nueva falla reportada en " + labNombre;
+        String html = buildHtml("⚠️ Nueva Falla", "#e67e22",
+                "Se reportó una falla en el sistema:",
+                "<b>Laboratorio:</b> " + labNombre +
+                        "<br><b>Reportado por:</b> " + reportador +
+                        "<br><b>Descripción:</b> " + descripcion,
+                "Ver Reporte #" + fallaId);
+        crearNotificacion(decano, "FALLA", asunto, html, "SISTEMA", "Decano", emailReportador);
     }
 }

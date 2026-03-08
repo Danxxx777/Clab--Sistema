@@ -47,10 +47,12 @@ public class SecurityConfig {
                         .requestMatchers("/horarios/**").permitAll()
                         .requestMatchers("/tipos-bloqueos/**").permitAll()
                         .requestMatchers("/usuarios/**").authenticated()
-                        .requestMatchers("/roles/**").authenticated()
+                        .requestMatchers("/roles/**").permitAll()
                         .requestMatchers("/bloqueos/**").permitAll()
                         .requestMatchers("/auditoria/forzar-logout/**").permitAll()
                         .requestMatchers("/encargados-laboratorios/**").permitAll()
+                        .requestMatchers("/usuarios/**").permitAll()
+                        .requestMatchers("/notificaciones/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

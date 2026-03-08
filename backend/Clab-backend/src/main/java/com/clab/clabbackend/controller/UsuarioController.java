@@ -7,9 +7,11 @@ import com.clab.clabbackend.services.AuditoriaService;
 import com.clab.clabbackend.services.UsuarioService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -79,5 +81,36 @@ public class UsuarioController {
                 obtenerIdUsuario(request),
                 obtenerUsuario(request),
                 auditoriaService.obtenerIp(request));
+    }
+    @PutMapping("/cambiar-contrasenia")
+    public org.springframework.http.ResponseEntity<?> cambiarContrasenia(
+            @RequestBody com.clab.clabbackend.dto.CambiarContraseniaDTO dto,
+            HttpServletRequest request) {
+        try {
+            usuarioService.cambiarContrasenia(
+                    obtenerIdUsuario(request),
+                    dto.getContraseniaActual(),
+                    dto.getContraseniaNueva(),
+                    obtenerIdUsuario(request),
+                    obtenerUsuario(request),
+                    auditoriaService.obtenerIp(request));
+            return org.springframework.http.ResponseEntity.ok(
+                    java.util.Map.of("mensaje", "Contraseña actualizada correctamente"));
+        } catch (RuntimeException e) {
+            return org.springframework.http.ResponseEntity.badRequest()
+                    .body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<?> obtenerPorId(@PathVariable Integer id) {
+        try {
+            return usuarioService.listar().stream()
+                    .filter(u -> u.getIdUsuario().equals(id))
+                    .findFirst()
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }
