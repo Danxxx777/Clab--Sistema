@@ -1075,3 +1075,26 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
   color: #f59e0b;
   border: 1px solid rgba(245, 158, 11, 0.3);
 }
+.paginacion {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 16px;
+
+  .btn-pag {
+    background: #1a1a1a;
+    color: #ccc;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) { border-color: #39ff14; color: #39ff14; }
+    &.activa { background: #39ff14; color: #111; font-weight: bold; border-color: #39ff14; }
+    &:disabled { opacity: 0.3; cursor: not-allowed; }
+  }
+
+  .pag-info { color: #666; font-size: 0.85rem; margin-left: 8px; }
+}

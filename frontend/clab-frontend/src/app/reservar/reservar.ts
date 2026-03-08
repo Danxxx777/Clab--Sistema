@@ -10,73 +10,7 @@ import { AsignaturaService } from '../services/asignatura.service';
 import { PeriodoService } from '../services/periodo.service';
 import { HorarioService } from '../services/horario.service';
 import { AsistenciaUsuarioService } from '../services/asistencia-usuario.service';
-
-/*INTERFACES*/
-
-interface Reserva {
-  id_reserva: number;
-  cod_laboratorio: number;
-  nombre_laboratorio: string;
-  fecha_reserva: string;
-  fecha_solicitud: string;
-  hora_inicio: string;
-  hora_fin: string;
-  id_asignatura: number;
-  nombre_asignatura: string;
-  id_periodo: number;
-  nombre_periodo: string;
-  numero_estudiantes: number;
-  id_tipo_reserva: number;
-  nombre_tipo: string;
-  id_usuario: number;
-  estado: 'Pendiente' | 'Aprobada' | 'Cancelada' | 'Completada' | 'Rechazada';
-  descripcion: string;
-  motivo: string;
-}
-
-interface Cancelacion {
-  id_reserva: number;
-  id_usuario_cancela: number;
-  fecha_cancelacion: string;
-  motivo_cancelacion: string;
-}
-
-interface TipoReserva {
-  id_tipo_reserva: number;
-  nombre_tipo: string;
-  descripcion: string;
-  estado: 'Activo' | 'Inactivo';
-}
-
-interface Laboratorio {
-  cod_laboratorio: number;
-  nombre: string;
-}
-
-interface Asignatura {
-  id_asignatura: number;
-  nombre: string;
-}
-
-interface Periodo {
-  id_periodo: number;
-  nombre_periodo: string;
-}
-
-interface HorarioAcademico {
-  id_horario_academico: number;
-  nombre_asignatura: string;
-  dia_semana: string;
-  hora_inicio: string;
-  hora_fin: string;
-  id_asignatura: number;
-}
-
-interface Usuario {
-  id_usuario: number;
-  nombres: string;
-  apellidos: string;
-}
+import {Reserva, Cancelacion, TipoReserva, Laboratorio, Asignatura, Periodo, HorarioAcademico, Usuario} from '../interfaces/Reservar.model';
 
 /*
    COMPONENTE
@@ -112,6 +46,10 @@ export class ReservarComponent implements OnInit {
   idUsuario= 0;
   reservaDetalle: any = null;
   mostrarModalDetalle = false;
+  paginaActual = 1;
+  itemsPorPagina = 6;
+  paginaActualTipos = 1;
+  itemsPorPaginaTipos = 6;
 
   cambiarTab(tab: number) {
     this.tabActiva = tab;
@@ -159,6 +97,7 @@ export class ReservarComponent implements OnInit {
       r.nombre_asignatura.toLowerCase().includes(texto) ||
       r.nombre_periodo.toLowerCase().includes(texto)
     );
+    this.paginaActual = 1;
   }
 
   filtrarTipos() {
@@ -771,4 +710,38 @@ export class ReservarComponent implements OnInit {
       }
     });
   }
+      get totalPaginas(): number {
+        return Math.ceil(this.reservasFiltradas.length / this.itemsPorPagina);
+      }
+      get reservasPaginadas(): Reserva[] {
+        const inicio = (this.paginaActual - 1) * this.itemsPorPagina;
+        return this.reservasFiltradas.slice(inicio, inicio + this.itemsPorPagina);
+      }
+      get paginas(): number[] {
+        return Array.from({ length: this.totalPaginas }, (_, i) => i + 1);
+      }
+      cambiarPagina(pagina: number): void {
+        if (pagina >= 1 && pagina <= this.totalPaginas) {
+          this.paginaActual = pagina;
+          this.cdr.detectChanges();
+        }
+      }
+
+
+    get totalPaginasTipos(): number {
+      return Math.ceil(this.tiposFiltrados.length / this.itemsPorPaginaTipos);
+    }
+    get tiposPaginados(): TipoReserva[] {
+      const inicio = (this.paginaActualTipos - 1) * this.itemsPorPaginaTipos;
+      return this.tiposFiltrados.slice(inicio, inicio + this.itemsPorPaginaTipos);
+    }
+    get paginasTipos(): number[] {
+      return Array.from({ length: this.totalPaginasTipos }, (_, i) => i + 1);
+    }
+    cambiarPaginaTipos(pagina: number): void {
+      if (pagina >= 1 && pagina <= this.totalPaginasTipos) {
+        this.paginaActualTipos = pagina;
+        this.cdr.detectChanges();
+      }
+    }
 }

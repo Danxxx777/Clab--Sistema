@@ -135,7 +135,10 @@ public class AuditoriaService {
     public String obtenerIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null || ip.isEmpty()) ip = request.getRemoteAddr();
-        return ip;
+        // Normalizar IPv6 loopback
+        if ("0:0:0:0:0:0:0:1".equals(ip) || "::1".equals(ip)) return "127.0.0.1";
+        if (ip.startsWith("::ffff:")) ip = ip.substring(7);
+        return ip.length() > 45 ? ip.substring(0, 45) : ip;
     }
 
     private String hashToken(String token) {
