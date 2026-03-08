@@ -4,7 +4,7 @@ import { LoginComponent } from './login/login';
 import { DashboardComponent } from './dashboard/dashboard';
 import { ReservarComponent } from './reservar/reservar';
 import { HorariosComponent } from './horarios/horarios';
-import { ReportarComponent } from './reportar/reportar';
+import {ReportarComponent} from './reportar/reportar';
 import { NotificacionesComponent } from './notificaciones/notificaciones';
 import { InventarioComponent } from './inventario/inventario';
 import { BloqueosComponent } from './bloqueos/bloqueos';
@@ -44,7 +44,7 @@ export const routes: Routes = [
   { path: 'horarios',       component: HorariosComponent,       canActivate: [authGuard] },
   { path: 'estudiantes',    component: EstudiantesComponent,    canActivate: [authGuard] },
   { path: 'equipos',        component: InventarioComponent,     canActivate: [authGuard] },
-  { path: 'reportar',       component: ReportarComponent,       canActivate: [authGuard] },
+  { path: 'reportesuso', component: ReportarComponent, canActivate: [authGuard] },
   { path: 'notificaciones', component: NotificacionesComponent, canActivate: [authGuard] },
   { path: 'laboratorios',   component: LaboratoriosComponent,   canActivate: [authGuard] },
   { path: 'bloqueos',       component: BloqueosComponent,       canActivate: [authGuard] },

@@ -16,7 +16,6 @@ public interface SesionActivaRepository extends JpaRepository<SesionActiva, Inte
     Optional<SesionActiva> findByTokenHash(String tokenHash);
     List<SesionActiva> findByActivaTrueOrderByFechaInicioDesc();
     List<SesionActiva> findByIdUsuarioAndActivaTrue(Integer idUsuario);
-
     @Modifying
     @Transactional
     @Query("UPDATE SesionActiva s SET s.activa = false WHERE s.fechaExpira < :ahora AND s.activa = true")
