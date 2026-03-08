@@ -49,12 +49,6 @@
           <div class="di-text"><div class="di-name">Laboratorios</div><div class="di-desc">Sedes y encargados</div></div>
         </div>
       }
-      @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
-        <div class="drawer-item" (click)="navegar('equipos', '')">
-          <div class="di-icon"><img src="/equipo.png" alt="Equipos"></div>
-          <div class="di-text"><div class="di-name">Equipos</div><div class="di-desc">Inventario y ubicaciones</div></div>
-        </div>
-      }
       @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Coordinador' || rol === 'Decano') {
         <div class="drawer-item" (click)="navegar('reservar', '')">
           <div class="di-icon"><img src="/calendario.png" alt="Reservas"></div>

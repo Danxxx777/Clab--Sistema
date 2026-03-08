@@ -43,7 +43,8 @@ public class UsuarioController {
             String header = request.getHeader("Authorization");
             if (header != null && header.startsWith("Bearer ")) {
                 Claims claims = jwtService.obtenerClaims(header.substring(7));
-                return claims.getSubject();
+                Object usuarioObj = claims.get("usuario"); // ← claim "usuario", no getSubject()
+                if (usuarioObj != null) return usuarioObj.toString();
             }
         } catch (Exception ignored) {}
         return "desconocido";

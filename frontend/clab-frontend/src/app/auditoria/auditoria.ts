@@ -17,6 +17,8 @@ export interface AuditoriaItem {
   ip?: string;
   resultado?: string;
   fechaHora?: string;
+  datosAnteriores?: string; // ← nuevo
+  datosNuevos?: string;
 }
 
 export interface SesionActivaItem {
@@ -67,6 +69,9 @@ export class AuditoriaComponent implements OnInit {
   modalForzarAbierto = false;
   modalErrorAbierto = false;
   modalErrorMensaje = '';
+
+  modalDetalleAbierto = false;
+  auditoriaDetalle: AuditoriaItem | null = null;
 
   readonly modulos = ['AUTH', 'USUARIOS', 'ROLES', 'EQUIPOS', 'LABORATORIOS', 'RESERVAS', 'HORARIOS', 'REPORTES'];
 
@@ -205,4 +210,23 @@ export class AuditoriaComponent implements OnInit {
     else this.cargarSesiones();
   }
   logout(): void { sessionStorage.clear(); this.router.navigate(['/login']); }
+
+  verDetalle(a: AuditoriaItem): void {
+    this.auditoriaDetalle = a;
+    this.modalDetalleAbierto = true;
+  }
+
+  cerrarDetalle(): void {
+    this.modalDetalleAbierto = false;
+    this.auditoriaDetalle = null;
+  }
+
+  parsearJSON(texto?: string): Record<string, string> | null {
+    if (!texto) return null;
+    try { return JSON.parse(texto); } catch { return null; }
+  }
+
+  tieneDetalle(a: AuditoriaItem): boolean {
+    return !!(a.datosAnteriores || a.datosNuevos);
+  }
 }
