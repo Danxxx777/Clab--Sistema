@@ -31,6 +31,11 @@ public class ReservaController {
         return ResponseEntity.ok(reservaService.listarPorUsuario(id));
     }
 
+    @GetMapping("/listarPorEncargado/{idUsuario}")
+    public ResponseEntity<List<Map<String, Object>>> listarPorEncargado(@PathVariable Integer idUsuario) {
+        return ResponseEntity.ok(reservaService.listarPorEncargado(idUsuario));
+    }
+
     // Crea una nueva reserva (usuario normal)
     @PostMapping("/crear")
     public ResponseEntity<Void> crear(@RequestBody ReservaDTO dto) {

@@ -452,7 +452,12 @@ export class ReservarComponent implements OnInit {
   // ESTO ES PARA CARGAR RESERVAS
 
   cargarReservas(): void {
-    this.reservaService.listar().subscribe({
+    const idUsuario = parseInt(sessionStorage.getItem('idUsuario') || '0');
+    const obs = this.rol === 'Encargado de Laboratorio'
+      ? this.reservaService.listarPorEncargado(idUsuario)
+      : this.reservaService.listar();
+
+    obs.subscribe({
       next: (data) => {
         this.reservas = data.map(r => ({
           id_reserva: r.idReserva,
