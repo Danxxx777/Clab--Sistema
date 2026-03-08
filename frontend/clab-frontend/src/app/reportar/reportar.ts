@@ -2,34 +2,8 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import {Laboratorio, ModuloConfig, StatModulo, DatoGrafica } from '../interfaces/Reportar.model';
 
-// ─── INTERFACES ───────────────────────────────────────────────────────────────
-interface Laboratorio {
-  codLaboratorio: number;
-  nombreLab: string;
-}
-
-interface ModuloConfig {
-  id: string;
-  titulo: string;
-  desc: string;
-  icono: string;
-  color: string;
-  colorHex: string;
-}
-
-interface StatModulo {
-  icono: string;
-  valor: string | number;
-  label: string;
-  color: string;
-}
-
-interface DatoGrafica {
-  label: string;
-  valor: number;
-  pct: number;
-}
 
 @Component({
   selector: 'app-reportar',

@@ -104,9 +104,6 @@
     }
   </div>
 
-  <div class="drawer-footer">
-    <button class="btn-logout-drawer" (click)="logout()">🚪 Cerrar sesión</button>
-  </div>
 </div>
 
 <!-- NAVBAR -->
@@ -127,7 +124,7 @@
 
     <div class="navbar-right">
 
-      <!-- ROLE PILL — con dropdown si tiene más de un rol -->
+      <!-- ROLE PILL -->
       <div class="role-pill-wrapper" (document:click)="onDocumentClick($event)" #rolWrapper>
         <div class="role-pill"
              [class.clickable]="rolesDisponibles.length > 1"
@@ -136,18 +133,15 @@
           <span *ngIf="!cambiandoRol">{{ rolActual }}</span>
           <span *ngIf="cambiandoRol">Cambiando...</span>
           <span class="role-arrow" *ngIf="rolesDisponibles.length > 1">
-        {{ mostrarSelectorRol ? '▲' : '▼' }}
-      </span>
+            {{ mostrarSelectorRol ? '▲' : '▼' }}
+          </span>
         </div>
-
-        <!-- DROPDOWN -->
         <div class="role-dropdown" *ngIf="mostrarSelectorRol && rolesDisponibles.length > 1">
           <div class="role-dropdown-title">Cambiar rol</div>
-          <div
-            class="role-dropdown-item"
-            *ngFor="let r of rolesDisponibles"
-            [class.active]="r === rolActual"
-            (click)="cambiarRol(r)">
+          <div class="role-dropdown-item"
+               *ngFor="let r of rolesDisponibles"
+               [class.active]="r === rolActual"
+               (click)="cambiarRol(r)">
             <span class="rdi-dot" [class.active]="r === rolActual"></span>
             {{ r }}
             <span class="rdi-check" *ngIf="r === rolActual">✓</span>
@@ -155,11 +149,76 @@
         </div>
       </div>
 
-      <div class="user-chip">
-        <div class="user-avatar-nav">{{ usuarioLogueado.charAt(0).toUpperCase() }}</div>
-        <span class="user-name-nav">{{ usuarioLogueado }}</span>
+      <!-- NOTIFICACIONES -->
+      <button class="nav-icon-btn" (click)="toggleNotifPanel()" [class.active]="notifPanelAbierto">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <span class="nav-badge" *ngIf="noLeidas > 0">{{ noLeidas > 9 ? '9+' : noLeidas }}</span>
+      </button>
+      <!-- PANEL NOTIFICACIONES -->
+      <div class="notif-panel" *ngIf="notifPanelAbierto" #notifWrapper>
+        <div class="notif-panel-header">
+          <span class="notif-panel-title">Notificaciones</span>
+          <button class="notif-mark-all" (click)="marcarTodasLeidas()">Marcar leídas</button>
+        </div>
+        <div class="notif-loading" *ngIf="cargandoNotifs">Cargando...</div>
+        <div class="notif-list" *ngIf="!cargandoNotifs">
+          <div class="notif-empty" *ngIf="notificaciones.length === 0">
+            <p>Sin notificaciones</p>
+          </div>
+          <div class="notif-item" *ngFor="let n of notificaciones"
+               [class.unread]="n.estado !== 'LEIDA'" (click)="marcarLeida(n)">
+            <div class="notif-avatar" [class.falla]="n.tipoNotificacion === 'FALLA'">
+              {{ (n.tipoNotificacion || 'N').charAt(0).toUpperCase() }}
+            </div>
+            <div class="notif-item-body">
+              <div class="notif-item-header">
+                <span class="notif-item-titulo">{{ n.asunto || 'Sin asunto' }}</span>
+                <span class="notif-item-time"
+                      [title]="n.fechaCreacion | date:'dd/MM/yyyy HH:mm'">
+              {{ getTimeAgo(n.fechaCreacion) }}
+            </span>
+              </div>
+              <div class="notif-item-msg">
+                {{ stripHtml(n.mensaje || '') | slice:0:65 }}{{ stripHtml(n.mensaje || '').length > 65 ? '...' : '' }}
+              </div>
+            </div>
+            <div class="notif-unread-dot" *ngIf="n.estado !== 'LEIDA'"></div>
+          </div>
+        </div>
+        <div class="notif-panel-footer">
+          <button class="notif-ver-todas" (click)="navegar('notificaciones', 'Cargando...')">Ver todas</button>
+        </div>
       </div>
+      <!-- USUARIO -->
+      <div class="user-menu-wrapper" (document:click)="onUserMenuClick($event)" #userWrapper>
+        <button class="user-chip" (click)="toggleUserMenu()" [class.active]="userMenuAbierto">
+          <div class="user-avatar-nav">{{ usuarioLogueado.charAt(0).toUpperCase() }}</div>
+          <span class="user-name-nav">{{ usuarioLogueado }}</span>
+          <svg class="user-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
 
+        <!-- DROPDOWN USUARIO -->
+        <div class="user-dropdown" *ngIf="userMenuAbierto">
+          <div class="ud-header">
+            <div class="ud-name">{{ usuarioLogueado }}</div>
+            <div class="ud-role">{{ rolActual }}</div>
+          </div>
+          <button class="ud-item" (click)="irAPerfil()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Mi perfil
+          </button>
+          <div class="ud-sep"></div>
+          <button class="ud-item danger" (click)="logout()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </nav>
@@ -351,4 +410,5 @@
       }
     </div>
   </div>
+
 </div>

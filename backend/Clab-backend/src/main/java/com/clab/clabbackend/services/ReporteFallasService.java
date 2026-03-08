@@ -102,6 +102,12 @@ public class ReporteFallasService {
                                         coordinador, labNombre, descripcion,
                                         nombreReportador, emailReportador, 0)
                         );
+                usuarioRolRepository.findUsuariosByRolNombre("Decano")
+                        .forEach(decano ->
+                                notificacionService.notificarDecanoNuevaFalla(
+                                        decano, labNombre, descripcion,
+                                        nombreReportador, emailReportador, 0)
+                        );
             }
         } catch (Exception e) {
             System.err.println("Error notificación nueva falla: " + e.getMessage());

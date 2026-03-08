@@ -3,18 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-
-interface Notificacion {
-  idNotificacion: number;
-  tipoNotificacion: string;
-  asunto: string;
-  mensaje: string;
-  estado: string;
-  fechaCreacion: string;
-  fechaEnvio: string | null;
-  emailOrigen: string | null;
-  usuario: { idUsuario: number; nombres: string; email: string; };
-}
+import { Notificacion} from '../interfaces/Notificacion.model';
 
 @Component({
   selector: 'app-notificaciones',
