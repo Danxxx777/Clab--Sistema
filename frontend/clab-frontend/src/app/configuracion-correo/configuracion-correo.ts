@@ -10,7 +10,6 @@ const PROPOSITOS = [
   { value: 'NOTIFICACIONES', label: 'Notificaciones del sistema', icon: '🔔' },
   { value: 'RESERVAS',       label: 'Alertas de reservas',        icon: '📅' },
   { value: 'REPORTES',       label: 'Reportes automáticos',       icon: '📊' },
-  { value: 'RESPUESTAS',     label: 'Respuestas a usuarios',      icon: '💬' },  // ← AGREGAR
 ];
 
 const PRESETS: Record<string, any> = {
