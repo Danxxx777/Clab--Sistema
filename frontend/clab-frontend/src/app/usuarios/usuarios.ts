@@ -183,10 +183,9 @@ export class UsuariosComponent implements OnInit {
     if (!rolNombre) return 'Sin rol';
     const roles = rolNombre.split(',').map(r => r.trim());
     if (roles.length <= 1) return rolNombre;
-    const primero = roles[0];
-    const segundo = roles[1].charAt(0) + '..';
-    return `${primero}, ${segundo}`;
+    return `${roles[0]}, ${roles[1].charAt(0)}...`;
   }
+
   /* ==GETTERS== */
   get rolesActivos(): RolView[] {
     return this.roles.filter(r => r.estado === 'ACTIVO');

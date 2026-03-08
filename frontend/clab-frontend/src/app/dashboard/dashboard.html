@@ -195,7 +195,7 @@
       }
 
       <!-- Módulo 2: Laboratorios -->
-      @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab')
+      @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado de Laboratorio')
       {
         <div class="menu-item" (click)="navegar('laboratorios', 'Cargando Laboratorios...')">
           <img src="/laboratorio.png" alt="Laboratorios" class="menu-icon">
@@ -207,7 +207,7 @@
       }
 
       <!-- Módulo 3: Equipos -->
-      @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano')
+      @if(rol === 'Administradorr' || rol === 'Encargado de Laboratorio' || rol === 'Decano')
       {
         <div class="menu-item info"(click)="navegar('equipos', 'Cargando Equipos...')">
           <img src="/equipo.png" alt="Equipos" class="menu-icon">
@@ -219,7 +219,7 @@
       }
 
       <!-- Módulo 4: Reservas -->
-      @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano' || rol === 'Encargado_Lab')
+      @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano' || rol === 'Encargado de Laboratorio')
       {
         <div class="menu-item" (click)="navegar('reservar', 'Cargando Reservas...')">
           <img src="/calendario.png" alt="Calendario" class="menu-icon">
@@ -231,7 +231,7 @@
       }
 
       <!-- Módulo: Solicitudes de Reserva -->
-      @if(rol === 'Docente' || rol === 'Coordinador' || rol === 'Decano' || rol === 'Administradorr' || rol === 'Encargado_Lab')
+      @if(rol === 'Docente' || rol === 'Coordinador' || rol === 'Decano' || rol === 'Administradorr' || rol === 'Encargado de Laboratorio')
       {
         <div class="menu-item" (click)="navegar('solicitudes-reserva', 'Cargando Solicitudes...')">
           <img src="/solicitud.png" alt="Solicitudes" class="menu-icon">
@@ -254,7 +254,7 @@
       }
 
       <!-- Módulo 6: Estudiantes -->
-      @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano' || rol === 'Encargado_Lab')
+      @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano' || rol === 'Encargado de Laboratorio')
       {
         <div class="menu-item" (click)="navegar('estudiantes', 'Cargando Estudiantes...')">
           <img src="/estudiantes.png" alt="Estudiantes" class="menu-icon">
@@ -278,7 +278,7 @@
       }
 
       <!-- Módulo 8: Reportes de Fallas -->
-      @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano' || rol === 'Docente')
+      @if(rol === 'Administradorr' || rol === 'Encargado de Laboratorio' || rol === 'Decano' || rol === 'Docente')
       {
         <div class="menu-item " (click)="navegar('reporte-fallas', 'Cargando Reportes de Fallas...')">
           <img src="/fallas.png" alt="Reportes de Fallas" class="menu-icon">
@@ -290,7 +290,7 @@
       }
 
       <!-- Módulo 9: Bloqueos -->
-      @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano')
+      @if(rol === 'Administradorr' || rol === 'Encargado de Laboratorio' || rol === 'Decano')
       {
         <div class="menu-item " (click)="navegar('bloqueos', 'Cargando Bloqueos...')">
           <img src="/bloqueos.png" alt="Bloqueos" class="menu-icon">
@@ -316,7 +316,7 @@
       </div>
 
       <!-- Módulo 11: Reportes de Uso -->
-      @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab')
+      @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado de Laboratorio')
       {
         <div class="menu-item" (click)="navegar('reportesuso', 'Cargando Reportes de Uso...')">
           <img src="/uso.png" alt="Reporte de Uso" class="menu-icon">

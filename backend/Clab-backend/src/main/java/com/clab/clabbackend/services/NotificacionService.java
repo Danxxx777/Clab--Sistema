@@ -19,7 +19,7 @@ public class NotificacionService {
     // ── Método central ────────────────────────────────────────────────
     public void crearNotificacion(Usuario destinatario, String tipoNotificacion,
                                   String asunto, String mensajeHTML,
-                                  String canal, String rolDestino, String emailOrigen) {
+                                  String canal, String rolDestino) {
         Notificacion n = new Notificacion();
         n.setUsuario(destinatario);
         n.setTipoNotificacion(tipoNotificacion);
@@ -29,7 +29,6 @@ public class NotificacionService {
         n.setEstado("NO_LEIDA");
         n.setFechaCreacion(LocalDate.now());
         n.setRolDestino(rolDestino);
-        n.setEmailOrigen(emailOrigen);
 
         if (canal.equals("EMAIL") || canal.equals("AMBOS")) {
             try {
@@ -45,52 +44,26 @@ public class NotificacionService {
         notificacionRepo.save(n);
     }
 
-    // Sobrecarga sin emailOrigen para notificaciones que no son de fallas
-    public void crearNotificacion(Usuario destinatario, String tipoNotificacion,
-                                  String asunto, String mensajeHTML,
-                                  String canal, String rolDestino) {
-        crearNotificacion(destinatario, tipoNotificacion, asunto, mensajeHTML, canal, rolDestino, null);
-    }
-
     // ── Notificaciones por evento ──────────────────────────────────────
 
     public void notificarNuevaFalla(Usuario encargado, String labNombre,
-                                    String descripcion, String reportador,
-                                    String emailReportador, Integer fallaId) {
+                                    String descripcion, Integer fallaId) {
         String asunto = "Nueva falla detectada en " + labNombre;
         String html = buildHtml("⚠️ Nueva Falla Detectada", "#e67e22",
                 "Se ha reportado una nueva falla:",
-                "<b>Laboratorio:</b> " + labNombre +
-                        "<br><b>Reportado por:</b> " + reportador +
-                        "<br><b>Descripción:</b> " + descripcion,
+                "<b>Laboratorio:</b> " + labNombre + "<br><b>Descripción:</b> " + descripcion,
                 "Ver Reporte #" + fallaId);
-        crearNotificacion(encargado, "FALLA", asunto, html, "AMBOS", "Encargado_Lab", emailReportador);
+        crearNotificacion(encargado, "FALLA", asunto, html, "AMBOS", "Encargado_Lab");
     }
 
     public void notificarAdminNuevaFalla(Usuario admin, String labNombre,
-                                         String descripcion, String reportador,
-                                         String emailReportador, Integer fallaId) {
+                                         String descripcion, Integer fallaId) {
         String asunto = "Nueva falla reportada en " + labNombre;
         String html = buildHtml("⚠️ Nueva Falla", "#e67e22",
                 "Se reportó una falla en el sistema:",
-                "<b>Laboratorio:</b> " + labNombre +
-                        "<br><b>Reportado por:</b> " + reportador +
-                        "<br><b>Descripción:</b> " + descripcion,
+                "<b>Laboratorio:</b> " + labNombre + "<br><b>Descripción:</b> " + descripcion,
                 "Ver Reporte #" + fallaId);
-        crearNotificacion(admin, "FALLA", asunto, html, "AMBOS", "Administradorr", emailReportador);
-    }
-
-    public void notificarCoordinadorNuevaFalla(Usuario coordinador, String labNombre,
-                                               String descripcion, String reportador,
-                                               String emailReportador, Integer fallaId) {
-        String asunto = "Nueva falla reportada en " + labNombre;
-        String html = buildHtml("⚠️ Nueva Falla", "#e67e22",
-                "Se reportó una falla en el sistema:",
-                "<b>Laboratorio:</b> " + labNombre +
-                        "<br><b>Reportado por:</b> " + reportador +
-                        "<br><b>Descripción:</b> " + descripcion,
-                "Ver Reporte #" + fallaId);
-        crearNotificacion(coordinador, "FALLA", asunto, html, "SISTEMA", "Coordinador", emailReportador);
+        crearNotificacion(admin, "FALLA", asunto, html, "SISTEMA", "Administradorr");
     }
 
     public void notificarFallaResuelta(Usuario reportador, String labNombre,
@@ -143,11 +116,16 @@ public class NotificacionService {
 
     // ── Métodos para el frontend ───────────────────────────────────────
 
-    public List<Notificacion> getMisNotificaciones(Usuario usuario, String rol) {
+    /**
+     * Retorna notificaciones filtradas por rol:
+     * - Administradorr ve todas
+     * - Otros roles ven solo las suyas (rolDestino = su rol) o las sin rol asignado
+     */
+    public List<Notificacion> getMisNotificaciones(Usuario usuario, String rol) { // ← rol agregado
         List<Notificacion> todas = notificacionRepo.findByUsuarioOrderByFechaCreacionDesc(usuario);
 
         if ("Administradorr".equals(rol)) {
-            return todas;
+            return todas; // Admin ve todo
         }
 
         return todas.stream()
@@ -171,30 +149,6 @@ public class NotificacionService {
                 .findByUsuarioAndEstadoOrderByFechaCreacionDesc(usuario, "NO_LEIDA");
         noLeidas.forEach(n -> n.setEstado("LEIDA"));
         notificacionRepo.saveAll(noLeidas);
-    }
-
-    public void eliminar(Integer id) {
-        notificacionRepo.deleteById(id);
-    }
-
-    public void responderNotificacion(Integer idNotificacion, String mensajeRespuesta, Usuario remitente) {
-        notificacionRepo.findById(idNotificacion).ifPresent(n -> {
-            String emailDestino = n.getEmailOrigen() != null
-                    ? n.getEmailOrigen()
-                    : n.getUsuario().getEmail();
-            String asunto = "Respuesta: " + n.getAsunto();
-            String html = buildHtml("💬 Respuesta del Sistema", "#3498db",
-                    "El encargado ha respondido tu notificación:",
-                    "<b>Mensaje original:</b> " + n.getAsunto() +
-                            "<br><br><b>Respuesta:</b> " + mensajeRespuesta +
-                            "<br><br><small>Respondido por: " + remitente.getNombres() + "</small>",
-                    "Ver Sistema");
-            try {
-                emailService.enviarCorreo("RESPUESTAS", emailDestino, asunto, html);
-            } catch (Exception e) {
-                System.err.println("Error enviando respuesta: " + e.getMessage());
-            }
-        });
     }
 
     // ── Builder HTML ───────────────────────────────────────────────────
