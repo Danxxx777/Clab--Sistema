@@ -23,7 +23,6 @@ public class NotificacionController {
     private final UsuarioRepository usuarioRepository;
     private final JwtService jwtService;
 
-    // ── Helper: obtener usuario logueado desde el token ──────────────
     private Usuario obtenerUsuarioActual(HttpServletRequest request) {
         try {
             String header = request.getHeader("Authorization");
@@ -36,53 +35,46 @@ public class NotificacionController {
         return null;
     }
 
-    // Retorna todas las notificaciones del usuario logueado
+    private String obtenerRolActual(HttpServletRequest request) {
+        try {
+            String header = request.getHeader("Authorization");
+            if (header != null && header.startsWith("Bearer ")) {
+                Claims claims = jwtService.obtenerClaims(header.substring(7));
+                return claims.get("rol", String.class);
+            }
+        } catch (Exception ignored) {}
+        return null;
+    }
+
     @GetMapping("/mis-notificaciones")
-    public ResponseEntity<List<Notificacion>> getMisNotificaciones(
-            HttpServletRequest request) {
+    public ResponseEntity<List<Notificacion>> getMisNotificaciones(HttpServletRequest request) {
         Usuario usuario = obtenerUsuarioActual(request);
         if (usuario == null) return ResponseEntity.status(401).build();
-        // Leer el rol del JWT
-        String header = request.getHeader("Authorization");
-        Claims claims = jwtService.obtenerClaims(header.substring(7));
-        String rol = claims.get("rol", String.class);
-
-        return ResponseEntity.ok(
-                notificacionService.getMisNotificaciones(usuario, rol)
-        );
+        String rol = obtenerRolActual(request);
+        return ResponseEntity.ok(notificacionService.getMisNotificaciones(usuario, rol));
     }
 
-    // Retorna el número de notificaciones no leídas (para el badge del dashboard)
     @GetMapping("/no-leidas/count")
-    public ResponseEntity<Map<String, Long>> contarNoLeidas(
-            HttpServletRequest request) {
+    public ResponseEntity<Map<String, Long>> contarNoLeidas(HttpServletRequest request) {
         Usuario usuario = obtenerUsuarioActual(request);
-        if (usuario == null)
-            return ResponseEntity.status(401).build();
-
-        long count = notificacionService.contarNoLeidas(usuario);
+        if (usuario == null) return ResponseEntity.status(401).build();
+        String rol = obtenerRolActual(request);
+        long count = notificacionService.contarNoLeidas(usuario, rol);
         return ResponseEntity.ok(Map.of("noLeidas", count));
     }
-
-    // Marca una notificación como leída
     @PutMapping("/leer/{id}")
     public ResponseEntity<Void> marcarLeida(@PathVariable Integer id,
                                             HttpServletRequest request) {
         Usuario usuario = obtenerUsuarioActual(request);
-        if (usuario == null)
-            return ResponseEntity.status(401).build();
-
+        if (usuario == null) return ResponseEntity.status(401).build();
         notificacionService.marcarComoLeida(id);
         return ResponseEntity.ok().build();
     }
 
-    // Marca todas las notificaciones del usuario como leídas
     @PutMapping("/leer-todas")
     public ResponseEntity<Void> marcarTodasLeidas(HttpServletRequest request) {
         Usuario usuario = obtenerUsuarioActual(request);
-        if (usuario == null)
-            return ResponseEntity.status(401).build();
-
+        if (usuario == null) return ResponseEntity.status(401).build();
         notificacionService.marcarTodasLeidas(usuario);
         return ResponseEntity.ok().build();
     }

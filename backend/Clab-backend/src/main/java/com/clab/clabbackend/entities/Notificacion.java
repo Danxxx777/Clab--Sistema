@@ -3,6 +3,7 @@ package com.clab.clabbackend.entities;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -37,10 +38,10 @@ public class Notificacion {
     private String estado;
 
     @Column(name = "fecha_creacion", nullable = false)
-    private LocalDate fechaCreacion;
+    private LocalDateTime fechaCreacion;
 
     @Column(name = "fecha_envio")
-    private LocalDate fechaEnvio;
+    private LocalDateTime fechaEnvio;
 
     @Column(name = "rol_destino", length = 50) // ← nuevo
     private String rolDestino;

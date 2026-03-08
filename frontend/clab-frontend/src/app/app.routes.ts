@@ -19,6 +19,7 @@ import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password'
 import { VerificarCodigoComponent } from './auth/verificar-codigo/verificar-codigo';
 import { ResetPasswordComponent } from './auth/reset-password/reset-password';
 import { ConfiguracionCorreoComponent } from './configuracion-correo/configuracion-correo';
+import { PerfilComponent } from './perfil/perfil';
 
 import { authGuard, guestGuard } from './auth/auth.guard';
 import {SolicitudesReservaComponent} from './solicitudes-reserva/solicitudes-reserva';
@@ -56,5 +57,6 @@ export const routes: Routes = [
   { path: 'solicitudes-reserva', component: SolicitudesReservaComponent, canActivate: [authGuard] },
   { path: 'auditoria',      component: AuditoriaComponent,      canActivate: [authGuard] },
   { path: 'roles',          component: RolesComponent,          canActivate: [authGuard] },
+  { path: 'perfil', component: PerfilComponent, canActivate: [authGuard] },
   { path: '**', redirectTo: 'login' }
 ];

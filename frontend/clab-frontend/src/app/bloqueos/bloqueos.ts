@@ -5,21 +5,8 @@ import { Router } from '@angular/router';
 import { LaboratorioService } from '../services/laboratorio.service';
 import { TipoBloqueoService, TipoBloqueo, TipoBloqueDTO } from '../services/tipo-bloqueo.service';
 import { BloqueoLabService, BloqueoLabDTO } from '../services/bloqueo-lab.service';
+import { Bloqueo } from '../interfaces/Bloqueo.model';
 
-interface Bloqueo {
-  idBloqueo: number;
-  codLaboratorio: number;
-  nombreLaboratorio: string;
-  idUsuario: number;
-  nombreUsuario: string;
-  idTipoBloqueo: number;
-  nombreTipoBloqueo: string;
-  motivo: string;
-  fechaInicio: string;
-  fechaFin: string;
-  afectaReservasExistentes: boolean;
-  estado: string;
-}
 
 @Component({
   selector: 'app-bloqueos',

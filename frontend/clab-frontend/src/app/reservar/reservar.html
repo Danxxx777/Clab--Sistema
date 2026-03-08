@@ -166,14 +166,16 @@
       <div class="toolbar">
         <div class="search-container">
           <span class="search-icon">🔍</span>
-          <input
-            type="text"
-            class="search-input"
-            [(ngModel)]="busquedaReservas"
-            (input)="filtrarReservas()"
-            placeholder="Buscar reservas...">
+          <input type="text" class="search-input" [(ngModel)]="busquedaReservas"
+                 (input)="filtrarReservas()" placeholder="Buscar reservas...">
         </div>
         <div class="toolbar-actions">
+          <div class="paginacion" *ngIf="reservasFiltradas.length > 0">
+            <button class="btn-pag" (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">‹</button>
+            <button class="btn-pag" *ngFor="let p of paginas" [class.activa]="p === paginaActual" (click)="cambiarPagina(p)">{{ p }}</button>
+            <button class="btn-pag" (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">›</button>
+            <span class="pag-info">{{ paginaActual }} / {{ totalPaginas }}</span>
+          </div>
           <button class="btn-agregar" (click)="abrirModal('reserva')">+ Nueva Reserva</button>
         </div>
       </div>
@@ -182,46 +184,27 @@
         <table class="data-table">
           <thead>
           <tr>
-            <th>LABORATORIO</th>
-            <th>FECHA</th>
-            <th>HORARIO</th>
-            <th>ASIGNATURA</th>
-            <th>PERÍODO</th>
-            <th>ESTUDIANTES</th>
-            <th>TIPO RESERVA</th>
-            <th>ESTADO</th>
-            <th>ACCIONES</th>
+            <th>LABORATORIO</th><th>FECHA</th><th>HORARIO</th><th>ASIGNATURA</th>
+            <th>PERÍODO</th><th>ESTUDIANTES</th><th>TIPO RESERVA</th><th>ESTADO</th><th>ACCIONES</th>
           </tr>
           </thead>
           <tbody>
-          <tr *ngFor="let res of reservasFiltradas; let i = index">
+          <tr *ngFor="let res of reservasPaginadas; let i = index">
             <td><strong>{{ res.nombre_laboratorio }}</strong></td>
             <td>{{ res.fecha_reserva | date:'dd/MM/yyyy' }}</td>
             <td>{{ res.hora_inicio }} - {{ res.hora_fin }}</td>
             <td>{{ res.nombre_asignatura }}</td>
             <td>{{ res.nombre_periodo }}</td>
             <td>{{ res.numero_estudiantes }} estudiantes</td>
-            <td>
-              <span class="badge tipo-badge">{{ res.nombre_tipo }}</span>
-            </td>
-            <td>
-              <span class="badge" [ngClass]="getEstadoBadgeClass(res.estado)">
-                {{ res.estado }}
-              </span>
-            </td>
+            <td><span class="badge tipo-badge">{{ res.nombre_tipo }}</span></td>
+            <td><span class="badge" [ngClass]="getEstadoBadgeClass(res.estado)">{{ res.estado }}</span></td>
             <td>
               <div class="action-buttons">
-                <button class="btn-action btn-ver"    (click)="verDetalle(res)">Ver</button>
+                <button class="btn-action btn-ver" (click)="verDetalle(res)">Ver</button>
                 <button class="btn-action btn-editar" (click)="editarReserva(res, i)">Editar</button>
-                <button class="btn-action btn-aprobar"
-                        *ngIf="res.estado === 'Pendiente'"
-                        (click)="aprobarReserva(res)">Aprobar</button>
-                <button class="btn-action btn-rechazar"
-                        *ngIf="res.estado === 'Pendiente'"
-                        (click)="rechazarReserva(res)">Rechazar</button>
-                <button class="btn-action btn-cancelar-res"
-                        *ngIf="res.estado === 'Aprobada'"
-                        (click)="abrirModalCancelar(res, i)">Cancelar</button>
+                <button class="btn-action btn-aprobar" *ngIf="res.estado === 'Pendiente'" (click)="aprobarReserva(res)">Aprobar</button>
+                <button class="btn-action btn-rechazar" *ngIf="res.estado === 'Pendiente'" (click)="rechazarReserva(res)">Rechazar</button>
+                <button class="btn-action btn-cancelar-res" *ngIf="res.estado === 'Aprobada'" (click)="abrirModalCancelar(res, i)">Cancelar</button>
               </div>
             </td>
           </tr>
@@ -238,40 +221,36 @@
       <div class="toolbar">
         <div class="search-container">
           <span class="search-icon">🔍</span>
-          <input
-            type="text"
-            class="search-input"
-            [(ngModel)]="busquedaTipos"
-            (input)="filtrarTipos()"
-            placeholder="Buscar tipos de reserva...">
+          <input type="text" class="search-input" [(ngModel)]="busquedaTipos"
+                 (input)="filtrarTipos()" placeholder="Buscar tipos de reserva...">
         </div>
-        <button class="btn-agregar" (click)="abrirModal('tipo')">+ Nuevo Tipo de Reserva</button>
+        <div class="toolbar-actions">
+          <div class="paginacion" *ngIf="tiposFiltrados.length > 0">
+            <button class="btn-pag" (click)="cambiarPaginaTipos(paginaActualTipos - 1)" [disabled]="paginaActualTipos === 1">‹</button>
+            <button class="btn-pag" *ngFor="let p of paginasTipos" [class.activa]="p === paginaActualTipos" (click)="cambiarPaginaTipos(p)">{{ p }}</button>
+            <button class="btn-pag" (click)="cambiarPaginaTipos(paginaActualTipos + 1)" [disabled]="paginaActualTipos === totalPaginasTipos">›</button>
+            <span class="pag-info">{{ paginaActualTipos }} / {{ totalPaginasTipos }}</span>
+          </div>
+          <button class="btn-agregar" (click)="abrirModal('tipo')">+ Nuevo Tipo de Reserva</button>
+        </div>
       </div>
 
       <div class="table-container">
         <table class="data-table">
           <thead>
-          <tr>
-            <th>ID</th>
-            <th>NOMBRE</th>
-            <th>DESCRIPCIÓN</th>
-            <th>ESTADO</th>
-            <th>ACCIONES</th>
-          </tr>
+          <tr><th>ID</th><th>NOMBRE</th><th>DESCRIPCIÓN</th><th>ESTADO</th><th>ACCIONES</th></tr>
           </thead>
           <tbody>
-          <tr *ngFor="let tipo of tiposFiltrados; let i = index">
+          <tr *ngFor="let tipo of tiposPaginados; let i = index">
             <td>{{ tipo.id_tipo_reserva }}</td>
             <td><strong>{{ tipo.nombre_tipo }}</strong></td>
             <td>{{ tipo.descripcion }}</td>
             <td>
-              <span class="badge" [ngClass]="tipo.estado === 'Activo' ? 'badge-activo' : 'badge-inactivo'">
-                {{ tipo.estado }}
-              </span>
+              <span class="badge" [ngClass]="tipo.estado === 'Activo' ? 'badge-activo' : 'badge-inactivo'">{{ tipo.estado }}</span>
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn-action btn-editar"   (click)="editarTipo(tipo, i)">Editar</button>
+                <button class="btn-action btn-editar" (click)="editarTipo(tipo, i)">Editar</button>
                 <button class="btn-action btn-eliminar" (click)="eliminarTipo(tipo, i)">Eliminar</button>
               </div>
             </td>
@@ -283,7 +262,6 @@
         </table>
       </div>
     </div>
-
     <!-- TAB 2: CONTROL DE ASISTENCIA (solo Encargado_Lab) -->
     @if(rol === 'Encargado_Lab' || rol === 'clab_encargado_lab' || rol === 'Encargado de Laboratorio') {
       <div class="tab-content" *ngIf="tabActiva === 2">
