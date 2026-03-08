@@ -213,6 +213,12 @@
             <span class="notif-item-asunto">{{ n.asunto }}</span>
             <span class="notif-item-fecha">{{ n.fechaCreacion | date:'dd/MM/yyyy' }}</span>
           </div>
+          <div class="notif-item-acciones" (click)="$event.stopPropagation()">
+            @if(n.estado === 'LEIDA') {
+              <button class="btn-notif-accion responder" (click)="abrirResponder(n, $event)" title="Responder">💬</button>
+              <button class="btn-notif-accion eliminar" (click)="eliminar(n.idNotificacion, $event)" title="Eliminar">🗑️</button>
+            }
+          </div>
           <div class="notif-item-estado">
             @if(n.estado === 'NO_LEIDA') {
               <span class="estado-dot nueva"></span>
@@ -239,6 +245,12 @@
           <div class="notif-item-body">
             <span class="notif-item-asunto">{{ n.asunto }}</span>
             <span class="notif-item-fecha">{{ n.fechaCreacion | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="notif-item-acciones" (click)="$event.stopPropagation()">
+            @if(n.estado === 'LEIDA') {
+              <button class="btn-notif-accion responder" (click)="abrirResponder(n, $event)" title="Responder">💬</button>
+              <button class="btn-notif-accion eliminar" (click)="eliminar(n.idNotificacion, $event)" title="Eliminar">🗑️</button>
+            }
           </div>
           <div class="notif-item-estado">
             @if(n.estado === 'NO_LEIDA') {
@@ -267,6 +279,12 @@
             <span class="notif-item-asunto">{{ n.asunto }}</span>
             <span class="notif-item-fecha">{{ n.fechaCreacion | date:'dd/MM/yyyy' }}</span>
           </div>
+          <div class="notif-item-acciones" (click)="$event.stopPropagation()">
+            @if(n.estado === 'LEIDA') {
+              <button class="btn-notif-accion responder" (click)="abrirResponder(n, $event)" title="Responder">💬</button>
+              <button class="btn-notif-accion eliminar" (click)="eliminar(n.idNotificacion, $event)" title="Eliminar">🗑️</button>
+            }
+          </div>
           <div class="notif-item-estado">
             @if(n.estado === 'NO_LEIDA') {
               <span class="estado-dot nueva"></span>
@@ -281,4 +299,79 @@
     }
 
   </div>
+
+  <!-- MODAL RESPONDER -->
+  @if(modalResponderAbierto && notifAResponder) {
+    <div class="modal-overlay" (click)="cerrarResponder()">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <span class="modal-titulo">💬 Responder notificación</span>
+          <button class="modal-cerrar" (click)="cerrarResponder()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-info">
+            <span class="modal-label">Notificación:</span>
+            <span class="modal-valor">{{ notifAResponder.asunto }}</span>
+          </div>
+          <div class="modal-info">
+          <span class="modal-valor">
+            {{ notifAResponder.emailOrigen ?? notifAResponder.usuario.email }}
+          </span>
+          </div>
+          <textarea
+            class="modal-textarea"
+            [(ngModel)]="mensajeRespuesta"
+            placeholder="Escribe tu respuesta aquí..."
+            rows="4">
+          </textarea>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-modal-cancelar" (click)="cerrarResponder()">Cancelar</button>
+          <button class="btn-modal-confirmar"
+                  (click)="confirmarRespuesta()"
+                  [disabled]="!mensajeRespuesta.trim() || enviandoRespuesta">
+            {{ enviandoRespuesta ? 'Enviando...' : '📧 Enviar respuesta' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL RESPONDER -->
+  @if(modalResponderAbierto && notifAResponder) {
+    <div class="modal-overlay" (click)="cerrarResponder()">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <span class="modal-titulo">💬 Responder notificación</span>
+          <button class="modal-cerrar" (click)="cerrarResponder()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-info">
+            <span class="modal-label">Notificación:</span>
+            <span class="modal-valor">{{ notifAResponder.asunto }}</span>
+          </div>
+          <div class="modal-info">
+            <span class="modal-label">Para:</span>
+            <span class="modal-valor">
+              {{ notifAResponder.emailOrigen ?? notifAResponder.usuario.email }}
+            </span>
+          </div>
+          <textarea
+            class="modal-textarea"
+            [(ngModel)]="mensajeRespuesta"
+            placeholder="Escribe tu respuesta aquí..."
+            rows="4">
+        </textarea>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-modal-cancelar" (click)="cerrarResponder()">Cancelar</button>
+          <button class="btn-modal-confirmar"
+                  (click)="confirmarRespuesta()"
+                  [disabled]="!mensajeRespuesta.trim() || enviandoRespuesta">
+            {{ enviandoRespuesta ? 'Enviando...' : '📧 Enviar respuesta' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 </div>
