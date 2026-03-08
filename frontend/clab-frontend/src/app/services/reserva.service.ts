@@ -37,6 +37,10 @@ export class ReservaService {
     return this.http.get<any[]>(`${this.API_URL}/listar`);
   }
 
+  listarPorEncargado(idUsuario: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/listarPorEncargado/${idUsuario}`);
+  }
+
   crear(data: ReservaDTO): Observable<any> {
     return this.http.post(`${this.API_URL}/crear`, data);
   }
