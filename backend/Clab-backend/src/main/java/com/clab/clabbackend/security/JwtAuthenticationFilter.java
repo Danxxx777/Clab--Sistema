@@ -1,5 +1,6 @@
 package com.clab.clabbackend.security;
 
+import com.clab.clabbackend.repository.SesionActivaRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -22,10 +23,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
+    private final SesionActivaRepository sesionActivaRepository;
 
-    public JwtAuthenticationFilter(JwtService jwtService, CustomUserDetailsService userDetailsService) {
+    public JwtAuthenticationFilter(JwtService jwtService,
+                                   CustomUserDetailsService userDetailsService,
+                                   SesionActivaRepository sesionActivaRepository) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
+        this.sesionActivaRepository = sesionActivaRepository;
     }
 
     @Override
@@ -45,7 +50,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 || path.startsWith("/horarios")
                 || path.startsWith("/bloqueos");
     }
-
+    private String hashToken(String token) {
+        try {
+            java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(token.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            return java.util.Base64.getEncoder().encodeToString(hash);
+        } catch (Exception e) {
+            return token.substring(0, Math.min(token.length(), 255));
+        }
+    }
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -62,6 +75,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Claims claims = jwtService.obtenerClaims(token);
                 String username = claims.getSubject();
                 String rol = claims.get("rol", String.class);
+
+                // Verificar que la sesión sigue activa en BD
+                String tokenHash = hashToken(token);
+
+                boolean sesionValida = sesionActivaRepository
+                        .findByTokenHash(tokenHash)
+                        .map(s -> s.getActiva())
+                        .orElse(false);
+
+                if (!sesionValida) {
+                    SecurityContextHolder.clearContext();
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\":\"SESSION_EXPIRED\"}");
+                    return;
+                }
 
                 List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 

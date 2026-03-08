@@ -67,12 +67,6 @@
         <div class="di-text"><div class="di-name">Asistencia</div><div class="di-desc">Control de asistencia</div></div>
       </div>
     }
-    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano' || rol === 'Docente') {
-      <div class="drawer-item" (click)="navegar('reporte-fallas', '')">
-        <div class="di-icon"><img src="/fallas.png" alt="Fallas"></div>
-        <div class="di-text"><div class="di-name">Reportes de Fallas</div><div class="di-desc">Seguimiento de equipos</div></div>
-      </div>
-    }
     @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
       <div class="drawer-item" (click)="navegar('bloqueos', '')">
         <div class="di-icon"><img src="/bloqueos.png" alt="Bloqueos"></div>

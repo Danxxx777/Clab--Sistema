@@ -49,12 +49,6 @@
         <div class="di-text"><div class="di-name">Reservas</div><div class="di-desc">Disponibilidad</div></div>
       </div>
     }
-    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Coordinador') {
-      <div class="drawer-item" (click)="navegar('academico', '')">
-        <div class="di-icon"><img src="/academico.png" alt="Académico"></div>
-        <div class="di-text"><div class="di-name">Académico</div><div class="di-desc">Períodos y carreras</div></div>
-      </div>
-    }
     @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano') {
       <div class="drawer-item" (click)="navegar('estudiantes', '')">
         <div class="di-icon"><img src="/estudiantes.png" alt="Estudiantes"></div>

@@ -1,525 +1,373 @@
-// =====================
-// VARIABLES
-// =====================
-$color-primario: #2d7d51;
-$color-primario-dark: #1f5a39;
-$color-fondo: #f5f7fa;
-$color-blanco: #ffffff;
-$color-texto: #2c3e50;
-$color-texto-claro: #7f8c8d;
-$color-borde: #e1e8ed;
-$color-verde: #27ae60;
-$color-amarillo: #f39c12;
-$color-rojo: #e74c3c;
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
-:host {
-  display: block;
-  width: 100%;
+$bg:          #111111;
+$surface:     #1a1a1a;
+$card-bg:     #1e1e1e;
+$border:      #2a2a2a;
+$border-h:    #3a3a3a;
+$neon:        #39ff14;
+$neon-dim:    rgba(57, 255, 20, 0.10);
+$neon-glow:   rgba(57, 255, 20, 0.06);
+$neon-border: rgba(57, 255, 20, 0.25);
+$text:        #f0f0f0;
+$muted:       #6b6b6b;
+$muted2:      #4a4a4a;
+$red:         #e74c3c;
+$red-dim:     rgba(231, 76, 60, 0.12);
+$orange:      #e67e22;
+$orange-dim:  rgba(230, 126, 34, 0.08);
+$orange-border: rgba(230, 126, 34, 0.25);
+$blue:        #3b82f6;
+$blue-dim:    rgba(59, 130, 246, 0.10);
+$blue-border: rgba(59, 130, 246, 0.25);
+$purple:      #a855f7;
+$cyan:        #06b6d4;
+$yellow:      #f59e0b;
+$green:       #10b981;
+
+:host { display: block; min-height: 100vh; background: $bg; }
+
+.reportes-page {
+  font-family: 'Space Grotesk', sans-serif;
+  background: $bg;
   min-height: 100vh;
-  background: $color-fondo;
+  padding-bottom: 48px;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-// =====================
-// CONTAINER
-// =====================
-.reportes-container {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: $color-fondo;
-  min-height: 100vh;
-  padding-bottom: 60px;
-}
-
-// =====================
-// HEADER
-// =====================
-.header {
-  background: linear-gradient(135deg, $color-primario 0%, $color-primario-dark 100%);
-  padding: 20px 40px;
+// ── HEADER ────────────────────────────────────────────────────────
+.notif-header {
+  background: $surface;
+  border-bottom: 1px solid $border;
+  padding: 12px 24px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  justify-content: space-between;
+  position: relative;
 
-  .logo {
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, $neon-border, transparent);
+  }
+
+  .notif-header-left { display: flex; align-items: center; gap: 14px; }
+}
+
+.breadcrumb-row {
+  display: flex; align-items: center; gap: 8px;
+
+  .brand { font-family: 'Space Mono', monospace; color: $neon; font-size: 16px; font-weight: 700; letter-spacing: 3px; }
+  .sep   { color: $muted2; font-size: 14px; }
+  .bc-link {
+    font-size: 13px; font-weight: 600; color: $text;
+    &.clickable { color: $muted; cursor: pointer; transition: color 0.2s; &:hover { color: $text; } }
+  }
+  .bc-current { font-size: 13px; font-weight: 600; color: $text; }
+}
+
+.notif-subtitle { margin: 2px 0 0; font-size: 11px; color: $muted; }
+
+.header-acciones { display: flex; align-items: center; gap: 8px; }
+
+.btn-volver {
+  background: transparent; border: 1px solid $border; color: $neon;
+  padding: 7px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; font-family: 'Space Grotesk', sans-serif;
+  &:hover { border-color: $neon-border; background: $neon-glow; transform: translateX(-3px); }
+}
+
+.btn-exportar-pdf {
+  background: $neon-glow; border: 1px solid $neon-border; color: $neon;
+  padding: 7px 16px; border-radius: 8px; font-size: 12px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s; font-family: 'Space Grotesk', sans-serif;
+  &:hover { background: $neon-dim; }
+}
+
+.btn-exportar-excel {
+  background: $blue-dim; border: 1px solid $blue-border; color: lighten($blue, 20%);
+  padding: 7px 16px; border-radius: 8px; font-size: 12px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s; font-family: 'Space Grotesk', sans-serif;
+  &:hover { background: rgba($blue, 0.18); }
+}
+
+// ── STATS ─────────────────────────────────────────────────────────
+.notif-stats {
+  display: flex; gap: 16px; padding: 20px 24px;
+
+  .stat-card {
+    flex: 1; background: $surface; border: 1px solid $border; border-radius: 12px;
+    padding: 16px 20px; display: flex; align-items: center; gap: 14px;
+    transition: border-color 0.2s;
+    &:hover { border-color: $border-h; }
+
+    .stat-icon { width: 40px; height: 40px; background: $card-bg; border: 1px solid $border; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .stat-num  { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; color: $text; line-height: 1; }
+    .stat-label{ font-size: 10px; color: $muted; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-top: 3px; }
+
+    &.ok     .stat-num { color: $neon; }
+    &.warn   .stat-num { color: $orange; }
+    &.alert  .stat-num { color: $red; }
+    &.azul   .stat-num { color: $blue; }
+    &.cyan   .stat-num { color: $cyan; }
+    &.morado .stat-num { color: $purple; }
+  }
+}
+
+// ── SECCIÓN TÍTULO ────────────────────────────────────────────────
+.seccion-titulo {
+  padding: 8px 24px 10px;
+  font-family: 'Space Mono', monospace;
+  font-size: 9px; font-weight: 700; color: $muted2;
+  letter-spacing: 2px; text-transform: uppercase;
+}
+
+// ── MÓDULOS GRID ──────────────────────────────────────────────────
+.notif-contenido {
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+
+  // cuando está en modo lista (reporte activo) vuelve a bloque normal
+  &.modo-reporte {
     display: flex;
-    align-items: center;
-    gap: 12px;
-
-    .logo-icon { font-size: 28px; }
-
-    .logo-text {
-      color: white;
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: 1px;
-    }
-  }
-
-  .btn-volver {
-    background: rgba(255, 255, 255, 0.15);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    padding: 10px 24px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.25s ease;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.25);
-      transform: translateX(-3px);
-    }
+    flex-direction: column;
+    padding: 0;
   }
 }
 
-// =====================
-// TITULO
-// =====================
-.page-title-section {
-  background: linear-gradient(135deg, $color-primario 0%, $color-primario-dark 100%);
-  padding: 26px 40px 34px;
+.modulo-card {
+  background: $card-bg; border: 1px solid $border; border-radius: 12px;
+  padding: 22px 18px; cursor: pointer; position: relative; overflow: hidden;
+  transition: all 0.2s ease;
 
-  h1 {
-    color: white;
-    font-size: 28px;
-    font-weight: 700;
-    margin: 0;
-  }
+  &:hover { background: $surface; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+
+  .mc-glow { position: absolute; top: 0; right: 0; width: 70px; height: 70px; border-radius: 0 12px 0 0; pointer-events: none; }
+  .mc-num  { position: absolute; top: 12px; right: 14px; font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; opacity: 0.2; color: $text; }
+  .mc-icon { font-size: 28px; margin-bottom: 12px; }
+  .mc-titulo { font-size: 14px; font-weight: 700; color: $text; margin-bottom: 4px; }
+  .mc-desc { font-size: 11px; color: $muted; margin-bottom: 16px; line-height: 1.5; }
+  .mc-btn { display: inline-flex; align-items: center; font-size: 10px; font-weight: 700; font-family: 'Space Mono', monospace; padding: 4px 12px; border-radius: 100px; background: transparent; border: 1px solid $border; color: $muted; transition: all 0.2s; }
+
+  &.color-neon     { &:hover { border-color: $neon-border;           .mc-btn { color: $neon;    border-color: $neon-border;           background: $neon-glow; }          } .mc-glow { background: radial-gradient(circle at top right, rgba(57,255,20,0.08),   transparent 70%); } }
+  &.color-verde    { &:hover { border-color: rgba($green,0.4);       .mc-btn { color: $green;   border-color: rgba($green,0.4);       background: rgba($green,0.08); }   } .mc-glow { background: radial-gradient(circle at top right, rgba(16,185,129,0.08),  transparent 70%); } }
+  &.color-rojo     { &:hover { border-color: rgba($red,0.4);         .mc-btn { color: $red;     border-color: rgba($red,0.4);         background: $red-dim; }            } .mc-glow { background: radial-gradient(circle at top right, rgba(231,76,60,0.08),   transparent 70%); } }
+  &.color-azul     { &:hover { border-color: $blue-border;           .mc-btn { color: lighten($blue,20%); border-color: $blue-border; background: $blue-dim; }           } .mc-glow { background: radial-gradient(circle at top right, rgba(59,130,246,0.08),  transparent 70%); } }
+  &.color-naranja  { &:hover { border-color: $orange-border;         .mc-btn { color: $orange;  border-color: $orange-border;         background: $orange-dim; }         } .mc-glow { background: radial-gradient(circle at top right, rgba(230,126,34,0.08),  transparent 70%); } }
+  &.color-cyan     { &:hover { border-color: rgba($cyan,0.4);        .mc-btn { color: $cyan;    border-color: rgba($cyan,0.4);        background: rgba($cyan,0.08); }    } .mc-glow { background: radial-gradient(circle at top right, rgba(6,182,212,0.08),   transparent 70%); } }
+  &.color-amarillo { &:hover { border-color: rgba($yellow,0.4);      .mc-btn { color: $yellow;  border-color: rgba($yellow,0.4);      background: rgba($yellow,0.08); }  } .mc-glow { background: radial-gradient(circle at top right, rgba(245,158,11,0.08),  transparent 70%); } }
+  &.color-morado   { &:hover { border-color: rgba($purple,0.4);      .mc-btn { color: $purple;  border-color: rgba($purple,0.4);      background: rgba($purple,0.08); }  } .mc-glow { background: radial-gradient(circle at top right, rgba(168,85,247,0.08),  transparent 70%); } }
 }
 
-// =====================
-// TABS
-// =====================
-.tabs-container {
-  background: white;
-  border-bottom: 2px solid $color-borde;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+// ── REPORTE INTERIOR ──────────────────────────────────────────────
+.reporte-titulo-row {
+  display: flex; align-items: center; gap: 14px; padding: 20px 24px 0;
+  .rt-icon   { width: 48px; height: 48px; background: $card-bg; border: 1px solid $border; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .rt-titulo { font-size: 20px; font-weight: 700; color: $text; }
+  .rt-desc   { font-size: 12px; color: $muted; margin-top: 2px; }
 }
 
-.tabs {
-  max-width: 1400px;
-  margin: 0 auto;
-  display: flex;
-  padding: 0 40px;
-  gap: 2px;
-  overflow-x: auto;
-
-  .tab {
-    padding: 16px 24px;
-    background: transparent;
-    border: none;
-    border-bottom: 3px solid transparent;
-    font-weight: 600;
-    font-size: 14px;
-    color: $color-texto-claro;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    white-space: nowrap;
-    margin-bottom: -2px;
-
-    &:hover {
-      color: $color-primario;
-      background: rgba($color-primario, 0.04);
-    }
-
-    &.active {
-      color: $color-primario;
-      border-bottom-color: $color-primario;
-    }
-  }
-}
-
-// =====================
-// CONTENT
-// =====================
-.content-wrapper {
-  max-width: 1400px;
-  margin: 30px auto;
-  padding: 0 40px;
-}
-
-.tab-content {
-  animation: fadeIn 0.3s ease;
-}
-
-// =====================
-// FILTROS
-// =====================
+// ── FILTROS ───────────────────────────────────────────────────────
 .filtros-card {
-  background: white;
-  border-radius: 14px;
-  border: 1px solid $color-borde;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-  margin-bottom: 28px;
-  overflow: hidden;
-
-  h3 {
-    background: linear-gradient(135deg, $color-primario, $color-primario-dark);
-    color: white;
-    font-size: 14px;
-    font-weight: 700;
-    padding: 14px 24px;
-    margin: 0;
-  }
+  margin: 20px 24px 0; background: $surface; border: 1px solid $border; border-radius: 12px; padding: 16px 20px;
+  .fc-titulo { font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700; color: $muted2; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; }
 }
 
-.filtros-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  padding: 22px 24px;
-  align-items: flex-end;
+.filtros-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+
+.filtro-grupo {
+  display: flex; flex-direction: column; gap: 6px; min-width: 160px;
+  label { font-size: 10px; font-weight: 700; color: $muted; text-transform: uppercase; letter-spacing: 0.5px; }
 }
 
-.filtro-item {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
-  min-width: 180px;
-
-  label {
-    font-size: 12px;
-    font-weight: 700;
-    color: $color-texto;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  &.filtro-buttons {
-    flex-direction: row;
-    align-items: flex-end;
-    gap: 10px;
-    flex: 0 0 auto;
-  }
+.f-select, .f-input {
+  background: $card-bg; border: 1px solid $border; color: $text;
+  padding: 8px 12px; border-radius: 8px; font-size: 12px;
+  font-family: 'Space Grotesk', sans-serif; cursor: pointer; transition: border-color 0.2s;
+  &:focus { outline: none; border-color: $neon-border; }
 }
-
-.form-control {
-  padding: 10px 14px;
-  border: 2px solid $color-borde;
-  border-radius: 8px;
-  font-size: 14px;
-  color: $color-texto;
-  font-family: inherit;
-  background: white;
-  transition: all 0.25s ease;
-
-  &:focus {
-    outline: none;
-    border-color: $color-primario;
-    box-shadow: 0 0 0 3px rgba($color-primario, 0.1);
-  }
-}
-
-select.form-control {
-  cursor: pointer;
+.f-select {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232c3e50' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 12px;
-  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%236b6b6b' d='M5 7L1 3h8z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center; background-size: 10px; padding-right: 28px;
 }
 
-.btn-filtrar {
-  padding: 10px 20px;
-  background: $color-primario;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  white-space: nowrap;
+.filtro-acciones { display: flex; gap: 10px; align-items: flex-end; }
 
-  &:hover {
-    background: $color-primario-dark;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba($color-primario, 0.3);
-  }
+.btn-generar {
+  background: $neon-glow; border: 1px solid $neon-border; color: $neon;
+  padding: 8px 20px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;
+  transition: all 0.2s; display: flex; align-items: center; gap: 6px; font-family: 'Space Grotesk', sans-serif;
+  &:hover:not(:disabled) { background: $neon-dim; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
 .btn-limpiar {
-  padding: 10px 16px;
-  background: white;
-  color: $color-texto-claro;
-  border: 2px solid $color-borde;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  white-space: nowrap;
+  background: transparent; border: 1px solid $border; color: $muted;
+  padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s; font-family: 'Space Grotesk', sans-serif;
+  &:hover { border-color: rgba($red,0.4); color: $red; }
+}
 
-  &:hover {
-    border-color: $color-rojo;
-    color: $color-rojo;
-    background: rgba($color-rojo, 0.04);
+.dots {
+  display: inline-flex; gap: 4px;
+  span { width: 5px; height: 5px; border-radius: 50%; background: $neon; animation: dotPulse 1.2s infinite; &:nth-child(2) { animation-delay: 0.2s; } &:nth-child(3) { animation-delay: 0.4s; } }
+}
+@keyframes dotPulse { 0%,80%,100% { opacity:0.3; transform:scale(0.8); } 40% { opacity:1; transform:scale(1); } }
+
+// ── STATS MÓDULO ──────────────────────────────────────────────────
+.stats-modulo {
+  display: flex; gap: 16px; padding: 20px 24px 0;
+
+  .sm-card {
+    flex: 1; background: $surface; border: 1px solid $border; border-radius: 12px;
+    padding: 16px 20px; display: flex; align-items: center; gap: 14px; transition: border-color 0.2s;
+    &:hover { border-color: $border-h; }
+    .sm-icon  { width: 40px; height: 40px; background: $card-bg; border: 1px solid $border; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .sm-num   { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; line-height: 1; }
+    .sm-label { font-size: 10px; color: $muted; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-top: 3px; }
   }
 }
 
-// =====================
-// STATS
-// =====================
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 18px;
-  margin-bottom: 28px;
+// ── GRÁFICAS ──────────────────────────────────────────────────────
+.graficas-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 16px 24px 0;
 }
 
-.stat-card {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  border: 1px solid $color-borde;
-  border-left: 4px solid $color-primario;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.09);
-  }
-
-  &.verde   { border-left-color: $color-verde; }
-  &.amarillo { border-left-color: $color-amarillo; }
-  &.rojo    { border-left-color: $color-rojo; }
+.grafica-card {
+  background: $surface; border: 1px solid $border; border-radius: 12px; padding: 20px;
+  .gc-titulo { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: $muted; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 18px; }
 }
 
-.stat-icon { font-size: 36px; flex-shrink: 0; }
+.gc-barras { display: flex; flex-direction: column; gap: 13px; }
+.barra-item  { display: grid; grid-template-columns: 100px 1fr 40px; gap: 10px; align-items: center; }
+.barra-label { font-size: 11px; color: $muted; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.barra-track { background: $card-bg; border-radius: 4px; height: 7px; overflow: hidden; }
+.barra-fill  { height: 100%; border-radius: 4px; transition: width 0.8s ease; min-width: 3px; }
+.barra-val   { font-size: 11px; color: $muted2; font-family: 'Space Mono', monospace; }
 
-.stat-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: $color-texto-claro;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
+.gc-dona       { display: flex; flex-direction: column; gap: 13px; }
+.dona-item     { display: grid; grid-template-columns: 10px 1fr auto 110px; gap: 10px; align-items: center; }
+.dona-color    { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.dona-label    { font-size: 12px; color: $muted; }
+.dona-pct      { font-size: 11px; color: $muted2; font-family: 'Space Mono', monospace; text-align: right; }
+.dona-bar-track{ background: $card-bg; border-radius: 4px; height: 5px; overflow: hidden; }
+.dona-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
+
+// ── TABLA ─────────────────────────────────────────────────────────
+.tabla-card {
+  margin: 16px 24px 0; background: $surface; border: 1px solid $border; border-radius: 12px; overflow: hidden;
 }
-
-.stat-value {
-  font-size: 28px;
-  font-weight: 700;
-  color: $color-texto;
-  line-height: 1;
-
-  &.stat-value-sm {
-    font-size: 16px;
-    font-weight: 600;
-  }
+.tc-header {
+  padding: 14px 20px; border-bottom: 1px solid $border; display: flex; justify-content: space-between; align-items: center;
+  .tc-titulo { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: $muted; letter-spacing: 1px; text-transform: uppercase; }
+  .tc-count  { font-family: 'Space Mono', monospace; font-size: 10px; color: $muted2; }
 }
-
-// =====================
-// RESULTADOS
-// =====================
-.resultados-section {
-  margin-top: 8px;
-}
-
-.resultados-header {
-  background: #f8f9fa;
-  border: 1px solid $color-borde;
-  border-bottom: none;
-  border-radius: 12px 12px 0 0;
-  padding: 18px 22px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  h3 {
-    font-size: 15px;
-    font-weight: 700;
-    color: $color-texto;
-  }
-}
-
-.btn-exportar {
-  background: linear-gradient(135deg, $color-rojo, #c0392b);
-  color: white;
-  border: none;
-  padding: 10px 22px;
-  border-radius: 8px;
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 12px rgba($color-rojo, 0.3);
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba($color-rojo, 0.4);
-  }
-}
-
-// =====================
-// TABLA
-// =====================
-.table-container {
-  background: white;
-  border-radius: 0 0 12px 12px;
-  overflow: hidden;
-  border: 1px solid $color-borde;
-  border-top: none;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
-  overflow-x: auto;
-}
-
+.table-container { overflow-x: auto; }
 .data-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 600px;
-
-  thead {
-    background: #f8f9fa;
-
-    th {
-      padding: 14px 18px;
-      text-align: left;
-      font-size: 11px;
-      font-weight: 700;
-      color: $color-texto;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      border-bottom: 2px solid $color-borde;
-    }
-  }
-
-  tbody {
-    tr {
-      border-bottom: 1px solid $color-borde;
-      transition: background 0.2s ease;
-
-      &:hover { background: rgba($color-primario, 0.03); }
-      &:last-child { border-bottom: none; }
-    }
-
-    td {
-      padding: 14px 18px;
-      font-size: 14px;
-      color: $color-texto;
-      vertical-align: middle;
-
-      &.descripcion-cell {
-        max-width: 260px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-    }
-  }
+  width: 100%; border-collapse: collapse; min-width: 600px; font-size: 12px;
+  thead tr { border-bottom: 1px solid $border; }
+  th { padding: 10px 16px; text-align: left; color: $muted; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-family: 'Space Mono', monospace; }
+  tbody tr { border-bottom: 1px solid $card-bg; transition: background 0.15s; &:hover { background: $card-bg; } &:last-child { border-bottom: none; } }
+  td { padding: 12px 16px; color: rgba($text, 0.6); vertical-align: middle; }
+  td:first-child { color: $text; font-weight: 600; }
 }
 
-// =====================
-// BADGES
-// =====================
-.badge {
-  display: inline-block;
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
+// ── BADGES ────────────────────────────────────────────────────────
+.badge { display: inline-block; padding: 3px 10px; border-radius: 100px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; font-family: 'Space Mono', monospace; }
+.badge-activo   { background: $neon-glow;  border: 1px solid $neon-border;     color: $neon;   }
+.badge-warning  { background: $orange-dim; border: 1px solid $orange-border;   color: $orange; }
+.badge-inactivo { background: $red-dim;    border: 1px solid rgba($red,0.3);   color: $red;    }
+
+// ── ESTADO vacío ─────────────────────────────────────────────────
+.notif-estado {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 60px 20px; color: $muted; gap: 12px; font-size: 14px;
+  margin: 16px 24px 0; background: $surface; border: 1px solid $border; border-radius: 12px;
+  &.vacio .vacio-icon { font-size: 2.5rem; opacity: 0.35; }
+  p { margin: 0; }
 }
 
-.badge-activo {
-  background: #d4edda;
-  color: #155724;
+// ── DRAWER ────────────────────────────────────────────────────────
+.drawer-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(3px);
+  z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+  &.open { opacity: 1; pointer-events: all; }
 }
 
-.badge-mantenimiento {
-  background: #fff3cd;
-  color: #856404;
+.drawer {
+  position: fixed; top: 0; left: 0; height: 100vh; width: 290px;
+  background: $surface; border-right: 1px solid $border;
+  z-index: 1000; transform: translateX(-100%);
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  display: flex; flex-direction: column; box-shadow: 8px 0 48px rgba(0,0,0,0.6);
+  &::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, $neon, transparent); }
+  &.open { transform: translateX(0); }
 }
 
-.badge-inactivo {
-  background: #f8d7da;
-  color: #721c24;
+.drawer-header { padding: 20px 20px 16px; border-bottom: 1px solid $border; display: flex; justify-content: space-between; align-items: center; }
+
+.drawer-brand {
+  font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; color: $neon; letter-spacing: 3px;
+  span { display: block; font-family: 'Space Grotesk', sans-serif; font-size: 10px; color: $muted; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 3px; }
 }
 
-// =====================
-// SIN DATOS
-// =====================
-.sin-datos {
-  text-align: center;
-  padding: 60px 20px;
-  background: white;
-  border-radius: 12px;
-  border: 1px solid $color-borde;
+.btn-close-drawer { width: 30px; height: 30px; background: transparent; border: 1px solid $border; border-radius: 7px; color: $muted; font-size: 17px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; &:hover { border-color: $neon-border; color: $neon; background: $neon-glow; transform: rotate(90deg); } }
 
-  .sin-datos-icon {
-    font-size: 48px;
-    opacity: 0.35;
-    margin-bottom: 14px;
-  }
+.drawer-user { padding: 14px 20px; border-bottom: 1px solid $border; display: flex; align-items: center; gap: 12px; background: $neon-glow; }
 
-  p {
-    color: $color-texto-claro;
-    font-size: 15px;
-    font-style: italic;
-  }
+.drawer-avatar { width: 38px; height: 38px; background: $neon; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: #111; flex-shrink: 0; box-shadow: 0 0 16px rgba(57,255,20,0.3); }
+
+.drawer-user-info {
+  .dui-name   { font-size: 13px; font-weight: 700; color: $text; }
+  .role-badge { display: inline-flex; align-items: center; gap: 5px; background: $neon-dim; border: 1px solid $neon-border; color: $neon; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 100px; margin-top: 4px; letter-spacing: 0.5px; font-family: 'Space Mono', monospace; }
 }
 
-// =====================
-// TOAST
-// =====================
-.toast {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  padding: 14px 22px;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: 14px;
-  color: white;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  animation: fadeInUp 0.3s ease;
-  z-index: 9999;
+.role-dot { width: 5px; height: 5px; background: $neon; border-radius: 50%; box-shadow: 0 0 6px $neon; animation: pulse 2s ease-in-out infinite; }
 
-  &.toast-success { background: $color-primario; }
-  &.toast-error   { background: $color-rojo; }
+.drawer-section-title { padding: 14px 20px 6px; font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700; color: $muted2; letter-spacing: 2px; text-transform: uppercase; }
+
+.drawer-modules { flex: 1; overflow-y: auto; padding: 4px 10px 16px; &::-webkit-scrollbar { width: 3px; } &::-webkit-scrollbar-thumb { background: $border; border-radius: 3px; } }
+
+.drawer-item {
+  display: flex; align-items: center; gap: 11px; padding: 10px 11px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; margin-bottom: 2px; border: 1px solid transparent;
+  &:hover { background: $neon-glow; border-color: $neon-border; transform: translateX(4px); .di-name { color: $neon; } }
 }
 
-// =====================
-// ANIMATIONS
-// =====================
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+.di-icon { width: 34px; height: 34px; border-radius: 8px; background: $card-bg; border: 1px solid $border; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; img { width: 18px; height: 18px; object-fit: contain; } .drawer-item:hover & { border-color: $neon-border; background: $neon-dim; } }
+
+.di-text { .di-name { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.75); transition: color 0.2s; } .di-desc { font-size: 10px; color: $muted; margin-top: 1px; } }
+
+.drawer-footer { padding: 14px 20px; border-top: 1px solid $border; }
+
+.btn-logout-drawer { width: 100%; padding: 10px 14px; background: $red-dim; border: 1px solid rgba(231,76,60,0.3); border-radius: 8px; color: #ff6b6b; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; font-family: 'Space Grotesk', sans-serif; &:hover { background: rgba(231,76,60,0.22); border-color: rgba(231,76,60,0.5); transform: translateY(-1px); } }
+
+// ── HAMBURGER ─────────────────────────────────────────────────────
+.btn-hamburger {
+  width: 36px; height: 36px; background: transparent; border: 1px solid $border; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: all 0.2s; padding: 0; flex-shrink: 0;
+  &:hover { border-color: $neon-border; background: $neon-glow; }
+  .ham-line { width: 16px; height: 1.5px; background: $muted; border-radius: 2px; transition: all 0.3s ease; transform-origin: center; }
+  &:hover .ham-line { background: $neon; }
+  &.active { border-color: $neon-border; background: $neon-glow; .ham-line { background: $neon; } .ham-line:nth-child(1) { transform: translateY(6px) rotate(45deg); } .ham-line:nth-child(2) { opacity: 0; transform: scaleX(0); } .ham-line:nth-child(3) { transform: translateY(-6px) rotate(-45deg); } }
 }
 
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.6); } }
 
-// =====================
-// RESPONSIVE
-// =====================
-@media (max-width: 900px) {
-  .header { padding: 16px 20px; }
-  .page-title-section { padding: 22px 20px 28px; h1 { font-size: 22px; } }
-  .tabs { padding: 0 20px; }
-  .content-wrapper { padding: 0 16px; margin-top: 20px; }
-  .filtros-grid { gap: 14px; }
-  .filtro-item { min-width: 100%; }
-  .filtro-item.filtro-buttons { flex-direction: row; }
-  .stats-grid { grid-template-columns: 1fr 1fr; }
+// ── RESPONSIVE ────────────────────────────────────────────────────
+@media (max-width: 1100px) { .notif-contenido { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) {
+  .notif-stats { padding: 16px; flex-wrap: wrap; .stat-card { min-width: calc(50% - 8px); } }
+  .notif-contenido { grid-template-columns: 1fr 1fr; padding: 0 16px; }
+  .graficas-row { grid-template-columns: 1fr; padding: 16px 16px 0; }
+  .stats-modulo { flex-wrap: wrap; padding: 16px 16px 0; .sm-card { min-width: calc(50% - 8px); } }
+  .filtros-card, .tabla-card, .notif-estado { margin-left: 16px; margin-right: 16px; }
+  .reporte-titulo-row { padding: 16px 16px 0; }
 }
-
-@media (max-width: 480px) {
-  .stats-grid { grid-template-columns: 1fr; }
-  .toast { left: 16px; right: 16px; text-align: center; }
+@media (max-width: 480px) { .notif-contenido { grid-template-columns: 1fr; } }
+.mc-icon {
+  margin-bottom: 12px;
+  img { width: 36px; height: 36px; object-fit: contain; }
 }
