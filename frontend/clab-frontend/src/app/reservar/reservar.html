@@ -31,13 +31,13 @@
         <div class="di-text"><div class="di-name">Usuarios</div><div class="di-desc">Gestión de accesos y roles</div></div>
       </div>
     }
-    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
+    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab' || rol === 'clab_encargado_lab' || rol === 'Encargado de Laboratorio') {
       <div class="drawer-item" (click)="navegar('laboratorios', '')">
         <div class="di-icon"><img src="/laboratorio.png" alt="Laboratorios"></div>
         <div class="di-text"><div class="di-name">Laboratorios</div><div class="di-desc">Sedes y encargados</div></div>
       </div>
     }
-    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano' || rol === 'clab_encargado_lab' || rol === 'Encargado de Laboratorio') {
       <div class="drawer-item" (click)="navegar('equipos', '')">
         <div class="di-icon"><img src="/equipo.png" alt="Equipos"></div>
         <div class="di-text"><div class="di-name">Equipos</div><div class="di-desc">Inventario y ubicaciones</div></div>
@@ -67,13 +67,13 @@
         <div class="di-text"><div class="di-name">Asistencia</div><div class="di-desc">Control de asistencia</div></div>
       </div>
     }
-    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano' || rol === 'clab_encargado_lab' || rol === 'Encargado de Laboratorio') {
       <div class="drawer-item" (click)="navegar('reporte-fallas', '')">
         <div class="di-icon"><img src="/fallas.png" alt="Fallas"></div>
         <div class="di-text"><div class="di-name">Reportes de Fallas</div><div class="di-desc">Seguimiento de equipos</div></div>
       </div>
     }
-    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano' || rol === 'clab_encargado_lab' || rol === 'Encargado de Laboratorio') {
       <div class="drawer-item" (click)="navegar('bloqueos', '')">
         <div class="di-icon"><img src="/bloqueos.png" alt="Bloqueos"></div>
         <div class="di-text"><div class="di-name">Bloqueos</div><div class="di-desc">Gestión de conflictos</div></div>
@@ -83,7 +83,7 @@
       <div class="di-icon"><img src="/campana.png" alt="Notificaciones"></div>
       <div class="di-text"><div class="di-name">Notificaciones</div><div class="di-desc">Centro de alertas</div></div>
     </div>
-    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
+    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab' || rol === 'clab_encargado_lab' || rol === 'Encargado de Laboratorio') {
       <div class="drawer-item" (click)="navegar('reportesuso', '')">
         <div class="di-icon"><img src="/uso.png" alt="Reportes"></div>
         <div class="di-text"><div class="di-name">Reportes de Uso</div><div class="di-desc">Estadísticas</div></div>
@@ -159,7 +159,7 @@
     <div class="tabs">
       <button class="tab" [class.active]="tabActiva === 0" (click)="cambiarTab(0)">Reservas</button>
       <button class="tab" [class.active]="tabActiva === 1" (click)="cambiarTab(1)">Tipos de Reserva</button>
-      @if(rol === 'Encargado_Lab') {
+      @if(rol === 'Encargado_Lab' || rol === 'clab_encargado_lab' || rol === 'Encargado de Laboratorio') {
         <button class="tab" [class.active]="tabActiva === 2" (click)="cambiarTab(2)">Control de Asistencia</button>
       }
     </div>
@@ -291,7 +291,7 @@
     </div>
 
     <!-- TAB 2: CONTROL DE ASISTENCIA (solo Encargado_Lab) -->
-    @if(rol === 'Encargado_Lab') {
+    @if(rol === 'Encargado_Lab' || rol === 'clab_encargado_lab' || rol === 'Encargado de Laboratorio') {
       <div class="tab-content" *ngIf="tabActiva === 2">
 
         <!-- RESERVAS DE HOY -->
