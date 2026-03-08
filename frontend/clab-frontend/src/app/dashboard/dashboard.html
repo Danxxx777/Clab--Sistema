@@ -74,7 +74,7 @@
         <div class="di-text"><div class="di-name">Asistencia</div><div class="di-desc">Control de asistencia</div></div>
       </div>
     }
-    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano' || rol === 'Docente'){
+    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
       <div class="drawer-item" (click)="navegar('reporte-fallas', 'Cargando Fallas...')">
         <div class="di-icon ic-8"><img src="/fallas.png" alt="Fallas"></div>
         <div class="di-text"><div class="di-name">Reportes de Fallas</div><div class="di-desc">Seguimiento de equipos</div></div>
@@ -278,7 +278,7 @@
       }
 
       <!-- Módulo 8: Reportes de Fallas -->
-      @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano' || rol === 'Docente')
+      @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano')
       {
         <div class="menu-item " (click)="navegar('reporte-fallas', 'Cargando Reportes de Fallas...')">
           <img src="/fallas.png" alt="Reportes de Fallas" class="menu-icon">
