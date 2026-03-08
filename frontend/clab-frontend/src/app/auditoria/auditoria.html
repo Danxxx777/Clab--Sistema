@@ -89,12 +89,6 @@
           <div class="di-text"><div class="di-name">Reportes de Uso</div><div class="di-desc">Estadísticas</div></div>
         </div>
       }
-      @if(rol === 'Administradorr' || rol === 'Decano') {
-        <div class="drawer-item" (click)="navegar('auditoria', 'Cargando Auditoría...')">
-          <div class="di-icon ic-12"><img src="/auditoria.png" alt="Auditoría"></div>
-          <div class="di-text"><div class="di-name">Auditoría</div><div class="di-desc">Trazabilidad</div></div>
-        </div>
-      }
     </div>
   </div>
 
@@ -194,6 +188,7 @@
             <th>IP</th>
             <th>RESULTADO</th>
             <th>FECHA</th>
+            <th>DETALLE</th>  <!-- ← nuevo -->
           </tr>
           </thead>
           <tbody>
@@ -204,14 +199,17 @@
             <td>{{ a.descripcion }}</td>
             <td><small>{{ a.ip }}</small></td>
             <td>
-                <span class="badge" [ngClass]="a.resultado === 'EXITOSO' ? 'activo' : 'inactivo'">
-                  {{ a.resultado }}
-                </span>
+      <span class="badge" [ngClass]="a.resultado === 'EXITOSO' ? 'activo' : 'inactivo'">
+        {{ a.resultado }}
+      </span>
             </td>
             <td><small>{{ a.fechaHora | date:'dd/MM/yyyy HH:mm:ss' }}</small></td>
-          </tr>
-          <tr *ngIf="auditoriasFiltradas.length === 0">
-            <td colspan="7" class="empty-message">No hay registros de auditoría</td>
+            <td>  <!-- ← nuevo -->
+              <button *ngIf="tieneDetalle(a)" class="btn-detalle" (click)="verDetalle(a)">
+                Ver
+              </button>
+              <span *ngIf="!tieneDetalle(a)" style="color:#4a4a4a;font-size:11px;">—</span>
+            </td>
           </tr>
           </tbody>
         </table>
@@ -292,5 +290,77 @@
       </div>
     </div>
   </div>
+  <!-- MODAL DETALLE AUDITORÍA -->
+  <div class="modal-overlay" *ngIf="modalDetalleAbierto" (click)="cerrarDetalle()">
+    <div class="modal-detalle" (click)="$event.stopPropagation()">
 
+      <div class="modal-detalle-header">
+        <div>
+          <h3>Detalle del Registro</h3>
+          <small>{{ auditoriaDetalle?.accion }} · {{ auditoriaDetalle?.modulo }} · {{ auditoriaDetalle?.fechaHora | date:'dd/MM/yyyy HH:mm:ss' }}</small>
+        </div>
+        <button class="btn-close-drawer" (click)="cerrarDetalle()">×</button>
+      </div>
+
+      <div class="modal-detalle-body">
+
+        <!-- Solo datos nuevos (CREAR) -->
+        <ng-container *ngIf="!parsearJSON(auditoriaDetalle?.datosAnteriores) && parsearJSON(auditoriaDetalle?.datosNuevos)">
+          <div class="detalle-seccion nuevo">
+            <div class="detalle-seccion-titulo">✦ Datos creados</div>
+            <div class="detalle-grid">
+              <div class="detalle-fila" *ngFor="let item of parsearJSON(auditoriaDetalle?.datosNuevos) | keyvalue">
+                <span class="detalle-key">{{ item.key }}</span>
+                <span class="detalle-val nuevo-val">{{ item.value }}</span>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Comparación antes/después (EDITAR) -->
+        <ng-container *ngIf="parsearJSON(auditoriaDetalle?.datosAnteriores) && parsearJSON(auditoriaDetalle?.datosNuevos)">
+          <div class="detalle-comparacion">
+            <div class="detalle-seccion antes">
+              <div class="detalle-seccion-titulo">← Antes</div>
+              <div class="detalle-grid">
+                <div class="detalle-fila" *ngFor="let item of parsearJSON(auditoriaDetalle?.datosAnteriores) | keyvalue">
+                  <span class="detalle-key">{{ item.key }}</span>
+                  <span class="detalle-val antes-val"
+                        [class.changed]="parsearJSON(auditoriaDetalle?.datosNuevos)?.[item.key] !== item.value">
+                  {{ item.value }}
+                </span>
+                </div>
+              </div>
+            </div>
+            <div class="detalle-seccion despues">
+              <div class="detalle-seccion-titulo">→ Después</div>
+              <div class="detalle-grid">
+                <div class="detalle-fila" *ngFor="let item of parsearJSON(auditoriaDetalle?.datosNuevos) | keyvalue">
+                  <span class="detalle-key">{{ item.key }}</span>
+                  <span class="detalle-val despues-val"
+                        [class.changed]="parsearJSON(auditoriaDetalle?.datosAnteriores)?.[item.key] !== item.value">
+                  {{ item.value }}
+                </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Solo datos anteriores (DESACTIVAR) -->
+        <ng-container *ngIf="parsearJSON(auditoriaDetalle?.datosAnteriores) && !parsearJSON(auditoriaDetalle?.datosNuevos)">
+          <div class="detalle-seccion antes">
+            <div class="detalle-seccion-titulo">← Estado anterior</div>
+            <div class="detalle-grid">
+              <div class="detalle-fila" *ngFor="let item of parsearJSON(auditoriaDetalle?.datosAnteriores) | keyvalue">
+                <span class="detalle-key">{{ item.key }}</span>
+                <span class="detalle-val antes-val">{{ item.value }}</span>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
 </div>

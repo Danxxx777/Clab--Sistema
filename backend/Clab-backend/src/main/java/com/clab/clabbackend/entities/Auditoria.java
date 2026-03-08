@@ -46,4 +46,10 @@ public class Auditoria {
 
     @Column(name = "resultado", length = 20)
     private String resultado;
+
+    @Column(name = "datos_anteriores", columnDefinition = "TEXT")
+    private String datosAnteriores;
+
+    @Column(name = "datos_nuevos", columnDefinition = "TEXT")
+    private String datosNuevos;
 }
