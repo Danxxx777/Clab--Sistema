@@ -4,6 +4,7 @@ import com.clab.clabbackend.entities.Reserva;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Repository;
 
@@ -20,6 +21,9 @@ public interface ReservaRepository extends JpaRepository<Reserva, Integer> {
 
     @Query(value = "SELECT * FROM reservas.fn_listar_reservas_usuario(:idUsuario)", nativeQuery = true)
     List<Object[]> listarReservasPorUsuario(Integer idUsuario);
+
+    @Query(value = "SELECT * FROM reservas.fn_listar_reservas_por_encargado(:idUsuario)", nativeQuery = true)
+    List<Object[]> listarReservasPorEncargado(@Param("idUsuario") Integer idUsuario);
 
     // INSERTAR
     @Transactional
