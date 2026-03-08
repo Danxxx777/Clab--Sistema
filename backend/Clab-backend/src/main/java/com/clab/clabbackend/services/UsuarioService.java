@@ -140,10 +140,7 @@ public class UsuarioService {
         dto.setFechaRegistro(u.getFechaRegistro());
 
         var rolesVigentes = usuarioRolRepository.findAllByUsuario_IdUsuarioAndVigenteTrue(u.getIdUsuario());
-        String todosLosRoles = rolesVigentes.stream()
-                .map(ur -> ur.getRol().getNombreRol())
-                .collect(java.util.stream.Collectors.joining(", "));
-        dto.setRol(todosLosRoles);
+        rolesVigentes.stream().findFirst().ifPresent(ur -> dto.setRol(ur.getRol().getNombreRol()));
         dto.setRoles(rolesVigentes.stream()
                 .map(ur -> new UsuarioResponseDTO.RolInfo(
                         ur.getRol().getIdRol(),

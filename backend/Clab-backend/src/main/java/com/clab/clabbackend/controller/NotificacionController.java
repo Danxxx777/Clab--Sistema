@@ -86,23 +86,4 @@ public class NotificacionController {
         notificacionService.marcarTodasLeidas(usuario);
         return ResponseEntity.ok().build();
     }
-
-    @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Integer id,
-                                         HttpServletRequest request) {
-        Usuario usuario = obtenerUsuarioActual(request);
-        if (usuario == null) return ResponseEntity.status(401).build();
-        notificacionService.eliminar(id);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/responder/{id}")
-    public ResponseEntity<Void> responder(@PathVariable Integer id,
-                                          @RequestBody Map<String, String> body,
-                                          HttpServletRequest request) {
-        Usuario usuario = obtenerUsuarioActual(request);
-        if (usuario == null) return ResponseEntity.status(401).build();
-        notificacionService.responderNotificacion(id, body.get("mensaje"), usuario);
-        return ResponseEntity.ok().build();
-    }
 }
