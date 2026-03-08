@@ -61,11 +61,12 @@
         <div class="di-text"><div class="di-name">Reportes de Fallas</div><div class="di-desc">Seguimiento de equipos</div></div>
       </div>
     }
+
     @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
-      <div class="drawer-item" (click)="navegar('bloqueos', '')">
-        <div class="di-icon"><img src="/bloqueos.png" alt="Bloqueos"></div>
-        <div class="di-text"><div class="di-name">Bloqueos</div><div class="di-desc">Gestión de conflictos</div></div>
-      </div>
+    <div class="drawer-item" (click)="navegar('notificaciones', '')">
+      <div class="di-icon"><img src="/campana.png" alt="Notificaciones"></div>
+      <div class="di-text"><div class="di-name">Notificaciones</div><div class="di-desc">Centro de alertas</div></div>
+    </div>
     }
     @if(rol === 'Administradorr') {
       <div class="drawer-item" (click)="navegar('configuracion-correo', '')">
@@ -73,10 +74,6 @@
         <div class="di-text"><div class="di-name">Config. Correo</div><div class="di-desc">SMTP y remitente</div></div>
       </div>
     }
-    <div class="drawer-item" (click)="navegar('notificaciones', '')">
-      <div class="di-icon"><img src="/campana.png" alt="Notificaciones"></div>
-      <div class="di-text"><div class="di-name">Notificaciones</div><div class="di-desc">Centro de alertas</div></div>
-    </div>
   </div>
   <div class="drawer-footer">
     <button class="btn-logout-drawer" (click)="logout()">🚪 Cerrar sesión</button>

@@ -55,12 +55,6 @@
         <div class="di-text"><div class="di-name">Académico</div><div class="di-desc">Períodos y carreras</div></div>
       </div>
     }
-    @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano') {
-      <div class="drawer-item" (click)="navegar('estudiantes', '')">
-        <div class="di-icon"><img src="/estudiantes.png" alt="Estudiantes"></div>
-        <div class="di-text"><div class="di-name">Estudiantes</div><div class="di-desc">Matrículas e inscripciones</div></div>
-      </div>
-    }
     @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Decano') {
       <div class="drawer-item" (click)="navegar('asistencia', '')">
         <div class="di-icon"><img src="/asistencia.png" alt="Asistencia"></div>

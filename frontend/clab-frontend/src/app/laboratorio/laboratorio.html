@@ -31,12 +31,6 @@
         <div class="di-text"><div class="di-name">Usuarios </div><div class="di-desc">Gestión de accesos y roles</div></div>
       </div>
     }
-    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
-      <div class="drawer-item" (click)="navegar('laboratorios', '')">
-        <div class="di-icon"><img src="/laboratorio.png" alt="Laboratorios"></div>
-        <div class="di-text"><div class="di-name">Laboratorios</div><div class="di-desc">Sedes y encargados</div></div>
-      </div>
-    }
     @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
       <div class="drawer-item" (click)="navegar('equipos', '')">
         <div class="di-icon"><img src="/equipo.png" alt="Equipos"></div>
