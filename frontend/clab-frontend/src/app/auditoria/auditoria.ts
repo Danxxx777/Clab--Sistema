@@ -3,33 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { AuditoriaItem, SesionActivaItem } from '../interfaces/Auditoria.model';
 
 const API = 'http://localhost:8080';
-
-export interface AuditoriaItem {
-  idAuditoria?: number;
-  idUsuario?: number;
-  usuario?: string;
-  accion: string;
-  modulo?: string;
-  tablaAfectada?: string;
-  descripcion?: string;
-  ip?: string;
-  resultado?: string;
-  fechaHora?: string;
-  datosAnteriores?: string; // ← nuevo
-  datosNuevos?: string;
-}
-
-export interface SesionActivaItem {
-  idSesion?: number;
-  idUsuario?: number;
-  usuario: string;
-  ip?: string;
-  fechaInicio?: string;
-  fechaExpira?: string;
-  activa?: boolean;
-}
 
 @Component({
   selector: 'app-auditoria',
@@ -61,7 +37,7 @@ export class AuditoriaComponent implements OnInit {
   filtroResultado = 'Todos';
 
   paginaActual = 1;
-  itemsPorPagina = 15;
+  itemsPorPagina = 30;
   totalPaginas = 1;
 
   forzandoLogout: number | null = null; // idUsuario en proceso

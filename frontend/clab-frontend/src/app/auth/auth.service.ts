@@ -81,5 +81,14 @@ export class AuthService {
     return this.getRol() === 'Coordinador';
   }
 
+  getIdUsuario(): number | null {
+    const id = sessionStorage.getItem('idUsuario');
+    return id ? parseInt(id) : null;
+  }
+
+  getUsuarioNombre(): string | null {
+    return sessionStorage.getItem('usuario');
+  }
+
 }
 

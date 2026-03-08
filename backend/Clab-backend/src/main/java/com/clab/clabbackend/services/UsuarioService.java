@@ -117,6 +117,30 @@ public class UsuarioService {
                 .setParameter("ip",           ip)
                 .executeUpdate();
     }
+    // ─── CAMBIAR CONTRASEÑA via SP ────────────────────────────────────────────
+    @Transactional
+    public void cambiarContrasenia(Integer idUsuario, String contraseniaActual,
+                                   String contraseniaNueva,
+                                   Integer actorId, String actorUsuario, String ip) {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (!passwordEncoder.matches(contraseniaActual, usuario.getContrasenia())) {
+            throw new RuntimeException("La contraseña actual es incorrecta");
+        }
+
+        String hashNueva = passwordEncoder.encode(contraseniaNueva);
+
+        entityManager.createNativeQuery(
+                        "CALL usuarios.sp_cambiar_contrasenia(:idUsuario, :contrasenia, :actorId, :actorUsuario, :ip)"
+                )
+                .setParameter("idUsuario",    idUsuario)
+                .setParameter("contrasenia",  hashNueva)
+                .setParameter("actorId",      actorId)
+                .setParameter("actorUsuario", actorUsuario)
+                .setParameter("ip",           ip)
+                .executeUpdate();
+    }
 
     // ─── HELPERS ─────────────────────────────────────────────────────────────
     private String idsRolesArray(UsuarioRequestDTO dto) {
@@ -151,5 +175,10 @@ public class UsuarioService {
                 ))
                 .toList());
         return dto;
+    }
+    public UsuarioResponseDTO obtenerPorId(Integer id) {
+        return usuarioRepository.findById(id)
+                .map(this::toDTO)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 }
