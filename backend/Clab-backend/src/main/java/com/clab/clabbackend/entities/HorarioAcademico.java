@@ -44,4 +44,7 @@ public class HorarioAcademico {
 
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDate fechaCreacion;
+
+    @Column(name = "estado", length = 15, nullable = false)
+    private String estado;
 }

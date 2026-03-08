@@ -7,8 +7,9 @@ export interface Usuario {
   telefono?: string;
   usuario: string;
   contrasenia?: string;
-  idRol?: number;
+  idsRoles?: number[];
+  roles?: { idRol: number; nombreRol: string }[];
   rolNombre?: string;
-  estado?: string;//a
+  estado?: string;
   fechaRegistro?: string;
 }

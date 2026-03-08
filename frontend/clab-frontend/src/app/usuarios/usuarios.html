@@ -1,372 +1,358 @@
-<!-- NAVBAR ORIGINAL-->
-<nav class="navbar">
-  <div class="nav-container">
-    <div class="logo">
-      <span>🔬</span>
-      <span>CLAB</span>
-    </div>
+<div class="inventario-container">
 
-    <div class="header-right">
-      <button class="btn-volver" (click)="volver()">Volver</button>
+  <!-- DRAWER OVERLAY -->
+  <div class="drawer-overlay" [class.open]="drawerAbierto" (click)="cerrarDrawer()"></div>
+
+  <!-- DRAWER LATERAL -->
+  <div class="drawer" [class.open]="drawerAbierto">
+    <div class="drawer-header">
+      <div class="drawer-brand">CLAB<span>Sistema de Laboratorios</span></div>
+      <button class="btn-close-drawer" (click)="cerrarDrawer()">×</button>
+    </div>
+    <div class="drawer-user">
+      <div class="drawer-avatar">{{ usuarioLogueado.charAt(0).toUpperCase() }}</div>
+      <div class="drawer-user-info">
+        <div class="dui-name">{{ usuarioLogueado }}</div>
+        <div class="role-badge"><span class="role-dot"></span>{{ rol }}</div>
+      </div>
+    </div>
+    <div class="drawer-section-title">Módulos</div>
+    <div class="drawer-modules">
+      @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
+        <div class="drawer-item" (click)="navegar('laboratorios', '')">
+          <div class="di-icon"><img src="/laboratorio.png" alt="Laboratorios"></div>
+          <div class="di-text"><div class="di-name">Laboratorios</div><div class="di-desc">Sedes y encargados</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('equipos', '')">
+          <div class="di-icon"><img src="/equipo.png" alt="Equipos"></div>
+          <div class="di-text"><div class="di-name">Equipos</div><div class="di-desc">Inventario y ubicaciones</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Coordinador' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('reservar', '')">
+          <div class="di-icon"><img src="/calendario.png" alt="Reservas"></div>
+          <div class="di-text"><div class="di-name">Reservas</div><div class="di-desc">Disponibilidad</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Coordinador') {
+        <div class="drawer-item" (click)="navegar('academico', '')">
+          <div class="di-icon"><img src="/academico.png" alt="Académico"></div>
+          <div class="di-text"><div class="di-name">Académico</div><div class="di-desc">Períodos y carreras</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('estudiantes', '')">
+          <div class="di-icon"><img src="/estudiantes.png" alt="Estudiantes"></div>
+          <div class="di-text"><div class="di-name">Estudiantes</div><div class="di-desc">Matrículas e inscripciones</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('asistencia', '')">
+          <div class="di-icon"><img src="/asistencia.png" alt="Asistencia"></div>
+          <div class="di-text"><div class="di-name">Asistencia</div><div class="di-desc">Control de asistencia</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('reporte-fallas', '')">
+          <div class="di-icon"><img src="/fallas.png" alt="Fallas"></div>
+          <div class="di-text"><div class="di-name">Reportes de Fallas</div><div class="di-desc">Seguimiento de equipos</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('bloqueos', '')">
+          <div class="di-icon"><img src="/bloqueos.png" alt="Bloqueos"></div>
+          <div class="di-text"><div class="di-name">Bloqueos</div><div class="di-desc">Gestión de conflictos</div></div>
+        </div>
+      }
+      <div class="drawer-item" (click)="navegar('notificaciones', '')">
+        <div class="di-icon"><img src="/campana.png" alt="Notificaciones"></div>
+        <div class="di-text"><div class="di-name">Notificaciones</div><div class="di-desc">Centro de alertas</div></div>
+      </div>
+      @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
+        <div class="drawer-item" (click)="navegar('reportesuso', '')">
+          <div class="di-icon"><img src="/uso.png" alt="Reportes"></div>
+          <div class="di-text"><div class="di-name">Reportes de Uso</div><div class="di-desc">Estadísticas</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('auditoria', '')">
+          <div class="di-icon"><img src="/auditoria.png" alt="Auditoría"></div>
+          <div class="di-text"><div class="di-name">Auditoría</div><div class="di-desc">Trazabilidad</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr') {
+        <div class="drawer-item" (click)="navegar('configuracion-correo', '')">
+          <div class="di-icon"><img src="/configuracion.png" alt="Configuración"></div>
+          <div class="di-text"><div class="di-name">Config. Correo</div><div class="di-desc">SMTP y remitente</div></div>
+        </div>
+      }
+    </div>
+    <div class="drawer-footer">
+      <button class="btn-logout-drawer" (click)="logout()">🚪 Cerrar sesión</button>
     </div>
   </div>
-</nav>
 
-<div class="usuarios-page">
-  <div class="usuarios-container">
-
-    <!-- HEADER -->
-    <div class="header">
-      <div class="header-left">
-        <div class="logo">
-          <span class="logo-icon">🔬</span>
-          <span class="logo-text">CLAB</span>
-        </div>
-      </div>
-
-      <div class="header-right">
-        <button class="btn-volver" (click)="volver()">Volver</button>
-      </div>
-    </div>
-
-    <!-- TÍTULO -->
-    <div class="page-title-section">
+  <!-- TITLE BAR -->
+  <div class="page-title-section">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <button class="btn-hamburger" [class.active]="drawerAbierto" (click)="toggleDrawer()">
+        <div class="ham-line"></div>
+        <div class="ham-line"></div>
+        <div class="ham-line"></div>
+      </button>
       <h1>Gestión de Usuarios</h1>
     </div>
+    <button class="btn-volver" (click)="volver()">← Volver</button>
+  </div>
 
-    <!-- TABS -->
-    <div class="tabs-container">
-      <div class="tabs">
-        <button class="tab" [class.active]="tabActiva === 0" (click)="cambiarTab(0)">
-          Usuarios
-        </button>
-        <button class="tab" [class.active]="tabActiva === 1" (click)="cambiarTab(1)">
-          Roles
-        </button>
-        <button class="tab" [class.active]="tabActiva === 2" (click)="cambiarTab(2)">
-          Permisos
-        </button>
-        <button class="tab" [class.active]="tabActiva === 3" (click)="cambiarTab(3)">
-          Auditoría
-        </button>
+  <!-- TABS -->
+  <div class="tabs-container">
+    <div class="tabs">
+      <button class="tab" [class.active]="tabActiva === 0" (click)="cambiarTab(0)">Usuarios</button>
+      <button class="tab" [class.active]="tabActiva === 1" (click)="cambiarTab(1)">Roles</button>
+    </div>
+  </div>
+
+  <!-- STATS: solo en tab usuarios -->
+  <div class="stats-bar" *ngIf="tabActiva === 0">
+    <div class="stat-card">
+      <div class="stat-icon sc-blue">👥</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ usuarios.length }}</span>
+        <span class="stat-label">Total Usuarios</span>
       </div>
     </div>
+    <div class="stat-card">
+      <div class="stat-icon sc-green">✅</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ usuariosActivos }}</span>
+        <span class="stat-label">Activos</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon sc-red">🚫</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ usuariosInactivos }}</span>
+        <span class="stat-label">Inactivos</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon sc-purple">🔑</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ roles.length }}</span>
+        <span class="stat-label">Roles</span>
+      </div>
+    </div>
+  </div>
 
-    <!-- CONTENIDO -->
-    <div class="content-wrapper">
+  <div class="content-wrapper">
 
-      <!-- ================= TAB USUARIOS ================= -->
-      <div *ngIf="tabActiva === 0">
-
-        <div class="filters">
-          <input
-            type="text"
-            [(ngModel)]="busqueda"
-            (input)="filtrarUsuarios()"
-            placeholder="Buscar por nombre, email o identidad">
-
-          <select [(ngModel)]="filtroEstado" (change)="filtrarUsuarios()">
+    <!-- TAB 0: USUARIOS -->
+    <div class="tab-content" *ngIf="tabActiva === 0">
+      <div class="toolbar">
+        <div class="filters-group">
+          <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" [(ngModel)]="busqueda"
+                   (input)="filtrarUsuarios()" placeholder="Buscar por nombre, usuario o identidad">
+          </div>
+          <select class="filter-select" [(ngModel)]="filtroEstado" (change)="filtrarUsuarios()">
             <option value="Todos">Todos los estados</option>
             <option value="Activo">Activo</option>
             <option value="Inactivo">Inactivo</option>
           </select>
-
-          <select [(ngModel)]="filtroRol" (change)="filtrarUsuarios()">
-            <option value="Todos">Todos los roles</option>
-            <option *ngFor="let r of roles" [value]="r.nombre">
-              {{ r.nombre }}
-            </option>
+          <select class="filter-select" [(ngModel)]="filtroRol" (change)="filtrarUsuarios()">
+            <option [ngValue]="'Todos'">Todos los roles</option>
+            <option *ngFor="let r of roles" [ngValue]="r.id">{{ r.nombre }}</option>
           </select>
-
-          <button class="btn-add" (click)="abrirModalUsuario('crear')">
-            + Nuevo Usuario
-          </button>
         </div>
-
-        <div class="table-wrapper">
-          <table>
-            <thead>
-            <tr>
-              <th>Usuario</th>
-              <th>Identidad</th>
-              <th>Rol</th>
-              <th>Estado</th>
-              <th>Fecha Registro</th>
-              <th>Acciones</th>
-            </tr>
-            </thead>
-
-            <tbody>
-            <tr *ngFor="let u of usuariosFiltrados">
-              <td>
-                <strong>{{ u.nombres }} {{ u.apellidos }}</strong>
-                <small>{{ u.email }}</small>
-              </td>
-              <td>{{ u.identidad }}</td>
-              <td>
-                <span class="rol-badge">{{ u.rolNombre }}</span>
-              </td>
-              <td>
-                  <span
-                    class="estado-badge"
-                    [ngClass]="getEstadoClass(u.estado)">
-                    {{ u.estado }}
-                  </span>
-              </td>
-              <td>{{ u.fechaRegistro }}</td>
-              <td class="actions">
-                <button (click)="abrirModalUsuario('ver', u)">👁</button>
-                <button (click)="abrirModalUsuario('editar', u)">✏️</button>
-                <button (click)="desactivarUsuario(u)">🚫</button>
-              </td>
-            </tr>
-
-            <tr *ngIf="usuariosFiltrados.length === 0">
-              <td colspan="6" class="empty">
-                No hay usuarios registrados
-              </td>
-            </tr>
-            </tbody>
-          </table>
+        <div class="pagination-controls" *ngIf="usuariosFiltrados.length > 0">
+          <span class="pagination-info-inline">{{ paginaActual }}/{{ totalPaginas }}</span>
+          <button class="btn-pag" (click)="irAPagina(1)" [disabled]="paginaActual === 1">«</button>
+          <button class="btn-pag" (click)="irAPagina(paginaActual - 1)" [disabled]="paginaActual === 1">‹</button>
+          <button class="btn-pag" *ngFor="let p of paginas"
+                  [class.active]="p === paginaActual" (click)="irAPagina(p)">{{ p }}</button>
+          <button class="btn-pag" (click)="irAPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">›</button>
+          <button class="btn-pag" (click)="irAPagina(totalPaginas)" [disabled]="paginaActual === totalPaginas">»</button>
         </div>
+        <button class="btn-agregar" (click)="abrirModalUsuario('crear')">+ Nuevo Usuario</button>
       </div>
 
-      <!-- ================= TAB ROLES ================= -->
-      <div *ngIf="tabActiva === 1">
-
-        <div class="filters">
-          <button class="btn-add" (click)="abrirModalRol('crear')">
-            + Nuevo Rol
-          </button>
-        </div>
-
-        <div class="table-wrapper">
-          <table>
-            <thead>
-            <tr>
-              <th>Rol</th>
-              <th>Descripción</th>
-              <th>Fecha creación</th>
-              <th>Acciones</th>
-            </tr>
-            </thead>
-
-            <tbody>
-            <tr *ngFor="let r of roles">
-              <td><strong>{{ r.nombre }}</strong></td>
-              <td>{{ r.descripcion }}</td>
-              <td>{{ r.fechaCreacion }}</td>
-              <td class="actions">
-                <button (click)="abrirModalRol('editar', r)">✏️</button>
-                <button (click)="eliminarRol(r)">🗑</button>
-              </td>
-            </tr>
-
-            <tr *ngIf="roles.length === 0">
-              <td colspan="4" class="empty">
-                No hay roles registrados
-              </td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th>USUARIO</th><th>IDENTIDAD</th><th>ROL</th>
+            <th>ESTADO</th><th>FECHA REGISTRO</th><th>ACCIONES</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let u of usuariosPaginados">
+            <td>
+              <strong>{{ u.nombres }} {{ u.apellidos }}</strong>
+              <small>&#64;{{ u.usuario }}</small>
+            </td>
+            <td>{{ u.identidad }}</td>
+            <td>
+              <span class="badge rol-badge" [title]="u.rolNombre">{{ getRolResumido(u.rolNombre) }}</span>
+            </td>
+            <td><span class="badge" [ngClass]="getEstadoClass(u.estado)">{{ u.estado }}</span></td>
+            <td>{{ u.fechaRegistro }}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-action btn-ver"     (click)="abrirModalUsuario('ver', u)">Ver</button>
+                <button class="btn-action btn-editar"  (click)="abrirModalUsuario('editar', u)">Editar</button>
+                <button class="btn-action btn-eliminar"(click)="desactivarUsuario(u)">Desactivar</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="usuariosFiltrados.length === 0">
+            <td colspan="6" class="empty-message">No hay usuarios registrados</td>
+          </tr>
+          </tbody>
+        </table>
       </div>
-
-      <!-- ================= TAB PERMISOS ================= -->
-      <!-- SE MANTIENE TAL CUAL, COMENTADO -->
-      <!--
-      <div *ngIf="tabActiva === 2">
-        ...
-      </div>
-      -->
-
-      <!-- ================= TAB AUDITORÍA ================= -->
-      <div *ngIf="tabActiva === 3">
-        <div class="table-wrapper">
-          <table>
-            <thead>
-            <tr>
-              <th>Usuario</th>
-              <th>Acción</th>
-              <th>Módulo</th>
-              <th>Fecha</th>
-            </tr>
-            </thead>
-
-            <tbody>
-            <tr *ngFor="let a of auditorias">
-              <td><strong>{{ a.usuario }}</strong></td>
-              <td>{{ a.accion }}</td>
-              <td>{{ a.modulo }}</td>
-              <td>{{ a.fecha }}</td>
-            </tr>
-
-            <tr *ngIf="auditorias.length === 0">
-              <td colspan="4" class="empty">
-                No hay registros de auditoría
-              </td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
     </div>
+
+    <!-- TAB 1: ROLES → componente hijo independiente -->
+    <app-roles *ngIf="tabActiva === 1" />
+
   </div>
 </div>
 
-<!-- ================= MODAL ROL ================= -->
-<div class="modal-overlay" *ngIf="mostrarModalRol">
-  <div class="modal-container">
-
-    <div class="modal-header">
-      <h2>{{ modoModal === 'crear' ? 'Nuevo Rol' : 'Editar Rol' }}</h2>
-      <button class="btn-close" (click)="cerrarModalRol()">×</button>
-    </div>
-
-    <form class="modal-form" (ngSubmit)="guardarRol()">
-
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Nombre del Rol</label>
-          <input [(ngModel)]="rolActual.nombre" name="nombreRol" required>
-        </div>
-
-        <div class="form-group">
-          <label>Descripción</label>
-          <input [(ngModel)]="rolActual.descripcion" name="descripcion">
-        </div>
-
-        <div class="form-group">
-          <label>Fecha de creación</label>
-          <input
-            type="date"
-            [(ngModel)]="rolActual.fechaCreacion"
-            name="fechaCreacion"
-            disabled>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn-cancel" (click)="cerrarModalRol()">
-          Cancelar
-        </button>
-        <button type="submit" class="btn-save">
-          Guardar
-        </button>
-      </div>
-
-    </form>
+<!-- TOAST (usuarios) -->
+<div class="toast-notif" *ngIf="mostrarNotificacion" [ngClass]="{
+  'toast-exito':     notificacionTipo === 'exito',
+  'toast-error':     notificacionTipo === 'error',
+  'toast-confirmar': notificacionTipo === 'confirmar'
+}">
+  <div class="toast-icon">
+    <span *ngIf="notificacionTipo === 'exito'">✅</span>
+    <span *ngIf="notificacionTipo === 'error'">❌</span>
+    <span *ngIf="notificacionTipo === 'confirmar'">⚠️</span>
+  </div>
+  <div class="toast-body">
+    <strong>{{ notificacionTitulo }}</strong>
+    <p>{{ notificacionMensaje }}</p>
+  </div>
+  <div class="toast-actions">
+    <button *ngIf="notificacionTipo === 'confirmar'" class="toast-btn-cancel"  (click)="cerrarNotificacion()">Cancelar</button>
+    <button *ngIf="notificacionTipo === 'confirmar'" class="toast-btn-confirm" (click)="confirmarAccion()">Confirmar</button>
+    <button *ngIf="notificacionTipo !== 'confirmar'" class="toast-btn-close"   (click)="cerrarNotificacion()">×</button>
   </div>
 </div>
-//a
-<!-- MODAL USUARIO -->
-<div class="modal-overlay" *ngIf="mostrarModalUsuario">
-  <div class="modal-container">
 
+<!-- MODAL: USUARIO -->
+<div class="modal-overlay" *ngIf="mostrarModalUsuario" (click)="cerrarModalUsuario()">
+  <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>
-        {{ modoModal === 'crear' ? 'Nuevo Usuario' :
-        modoModal === 'editar' ? 'Editar Usuario' : 'Detalle Usuario' }}
+        {{ modoModal === 'crear' ? 'Nuevo Usuario' : modoModal === 'editar' ? 'Editar Usuario' : 'Detalle Usuario' }}
       </h2>
       <button class="btn-close" (click)="cerrarModalUsuario()">×</button>
     </div>
+    <div class="modal-body">
 
-    <form class="modal-form" (ngSubmit)="guardarUsuario()">
+      <div class="usuario-banner" *ngIf="modoModal !== 'crear' && usuarioActual.usuario">
+        <span class="usuario-banner-label">Usuario del sistema</span>
+        <span class="usuario-banner-value">&#64;{{ usuarioActual.usuario }}</span>
+      </div>
 
-      <div class="form-grid">
-
+      <div class="form-row">
         <div class="form-group">
-          <label>Identidad</label>
-          <input
-            [(ngModel)]="usuarioActual.identidad"
-            name="identidad"
-            [disabled]="modoModal === 'ver'"
-            required>
+          <label>Identidad <span class="required">*</span></label>
+          <input class="form-control" [(ngModel)]="usuarioActual.identidad" name="identidad"
+                 [disabled]="modoModal === 'ver'"
+                 maxlength="13"
+                 (keypress)="$event.charCode >= 48 && $event.charCode <= 57 || $event.preventDefault()">
         </div>
-
         <div class="form-group">
-          <label>Nombres</label>
-          <input
-            [(ngModel)]="usuarioActual.nombres"
-            name="nombres"
-            [disabled]="modoModal === 'ver'"
-            required>
+          <label>Nombres <span class="required">*</span></label>
+          <input class="form-control" [(ngModel)]="usuarioActual.nombres" name="nombres"
+                 [disabled]="modoModal === 'ver'" (input)="previewUsuario()"
+                 maxlength="100"
+                 (keypress)="soloLetras($event)">
         </div>
+      </div>
 
+      <div class="form-row">
         <div class="form-group">
-          <label>Apellidos</label>
-          <input
-            [(ngModel)]="usuarioActual.apellidos"
-            name="apellidos"
-            [disabled]="modoModal === 'ver'"
-            required>
+          <label>Apellidos <span class="required">*</span></label>
+          <input class="form-control" [(ngModel)]="usuarioActual.apellidos" name="apellidos"
+                 [disabled]="modoModal === 'ver'" (input)="previewUsuario()"
+                 maxlength="100"
+                 (keypress)="soloLetras($event)">
         </div>
-
         <div class="form-group">
-          <label>Email</label>
-          <input
-            type="email"
-            [(ngModel)]="usuarioActual.email"
-            name="email"
-            [disabled]="modoModal === 'ver'"
-            required>
+          <label>Email <span class="required">*</span></label>
+          <input type="email" class="form-control" [(ngModel)]="usuarioActual.email" name="email"
+                 [disabled]="modoModal === 'ver'"
+                 maxlength="150">
         </div>
+      </div>
 
+      <div class="form-row">
         <div class="form-group">
           <label>Teléfono</label>
-          <input
-            [(ngModel)]="usuarioActual.telefono"
-            name="telefono"
-            [disabled]="modoModal === 'ver'">
+          <input class="form-control" [(ngModel)]="usuarioActual.telefono" name="telefono"
+                 [disabled]="modoModal === 'ver'"
+                 maxlength="15"
+                 (keypress)="soloTelefono($event)">
         </div>
-
-        <!-- Usuario (autogenerado en backend) -->
         <div class="form-group">
-          <label>Usuario (se genera automáticamente)</label>
-          <input
-            [(ngModel)]="usuarioActual.usuario"
-            name="usuario"
-            disabled>
+          <label>Usuario del sistema <span class="form-hint">(generado automáticamente)</span></label>
+          <div class="usuario-preview-wrapper">
+            <span class="usuario-at">&#64;</span>
+            <input class="form-control usuario-preview-input"
+                   [value]="modoModal === 'crear' ? usuarioPreview : usuarioActual.usuario"
+                   disabled placeholder="Se generará al guardar">
+          </div>
         </div>
-
-        <!-- SOLO AL CREAR -->
-        <div class="form-group" *ngIf="modoModal === 'crear'">
-          <label>Contraseña</label>
-          <input
-            type="password"
-            [(ngModel)]="usuarioActual.contrasenia"
-            name="contrasenia"
-            required>
-        </div>
-
-        <div class="form-group">
-          <label>Rol</label>
-          <select
-            [(ngModel)]="usuarioActual.idRol"
-            name="idRol"
-            [disabled]="modoModal === 'ver'"
-            required>
-            <option [ngValue]="null" disabled>Seleccione un rol</option>
-            <option *ngFor="let r of roles" [ngValue]="r.id">
-              {{ r.nombre }}
-            </option>
-          </select>
-        </div>
-
       </div>
 
-      <div class="modal-footer">
-        <button type="button" class="btn-cancel" (click)="cerrarModalUsuario()">
-          Cancelar
-        </button>
-
-        <button type="submit" class="btn-save" *ngIf="modoModal !== 'ver'">
-          {{ modoModal === 'crear' ? 'Guardar' : 'Actualizar' }}
-        </button>
+      <div class="form-row" *ngIf="modoModal === 'crear'">
+        <div class="form-group full-width">
+          <label>Contraseña <span class="required">*</span></label>
+          <input type="password" class="form-control" [(ngModel)]="usuarioActual.contrasenia" name="contrasenia"
+                 maxlength="100">
+        </div>
       </div>
 
-    </form>
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>Roles <span class="required">*</span></label>
+          <div class="roles-bd-grid">
+            <div class="rol-bd-card"
+                 *ngFor="let r of rolesActivos"
+                 [class.selected]="estaRolSeleccionado(r.id!)"
+                 [class.disabled]="modoModal === 'ver'"
+                 (click)="modoModal !== 'ver' && toggleRolUsuario(r.id!)">
+              <div class="rol-bd-name">{{ r.nombre }}</div>
+              <div class="rol-bd-desc" *ngIf="r.descripcion">{{ r.descripcion }}</div>
+            </div>
+          </div>
+          <small style="color:#6b6b6b;font-size:11px;margin-top:6px;display:block">
+            Selecciona uno o más roles
+          </small>
+        </div>
+      </div>
+
+      <p class="config-msg-error" *ngIf="errorModal">{{ errorModal }}</p>
+    </div>
+
+    <div class="modal-footer">
+      <div class="modal-footer-right">
+        <button class="btn-cancelar" (click)="cerrarModalUsuario()">Cancelar</button>
+        <button class="btn-guardar" *ngIf="modoModal !== 'ver'"
+                (click)="guardarUsuario()" [disabled]="guardandoUsuario">
+          <span *ngIf="!guardandoUsuario">{{ modoModal === 'crear' ? 'Guardar' : 'Actualizar' }}</span>
+          <span class="btn-dots" *ngIf="guardandoUsuario">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </span>
+        </button>
+      </div>
+    </div>
   </div>
 </div>
-

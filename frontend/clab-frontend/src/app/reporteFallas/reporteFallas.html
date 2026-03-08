@@ -1,10 +1,355 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Title</title>
-</head>
-<body>
+<!-- DRAWER OVERLAY -->
+<div class="drawer-overlay" [class.open]="drawerAbierto" (click)="cerrarDrawer()"></div>
 
-</body>
-</html>
+<!-- DRAWER LATERAL -->
+<div class="drawer" [class.open]="drawerAbierto">
+  <div class="drawer-header">
+    <div class="drawer-brand">
+      CLAB
+      <span>Sistema de Laboratorios</span>
+    </div>
+    <button class="btn-close-drawer" (click)="cerrarDrawer()">×</button>
+  </div>
+
+  <div class="drawer-user">
+    <div class="drawer-avatar">{{ usuarioLogueado.charAt(0).toUpperCase() }}</div>
+    <div class="drawer-user-info">
+      <div class="dui-name">{{ usuarioLogueado }}</div>
+      <div class="role-badge">
+        <span class="role-dot"></span>
+        {{ rol }}
+      </div>
+    </div>
+  </div>
+
+  <div class="drawer-section-title">Módulos</div>
+
+  <div class="drawer-modules">
+    @if(rol === 'Administradorr' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('usuarios', '')">
+        <div class="di-icon"><img src="/user.png" alt="Usuarios"></div>
+        <div class="di-text"><div class="di-name">Usuarios</div><div class="di-desc">Gestión de accesos y roles</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
+      <div class="drawer-item" (click)="navegar('laboratorios', '')">
+        <div class="di-icon"><img src="/laboratorio.png" alt="Laboratorios"></div>
+        <div class="di-text"><div class="di-name">Laboratorios</div><div class="di-desc">Sedes y encargados</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('equipos', '')">
+        <div class="di-icon"><img src="/equipo.png" alt="Equipos"></div>
+        <div class="di-text"><div class="di-name">Equipos</div><div class="di-desc">Inventario y ubicaciones</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Coordinador' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('reservar', '')">
+        <div class="di-icon"><img src="/calendario.png" alt="Reservas"></div>
+        <div class="di-text"><div class="di-name">Reservas</div><div class="di-desc">Disponibilidad</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Coordinador') {
+      <div class="drawer-item" (click)="navegar('academico', '')">
+        <div class="di-icon"><img src="/academico.png" alt="Académico"></div>
+        <div class="di-text"><div class="di-name">Académico</div><div class="di-desc">Períodos y carreras</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('estudiantes', '')">
+        <div class="di-icon"><img src="/estudiantes.png" alt="Estudiantes"></div>
+        <div class="di-text"><div class="di-name">Estudiantes</div><div class="di-desc">Matrículas e inscripciones</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('asistencia', '')">
+        <div class="di-icon"><img src="/asistencia.png" alt="Asistencia"></div>
+        <div class="di-text"><div class="di-name">Asistencia</div><div class="di-desc">Control de asistencia</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('bloqueos', '')">
+        <div class="di-icon"><img src="/bloqueos.png" alt="Bloqueos"></div>
+        <div class="di-text"><div class="di-name">Bloqueos</div><div class="di-desc">Gestión de conflictos</div></div>
+      </div>
+    }
+    <div class="drawer-item" (click)="navegar('notificaciones', '')">
+      <div class="di-icon"><img src="/campana.png" alt="Notificaciones"></div>
+      <div class="di-text"><div class="di-name">Notificaciones</div><div class="di-desc">Centro de alertas</div></div>
+    </div>
+    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
+      <div class="drawer-item" (click)="navegar('reportesuso', '')">
+        <div class="di-icon"><img src="/uso.png" alt="Reportes"></div>
+        <div class="di-text"><div class="di-name">Reportes de Uso</div><div class="di-desc">Estadísticas</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('auditoria', '')">
+        <div class="di-icon"><img src="/auditoria.png" alt="Auditoría"></div>
+        <div class="di-text"><div class="di-name">Auditoría</div><div class="di-desc">Trazabilidad</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr') {
+      <div class="drawer-item" (click)="navegar('configuracion-correo', '')">
+        <div class="di-icon"><img src="/configuracion.png" alt="Configuración"></div>
+        <div class="di-text"><div class="di-name">Config. Correo</div><div class="di-desc">SMTP y remitente</div></div>
+      </div>
+    }
+  </div>
+
+  <div class="drawer-footer">
+    <button class="btn-logout-drawer" (click)="logout()">🚪 Cerrar sesión</button>
+  </div>
+</div>
+
+
+<div class="page-title-section">
+  <div style="display:flex; align-items:center; gap:14px;">
+    <button class="btn-hamburger" [class.active]="drawerAbierto" (click)="toggleDrawer()">
+      <div class="ham-line"></div>
+      <div class="ham-line"></div>
+      <div class="ham-line"></div>
+    </button>
+    <h1>Reporte de Fallas</h1>
+  </div>
+  <button class="btn-volver" (click)="volver()">← Volver</button>
+</div>
+
+<div class="content-wrapper">
+
+
+  <div class="toolbar">
+
+    <div class="filters-group">
+
+      <div class="search-container">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Buscar por equipo, laboratorio o descripción"
+          (input)="onFiltroEquipoChange($event)">
+      </div>
+
+
+      <select class="select-filtro"
+              (change)="onFiltroLaboratorioChange($event)">
+        <option value="">Todos los laboratorios</option>
+        <option *ngFor="let lab of laboratorios"
+                [value]="lab.codLaboratorio">
+          {{ lab.nombreLab }}
+        </option>
+      </select>
+
+      <select class="select-filtro"
+              (change)="onFiltroEquipoChange($event)">
+        <option value="">Todos los equipos</option>
+        <option *ngFor="let equipo of equiposFiltrados"
+                [value]="equipo.idEquipo">
+          {{ equipo.nombreEquipo }}
+        </option>
+      </select>
+    </div>
+
+    <button class="btn-agregar" (click)="abrirModal()">
+      + Nuevo Reporte
+    </button>
+
+  </div>
+
+
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+      <tr>
+        <th>ID REPORTE</th>
+        <th>FECHA</th>
+        <th>LABORATORIO</th>
+        <th>EQUIPO</th>
+        <th>DESCRIPCIÓN</th>
+        <th>USUARIO</th>
+        <th>ACCIONES</th>
+      </tr>
+      </thead>
+
+      <tbody>
+      <tr *ngFor="let reporte of reportesFiltrados">
+        <td>{{ reporte.idReporte }}</td>
+
+        <td>{{ formatearFecha(reporte.fechaReporte) }}</td>
+
+        <td>{{ reporte.laboratorio.nombreLab }}</td>
+
+        <td>
+          <strong>{{ reporte.equipo.nombreEquipo }}</strong><br>
+          <small>{{ reporte.equipo.marca }} - {{ reporte.equipo.modelo }}</small>
+        </td>
+
+        <td class="descripcion-cell">
+          {{ reporte.descripcionFalla }}
+        </td>
+
+        <td>
+
+          <small>{{ reporte.usuario.email }}</small>
+        </td>
+
+        <td>
+          <div class="action-buttons">
+            <button class="btn-action btn-ver" (click)="verDetalle(reporte)">Ver</button>
+            <button class="btn-action btn-eliminar" (click)="confirmarEliminar(reporte.idReporte)">Eliminar</button>
+          </div>
+        </td>
+      </tr>
+
+      <tr *ngIf="reportesFiltrados.length === 0">
+        <td colspan="7" class="empty-message">
+          No hay reportes registrados
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+
+<div class="modal-overlay"
+     *ngIf="mostrarModal"
+     (click)="cerrarModal()">
+
+  <div class="modal"
+       (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>Nuevo Reporte de Falla</h2>
+      <button class="btn-close"
+              (click)="cerrarModal()">
+        ×
+      </button>
+    </div>
+
+    <form [formGroup]="reporteForm"
+          (ngSubmit)="guardarReporte()">
+
+      <div class="modal-body">
+
+
+        <div class="form-group">
+          <label>Laboratorio <span class="required">*</span></label>
+          <select formControlName="codLaboratorio"
+                  (change)="onLaboratorioChange()"
+                  class="form-control">
+            <option value="">Seleccione un laboratorio</option>
+            <option *ngFor="let lab of laboratorios"
+                    [value]="lab.codLaboratorio">
+              {{ lab.nombreLab }}
+            </option>
+          </select>
+        </div>
+
+
+        <div class="form-group">
+          <label>Equipo <span class="required">*</span></label>
+          <select formControlName="idEquipo"
+
+                  class="form-control">
+            <option value="">Seleccione un equipo</option>
+            <option *ngFor="let equipo of equiposFiltrados"
+                    [value]="equipo.idEquipo">
+              {{ equipo.nombreEquipo }} - {{ equipo.marca }} {{ equipo.modelo }}
+            </option>
+          </select>
+        </div>
+
+
+        <div class="form-group">
+          <label>Descripción <span class="required">*</span></label>
+          <textarea
+            formControlName="descripcionFalla"
+            class="form-control"
+            rows="5"
+            placeholder="Describa la falla..."></textarea>
+          <small class="char-count">
+            {{ reporteForm.get('descripcionFalla')?.value?.length || 0 }} / 500
+          </small>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button"
+                class="btn-cancelar"
+                (click)="cerrarModal()">
+          Cancelar
+        </button>
+
+        <button type="submit"
+                class="btn-guardar"
+                [disabled]="reporteForm.invalid">
+          Guardar Reporte
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+<!-- MODAL VER DETALLE -->
+<div class="modal-overlay" *ngIf="mostrarModalDetalle" (click)="cerrarDetalle()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Detalle del Reporte #{{ reporteDetalle?.idReporte }}</h2>
+      <button class="btn-close" (click)="cerrarDetalle()">×</button>
+    </div>
+    <div class="modal-body" *ngIf="reporteDetalle">
+      <div class="form-group">
+        <label>Laboratorio</label>
+        <input type="text" class="form-control" [value]="reporteDetalle.laboratorio?.nombreLab" disabled>
+      </div>
+      <div class="form-group">
+        <label>Equipo</label>
+        <input type="text" class="form-control" [value]="reporteDetalle.equipo?.nombreEquipo + ' — ' + reporteDetalle.equipo?.marca + ' ' + reporteDetalle.equipo?.modelo" disabled>
+      </div>
+      <div class="form-group">
+        <label>Usuario</label>
+        <input type="text" class="form-control" [value]="reporteDetalle.usuario?.email" disabled>
+      </div>
+      <div class="form-group">
+        <label>Fecha</label>
+        <input type="text" class="form-control" [value]="formatearFecha(reporteDetalle.fechaReporte)" disabled>
+      </div>
+      <div class="form-group">
+        <label>Descripción de la Falla</label>
+        <textarea class="form-control" rows="5" disabled>{{ reporteDetalle.descripcionFalla }}</textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarDetalle()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR ELIMINAR -->
+<div class="modal-overlay" *ngIf="mostrarModalConfirmar" (click)="cancelarEliminar()">
+  <div class="modal modal-confirm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Confirmar eliminación</h2>
+      <button class="btn-close" (click)="cancelarEliminar()">×</button>
+    </div>
+    <div class="modal-body">
+      <p>¿Está seguro que desea eliminar el reporte <strong>#{{ idAEliminar }}</strong>?</p>
+      <p class="warning-text">Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cancelarEliminar()">Cancelar</button>
+      <button class="btn-eliminar-confirm" (click)="ejecutarEliminar()">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" *ngIf="mostrarToast"
+     [class.toast-success]="toastTipo === 'success'"
+     [class.toast-error]="toastTipo === 'error'">
+  {{ toastMensaje }}
+</div>

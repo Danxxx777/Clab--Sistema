@@ -1,28 +1,373 @@
-<button class="back-btn" (click)="volver()">← Volver</button>
-
-<div class="page">
-  <div class="card">
-    <h2>NOTIFICACIONES</h2>
-
-    <div class="notification success">
-      <div class="icon">⚠️</div>
-      <div class="content">
-        <strong>Nueva falla detectada</strong>
-        <span>PC Lab A presenta error de encendido</span>
-        <small>09/01/2026 · 23:40</small>
+<div class="drawer-overlay" [class.open]="drawerAbierto" (click)="cerrarDrawer()"></div>
+<div class="drawer" [class.open]="drawerAbierto">
+  <div class="drawer-header">
+    <div class="drawer-brand">CLAB<span>Sistema de Laboratorios</span></div>
+    <button class="btn-close-drawer" (click)="cerrarDrawer()">×</button>
+  </div>
+  <div class="drawer-user">
+    <div class="drawer-avatar">{{ usuarioLogueado.charAt(0).toUpperCase() }}</div>
+    <div class="drawer-user-info">
+      <div class="dui-name">{{ usuarioLogueado }}</div>
+      <div class="role-badge"><span class="role-dot"></span>{{ rol }}</div>
+    </div>
+  </div>
+  <div class="drawer-section-title">Módulos</div>
+  <div class="drawer-modules">
+    @if(rol === 'Administradorr' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('usuarios', '')">
+        <div class="di-icon"><img src="/user.png" alt="Usuarios"></div>
+        <div class="di-text"><div class="di-name">Usuarios</div><div class="di-desc">Gestión de accesos y roles</div></div>
       </div>
-      <span class="badge new">NUEVA</span>
+    }
+    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
+      <div class="drawer-item" (click)="navegar('laboratorios', '')">
+        <div class="di-icon"><img src="/laboratorio.png" alt="Laboratorios"></div>
+        <div class="di-text"><div class="di-name">Laboratorios</div><div class="di-desc">Sedes y encargados</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('equipos', '')">
+        <div class="di-icon"><img src="/equipo.png" alt="Equipos"></div>
+        <div class="di-text"><div class="di-name">Equipos</div><div class="di-desc">Inventario y ubicaciones</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Coordinador' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('reservar', '')">
+        <div class="di-icon"><img src="/calendario.png" alt="Reservas"></div>
+        <div class="di-text"><div class="di-name">Reservas</div><div class="di-desc">Disponibilidad</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Coordinador') {
+      <div class="drawer-item" (click)="navegar('academico', '')">
+        <div class="di-icon"><img src="/academico.png" alt="Académico"></div>
+        <div class="di-text"><div class="di-name">Académico</div><div class="di-desc">Períodos y carreras</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('estudiantes', '')">
+        <div class="di-icon"><img src="/estudiantes.png" alt="Estudiantes"></div>
+        <div class="di-text"><div class="di-name">Estudiantes</div><div class="di-desc">Matrículas e inscripciones</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('asistencia', '')">
+        <div class="di-icon"><img src="/asistencia.png" alt="Asistencia"></div>
+        <div class="di-text"><div class="di-name">Asistencia</div><div class="di-desc">Control de asistencia</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('reporte-fallas', '')">
+        <div class="di-icon"><img src="/fallas.png" alt="Fallas"></div>
+        <div class="di-text"><div class="di-name">Reportes de Fallas</div><div class="di-desc">Seguimiento de equipos</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('bloqueos', '')">
+        <div class="di-icon"><img src="/bloqueos.png" alt="Bloqueos"></div>
+        <div class="di-text"><div class="di-name">Bloqueos</div><div class="di-desc">Gestión de conflictos</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr') {
+      <div class="drawer-item" (click)="navegar('configuracion-correo', '')">
+        <div class="di-icon"><img src="/configuracion.png" alt="Configuración"></div>
+        <div class="di-text"><div class="di-name">Config. Correo</div><div class="di-desc">SMTP y remitente</div></div>
+      </div>
+    }
+  </div>
+  <div class="drawer-footer">
+    <button class="btn-logout-drawer" (click)="logout()">🚪 Cerrar sesión</button>
+  </div>
+</div>
+
+<div class="notif-page">
+
+  <!-- HEADER -->
+  <div class="notif-header">
+    <div class="notif-header-left">
+      <button class="btn-hamburger" [class.active]="drawerAbierto" (click)="toggleDrawer()">
+        <div class="ham-line"></div><div class="ham-line"></div><div class="ham-line"></div>
+      </button>
+      <div>
+        <div class="notif-title-row">
+          <h1>Notificaciones</h1>
+          @if(totalNoLeidas > 0) {
+            <span class="notif-badge-header">{{ totalNoLeidas }}</span>
+          }
+        </div>
+        <p class="notif-subtitle">Centro de alertas del sistema</p>
+      </div>
+    </div>
+    <button class="btn-volver" (click)="volver()">← Volver</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="notif-stats">
+    <div class="stat-card">
+      <div class="stat-icon">🔔</div>
+      <div class="stat-info">
+        <div class="stat-num">{{ notificaciones.length }}</div>
+        <div class="stat-label">Total</div>
+      </div>
+    </div>
+    <div class="stat-card warn">
+      <div class="stat-icon">📭</div>
+      <div class="stat-info">
+        <div class="stat-num">{{ totalNoLeidas }}</div>
+        <div class="stat-label">Sin leer</div>
+      </div>
+    </div>
+    <div class="stat-card ok">
+      <div class="stat-icon">✅</div>
+      <div class="stat-info">
+        <div class="stat-num">{{ notificaciones.length - totalNoLeidas }}</div>
+        <div class="stat-label">Leídas</div>
+      </div>
+    </div>
+    <div class="stat-card alert">
+      <div class="stat-icon">⚠️</div>
+      <div class="stat-info">
+        <div class="stat-num">{{ contarPorTipo('FALLA') }}</div>
+        <div class="stat-label">Fallas activas</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTROLES -->
+  <div class="notif-controles">
+    <!-- Pestañas -->
+    <div class="pestanas">
+      <button class="pestana" [class.active]="pestanaActiva === 'TODAS'" (click)="setPestana('TODAS')">
+        Todas <span class="pestana-num">{{ notificaciones.length }}</span>
+      </button>
+      <button class="pestana" [class.active]="pestanaActiva === 'NO_LEIDA'" (click)="setPestana('NO_LEIDA')">
+        Sin leer
+        @if(totalNoLeidas > 0) { <span class="pestana-num warn">{{ totalNoLeidas }}</span> }
+      </button>
+      <button class="pestana" [class.active]="pestanaActiva === 'LEIDA'" (click)="setPestana('LEIDA')">
+        Leídas
+      </button>
     </div>
 
-    <div class="notification info">
-      <div class="icon">✅</div>
-      <div class="content">
-        <strong>Reporte resuelto</strong>
-        <span>Falla de red corregida en Lab B</span>
-        <small>09/01/2026 · 18:15</small>
+    <!-- Filtros + acción -->
+    <div class="controles-row">
+      <div class="tipo-filtros">
+        <button class="tipo-btn" [class.active]="filtroTipo === 'TODOS'" (click)="setFiltroTipo('TODOS')">Todos</button>
+        <button class="tipo-btn falla" [class.active]="filtroTipo === 'FALLA'" (click)="setFiltroTipo('FALLA')">
+          ⚠️ Fallas
+          @if(contarPorTipo('FALLA') > 0) { <span class="tipo-badge">{{ contarPorTipo('FALLA') }}</span> }
+        </button>
+        <button class="tipo-btn reserva" [class.active]="filtroTipo === 'RESERVA'" (click)="setFiltroTipo('RESERVA')">
+          📅 Reservas
+          @if(contarPorTipo('RESERVA') > 0) { <span class="tipo-badge">{{ contarPorTipo('RESERVA') }}</span> }
+        </button>
+        <button class="tipo-btn bloqueo" [class.active]="filtroTipo === 'BLOQUEO'" (click)="setFiltroTipo('BLOQUEO')">
+          🚫 Bloqueos
+          @if(contarPorTipo('BLOQUEO') > 0) { <span class="tipo-badge">{{ contarPorTipo('BLOQUEO') }}</span> }
+        </button>
+        <button class="tipo-btn resuelta" [class.active]="filtroTipo === 'FALLA_RESUELTA'" (click)="setFiltroTipo('FALLA_RESUELTA')">
+          ✅ Resueltas
+        </button>
       </div>
-      <span class="badge done">OK</span>
+      @if(totalNoLeidas > 0) {
+        <button class="btn-marcar-todas" (click)="marcarTodasLeidas()">✓ Marcar todas como leídas</button>
+      }
     </div>
+  </div>
+
+  <!-- LISTA -->
+  <div class="notif-contenido">
+
+    @if(cargando) {
+      <div class="notif-estado">
+        <div class="spinner"></div>
+        <span>Cargando notificaciones...</span>
+      </div>
+    }
+
+    @if(error) {
+      <div class="notif-estado error">⚠️ {{ error }}</div>
+    }
+
+    @if(!cargando && !error && notificacionesFiltradas.length === 0) {
+      <div class="notif-estado vacio">
+        <span class="vacio-icon">🔕</span>
+        <p>No hay notificaciones en esta categoría</p>
+      </div>
+    }
+
+    @if(!cargando && notificacionesHoy.length > 0) {
+      <div class="grupo-header">
+        <span class="grupo-linea"></span>
+        <span class="grupo-label">Hoy</span>
+        <span class="grupo-linea"></span>
+      </div>
+      @for(n of notificacionesHoy; track n.idNotificacion) {
+        <div class="notif-item {{ getClase(n.tipoNotificacion) }}" [class.leida]="n.estado === 'LEIDA'" (click)="marcarLeida(n.idNotificacion)">
+          <div class="notif-item-barra"></div>
+          <div class="notif-item-icono">{{ getIcono(n.tipoNotificacion) }}</div>
+          <div class="notif-item-body">
+            <span class="notif-item-asunto">{{ n.asunto }}</span>
+            <span class="notif-item-fecha">{{ n.fechaCreacion | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="notif-item-acciones" (click)="$event.stopPropagation()">
+            @if(n.estado === 'LEIDA') {
+              <button class="btn-notif-accion responder" (click)="abrirResponder(n, $event)" title="Responder">💬</button>
+              <button class="btn-notif-accion eliminar" (click)="eliminar(n.idNotificacion, $event)" title="Eliminar">🗑️</button>
+            }
+          </div>
+          <div class="notif-item-estado">
+            @if(n.estado === 'NO_LEIDA') {
+              <span class="estado-dot nueva"></span>
+              <span class="estado-label nueva">Nueva</span>
+            } @else {
+              <span class="estado-dot leida"></span>
+              <span class="estado-label leida">Leída</span>
+            }
+          </div>
+        </div>
+      }
+    }
+
+    @if(!cargando && notificacionesSemana.length > 0) {
+      <div class="grupo-header">
+        <span class="grupo-linea"></span>
+        <span class="grupo-label">Esta semana</span>
+        <span class="grupo-linea"></span>
+      </div>
+      @for(n of notificacionesSemana; track n.idNotificacion) {
+        <div class="notif-item {{ getClase(n.tipoNotificacion) }}" [class.leida]="n.estado === 'LEIDA'" (click)="marcarLeida(n.idNotificacion)">
+          <div class="notif-item-barra"></div>
+          <div class="notif-item-icono">{{ getIcono(n.tipoNotificacion) }}</div>
+          <div class="notif-item-body">
+            <span class="notif-item-asunto">{{ n.asunto }}</span>
+            <span class="notif-item-fecha">{{ n.fechaCreacion | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="notif-item-acciones" (click)="$event.stopPropagation()">
+            @if(n.estado === 'LEIDA') {
+              <button class="btn-notif-accion responder" (click)="abrirResponder(n, $event)" title="Responder">💬</button>
+              <button class="btn-notif-accion eliminar" (click)="eliminar(n.idNotificacion, $event)" title="Eliminar">🗑️</button>
+            }
+          </div>
+          <div class="notif-item-estado">
+            @if(n.estado === 'NO_LEIDA') {
+              <span class="estado-dot nueva"></span>
+              <span class="estado-label nueva">Nueva</span>
+            } @else {
+              <span class="estado-dot leida"></span>
+              <span class="estado-label leida">Leída</span>
+            }
+          </div>
+        </div>
+      }
+    }
+
+    @if(!cargando && notificacionesAnteriores.length > 0) {
+      <div class="grupo-header">
+        <span class="grupo-linea"></span>
+        <span class="grupo-label">Anteriores</span>
+        <span class="grupo-linea"></span>
+      </div>
+      @for(n of notificacionesAnteriores; track n.idNotificacion) {
+        <div class="notif-item {{ getClase(n.tipoNotificacion) }}" [class.leida]="n.estado === 'LEIDA'" (click)="marcarLeida(n.idNotificacion)">
+          <div class="notif-item-barra"></div>
+          <div class="notif-item-icono">{{ getIcono(n.tipoNotificacion) }}</div>
+          <div class="notif-item-body">
+            <span class="notif-item-asunto">{{ n.asunto }}</span>
+            <span class="notif-item-fecha">{{ n.fechaCreacion | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="notif-item-acciones" (click)="$event.stopPropagation()">
+            @if(n.estado === 'LEIDA') {
+              <button class="btn-notif-accion responder" (click)="abrirResponder(n, $event)" title="Responder">💬</button>
+              <button class="btn-notif-accion eliminar" (click)="eliminar(n.idNotificacion, $event)" title="Eliminar">🗑️</button>
+            }
+          </div>
+          <div class="notif-item-estado">
+            @if(n.estado === 'NO_LEIDA') {
+              <span class="estado-dot nueva"></span>
+              <span class="estado-label nueva">Nueva</span>
+            } @else {
+              <span class="estado-dot leida"></span>
+              <span class="estado-label leida">Leída</span>
+            }
+          </div>
+        </div>
+      }
+    }
 
   </div>
+
+  <!-- MODAL RESPONDER -->
+  @if(modalResponderAbierto && notifAResponder) {
+    <div class="modal-overlay" (click)="cerrarResponder()">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <span class="modal-titulo">💬 Responder notificación</span>
+          <button class="modal-cerrar" (click)="cerrarResponder()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-info">
+            <span class="modal-label">Notificación:</span>
+            <span class="modal-valor">{{ notifAResponder.asunto }}</span>
+          </div>
+          <div class="modal-info">
+          <span class="modal-valor">
+            {{ notifAResponder.emailOrigen ?? notifAResponder.usuario.email }}
+          </span>
+          </div>
+          <textarea
+            class="modal-textarea"
+            [(ngModel)]="mensajeRespuesta"
+            placeholder="Escribe tu respuesta aquí..."
+            rows="4">
+          </textarea>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-modal-cancelar" (click)="cerrarResponder()">Cancelar</button>
+          <button class="btn-modal-confirmar"
+                  (click)="confirmarRespuesta()"
+                  [disabled]="!mensajeRespuesta.trim() || enviandoRespuesta">
+            {{ enviandoRespuesta ? 'Enviando...' : '📧 Enviar respuesta' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL RESPONDER -->
+  @if(modalResponderAbierto && notifAResponder) {
+    <div class="modal-overlay" (click)="cerrarResponder()">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <span class="modal-titulo">💬 Responder notificación</span>
+          <button class="modal-cerrar" (click)="cerrarResponder()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-info">
+            <span class="modal-label">Notificación:</span>
+            <span class="modal-valor">{{ notifAResponder.asunto }}</span>
+          </div>
+          <div class="modal-info">
+            <span class="modal-label">Para:</span>
+            <span class="modal-valor">
+              {{ notifAResponder.emailOrigen ?? notifAResponder.usuario.email }}
+            </span>
+          </div>
+          <textarea
+            class="modal-textarea"
+            [(ngModel)]="mensajeRespuesta"
+            placeholder="Escribe tu respuesta aquí..."
+            rows="4">
+        </textarea>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-modal-cancelar" (click)="cerrarResponder()">Cancelar</button>
+          <button class="btn-modal-confirmar"
+                  (click)="confirmarRespuesta()"
+                  [disabled]="!mensajeRespuesta.trim() || enviandoRespuesta">
+            {{ enviandoRespuesta ? 'Enviando...' : '📧 Enviar respuesta' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 </div>

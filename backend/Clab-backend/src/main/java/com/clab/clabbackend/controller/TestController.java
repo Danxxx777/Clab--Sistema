@@ -4,14 +4,19 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @RestController
 @RequestMapping("/api/test")
-@CrossOrigin(origins = "http://localhost:4200")
 public class TestController {
-
+// TODO LO DE AQUI SE TOMO PARA TESTEO NOMAS, NO ES FUNCIONAL DENTRO DE LA APP
     @GetMapping
     public String test() {
         return "CLAB backend conectado";
     }
-}
+        @GetMapping("/hash")
+        public String generarHash() {
+            return new BCryptPasswordEncoder().encode("1234");
+        }
+    }
+

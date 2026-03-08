@@ -19,7 +19,6 @@ public class LaboratorioDTO {
     private String descripcion;
     private String estadoLab;
     private Integer idSede;
-
     private String nombreSede;
     private String encargadoNombre;
     private String foto;

@@ -68,13 +68,6 @@ public class Reserva {
     @Column(name = "fecha_confirmacion")
     private LocalDate fechaConfirmacion;
 
-    @Column(name = "fecha_cancelacion")
-    private LocalDate fechaCancelacion;
-
-    @Column(name = "motivo_cancelacion", length = 200)
-    private String motivoCancelacion;
-
-    @ManyToOne
-    @JoinColumn(name = "id_usuario_cancela")
-    private Usuario usuarioCancela;
+    @Column(name = "asistio")
+    private Boolean asistio;
 }

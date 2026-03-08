@@ -32,24 +32,8 @@ public class ReporteFallas {
     @Column(name = "descripcion_falla", length = 200, nullable = false)
     private String descripcionFalla;
 
-    @Column(name = "estado", length = 15, nullable = false)
-    private String estado;
-
     @Column(name = "fecha_reporte", nullable = false)
     private LocalDate fechaReporte;
 
-    @Column(name = "fecha_asignacion")
-    private LocalDate fechaAsignacion;
 
-    @Column(name = "fecha_inicio_resolucion")
-    private LocalDate fechaInicioResolucion;
-
-    @Column(name = "fecha_resolucion")
-    private LocalDate fechaResolucion;
-
-    @Column(name = "solucion_aplicada", length = 200)
-    private String solucionAplicada;
-
-    @Column(name = "requiere_seguimiento", nullable = false)
-    private Boolean requiereSeguimiento;
 }

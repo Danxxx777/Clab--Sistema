@@ -1,59 +1,133 @@
-<div class="academico-container">
+<!-- DRAWER OVERLAY -->
+<div class="drawer-overlay" [class.open]="drawerAbierto" (click)="cerrarDrawer()"></div>
 
-  <div class="header">
-    <div class="header-left">
-      <div class="logo">
-        <span class="logo-icon"></span>
-        <span class="logo-text">CLAB</span>
+<!-- DRAWER LATERAL -->
+<div class="drawer" [class.open]="drawerAbierto">
+  <div class="drawer-header">
+    <div class="drawer-brand">
+      CLAB
+      <span>Sistema de Laboratorios</span>
+    </div>
+    <button class="btn-close-drawer" (click)="cerrarDrawer()">×</button>
+  </div>
+
+  <div class="drawer-user">
+    <div class="drawer-avatar">{{ usuarioLogueado.charAt(0).toUpperCase() }}</div>
+    <div class="drawer-user-info">
+      <div class="dui-name">{{ usuarioLogueado }}</div>
+      <div class="role-badge">
+        <span class="role-dot"></span>
+        {{ rol }}
       </div>
     </div>
-    <div class="header-right">
-      <button class="btn-volver" (click)="goToDashboard()">Volver</button>
+  </div>
+
+  <div class="drawer-section-title">Módulos</div>
+
+  <div class="drawer-modules">
+    @if(rol === 'Administradorr' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('usuarios', '')">
+        <div class="di-icon"><img src="/user.png" alt="Usuarios"></div>
+        <div class="di-text"><div class="di-name">Usuarios</div><div class="di-desc">Gestión de accesos y roles</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
+      <div class="drawer-item" (click)="navegar('laboratorios', '')">
+        <div class="di-icon"><img src="/laboratorio.png" alt="Laboratorios"></div>
+        <div class="di-text"><div class="di-name">Laboratorios</div><div class="di-desc">Sedes y encargados</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('equipos', '')">
+        <div class="di-icon"><img src="/equipo.png" alt="Equipos"></div>
+        <div class="di-text"><div class="di-name">Equipos</div><div class="di-desc">Inventario y ubicaciones</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Coordinador' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('reservar', '')">
+        <div class="di-icon"><img src="/calendario.png" alt="Reservas"></div>
+        <div class="di-text"><div class="di-name">Reservas</div><div class="di-desc">Disponibilidad</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('estudiantes', '')">
+        <div class="di-icon"><img src="/estudiantes.png" alt="Estudiantes"></div>
+        <div class="di-text"><div class="di-name">Estudiantes</div><div class="di-desc">Matrículas e inscripciones</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('asistencia', '')">
+        <div class="di-icon"><img src="/asistencia.png" alt="Asistencia"></div>
+        <div class="di-text"><div class="di-name">Asistencia</div><div class="di-desc">Control de asistencia</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('reporte-fallas', '')">
+        <div class="di-icon"><img src="/fallas.png" alt="Fallas"></div>
+        <div class="di-text"><div class="di-name">Reportes de Fallas</div><div class="di-desc">Seguimiento de equipos</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('bloqueos', '')">
+        <div class="di-icon"><img src="/bloqueos.png" alt="Bloqueos"></div>
+        <div class="di-text"><div class="di-name">Bloqueos</div><div class="di-desc">Gestión de conflictos</div></div>
+      </div>
+    }
+    <div class="drawer-item" (click)="navegar('notificaciones', '')">
+      <div class="di-icon"><img src="/campana.png" alt="Notificaciones"></div>
+      <div class="di-text"><div class="di-name">Notificaciones</div><div class="di-desc">Centro de alertas</div></div>
     </div>
+    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
+      <div class="drawer-item" (click)="navegar('reportesuso', '')">
+        <div class="di-icon"><img src="/uso.png" alt="Reportes"></div>
+        <div class="di-text"><div class="di-name">Reportes de Uso</div><div class="di-desc">Estadísticas</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('auditoria', '')">
+        <div class="di-icon"><img src="/auditoria.png" alt="Auditoría"></div>
+        <div class="di-text"><div class="di-name">Auditoría</div><div class="di-desc">Trazabilidad</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr') {
+      <div class="drawer-item" (click)="navegar('configuracion-correo', '')">
+        <div class="di-icon"><img src="/configuracion.png" alt="Configuración"></div>
+        <div class="di-text"><div class="di-name">Config. Correo</div><div class="di-desc">SMTP y remitente</div></div>
+      </div>
+    }
   </div>
 
-  <div class="page-title-section">
-    <h1> Gestión Académica</h1>
+  <div class="drawer-footer">
+    <button class="btn-logout-drawer" (click)="logout()">🚪 Cerrar sesión</button>
+  </div>
+</div>
+
+<div class="page-title-section">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <button class="btn-hamburger" [class.active]="drawerAbierto" (click)="toggleDrawer()">
+        <div class="ham-line"></div>
+        <div class="ham-line"></div>
+        <div class="ham-line"></div>
+      </button>
+      <h1>Gestión Académica</h1>
+    </div>
+    <button class="btn-volver" (click)="goToDashboard()">← Volver</button>
   </div>
 
+  <!-- TABS -->
   <div class="tabs-container">
     <div class="tabs">
-      <button
-        class="tab"
-        [class.active]="tabActiva === 0"
-        (click)="cambiarTab(0)">
-        Períodos
-      </button>
-      <button
-        class="tab"
-        [class.active]="tabActiva === 1"
-        (click)="cambiarTab(1)">
-        Carreras
-      </button>
-      <button
-        class="tab"
-        [class.active]="tabActiva === 2"
-        (click)="cambiarTab(2)">
-        Asignaturas
-      </button>
-      <button
-        class="tab"
-        [class.active]="tabActiva === 3"
-        (click)="cambiarTab(3)">
-        Facultades
-      </button>
-      <button
-        class="tab"
-        [class.active]="tabActiva === 4"
-        (click)="cambiarTab(4)">
-        Horarios
-      </button>
+      <button class="tab" [class.active]="tabActiva === 0" (click)="cambiarTab(0)">Períodos</button>
+      <button class="tab" [class.active]="tabActiva === 1" (click)="cambiarTab(1)">Carreras</button>
+      <button class="tab" [class.active]="tabActiva === 2" (click)="cambiarTab(2)">Asignaturas</button>
+      <button class="tab" [class.active]="tabActiva === 3" (click)="cambiarTab(3)">Facultades</button>
+      <button class="tab" [class.active]="tabActiva === 4" (click)="cambiarTab(4)">Horarios</button>
     </div>
   </div>
 
   <div class="content-wrapper">
 
-
+    <!-- TAB: PERÍODOS -->
     <div class="tab-content" *ngIf="tabActiva === 0">
       <div class="toolbar">
         <div class="search-container">
@@ -65,9 +139,7 @@
             (input)="filtrarPeriodos()"
             placeholder="Buscar períodos...">
         </div>
-        <button class="btn-agregar" (click)="agregarNuevo(0)">
-          Agregar Período
-        </button>
+        <button class="btn-agregar" (click)="agregarNuevo(0)">+ Agregar Período</button>
       </div>
 
       <div class="table-container">
@@ -85,30 +157,34 @@
           </thead>
           <tbody>
           <tr *ngFor="let periodo of periodosFiltrado; let i = index">
-            <td>{{periodo.idPeriodo}}</td>
-            <td>{{periodo.nombrePeriodo}}</td>
-            <td>{{periodo.fechaInicio}}</td>
-            <td>{{periodo.fechaFin}}</td>
-            <td>{{periodo.fechaCreacion}}</td>
-            <td>{{periodo.estado}}</td>
+            <td>{{ periodo.idPeriodo }}</td>
+            <td>{{ periodo.nombrePeriodo }}</td>
+            <td>{{ periodo.fechaInicio }}</td>
+            <td>{{ periodo.fechaFin }}</td>
+            <td>{{ periodo.fechaCreacion }}</td>
+            <td>
+                <span class="badge"
+                      [class.badge-activo]="periodo.estado === 'ACTIVO'"
+                      [class.badge-inactivo]="periodo.estado === 'INACTIVO'">
+                  {{ periodo.estado }}
+                </span>
+            </td>
             <td>
               <div class="action-buttons">
-                <button class="btn-action btn-ver" (click)="verDetalle(periodo, 'periodo')">Ver</button>
                 <button class="btn-action btn-editar" (click)="editar(periodo, i, 'periodo')">Editar</button>
                 <button class="btn-action btn-eliminar" (click)="eliminar(periodo, i, 'periodo')">Eliminar</button>
               </div>
             </td>
           </tr>
           <tr *ngIf="periodosFiltrado.length === 0">
-            <td colspan="6" class="empty-message">No se encontraron períodos</td>
-
+            <td colspan="7" class="empty-message">No se encontraron períodos</td>
           </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-
+    <!-- TAB: CARRERAS -->
     <div class="tab-content" *ngIf="tabActiva === 1">
       <div class="toolbar">
         <div class="search-container">
@@ -120,9 +196,7 @@
             (input)="filtrarCarreras()"
             placeholder="Buscar carreras...">
         </div>
-        <button class="btn-agregar" (click)="agregarNuevo(1)">
-          Agregar Carrera
-        </button>
+        <button class="btn-agregar" (click)="agregarNuevo(1)">+ Agregar Carrera</button>
       </div>
 
       <div class="table-container">
@@ -131,39 +205,39 @@
           <tr>
             <th>NOMBRE</th>
             <th>FACULTAD</th>
+            <th>COORDINADOR</th>
             <th>ESTADO</th>
             <th>ACCIONES</th>
           </tr>
           </thead>
           <tbody>
           <tr *ngFor="let carrera of carrerasFiltradas; let i = index">
-            <td><strong>{{carrera.nombre}}</strong></td>
-            <td>{{carrera.facultad}}</td>
+            <td><strong>{{ carrera.nombreCarrera }}</strong></td>
+            <td>{{ carrera.nombreFacultad }}</td>
+            <td>{{ carrera.nombreCoordinador }}</td>
             <td>
-                <span
-                  class="badge"
-                  [class.badge-activo]="carrera.estado === 'ACTIVA'"
-                  [class.badge-inactivo]="carrera.estado === 'INACTIVA'">
-                  {{carrera.estado}}
-                </span>
+          <span class="badge"
+                [class.badge-activo]="carrera.estado === 'ACTIVA'"
+                [class.badge-inactivo]="carrera.estado === 'INACTIVA'">
+            {{ carrera.estado }}
+          </span>
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn-action btn-ver" (click)="verDetalle(carrera, 'carrera')">Ver</button>
                 <button class="btn-action btn-editar" (click)="editar(carrera, i, 'carrera')">Editar</button>
                 <button class="btn-action btn-eliminar" (click)="eliminar(carrera, i, 'carrera')">Eliminar</button>
               </div>
             </td>
           </tr>
           <tr *ngIf="carrerasFiltradas.length === 0">
-            <td colspan="4" class="empty-message">No se encontraron carreras</td>
+            <td colspan="5" class="empty-message">No se encontraron carreras</td>
           </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-
+    <!-- TAB: ASIGNATURAS -->
     <div class="tab-content" *ngIf="tabActiva === 2">
       <div class="toolbar">
         <div class="search-container">
@@ -175,9 +249,7 @@
             (input)="filtrarAsignaturas()"
             placeholder="Buscar asignaturas...">
         </div>
-        <button class="btn-agregar" (click)="agregarNuevo(2)">
-          Agregar Asignatura
-        </button>
+        <button class="btn-agregar" (click)="agregarNuevo(2)">+ Agregar Asignatura</button>
       </div>
 
       <div class="table-container">
@@ -195,26 +267,24 @@
           </thead>
           <tbody>
           <tr *ngFor="let asignatura of asignaturasFiltradas; let i = index">
-            <td><strong>{{asignatura.nombre}}</strong></td>
-            <td>{{asignatura.carrera}}</td>
-            <td>Nivel {{asignatura.nivel}}</td>
-            <td>{{asignatura.horasSemanales}} hrs/sem</td>
+            <td><strong>{{ asignatura.nombre }}</strong></td>
+            <td>{{ asignatura.nombreCarrera }}</td>
+            <td>Nivel {{ asignatura.nivel }}</td>
+            <td>{{ asignatura.horasSemanales }} hrs/sem</td>
             <td>
-                <span [ngClass]="asignatura.requiereLaboratorio === 'SI' ? 'lab-si' : 'lab-no'">
-                  {{asignatura.requiereLaboratorio === 'SI' ? '🔬 Sí' : '📘 No'}}
-                </span>
+      <span [ngClass]="asignatura.requiereLaboratorio ? 'lab-si' : 'lab-no'">
+        {{ asignatura.requiereLaboratorio ? '🔬 Sí' : '📘 No' }}
+      </span>
             </td>
             <td>
-                <span
-                  class="badge"
-                  [class.badge-activo]="asignatura.estado === 'ACTIVA'"
-                  [class.badge-inactivo]="asignatura.estado === 'INACTIVA'">
-                  {{asignatura.estado}}
-                </span>
+      <span class="badge"
+            [class.badge-activo]="asignatura.estado === 'ACTIVA'"
+            [class.badge-inactivo]="asignatura.estado === 'INACTIVA'">
+        {{ asignatura.estado }}
+      </span>
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn-action btn-ver" (click)="verDetalle(asignatura, 'asignatura')">Ver</button>
                 <button class="btn-action btn-editar" (click)="editar(asignatura, i, 'asignatura')">Editar</button>
                 <button class="btn-action btn-eliminar" (click)="eliminar(asignatura, i, 'asignatura')">Eliminar</button>
               </div>
@@ -228,7 +298,7 @@
       </div>
     </div>
 
-
+    <!-- TAB: FACULTADES -->
     <div class="tab-content" *ngIf="tabActiva === 3">
       <div class="toolbar">
         <div class="search-container">
@@ -240,9 +310,7 @@
             (input)="filtrarFacultades()"
             placeholder="Buscar facultades...">
         </div>
-        <button class="btn-agregar" (click)="agregarNuevo(3)">
-          Agregar Facultad
-        </button>
+        <button class="btn-agregar" (click)="agregarNuevo(3)">+ Agregar Facultad</button>
       </div>
 
       <div class="table-container">
@@ -258,20 +326,18 @@
           </thead>
           <tbody>
           <tr *ngFor="let facultad of facultadesFiltradas; let i = index">
-            <td><strong>{{facultad.nombre}}</strong></td>
-            <td>{{facultad.decano}}</td>
-            <td>{{facultad.fechaCreacion}}</td>
+            <td><strong>{{ facultad.nombre }}</strong></td>
+            <td>{{ facultad.nombreDecano }}</td>
+            <td>{{ facultad.fechaCreacion }}</td>
             <td>
-                <span
-                  class="badge"
-                  [class.badge-activo]="facultad.estado === 'ACTIVO'"
-                  [class.badge-inactivo]="facultad.estado === 'INACTIVO'">
-                  {{facultad.estado}}
+                <span class="badge"
+                      [class.badge-activo]="facultad.estado === 'ACTIVO'"
+                      [class.badge-inactivo]="facultad.estado === 'INACTIVO'">
+                  {{ facultad.estado }}
                 </span>
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn-action btn-ver" (click)="verDetalle(facultad, 'facultad')">Ver</button>
                 <button class="btn-action btn-editar" (click)="editar(facultad, i, 'facultad')">Editar</button>
                 <button class="btn-action btn-eliminar" (click)="eliminar(facultad, i, 'facultad')">Eliminar</button>
               </div>
@@ -285,7 +351,7 @@
       </div>
     </div>
 
-
+    <!-- TAB: HORARIOS -->
     <div class="tab-content" *ngIf="tabActiva === 4">
       <div class="toolbar">
         <div class="search-container">
@@ -297,9 +363,7 @@
             (input)="filtrarHorarios()"
             placeholder="Buscar horarios...">
         </div>
-        <button class="btn-agregar" (click)="agregarNuevo(4)">
-          Agregar Horario
-        </button>
+        <button class="btn-agregar" (click)="agregarNuevo(4)">+ Agregar Horario</button>
       </div>
 
       <div class="table-container">
@@ -312,27 +376,34 @@
             <th>DÍA</th>
             <th>HORARIO</th>
             <th>ESTUDIANTES</th>
+            <th>ESTADO</th>
             <th>ACCIONES</th>
           </tr>
           </thead>
           <tbody>
           <tr *ngFor="let horario of horariosFiltrados; let i = index">
-            <td><strong>{{horario.periodo}}</strong></td>
-            <td>{{horario.asignatura}}</td>
-            <td>{{horario.docente}}</td>
-            <td>{{horario.diaSemana}}</td>
-            <td>{{horario.horaInicio}} - {{horario.horaFin}}</td>
-            <td>{{horario.numeroEstudiantes}} estudiantes</td>
+            <td><strong>{{ horario.nombrePeriodo }}</strong></td>
+            <td>{{ horario.nombreAsignatura }}</td>
+            <td>{{ horario.nombreDocente }}</td>
+            <td>{{ horario.diaSemana }}</td>
+            <td>{{ horario.horaInicio }} - {{ horario.horaFin }}</td>
+            <td>{{ horario.numeroEstudiantes }} estudiantes</td>
+            <td>
+      <span class="badge"
+            [class.badge-activo]="horario.estado === 'ACTIVO'"
+            [class.badge-inactivo]="horario.estado === 'INACTIVO'">
+        {{ horario.estado }}
+      </span>
+            </td>
             <td>
               <div class="action-buttons">
-                <button class="btn-action btn-ver" (click)="verDetalle(horario, 'horario')">Ver</button>
                 <button class="btn-action btn-editar" (click)="editar(horario, i, 'horario')">Editar</button>
                 <button class="btn-action btn-eliminar" (click)="eliminar(horario, i, 'horario')">Eliminar</button>
               </div>
             </td>
           </tr>
           <tr *ngIf="horariosFiltrados.length === 0">
-            <td colspan="7" class="empty-message">No se encontraron horarios</td>
+            <td colspan="8" class="empty-message">No se encontraron horarios</td>
           </tr>
           </tbody>
         </table>
@@ -340,20 +411,20 @@
     </div>
 
   </div>
-</div>
 
 
+<!-- MODAL AGREGAR / EDITAR -->
 <div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
   <div class="modal" (click)="$event.stopPropagation()">
 
     <div class="modal-header">
-      <h2>{{modoEdicion ? 'Editar ' + getTipoTexto() : 'Agregar Nuevo ' + getTipoTexto()}}</h2>
+      <h2>{{ modoEdicion ? 'Editar ' + getTipoTexto() : 'Agregar Nuevo ' + getTipoTexto() }}</h2>
       <button class="btn-close" (click)="cerrarModal()">×</button>
     </div>
 
     <div class="modal-body">
 
-
+      <!-- FORM: PERÍODO -->
       <div *ngIf="tipoEdicion === 'periodo'">
         <div class="form-row">
           <div class="form-group full-width">
@@ -374,13 +445,8 @@
         <div class="form-row">
           <div class="form-group">
             <label>Fecha de Creación <span class="required">*</span></label>
-            <input
-              type="date"
-              class="form-control"
-              [(ngModel)]="formularioPeriodo.fechaCreacion">
+            <input type="date" class="form-control" [(ngModel)]="formularioPeriodo.fechaCreacion">
           </div>
-        </div>
-        <div class="form-row">
           <div class="form-group">
             <label>Estado</label>
             <select class="form-control" [(ngModel)]="formularioPeriodo.estado">
@@ -392,6 +458,7 @@
       </div>
 
 
+      <!-- FORM: CARRERA -->
       <div *ngIf="tipoEdicion === 'carrera'">
         <div class="form-row">
           <div class="form-group full-width">
@@ -402,11 +469,20 @@
         <div class="form-row">
           <div class="form-group">
             <label>Facultad <span class="required">*</span></label>
-            <select class="form-control" [(ngModel)]="formularioCarrera.facultad">
-              <option value="">Seleccione facultad</option>
-              <option *ngFor="let fac of facultadesData" [value]="fac.nombre">{{fac.nombre}}</option>
+            <select class="form-control" [(ngModel)]="formularioCarrera.idFacultad">
+              <option [value]="0">Seleccione facultad</option>
+              <option *ngFor="let fac of facultades" [value]="fac.idFacultad">{{ fac.nombre }}</option>
             </select>
           </div>
+          <div class="form-group">
+            <label>Coordinador</label>
+            <select class="form-control" [(ngModel)]="formularioCarrera.idCoordinador">
+              <option [value]="0">Seleccione coordinador</option>
+              <option *ngFor="let coord of coordinadores" [value]="coord.idUsuario">{{ coord.nombreCoordinador }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
           <div class="form-group">
             <label>Estado</label>
             <select class="form-control" [(ngModel)]="formularioCarrera.estado">
@@ -418,6 +494,7 @@
       </div>
 
 
+      <!-- FORM: ASIGNATURA -->
       <div *ngIf="tipoEdicion === 'asignatura'">
         <div class="form-row">
           <div class="form-group full-width">
@@ -428,29 +505,28 @@
         <div class="form-row">
           <div class="form-group">
             <label>Carrera <span class="required">*</span></label>
-            <select class="form-control" [(ngModel)]="formularioAsignatura.carrera">
-              <option value="">Seleccione carrera</option>
-              <option *ngFor="let carrera of carreras" [value]="carrera.nombre">{{carrera.nombre}}</option>
+            <select class="form-control" [(ngModel)]="formularioAsignatura.idCarrera">
+              <option [value]="0">Seleccione carrera</option>
+              <option *ngFor="let carrera of carreras" [value]="carrera.idCarrera">{{ carrera.nombreCarrera }}</option>
             </select>
           </div>
           <div class="form-group">
             <label>Nivel <span class="required">*</span></label>
             <select class="form-control" [(ngModel)]="formularioAsignatura.nivel">
-              <option value="">Seleccione nivel</option>
-              <option *ngFor="let nivel of [1,2,3,4,5,6,7,8,9,10]" [value]="nivel">Nivel {{nivel}}</option>
+              <option *ngFor="let nivel of [1,2,3,4,5,6,7,8,9,10]" [value]="nivel">Nivel {{ nivel }}</option>
             </select>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
             <label>Horas Semanales <span class="required">*</span></label>
-            <input type="number" class="form-control" [(ngModel)]="formularioAsignatura.horasSemanales" min="1" max="20" placeholder="Ej: 4">
+            <input type="number" class="form-control" [(ngModel)]="formularioAsignatura.horasSemanales" min="1" max="20">
           </div>
           <div class="form-group">
             <label>Requiere Laboratorio</label>
             <select class="form-control" [(ngModel)]="formularioAsignatura.requiereLaboratorio">
-              <option value="SI">Sí</option>
-              <option value="NO">No</option>
+              <option [value]="true">Sí</option>
+              <option [value]="false">No</option>
             </select>
           </div>
         </div>
@@ -465,7 +541,7 @@
         </div>
       </div>
 
-
+      <!-- FORM: FACULTAD -->
       <div *ngIf="tipoEdicion === 'facultad'">
         <div class="form-row">
           <div class="form-group full-width">
@@ -482,17 +558,11 @@
         <div class="form-row">
           <div class="form-group">
             <label>Decano <span class="required">*</span></label>
-            <select class="form-control" [(ngModel)]="formularioFacultad.decano">
-              <option value="">Seleccione decano</option>
-              <option *ngFor="let decano of decanos" [value]="decano">{{decano}}</option>
+            <select class="form-control" [(ngModel)]="formularioFacultad.idDecano">
+              <option [value]="0">Seleccione decano</option>
+              <option *ngFor="let decano of decanos" [value]="decano.idUsuario">{{ decano.nombreDecano }}</option>
             </select>
           </div>
-          <div class="form-group">
-            <label>Fecha de Creación <span class="required">*</span></label>
-            <input type="date" class="form-control" [(ngModel)]="formularioFacultad.fechaCreacion">
-          </div>
-        </div>
-        <div class="form-row">
           <div class="form-group">
             <label>Estado</label>
             <select class="form-control" [(ngModel)]="formularioFacultad.estado">
@@ -504,29 +574,30 @@
       </div>
 
 
+      <!-- FORM: HORARIO -->
       <div *ngIf="tipoEdicion === 'horario'">
         <div class="form-row">
           <div class="form-group">
             <label>Período Académico <span class="required">*</span></label>
-            <select class="form-control" [(ngModel)]="formularioHorario.periodo">
-              <option value="">Seleccione período</option>
-              <option *ngFor="let periodo of periodos" [value]="periodo.nombrePeriodo">{{periodo.nombrePeriodo}}</option>
+            <select class="form-control" [(ngModel)]="formularioHorario.idPeriodo">
+              <option [value]="0">Seleccione período</option>
+              <option *ngFor="let periodo of periodos" [value]="periodo.idPeriodo">{{ periodo.nombrePeriodo }}</option>
             </select>
           </div>
           <div class="form-group">
             <label>Asignatura <span class="required">*</span></label>
-            <select class="form-control" [(ngModel)]="formularioHorario.asignatura">
-              <option value="">Seleccione asignatura</option>
-              <option *ngFor="let asignatura of asignaturas" [value]="asignatura.nombre">{{asignatura.nombre}}</option>
+            <select class="form-control" [(ngModel)]="formularioHorario.idAsignatura">
+              <option [value]="0">Seleccione asignatura</option>
+              <option *ngFor="let asignatura of asignaturas" [value]="asignatura.idAsignatura">{{ asignatura.nombre }}</option>
             </select>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
             <label>Docente <span class="required">*</span></label>
-            <select class="form-control" [(ngModel)]="formularioHorario.docente">
-              <option value="">Seleccione docente</option>
-              <option *ngFor="let docente of docentes" [value]="docente">{{docente}}</option>
+            <select class="form-control" [(ngModel)]="formularioHorario.idDocente">
+              <option [value]="0">Seleccione docente</option>
+              <option *ngFor="let doc of docentes" [value]="doc.idUsuario">{{ doc.nombreDocente }}</option>
             </select>
           </div>
           <div class="form-group">
@@ -547,231 +618,43 @@
             <label>Hora de Inicio <span class="required">*</span></label>
             <select class="form-control" [(ngModel)]="formularioHorario.horaInicio">
               <option value="">Seleccione hora</option>
-              <option *ngFor="let hora of horas" [value]="hora">{{hora}}</option>
+              <option *ngFor="let hora of horas" [value]="hora">{{ hora }}</option>
             </select>
           </div>
           <div class="form-group">
             <label>Hora de Fin <span class="required">*</span></label>
             <select class="form-control" [(ngModel)]="formularioHorario.horaFin">
               <option value="">Seleccione hora</option>
-              <option *ngFor="let hora of horas" [value]="hora">{{hora}}</option>
+              <option *ngFor="let hora of horas" [value]="hora">{{ hora }}</option>
             </select>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
             <label>Número de Estudiantes <span class="required">*</span></label>
-            <input type="number" class="form-control" [(ngModel)]="formularioHorario.numeroEstudiantes" min="1" max="100" placeholder="Ej: 30">
+            <input type="number" class="form-control" [(ngModel)]="formularioHorario.numeroEstudiantes" min="1" max="100">
+          </div>
+          <div class="form-group">
+            <label>Estado</label>
+            <select class="form-control" [(ngModel)]="formularioHorario.estado">
+              <option value="ACTIVO">Activo</option>
+              <option value="INACTIVO">Inactivo</option>
+            </select>
           </div>
         </div>
       </div>
+      <p class="config-msg-error" *ngIf="errorModal">{{ errorModal }}</p>
 
     </div>
-
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
-      <button class="btn-guardar" (click)="guardar()">Guardar</button>
+      <button class="btn-guardar" (click)="guardar()">{{ modoEdicion ? 'Actualizar' : 'Guardar' }}</button>
     </div>
-
+  </div>
+  <div class="toast" *ngIf="mostrarToast"
+       [class.toast-success]="toastTipo === 'success'"
+       [class.toast-error]="toastTipo === 'error'">
+    {{ toastMensaje }}
   </div>
 </div>
 
-
-
-<div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'periodo'" (click)="cerrarDetalle()">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>📅 Detalles del Período</h2>
-      <button class="btn-close" (click)="cerrarDetalle()">×</button>
-    </div>
-    <div class="detalle-item">
-      <label>ID del Período</label>
-      <span class="detalle-valor">{{ itemDetalle.idPeriodo }}</span>
-    </div>
-    <div class="modal-body">
-      <div class="detalle-grid">
-        <div class="detalle-item full-width">
-          <label>Nombre del Período</label>
-          <span class="detalle-valor">{{itemDetalle.nombre}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Fecha de Inicio</label>
-          <span class="detalle-valor">{{itemDetalle.fechaInicio}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Fecha de Fin</label>
-          <span class="detalle-valor">{{itemDetalle.fechaFin}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Fecha de Creación</label>
-          <span class="detalle-valor">{{itemDetalle.fechaCreacion}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Estado</label>
-          <span class="badge" [class.badge-activo]="itemDetalle.estado === 'ACTIVO'" [class.badge-inactivo]="itemDetalle.estado === 'INACTIVO'">
-            {{itemDetalle.estado}}
-          </span>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancelar" (click)="cerrarDetalle()">Cerrar</button>
-    </div>
-  </div>
-</div>
-
-
-<div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'carrera'" (click)="cerrarDetalle()">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>📚 Detalles de la Carrera</h2>
-      <button class="btn-close" (click)="cerrarDetalle()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="detalle-grid">
-        <div class="detalle-item full-width">
-          <label>Nombre de la Carrera</label>
-          <span class="detalle-valor">{{itemDetalle.nombre}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Facultad</label>
-          <span class="detalle-valor">{{itemDetalle.facultad}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Estado</label>
-          <span class="badge" [class.badge-activo]="itemDetalle.estado === 'ACTIVA'" [class.badge-inactivo]="itemDetalle.estado === 'INACTIVA'">
-            {{itemDetalle.estado}}
-          </span>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancelar" (click)="cerrarDetalle()">Cerrar</button>
-    </div>
-  </div>
-</div>
-
-
-<div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'asignatura'" (click)="cerrarDetalle()">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>📖 Detalles de la Asignatura</h2>
-      <button class="btn-close" (click)="cerrarDetalle()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="detalle-grid">
-        <div class="detalle-item full-width">
-          <label>Nombre de la Asignatura</label>
-          <span class="detalle-valor">{{itemDetalle.nombre}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Carrera</label>
-          <span class="detalle-valor">{{itemDetalle.carrera}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Nivel</label>
-          <span class="detalle-valor">Nivel {{itemDetalle.nivel}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Horas Semanales</label>
-          <span class="detalle-valor">{{itemDetalle.horasSemanales}} hrs/sem</span>
-        </div>
-        <div class="detalle-item">
-          <label>Requiere Laboratorio</label>
-          <span [ngClass]="itemDetalle.requiereLaboratorio === 'SI' ? 'lab-si' : 'lab-no'">
-            {{itemDetalle.requiereLaboratorio === 'SI' ? '🔬 Sí' : '📘 No'}}
-          </span>
-        </div>
-        <div class="detalle-item">
-          <label>Estado</label>
-          <span class="badge" [class.badge-activo]="itemDetalle.estado === 'ACTIVA'" [class.badge-inactivo]="itemDetalle.estado === 'INACTIVA'">
-            {{itemDetalle.estado}}
-          </span>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancelar" (click)="cerrarDetalle()">Cerrar</button>
-    </div>
-  </div>
-</div>
-
-
-<div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'facultad'" (click)="cerrarDetalle()">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>🏛️ Detalles de la Facultad</h2>
-      <button class="btn-close" (click)="cerrarDetalle()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="detalle-grid">
-        <div class="detalle-item full-width">
-          <label>Nombre de la Facultad</label>
-          <span class="detalle-valor">{{itemDetalle.nombre}}</span>
-        </div>
-        <div class="detalle-item full-width" *ngIf="itemDetalle.descripcion">
-          <label>Descripción</label>
-          <span class="detalle-valor">{{itemDetalle.descripcion}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Decano</label>
-          <span class="detalle-valor">{{itemDetalle.decano}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Fecha de Creación</label>
-          <span class="detalle-valor">{{itemDetalle.fechaCreacion}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Estado</label>
-          <span class="badge" [class.badge-activo]="itemDetalle.estado === 'ACTIVO'" [class.badge-inactivo]="itemDetalle.estado === 'INACTIVO'">
-            {{itemDetalle.estado}}
-          </span>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancelar" (click)="cerrarDetalle()">Cerrar</button>
-    </div>
-  </div>
-</div>
-
-
-<div class="modal-overlay" *ngIf="mostrarDetalle && tipoDetalle === 'horario'" (click)="cerrarDetalle()">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>⏰ Detalles del Horario</h2>
-      <button class="btn-close" (click)="cerrarDetalle()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="detalle-grid">
-        <div class="detalle-item">
-          <label>Período Académico</label>
-          <span class="detalle-valor">{{itemDetalle.periodo}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Asignatura</label>
-          <span class="detalle-valor">{{itemDetalle.asignatura}}</span>
-        </div>
-        <div class="detalle-item full-width">
-          <label>Docente</label>
-          <span class="detalle-valor">{{itemDetalle.docente}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Día de la Semana</label>
-          <span class="detalle-valor">{{itemDetalle.diaSemana}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Horario </label>
-          <span class="detalle-valor">{{itemDetalle.horaInicio}} - {{itemDetalle.horaFin}}</span>
-        </div>
-        <div class="detalle-item">
-          <label>Número de Estudiantes</label>
-          <span class="detalle-valor">{{itemDetalle.numeroEstudiantes}} estudiantes</span>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancelar" (click)="cerrarDetalle()">Cerrar</button>
-    </div>
-  </div>
-</div>

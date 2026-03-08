@@ -1,61 +1,724 @@
-<div class="reservas-page">
-  <button class="back-btn" (click)="volver()">Volver</button>
+<!-- DRAWER OVERLAY -->
+<div class="drawer-overlay" [class.open]="drawerAbierto" (click)="cerrarDrawer()"></div>
 
-  <div class="reservas-container">
-    <div class="reservas-header">
-      <h1>Gestión de Reservas</h1>
-      <div class="header-actions">
-        <button class="btn-import" (click)="importarHorarios()">
-          Importar Horarios SGA
-        </button>
-        <button class="btn-nueva" (click)="nuevaReserva()">
-          Nueva Reserva
-        </button>
+<!-- DRAWER LATERAL -->
+<div class="drawer" [class.open]="drawerAbierto">
+  <div class="drawer-header">
+    <div class="drawer-brand">
+      CLAB
+      <span>Sistema de Laboratorios</span>
+    </div>
+    <button class="btn-close-drawer" (click)="cerrarDrawer()">×</button>
+  </div>
+
+  <div class="drawer-user">
+    <div class="drawer-avatar">{{ usuarioLogueado.charAt(0).toUpperCase() }}</div>
+    <div class="drawer-user-info">
+      <div class="dui-name">{{ usuarioLogueado }}</div>
+      <div class="role-badge">
+        <span class="role-dot"></span>
+        {{ rol }}
       </div>
     </div>
+  </div>
 
-    <div class="reservas-table-container">
-      <div class="table-wrapper">
-        <table class="reservas-table">
+  <div class="drawer-section-title">Módulos</div>
+
+  <div class="drawer-modules">
+    @if(rol === 'Administradorr' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('usuarios', '')">
+        <div class="di-icon"><img src="/user.png" alt="Usuarios"></div>
+        <div class="di-text"><div class="di-name">Usuarios</div><div class="di-desc">Gestión de accesos y roles</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab' || rol === 'clab_encargado_lab' || rol === 'Encargado de Laboratorio') {
+      <div class="drawer-item" (click)="navegar('laboratorios', '')">
+        <div class="di-icon"><img src="/laboratorio.png" alt="Laboratorios"></div>
+        <div class="di-text"><div class="di-name">Laboratorios</div><div class="di-desc">Sedes y encargados</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano' || rol === 'clab_encargado_lab' || rol === 'Encargado de Laboratorio') {
+      <div class="drawer-item" (click)="navegar('equipos', '')">
+        <div class="di-icon"><img src="/equipo.png" alt="Equipos"></div>
+        <div class="di-text"><div class="di-name">Equipos</div><div class="di-desc">Inventario y ubicaciones</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Coordinador') {
+      <div class="drawer-item" (click)="navegar('academico', '')">
+        <div class="di-icon"><img src="/academico.png" alt="Académico"></div>
+        <div class="di-text"><div class="di-name">Académico</div><div class="di-desc">Períodos y carreras</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('estudiantes', '')">
+        <div class="di-icon"><img src="/estudiantes.png" alt="Estudiantes"></div>
+        <div class="di-text"><div class="di-name">Estudiantes</div><div class="di-desc">Matrículas e inscripciones</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('asistencia', '')">
+        <div class="di-icon"><img src="/asistencia.png" alt="Asistencia"></div>
+        <div class="di-text"><div class="di-name">Asistencia</div><div class="di-desc">Control de asistencia</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano' || rol === 'clab_encargado_lab' || rol === 'Encargado de Laboratorio') {
+      <div class="drawer-item" (click)="navegar('reporte-fallas', '')">
+        <div class="di-icon"><img src="/fallas.png" alt="Fallas"></div>
+        <div class="di-text"><div class="di-name">Reportes de Fallas</div><div class="di-desc">Seguimiento de equipos</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano' || rol === 'clab_encargado_lab' || rol === 'Encargado de Laboratorio') {
+      <div class="drawer-item" (click)="navegar('bloqueos', '')">
+        <div class="di-icon"><img src="/bloqueos.png" alt="Bloqueos"></div>
+        <div class="di-text"><div class="di-name">Bloqueos</div><div class="di-desc">Gestión de conflictos</div></div>
+      </div>
+    }
+    <div class="drawer-item" (click)="navegar('notificaciones', '')">
+      <div class="di-icon"><img src="/campana.png" alt="Notificaciones"></div>
+      <div class="di-text"><div class="di-name">Notificaciones</div><div class="di-desc">Centro de alertas</div></div>
+    </div>
+    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab' || rol === 'clab_encargado_lab' || rol === 'Encargado de Laboratorio') {
+      <div class="drawer-item" (click)="navegar('reportesuso', '')">
+        <div class="di-icon"><img src="/uso.png" alt="Reportes"></div>
+        <div class="di-text"><div class="di-name">Reportes de Uso</div><div class="di-desc">Estadísticas</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr' || rol === 'Decano') {
+      <div class="drawer-item" (click)="navegar('auditoria', '')">
+        <div class="di-icon"><img src="/auditoria.png" alt="Auditoría"></div>
+        <div class="di-text"><div class="di-name">Auditoría</div><div class="di-desc">Trazabilidad</div></div>
+      </div>
+    }
+    @if(rol === 'Administradorr') {
+      <div class="drawer-item" (click)="navegar('configuracion-correo', '')">
+        <div class="di-icon"><img src="/configuracion.png" alt="Configuración"></div>
+        <div class="di-text"><div class="di-name">Config. Correo</div><div class="di-desc">SMTP y remitente</div></div>
+      </div>
+    }
+  </div>
+
+  <div class="drawer-footer">
+    <button class="btn-logout-drawer" (click)="logout()">🚪 Cerrar sesión</button>
+  </div>
+</div>
+
+<div class="inventario-container">
+
+  <div class="page-title-section">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <button class="btn-hamburger" [class.active]="drawerAbierto" (click)="toggleDrawer()">
+        <div class="ham-line"></div>
+        <div class="ham-line"></div>
+        <div class="ham-line"></div>
+      </button>
+      <h1>Gestión de Reservas de Laboratorio</h1>
+    </div>
+    <button class="btn-volver" (click)="volver()">← Volver</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-icon sc-blue">📋</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ reservas.length }}</span>
+        <span class="stat-label">Total</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon sc-amber">⏳</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ totalPorEstado('Pendiente') }}</span>
+        <span class="stat-label">Pendientes</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon sc-green">✅</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ totalPorEstado('Aprobada') }}</span>
+        <span class="stat-label">Aprobadas</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon sc-red">🚫</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ totalPorEstado('Rechazada') }}</span>
+        <span class="stat-label">Rechazadas</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-container">
+    <div class="tabs">
+      <button class="tab" [class.active]="tabActiva === 0" (click)="cambiarTab(0)">Reservas</button>
+      <button class="tab" [class.active]="tabActiva === 1" (click)="cambiarTab(1)">Tipos de Reserva</button>
+      @if(rol === 'Encargado_Lab' || rol === 'clab_encargado_lab' || rol === 'Encargado de Laboratorio') {
+        <button class="tab" [class.active]="tabActiva === 2" (click)="cambiarTab(2)">Control de Asistencia</button>
+      }
+    </div>
+  </div>
+
+  <div class="content-wrapper">
+
+    <!-- TAB 0: RESERVAS -->
+    <div class="tab-content" *ngIf="tabActiva === 0">
+      <div class="toolbar">
+        <div class="search-container">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" [(ngModel)]="busquedaReservas"
+                 (input)="filtrarReservas()" placeholder="Buscar reservas...">
+        </div>
+        <div class="toolbar-actions">
+          <div class="paginacion" *ngIf="reservasFiltradas.length > 0">
+            <button class="btn-pag" (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">‹</button>
+            <button class="btn-pag" *ngFor="let p of paginas" [class.activa]="p === paginaActual" (click)="cambiarPagina(p)">{{ p }}</button>
+            <button class="btn-pag" (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">›</button>
+            <span class="pag-info">{{ paginaActual }} / {{ totalPaginas }}</span>
+          </div>
+          <button class="btn-agregar" (click)="abrirModal('reserva')">+ Nueva Reserva</button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
           <thead>
           <tr>
-            <th>LABORATORIO</th>
-            <th>FECHA</th>
-            <th>HORARIO</th>
-            <th>ASIGNATURA</th>
-            <th>RESPONSABLE</th>
-            <th>ESTADO</th>
-            <th>ACCIONES</th>
+            <th>LABORATORIO</th><th>FECHA</th><th>HORARIO</th><th>ASIGNATURA</th>
+            <th>PERÍODO</th><th>ESTUDIANTES</th><th>TIPO RESERVA</th><th>ESTADO</th><th>ACCIONES</th>
           </tr>
           </thead>
           <tbody>
-          <tr *ngFor="let reserva of reservas">
-            <td>{{reserva.laboratorio}}</td>
-            <td>{{reserva.fecha}}</td>
-            <td>{{reserva.horario}}</td>
-            <td>{{reserva.asignatura}}</td>
-            <td>{{reserva.responsable}}</td>
-            <td>
-                <span class="estado-badge" [ngClass]="reserva.estado.toLowerCase()">
-                  {{reserva.estado}}
-                </span>
-            </td>
+          <tr *ngFor="let res of reservasPaginadas; let i = index">
+            <td><strong>{{ res.nombre_laboratorio }}</strong></td>
+            <td>{{ res.fecha_reserva | date:'dd/MM/yyyy' }}</td>
+            <td>{{ res.hora_inicio }} - {{ res.hora_fin }}</td>
+            <td>{{ res.nombre_asignatura }}</td>
+            <td>{{ res.nombre_periodo }}</td>
+            <td>{{ res.numero_estudiantes }} estudiantes</td>
+            <td><span class="badge tipo-badge">{{ res.nombre_tipo }}</span></td>
+            <td><span class="badge" [ngClass]="getEstadoBadgeClass(res.estado)">{{ res.estado }}</span></td>
             <td>
               <div class="action-buttons">
-                <button class="btn-edit" (click)="editar(reserva)" title="Editar">✏️</button>
-                <button class="btn-delete" (click)="eliminar(reserva)" title="Eliminar">🗑️</button>
+                <button class="btn-action btn-ver" (click)="verDetalle(res)">Ver</button>
+                <button class="btn-action btn-editar" (click)="editarReserva(res, i)">Editar</button>
+                <button class="btn-action btn-aprobar" *ngIf="res.estado === 'Pendiente'" (click)="aprobarReserva(res)">Aprobar</button>
+                <button class="btn-action btn-rechazar" *ngIf="res.estado === 'Pendiente'" (click)="rechazarReserva(res)">Rechazar</button>
+                <button class="btn-action btn-cancelar-res" *ngIf="res.estado === 'Aprobada'" (click)="abrirModalCancelar(res, i)">Cancelar</button>
               </div>
             </td>
           </tr>
-          <tr *ngIf="reservas.length === 0">
-            <td colspan="7" class="empty-state">
-              <div class="empty-icon">📅</div>
-              <p>No hay reservas registradas</p>
-            </td>
+          <tr *ngIf="reservasFiltradas.length === 0">
+            <td colspan="9" class="empty-message">No hay reservas registradas</td>
           </tr>
           </tbody>
         </table>
       </div>
     </div>
+
+    <!-- TAB 1: TIPOS DE RESERVA -->
+    <div class="tab-content" *ngIf="tabActiva === 1">
+      <div class="toolbar">
+        <div class="search-container">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" [(ngModel)]="busquedaTipos"
+                 (input)="filtrarTipos()" placeholder="Buscar tipos de reserva...">
+        </div>
+        <div class="toolbar-actions">
+          <div class="paginacion" *ngIf="tiposFiltrados.length > 0">
+            <button class="btn-pag" (click)="cambiarPaginaTipos(paginaActualTipos - 1)" [disabled]="paginaActualTipos === 1">‹</button>
+            <button class="btn-pag" *ngFor="let p of paginasTipos" [class.activa]="p === paginaActualTipos" (click)="cambiarPaginaTipos(p)">{{ p }}</button>
+            <button class="btn-pag" (click)="cambiarPaginaTipos(paginaActualTipos + 1)" [disabled]="paginaActualTipos === totalPaginasTipos">›</button>
+            <span class="pag-info">{{ paginaActualTipos }} / {{ totalPaginasTipos }}</span>
+          </div>
+          <button class="btn-agregar" (click)="abrirModal('tipo')">+ Nuevo Tipo de Reserva</button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+          <tr><th>ID</th><th>NOMBRE</th><th>DESCRIPCIÓN</th><th>ESTADO</th><th>ACCIONES</th></tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let tipo of tiposPaginados; let i = index">
+            <td>{{ tipo.id_tipo_reserva }}</td>
+            <td><strong>{{ tipo.nombre_tipo }}</strong></td>
+            <td>{{ tipo.descripcion }}</td>
+            <td>
+              <span class="badge" [ngClass]="tipo.estado === 'Activo' ? 'badge-activo' : 'badge-inactivo'">{{ tipo.estado }}</span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-action btn-editar" (click)="editarTipo(tipo, i)">Editar</button>
+                <button class="btn-action btn-eliminar" (click)="eliminarTipo(tipo, i)">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="tiposFiltrados.length === 0">
+            <td colspan="5" class="empty-message">No hay tipos de reserva registrados</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- TAB 2: CONTROL DE ASISTENCIA (solo Encargado_Lab) -->
+    @if(rol === 'Encargado_Lab' || rol === 'clab_encargado_lab' || rol === 'Encargado de Laboratorio') {
+      <div class="tab-content" *ngIf="tabActiva === 2">
+
+        <!-- RESERVAS DE HOY -->
+        <div class="asistencia-section">
+          <h3 class="section-title"> Reservas de Hoy</h3>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+              <tr>
+                <th>DOCENTE</th>
+                <th>LABORATORIO</th>
+                <th>HORA INICIO</th>
+                <th>HORA FIN</th>
+                <th>ASIGNATURA</th>
+                <th>ESTUDIANTES</th>
+                <th>ASISTENCIA</th>
+                <th>ACCIONES</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let res of reservasHoy">
+                <td><strong>{{ res.nombreUsuario }}</strong></td>
+                <td>{{ res.nombreLaboratorio }}</td>
+                <td>{{ res.horaInicio }}</td>
+                <td>{{ res.horaFin }}</td>
+                <td>{{ res.nombreAsignatura }}</td>
+                <td>{{ res.numeroEstudiantes }}</td>
+                <td>
+                <span class="badge"
+                      [class.badge-activo]="res.asistio === true"
+                      [class.badge-falta]="res.asistio === false"
+                      [class.badge-pendiente]="res.asistio === null || res.asistio === undefined">
+                  {{ res.asistio === true ? 'Asistió' : res.asistio === false ? 'Falta' : 'Pendiente' }}
+                </span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn-action btn-aprobar"
+                            [disabled]="res.asistio === true"
+                            (click)="registrarAsistencia(res)">
+                      Asistencia
+                    </button>
+                    <button class="btn-action btn-rechazar"
+                            [disabled]="res.asistio === true"
+                            (click)="registrarFalta(res)">
+                      Falta
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="reservasHoy.length === 0">
+                <td colspan="8" class="empty-message">No hay reservas para hoy</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- USUARIOS BLOQUEADOS -->
+        <div class="asistencia-section" style="margin-top: 32px;">
+          <h3 class="section-title"> Usuarios Bloqueados</h3>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+              <tr>
+                <th>DOCENTE</th>
+                <th>MOTIVO</th>
+                <th>FECHA BLOQUEO</th>
+                <th>ACCIONES</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let bloqueado of usuariosBloqueados">
+                <td><strong>{{ bloqueado.nombreUsuario }}</strong></td>
+                <td>{{ bloqueado.motivo }}</td>
+                <td>{{ bloqueado.fechaBloqueo }}</td>
+                <td>
+                  <button class="btn-action btn-aprobar"
+                          (click)="desbloquearUsuario(bloqueado.idUsuario)">
+                    Desbloquear
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="usuariosBloqueados.length === 0">
+                <td colspan="4" class="empty-message">No hay usuarios bloqueados</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    }
+
   </div>
+</div>
+<!-- MODAL: RESERVA (crear / editar) -->
+<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'reserva'" (click)="cerrarModal()">
+  <div class="modal modal-large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ modoEdicion ? 'Editar Reserva' : 'Nueva Reserva' }}</h2>
+      <button class="btn-close" (click)="cerrarModal()">×</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- FILA 1: Laboratorio + Asignatura -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Laboratorio <span class="required">*</span></label>
+          <select class="form-control" [(ngModel)]="formularioReserva.cod_laboratorio">
+            <option [value]="0">Seleccione un laboratorio</option>
+            <option *ngFor="let lab of laboratorios" [value]="lab.cod_laboratorio">
+              {{ lab.nombre }}
+            </option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Asignatura <span class="required">*</span></label>
+          <select class="form-control"
+                  [(ngModel)]="formularioReserva.id_asignatura"
+                  (change)="onAsignaturaChange()">
+            <option [value]="0">Seleccione una asignatura</option>
+            <option *ngFor="let asig of asignaturas" [value]="asig.id_asignatura">
+              {{ asig.nombre }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- FILA 2: Período + Horario Académico -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Período Académico <span class="required">*</span></label>
+          <select class="form-control" [(ngModel)]="formularioReserva.id_periodo">
+            <option [value]="0">Seleccione un período</option>
+            <option *ngFor="let periodo of periodos" [value]="periodo.id_periodo">
+              {{ periodo.nombre_periodo }}
+            </option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Horario Académico</label>
+          <select class="form-control"
+                  [(ngModel)]="formularioReserva.id_horario_academico"
+                  (change)="onHorarioChange()">
+            <option [value]="null">Sin horario académico</option>
+            <option *ngFor="let h of horariosAcademicos" [value]="h.id_horario_academico">
+              {{ h.nombre_asignatura }} - {{ h.dia_semana }} {{ h.hora_inicio }} - {{ h.hora_fin }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- FILA 3: Fecha de Reserva -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fecha de Reserva <span class="required">*</span></label>
+          <input type="date" class="form-control"
+                 [(ngModel)]="formularioReserva.fecha_reserva">
+        </div>
+        <div class="form-group"></div>
+      </div>
+
+      <!-- FILA 4: Hora Inicio + Hora Fin (bloqueadas si hay horario académico) -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Hora de Inicio <span class="required">*</span></label>
+          <input type="time" class="form-control"
+                 [(ngModel)]="formularioReserva.hora_inicio"
+                 [attr.disabled]="formularioReserva.id_horario_academico ? '' : null">
+        </div>
+        <div class="form-group">
+          <label>Hora de Fin <span class="required">*</span></label>
+          <input type="time" class="form-control"
+                 [(ngModel)]="formularioReserva.hora_fin"
+                 [attr.disabled]="formularioReserva.id_horario_academico ? '' : null">
+        </div>
+      </div>
+
+      <!-- FILA 5: Estudiantes + Tipo de Reserva -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Número de Estudiantes <span class="required">*</span></label>
+          <input type="number" class="form-control"
+                 [(ngModel)]="formularioReserva.numero_estudiantes"
+                 min="1" placeholder="Ej: 25">
+        </div>
+        <div class="form-group">
+          <label>Tipo de Reserva <span class="required">*</span></label>
+          <select class="form-control" [(ngModel)]="formularioReserva.id_tipo_reserva">
+            <option [value]="0">Seleccione un tipo</option>
+            <option *ngFor="let tipo of tipos" [value]="tipo.id_tipo_reserva">
+              {{ tipo.nombre_tipo }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- FILA 6: Descripción -->
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>Descripción</label>
+          <textarea class="form-control"
+                    [(ngModel)]="formularioReserva.descripcion"
+                    rows="3"
+                    placeholder="Descripción de la reserva..."></textarea>
+        </div>
+      </div>
+
+      <!-- FILA 7: Motivo -->
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>Motivo <span class="required">*</span></label>
+          <textarea class="form-control"
+                    [(ngModel)]="formularioReserva.motivo"
+                    rows="2"
+                    placeholder="Motivo de la reserva..."></textarea>
+        </div>
+      </div>
+
+      <!-- ESTADO: solo visible en modo edición -->
+      <div class="form-row" *ngIf="modoEdicion">
+        <div class="form-group">
+          <label>Estado <span class="required">*</span></label>
+          <select class="form-control" [(ngModel)]="formularioReserva.estado">
+            <option value="Pendiente">Pendiente</option>
+            <option value="Aprobada">Aprobada</option>
+            <option value="Completada">Completada</option>
+            <option value="Rechazada">Rechazada</option>
+            <option value="Cancelada">Cancelada</option>
+          </select>
+        </div>
+        <div class="form-group"></div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+      <button class="btn-guardar" (click)="guardarReserva()">{{ modoEdicion ? 'Actualizar' : 'Guardar' }}</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: VER DETALLE RESERVA -->
+<div class="modal-overlay" *ngIf="mostrarModalDetalle" (click)="cerrarModalDetalle()">
+  <div class="modal modal-large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Detalle de Reserva</h2>
+      <button class="btn-close" (click)="cerrarModalDetalle()">×</button>
+    </div>
+    <div class="modal-body" *ngIf="reservaDetalle">
+
+      <!-- FILA 1: Laboratorio + Asignatura -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Laboratorio <span class="required">*</span></label>
+          <select class="form-control" [ngModel]="reservaDetalle.cod_laboratorio" disabled>
+            <option *ngFor="let lab of laboratorios" [value]="lab.cod_laboratorio">{{ lab.nombre }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Asignatura <span class="required">*</span></label>
+          <select class="form-control" [ngModel]="reservaDetalle.id_asignatura" disabled>
+            <option *ngFor="let asig of asignaturas" [value]="asig.id_asignatura">{{ asig.nombre }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- FILA 2: Período + Horario -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Período Académico <span class="required">*</span></label>
+          <select class="form-control" [ngModel]="reservaDetalle.id_periodo" disabled>
+            <option *ngFor="let p of periodos" [value]="p.id_periodo">{{ p.nombre_periodo }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Horario Académico</label>
+          <select class="form-control" disabled>
+            <option>Sin horario académico</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- FILA 3: Fecha -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fecha de Reserva <span class="required">*</span></label>
+          <input type="date" class="form-control" [ngModel]="reservaDetalle.fecha_reserva" disabled>
+        </div>
+        <div class="form-group">
+          <label>Fecha de Solicitud</label>
+          <input type="date" class="form-control" [ngModel]="reservaDetalle.fecha_solicitud" disabled>
+        </div>
+      </div>
+
+      <!-- FILA 4: Horas -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Hora de Inicio <span class="required">*</span></label>
+          <input type="time" class="form-control" [ngModel]="reservaDetalle.hora_inicio" disabled>
+        </div>
+        <div class="form-group">
+          <label>Hora de Fin <span class="required">*</span></label>
+          <input type="time" class="form-control" [ngModel]="reservaDetalle.hora_fin" disabled>
+        </div>
+      </div>
+
+      <!-- FILA 5: Estudiantes + Tipo -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Número de Estudiantes <span class="required">*</span></label>
+          <input type="number" class="form-control" [ngModel]="reservaDetalle.numero_estudiantes" disabled>
+        </div>
+        <div class="form-group">
+          <label>Tipo de Reserva <span class="required">*</span></label>
+          <select class="form-control" [ngModel]="reservaDetalle.id_tipo_reserva" disabled>
+            <option *ngFor="let tipo of tipos" [value]="tipo.id_tipo_reserva">{{ tipo.nombre_tipo }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- FILA 6: Descripción -->
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>Descripción</label>
+          <textarea class="form-control" rows="3" disabled>{{ reservaDetalle.descripcion }}</textarea>
+        </div>
+      </div>
+
+      <!-- FILA 7: Motivo -->
+      <div class="form-row" *ngIf="reservaDetalle.motivo">
+        <div class="form-group full-width">
+          <label>Motivo <span class="required">*</span></label>
+          <textarea class="form-control" rows="2" disabled>{{ reservaDetalle.motivo }}</textarea>
+        </div>
+      </div>
+
+      <!-- FILA 8: Estado -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Estado</label>
+          <input type="text" class="form-control" [ngModel]="reservaDetalle.estado" disabled>
+        </div>
+        <div class="form-group"></div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModalDetalle()">Cerrar</button>
+      <button class="btn-guardar"
+              *ngIf="reservaDetalle?.estado === 'Pendiente'"
+              (click)="aprobarReserva(reservaDetalle); cerrarModalDetalle()">Aprobar</button>
+      <button class="btn-rechazar-footer"
+              *ngIf="reservaDetalle?.estado === 'Pendiente'"
+              (click)="rechazarReserva(reservaDetalle); cerrarModalDetalle()">Rechazar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CANCELAR RESERVA -->
+<div class="modal-overlay" *ngIf="mostrarModalCancelar" (click)="cerrarModalCancelar()">
+  <div class="modal modal-cancelar" (click)="$event.stopPropagation()">
+    <div class="modal-header modal-header-danger">
+      <h2>Cancelar Reserva</h2>
+      <button class="btn-close" (click)="cerrarModalCancelar()">×</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="cancelar-info" *ngIf="itemSeleccionado">
+        <p class="cancelar-lab">{{ itemSeleccionado.nombre_laboratorio }}</p>
+        <p class="cancelar-fecha">{{ itemSeleccionado.fecha_reserva | date:'dd/MM/yyyy' }} &nbsp;·&nbsp; {{ itemSeleccionado.hora_inicio }} - {{ itemSeleccionado.hora_fin }}</p>
+      </div>
+
+      <div class="form-row" style="margin-top: 20px;">
+        <div class="form-group full-width">
+          <label>Motivo de Cancelación <span class="required">*</span></label>
+          <textarea class="form-control"
+                    [(ngModel)]="formularioCancelacion.motivo_cancelacion"
+                    rows="3"
+                    placeholder="Describa el motivo de la cancelación..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModalCancelar()">Volver</button>
+      <button class="btn-eliminar-confirm" (click)="confirmarCancelacion()">Confirmar Cancelación</button>
+    </div>
+  </div>
+</div>
+<!-- MODAL: TIPO DE RESERVA -->
+<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'tipo'" (click)="cerrarModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ modoEdicion ? 'Editar Tipo de Reserva' : 'Nuevo Tipo de Reserva' }}</h2>
+      <button class="btn-close" (click)="cerrarModal()">×</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>Nombre del Tipo <span class="required">*</span></label>
+          <input type="text" class="form-control"
+                 [(ngModel)]="formularioTipo.nombre_tipo"
+                 placeholder="Ej: Clase Regular">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>Descripción</label>
+          <textarea class="form-control"
+                    [(ngModel)]="formularioTipo.descripcion"
+                    rows="3"
+                    placeholder="Descripción del tipo de reserva..."></textarea>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Estado <span class="required">*</span></label>
+          <select class="form-control" [(ngModel)]="formularioTipo.estado">
+            <option value="Activo">Activo</option>
+            <option value="Inactivo">Inactivo</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+      <button class="btn-guardar" (click)="guardarTipo()">{{ modoEdicion ? 'Actualizar' : 'Guardar' }}</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRMAR ELIMINAR TIPO -->
+<div class="modal-overlay" *ngIf="mostrarConfirmarEliminar" (click)="cerrarModalConfirmar()">
+  <div class="modal modal-confirm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Confirmar Eliminación</h2>
+      <button class="btn-close" (click)="cerrarModalConfirmar()">×</button>
+    </div>
+    <div class="modal-body">
+      <p>Estás a punto de eliminar <strong>{{ getItemNombre() }}</strong>.</p>
+      <p class="warning-text">Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModalConfirmar()">Cancelar</button>
+      <button class="btn-eliminar-confirm" (click)="confirmarEliminacion()">Sí, Eliminar</button>
+    </div>
+  </div>
+</div>
+<!-- TOAST NOTIFICACIÓN -->
+<div
+  class="toast"
+  *ngIf="mostrarToast"
+  [class.toast-success]="toastTipo === 'success'"
+  [class.toast-error]="toastTipo === 'error'">
+  {{ toastMensaje }}
 </div>

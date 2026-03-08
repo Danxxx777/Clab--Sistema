@@ -1,44 +1,14 @@
-import { TipoEquipoService, TipoEquipoDTO } from '../services/tipo-equipo.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+
+import { EquipoService, EquipoDTO } from '../services/equipo.service';
+import { TipoEquipoService } from '../services/tipo-equipo.service';
+import { LaboratorioService, Laboratorio } from '../services/laboratorio.service';
+import { Equipo, TipoEquipo } from '../interfaces/Equipo.model';
 
 
-interface Equipo {
-  id: number;
-  nombre: string;
-  tipoEquipo: string;
-  marca: string;
-  modelo: string;
-  noSerie: string;
-  estado: string;
-  fechaAdquisicion: string;
-  ultimaRevision: string;
-  laboratorio: string;
-  ubicacionFisica: string;
-  //responsable: string;
-  foto: string | null;
-  descripcion: string;
-}
-
-interface TipoEquipo {
-  id: number;
-  nombre: string;
-  descripcion: string;
-  icono: string;
-  equipos: number;
-}
-
-interface Laboratorio {
-  id: number;
-  nombre: string;
-}
-
-//interface Responsable {
-  //id: number;
-  //nombre: string;
-//}
 
 @Component({
   selector: 'app-inventario',
@@ -47,342 +17,252 @@ interface Laboratorio {
   templateUrl: './inventario.html',
   styleUrls: ['./inventario.scss']
 })
-export class InventarioComponent implements OnInit{
+export class InventarioComponent implements OnInit {
 
   tabActiva: 'equipos' | 'tipos' = 'equipos';
-  vista: 'grid' | 'list' = 'grid';
-  formTabActiva: 'datos' | 'ubicacion' | 'imagen' = 'datos';
+  drawerAbierto = false;
+  rol = sessionStorage.getItem('rol') || '';
+  usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
 
-
-  equipos: Equipo[] = [
-
-  ];
-
-  equiposFiltrados: Equipo[] = [...this.equipos];
+  equipos: Equipo[] = [];
+  equiposFiltrados: Equipo[] = [];
   busquedaEquipos = '';
 
-  // Datos para tipos de equipo
-  tiposEquipo: TipoEquipo[] = [
-    { id: 1, nombre: 'Computadora', descripcion: 'Equipos de cómputo de escritorio', icono: '💻', equipos: 5 },
-    { id: 2, nombre: 'Laptop', descripcion: 'Computadoras portátiles', icono: '💻', equipos: 3 },
-    { id: 3, nombre: 'Impresora', descripcion: 'Equipos de impresión', icono: '🖨️', equipos: 2 },
-    { id: 4, nombre: 'Proyector', descripcion: 'Proyectores multimedia', icono: '📽️', equipos: 1 },
-    { id: 5, nombre: 'Microscopio', descripcion: 'Equipos de laboratorio biológico', icono: '🔬', equipos: 1 }
-  ];
-
-  tiposFiltrados: TipoEquipo[] = [...this.tiposEquipo];
+  tiposEquipo: TipoEquipo[] = [];
+  tiposFiltrados: TipoEquipo[] = [];
   busquedaTipos = '';
 
-
-  laboratorios: Laboratorio[] = [
-    { id: 1, nombre: 'Lab Comp A' },
-    { id: 2, nombre: 'Lab Comp B' },
-    { id: 3, nombre: 'Lab Biología' },
-    { id: 4, nombre: 'Lab Química' },
-    { id: 5, nombre: 'Lab Física' },
-    { id: 6, nombre: 'Lab Electrónica' }
-  ];
-
-  //responsables: Responsable[] = [
-    //{ id: 1, nombre: 'Dr. García' },
-    //{ id: 2, nombre: 'Dra. Ruiz' },
-    //{ id: 3, nombre: 'Ing. Martínez' },
-    //{ id: 4, nombre: 'Lic. Pérez' },
-    //{ id: 5, nombre: 'Mtro. López' }
-  //];
-
-  iconos = ['💻', '🖥️', '💾', '🖨️', '📽️', '🔬', '🔭', '⚗️', '📡', '🔌', '🔋', '⌨️'];
-
+  laboratorios: Laboratorio[] = [];
 
   mostrarModalEquipo = false;
   modoEdicionEquipo = false;
-  equipoEditandoId: number | null = null;
-
-  formularioEquipo: Equipo = {
-    id: 0,
-    nombre: '',
-    tipoEquipo: '',
-    marca: '',
-    modelo: '',
-    noSerie: '',
-    estado: 'OPERATIVO',
-    fechaAdquisicion: '',
-    ultimaRevision: '',
-    laboratorio: '',
-    ubicacionFisica: '',
-    //responsable: '',
-    foto: null,
-    descripcion: ''
-  };
-
-
-  mostrarModalTipo = false;
-  modoEdicionTipo = false;
-  tipoEditandoId: number | null = null;
-
-  formularioTipo: TipoEquipo = {
-    id: 0,
-    nombre: '',
-    descripcion: '',
-    icono: '💻',
-    equipos: 0
-  };
-
+  idEditando: number | null = null;
 
   mostrarDetalleEquipo = false;
-  equipoSeleccionado: Equipo = {
-    id: 0,
-    nombre: '',
-    tipoEquipo: '',
-    marca: '',
-    modelo: '',
-    noSerie: '',
-    estado: '',
-    fechaAdquisicion: '',
-    ultimaRevision: '',
-    laboratorio: '',
-    ubicacionFisica: '',
-    //responsable: '',
-    foto: null,
-    descripcion: ''
-  };
+  equipoDetalle!: Equipo;
 
+  mostrarToast= false;
+  toastMensaje= '';
+  toastTipo: 'success' | 'error'= 'success';
 
-  mostrarConfirmarEliminar = false;
-  itemParaEliminar: Equipo | TipoEquipo | null = null;
-  tipoEliminacion: 'equipo' | 'tipo' = 'equipo';
+  formEquipo: Equipo = this.nuevoFormulario();
 
   constructor(
     private router: Router,
-    private tipoEquipoService: TipoEquipoService
+    private equipoService: EquipoService,
+    private tipoEquipoService: TipoEquipoService,
+    private laboratorioService: LaboratorioService,
+    private cdr: ChangeDetectorRef
   ) {}
+
   ngOnInit(): void {
-    this.cargarTiposEquipo();
+    this.rol = sessionStorage.getItem('rol') || '';
+    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
+    this.cargarEquipos();
+    this.cargarTipos();
+    this.cargarLaboratorios();
   }
-  cargarTiposEquipo(): void {
+
+  cargarEquipos(): void {
+    this.equipoService.listar().subscribe({
+      next: (data) => {
+        this.equipos = data.map(e => ({
+          id: e.idEquipo,
+          noSerie: e.numeroSerie,
+          nombre: e.nombreEquipo,
+          marca: e.marca,
+          modelo: e.modelo,
+
+          idTipoEquipo: e.tipoEquipo.idTipoEquipo,
+          nombreTipoEquipo: e.tipoEquipo.nombreTipo,
+          codLaboratorio: e.laboratorio.codLaboratorio,
+          nombreLaboratorio: e.laboratorio.nombreLab,
+          estado: e.estado,
+          fechaAdquisicion: e.fechaAdquisicion,
+          ubicacionFisica: e.ubicacionFisica
+        }));
+        this.equiposFiltrados = [...this.equipos];
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error cargando equipos:', err);
+        this.mostrarNotificacion('Error al cargar equipos', 'error');
+      }
+    });
+  }
+  cargarTipos(): void {
     this.tipoEquipoService.listar().subscribe({
       next: (data) => {
         this.tiposEquipo = data.map(t => ({
           id: t.idTipoEquipo,
           nombre: t.nombreTipo,
-          descripcion: t.descripcion,
-          icono: '💻',
-          equipos: 0
+          descripcion: t.descripcion
         }));
         this.tiposFiltrados = [...this.tiposEquipo];
+        this.cdr.detectChanges();
       },
-      error: () => {
-        alert('Error al cargar tipos de equipo');
+      error: (err) => {
+        console.error('Error cargando tipos:', err);
+        this.mostrarNotificacion('Error al cargar tipos', 'error');
+      }
+    });
+  }
+  cargarLaboratorios(): void {
+    this.laboratorioService.listar().subscribe({
+      next: data => {
+        this.laboratorios = data;
+      },
+      error: err => {
+        console.error('Error cargando laboratorios', err);
+      }
+    });
+  }
+  mostrarNotificacion(mensaje: string, tipo: 'success' | 'error' = 'success'): void {
+    this.toastMensaje = mensaje;
+    this.toastTipo = tipo;
+    this.mostrarToast = true;
+
+    setTimeout(() => {
+      this.mostrarToast = false;
+      this.cdr.detectChanges();
+    }, 2000);
+  }
+
+  filtrarEquipos(): void {
+    const b = this.busquedaEquipos.toLowerCase();
+    this.equiposFiltrados = this.equipos.filter(e =>
+      e.noSerie.toLowerCase().includes(b) ||
+      e.nombre.toLowerCase().includes(b) ||
+      e.nombreTipoEquipo.toLowerCase().includes(b) ||
+      e.nombreLaboratorio.toLowerCase().includes(b)
+    );
+  }
+  filtrarTipos(): void {
+    const b = this.busquedaTipos.toLowerCase();
+    this.tiposFiltrados = this.tiposEquipo.filter(t =>
+      t.nombre.toLowerCase().includes(b)
+    );
+  }
+
+  abrirModalEquipo(): void {
+    this.modoEdicionEquipo = false;
+    this.idEditando = null;
+    this.formEquipo = this.nuevoFormulario();
+    this.mostrarModalEquipo = true;
+  }
+  editarEquipo(e: Equipo): void {
+    this.modoEdicionEquipo = true;
+    this.idEditando = e.id;
+    this.formEquipo = { ...e };
+    this.mostrarModalEquipo = true;
+  }
+  verEquipo(e: Equipo): void {
+    this.equipoDetalle = { ...e };
+    this.mostrarDetalleEquipo = true;
+  }
+  guardarEquipo(): void {
+    if (
+      !this.formEquipo.noSerie ||
+      !this.formEquipo.nombre ||
+      !this.formEquipo.idTipoEquipo ||
+      !this.formEquipo.codLaboratorio
+    ) {
+      this.mostrarNotificacion('Complete los campos obligatorios', 'error');
+      return;
+    }
+
+    const dto: EquipoDTO = {
+      numeroSerie: this.formEquipo.noSerie,
+      nombreEquipo: this.formEquipo.nombre,
+      marca: this.formEquipo.marca,
+      modelo: this.formEquipo.modelo,
+      idTipoEquipo: this.formEquipo.idTipoEquipo,
+      codLaboratorio: this.formEquipo.codLaboratorio,
+      estado: this.formEquipo.estado,
+      ubicacionFisica: this.formEquipo.ubicacionFisica,
+      fechaAdquisicion: this.formEquipo.fechaAdquisicion
+    };
+
+    if (this.modoEdicionEquipo && this.idEditando) {
+      this.equipoService.editar(this.idEditando, dto).subscribe({
+        next: () => {
+          this.cargarEquipos();
+          this.cerrarModalEquipo();
+          this.mostrarNotificacion('Equipo actualizado correctamente');
+        },
+        error: (err) => {
+          console.error('Error editando equipo:', err);
+          this.mostrarNotificacion('Error al actualizar equipo', 'error');
+        }
+      });
+      return;
+    }
+    this.equipoService.crear(dto).subscribe({
+      next: () => {
+        this.cargarEquipos();
+        this.cerrarModalEquipo();
+        this.mostrarNotificacion('Equipo creado correctamente');
+      },
+      error: (err) => {
+        console.error('Error creando equipo:', err);
+        this.mostrarNotificacion('Error al crear equipo', 'error');
       }
     });
   }
 
+  eliminarEquipo(e: Equipo): void {
+    if (!confirm('¿Eliminar equipo?')) return;
 
-
-
-
-  cambiarTab(tab: 'equipos' | 'tipos'): void {
-    this.tabActiva = tab;
+    this.equipoService.eliminar(e.id).subscribe({
+      next: () => {
+        this.cargarEquipos();
+        this.mostrarNotificacion('🗑Equipo eliminado correctamente');
+      },
+      error: (err) => {
+        console.error('Error eliminando equipo:', err);
+        this.mostrarNotificacion('Error al eliminar equipo', 'error');
+      }
+    });
   }
-
-  cambiarVista(vista: 'grid' | 'list'): void {
-    this.vista = vista;
+  cerrarModalEquipo(): void {
+    this.mostrarModalEquipo = false;
   }
-
-  getTextoBoton(): string {
-    switch(this.tabActiva) {
-      case 'equipos': return 'Equipo';
-      case 'tipos': return 'Tipo';
-      default: return '';
-    }
-  }
-
-// cha madre loco
-  agregarNuevo(): void {
-    switch (this.tabActiva) {
-      case 'equipos':
-        this.abrirModalEquipo();
-        break;
-      case 'tipos':
-        this.abrirModalTipo();
-        break;
-    }
-  }
-
-
-  volver(): void {
-    this.router.navigate(['/dashboard']);
-  }
-
-  // Métodos de filtrado
-  filtrarEquipos(): void {
-    const busqueda = this.busquedaEquipos.toLowerCase();
-    this.equiposFiltrados = this.equipos.filter(equipo =>
-      equipo.nombre.toLowerCase().includes(busqueda) ||
-      equipo.tipoEquipo.toLowerCase().includes(busqueda) ||
-      equipo.marca.toLowerCase().includes(busqueda) ||
-      equipo.noSerie.toLowerCase().includes(busqueda) ||
-      equipo.laboratorio.toLowerCase().includes(busqueda) ||
-      equipo.modelo.toLowerCase().includes(busqueda)
-    );
-  }
-
-  filtrarTipos(): void {
-    const busqueda = this.busquedaTipos.toLowerCase();
-    this.tiposFiltrados = this.tiposEquipo.filter(tipo =>
-      tipo.nombre.toLowerCase().includes(busqueda) ||
-      (tipo.descripcion && tipo.descripcion.toLowerCase().includes(busqueda))
-    );
-  }
-
-
-  abrirModalEquipo(): void {
-    this.modoEdicionEquipo = false;
-    this.equipoEditandoId = null;
-    this.formTabActiva = 'datos';
-    this.limpiarFormularioEquipo();
-    this.mostrarModalEquipo = true;
-  }
-
-  editarEquipo(equipo: Equipo): void {
-    this.modoEdicionEquipo = true;
-    this.equipoEditandoId = equipo.id;
-    this.formTabActiva = 'datos';
-
-    this.formularioEquipo = {
-      id: equipo.id,
-      nombre: equipo.nombre,
-      tipoEquipo: equipo.tipoEquipo,
-      marca: equipo.marca,
-      modelo: equipo.modelo,
-      noSerie: equipo.noSerie,
-      estado: equipo.estado,
-      fechaAdquisicion: equipo.fechaAdquisicion,
-      ultimaRevision: equipo.ultimaRevision,
-      laboratorio: equipo.laboratorio,
-      ubicacionFisica: equipo.ubicacionFisica,
-      //responsable: equipo.responsable,
-      foto: equipo.foto,
-      descripcion: equipo.descripcion
-    };
-
-    this.mostrarModalEquipo = true;
-  }
-
-  verDetalleEquipo(equipo: Equipo): void {
-    this.equipoSeleccionado = { ...equipo };
-    this.mostrarDetalleEquipo = true;
-  }
-
   cerrarDetalleEquipo(): void {
     this.mostrarDetalleEquipo = false;
-    this.equipoSeleccionado = {
-      id: 0,
-      nombre: '',
-      tipoEquipo: '',
-      marca: '',
-      modelo: '',
-      noSerie: '',
-      estado: '',
-      fechaAdquisicion: '',
-      ultimaRevision: '',
-      laboratorio: '',
-      ubicacionFisica: '',
-      //responsable: '',
-      foto: null,
-      descripcion: ''
-    };
   }
 
-  eliminarEquipo(equipo: Equipo): void {
-    this.itemParaEliminar = equipo;
-    this.tipoEliminacion = 'equipo';
-    this.mostrarConfirmarEliminar = true;
-  }
+  eliminarTipo(t: TipoEquipo): void {
+    if (!confirm('¿Eliminar tipo de equipo?')) return;
 
-  guardarEquipo(): void {
-    if (!this.validarFormularioEquipo()) {
-      alert('Por favor complete todos los campos requeridos');
-      return;
-    }
-
-    if (this.modoEdicionEquipo && this.equipoEditandoId) {
-      const index = this.equipos.findIndex(e => e.id === this.equipoEditandoId);
-      if (index !== -1) {
-        this.equipos[index] = { ...this.formularioEquipo };
+    this.tipoEquipoService.eliminar(t.id).subscribe({
+      next: () => {
+        this.cargarTipos();
+        this.mostrarNotificacion('Tipo de equipo eliminado');
+      },
+      error: (err) => {
+        console.error('Error eliminando tipo:', err);
+        this.mostrarNotificacion('Error al eliminar tipo', 'error');
       }
-    } else {
-      const nuevoId = Math.max(...this.equipos.map(e => e.id), 0) + 1;
-      this.equipos.push({
-        ...this.formularioEquipo,
-        id: nuevoId
-      });
-    }
-
-    this.filtrarEquipos();
-    this.cerrarModalEquipo();
-    alert(`Equipo ${this.modoEdicionEquipo ? 'actualizado' : 'agregado'} correctamente`);
+    });
   }
-
-  limpiarFormularioEquipo(): void {
-    this.formularioEquipo = {
-      id: 0,
-      nombre: '',
-      tipoEquipo: '',
-      marca: '',
-      modelo: '',
-      noSerie: '',
-      estado: 'OPERATIVO',
-      fechaAdquisicion: '',
-      ultimaRevision: '',
-      laboratorio: '',
-      ubicacionFisica: '',
-      //responsable: '',
-      foto: null,
-      descripcion: ''
-    };
-  }
-
-  validarFormularioEquipo(): boolean {
-    const camposRequeridos = [
-      this.formularioEquipo.noSerie,
-      this.formularioEquipo.nombre,
-      this.formularioEquipo.marca,
-      this.formularioEquipo.modelo,
-      this.formularioEquipo.tipoEquipo,
-      this.formularioEquipo.ubicacionFisica,
-      this.formularioEquipo.laboratorio,
-      //this.formularioEquipo.responsable,
-      this.formularioEquipo.fechaAdquisicion
-    ];
-
-    return camposRequeridos.every(campo => campo && campo.toString().trim() !== '');
-  }
-
 
   abrirModalTipo(): void {
     this.modoEdicionTipo = false;
-    this.tipoEditandoId = null;
-    this.limpiarFormularioTipo();
+    this.idTipoEditando = null;
+    this.formularioTipo = { nombre: '', descripcion: '' };
     this.mostrarModalTipo = true;
   }
 
   editarTipo(tipo: TipoEquipo): void {
     this.modoEdicionTipo = true;
-    this.tipoEditandoId = tipo.id;
-    this.formularioTipo = { ...tipo };
+    this.idTipoEditando = tipo.id;
+    this.formularioTipo = { nombre: tipo.nombre, descripcion: tipo.descripcion };
     this.mostrarModalTipo = true;
-  }
-
-  eliminarTipo(tipo: TipoEquipo): void {
-    this.itemParaEliminar = tipo;
-    this.tipoEliminacion = 'tipo';
-    this.mostrarConfirmarEliminar = true;
   }
 
   guardarTipo(): void {
     if (!this.formularioTipo.nombre.trim()) {
-      alert('El nombre del tipo es requerido');
+      this.mostrarNotificacion('El nombre del tipo es obligatorio', 'error');
       return;
     }
 
@@ -391,137 +271,79 @@ export class InventarioComponent implements OnInit{
       descripcion: this.formularioTipo.descripcion
     };
 
-    if (this.modoEdicionTipo && this.tipoEditandoId) {
-      this.tipoEquipoService.actualizar(this.tipoEditandoId, payload).subscribe({
+    if (this.modoEdicionTipo && this.idTipoEditando) {
+      this.tipoEquipoService.actualizar(this.idTipoEditando, payload).subscribe({
         next: () => {
-          this.cargarTiposEquipo();
+          this.cargarTipos();
           this.cerrarModalTipo();
-          alert('Tipo actualizado correctamente');
+          this.mostrarNotificacion('Tipo de equipo actualizado');
         },
-        error: () => alert('Error al actualizar tipo')
-      });
-    } else {
-      this.tipoEquipoService.crear(payload).subscribe({
-        next: () => {
-          this.cargarTiposEquipo();
-          this.cerrarModalTipo();
-          alert('Tipo creado correctamente');
-        },
-        error: () => alert('Error al crear tipo')
-      });
-    }
-  }
-
-
-  limpiarFormularioTipo(): void {
-    this.formularioTipo = {
-      id: 0,
-      nombre: '',
-      descripcion: '',
-      icono: '💻',
-      equipos: 0
-    };
-  }
-
-
-  cambiarFormTab(direccion: 'prev' | 'next'): void {
-    const tabs: ('datos' | 'ubicacion' | 'imagen')[] = ['datos', 'ubicacion', 'imagen'];
-    const currentIndex = tabs.indexOf(this.formTabActiva);
-
-    if (direccion === 'prev' && currentIndex > 0) {
-      this.formTabActiva = tabs[currentIndex - 1];
-    } else if (direccion === 'next' && currentIndex < tabs.length - 1) {
-      this.formTabActiva = tabs[currentIndex + 1];
-    }
-  }
-
-
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-
-      if (file.size > 5 * 1024 * 1024) { // 5MB límite
-        alert('La imagen es demasiado grande. Máximo 5MB');
-        return;
-      }
-
-      if (!file.type.startsWith('image/')) {
-        alert('Por favor seleccione un archivo de imagen');
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (e: ProgressEvent<FileReader>) => {
-        if (e.target?.result) {
-          this.formularioEquipo.foto = e.target.result as string;
+        error: (err) => {
+          console.error('Error actualizando tipo:', err);
+          this.mostrarNotificacion('Error al actualizar tipo', 'error');
         }
-      };
-      reader.readAsDataURL(file);
+      });
+      return;
     }
-  }
 
-  eliminarImagen(): void {
-    this.formularioEquipo.foto = null;
-  }
-
-  getIconoTipo(nombre: string): string {
-    const tipo = this.tiposEquipo.find(t => t.nombre === nombre);
-    return tipo?.icono || '🏷️';
-  }
-
-
-  cerrarModalEquipo(): void {
-    this.mostrarModalEquipo = false;
-    this.limpiarFormularioEquipo();
+    this.tipoEquipoService.crear(payload).subscribe({
+      next: () => {
+        this.cargarTipos();
+        this.cerrarModalTipo();
+        this.mostrarNotificacion('Tipo de equipo creado');
+      },
+      error: (err) => {
+        console.error('Error creando tipo:', err);
+        this.mostrarNotificacion('Error al crear tipo', 'error');
+      }
+    });
   }
 
   cerrarModalTipo(): void {
     this.mostrarModalTipo = false;
-    this.limpiarFormularioTipo();
+  }
+  mostrarModalTipo = false;
+  modoEdicionTipo = false;
+  idTipoEditando: number | null = null;
+
+  formularioTipo = {
+    nombre: '',
+    descripcion: ''
+  };
+
+  cambiarTab(tab: 'equipos' | 'tipos'): void {
+    this.tabActiva = tab;
+  }
+  toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
+  cerrarDrawer(): void { this.drawerAbierto = false; }
+
+  navegar(ruta: string, texto: string): void {
+    this.cerrarDrawer();
+    this.router.navigate([`/${ruta}`]);
   }
 
-  cerrarModalConfirmar(): void {
-    this.mostrarConfirmarEliminar = false;
-    this.itemParaEliminar = null;
-    this.tipoEliminacion = 'equipo';
+  logout(): void {
+    sessionStorage.clear();
+    this.router.navigate(['/login']);
+  }
+  volver(): void {
+    this.router.navigate(['/dashboard']);
   }
 
-  confirmarEliminacion(): void {
-    if (!this.itemParaEliminar) return;
-
-    switch (this.tipoEliminacion) {
-
-      case 'equipo': {
-        const equipo = this.itemParaEliminar as Equipo;
-        const indexEquipo = this.equipos.findIndex(e => e.id === equipo.id);
-
-        if (indexEquipo !== -1) {
-          this.equipos.splice(indexEquipo, 1);
-          this.filtrarEquipos();
-        }
-
-        this.cerrarModalConfirmar();
-        alert('Equipo eliminado correctamente');
-        break;
-      }
-
-      case 'tipo': {
-        const tipo = this.itemParaEliminar as TipoEquipo;
-
-        this.tipoEquipoService.eliminar(tipo.id).subscribe({
-          next: () => {
-            this.cargarTiposEquipo();   // refresca desde backend
-            this.cerrarModalConfirmar();
-            alert('Tipo eliminado correctamente');
-          },
-          error: () => {
-            alert('Error al eliminar tipo');
-          }
-        });
-        break;
-      }
-    }
+  nuevoFormulario(): Equipo {
+    return {
+      id: 0,
+      noSerie: '',
+      nombre: '',
+      marca: '',
+      modelo: '',
+      idTipoEquipo: 0,
+      nombreTipoEquipo: '',
+      codLaboratorio: 0,
+      nombreLaboratorio: '',
+      estado: 'OPERATIVO',
+      fechaAdquisicion: '',
+      ubicacionFisica: ''
+    };
   }
-
 }

@@ -1,10 +1,366 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Title</title>
-</head>
-<body>
+<div class="auditoria-container">
 
-</body>
-</html>
+  <!-- DRAWER OVERLAY -->
+  <div class="drawer-overlay" [class.open]="drawerAbierto" (click)="cerrarDrawer()"></div>
+
+  <!-- DRAWER LATERAL -->
+  <div class="drawer" [class.open]="drawerAbierto">
+    <div class="drawer-header">
+      <div class="drawer-brand">CLAB<span>Sistema de Laboratorios</span></div>
+      <button class="btn-close-drawer" (click)="cerrarDrawer()">×</button>
+    </div>
+    <div class="drawer-user">
+      <div class="drawer-avatar">{{ usuarioLogueado.charAt(0).toUpperCase() }}</div>
+      <div class="drawer-user-info">
+        <div class="dui-name">{{ usuarioLogueado }}</div>
+        <div class="role-badge"><span class="role-dot"></span>{{ rol }}</div>
+      </div>
+    </div>
+    <div class="drawer-section-title">Módulos</div>
+    <div class="drawer-modules">
+      @if(rol === 'Administradorr' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('usuarios', 'Cargando Usuarios...')">
+          <div class="di-icon ic-1"><img src="/user.png" alt="Usuarios"></div>
+          <div class="di-text"><div class="di-name">Usuarios</div><div class="di-desc">Gestión de accesos y roles</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
+        <div class="drawer-item" (click)="navegar('laboratorios', 'Cargando Laboratorios...')">
+          <div class="di-icon ic-2"><img src="/laboratorio.png" alt="Laboratorios"></div>
+          <div class="di-text"><div class="di-name">Laboratorios</div><div class="di-desc">Sedes y encargados</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('equipos', 'Cargando Equipos...')">
+          <div class="di-icon ic-3"><img src="/equipo.png" alt="Equipos"></div>
+          <div class="di-text"><div class="di-name">Equipos</div><div class="di-desc">Inventario y ubicaciones</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Coordinador' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('reservar', 'Cargando Reservas...')">
+          <div class="di-icon ic-4"><img src="/calendario.png" alt="Reservas"></div>
+          <div class="di-text"><div class="di-name">Reservas</div><div class="di-desc">Disponibilidad</div></div>
+        </div>
+      }
+      @if(rol === 'Docente' || rol === 'Coordinador') {
+        <div class="drawer-item" (click)="navegar('solicitudes-reserva', 'Cargando Solicitudes...')">
+          <div class="di-icon ic-4"><img src="/solicitud.png" alt="Solicitudes"></div>
+          <div class="di-text"><div class="di-name">Solicitudes de Reserva</div><div class="di-desc">Gestión de solicitudes</div></div>
+        </div>
+      }
+
+      @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Coordinador') {
+        <div class="drawer-item" (click)="navegar('academico', 'Cargando Académico...')">
+          <div class="di-icon ic-5"><img src="/academico.png" alt="Académico"></div>
+          <div class="di-text"><div class="di-name">Académico</div><div class="di-desc">Períodos y carreras</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('estudiantes', 'Cargando Estudiantes...')">
+          <div class="di-icon ic-6"><img src="/estudiantes.png" alt="Estudiantes"></div>
+          <div class="di-text"><div class="di-name">Estudiantes</div><div class="di-desc">Matrículas e inscripciones</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('asistencia', 'Cargando Asistencia...')">
+          <div class="di-icon ic-7"><img src="/asistencia.png" alt="Asistencia"></div>
+          <div class="di-text"><div class="di-name">Asistencia</div><div class="di-desc">Control de asistencia</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('reporte-fallas', 'Cargando Fallas...')">
+          <div class="di-icon ic-8"><img src="/fallas.png" alt="Fallas"></div>
+          <div class="di-text"><div class="di-name">Reportes de Fallas</div><div class="di-desc">Seguimiento de equipos</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('bloqueos', 'Cargando Bloqueos...')">
+          <div class="di-icon ic-9"><img src="/bloqueos.png" alt="Bloqueos"></div>
+          <div class="di-text"><div class="di-name">Bloqueos</div><div class="di-desc">Gestión de conflictos</div></div>
+        </div>
+      }
+      <div class="drawer-item" (click)="navegar('notificaciones', 'Cargando Notificaciones...')">
+        <div class="di-icon ic-10"><img src="/campana.png" alt="Notificaciones"></div>
+        <div class="di-text"><div class="di-name">Notificaciones</div><div class="di-desc">Centro de alertas</div></div>
+      </div>
+      @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
+        <div class="drawer-item" (click)="navegar('reportesuso', 'Cargando Reportes...')">
+          <div class="di-icon ic-11"><img src="/uso.png" alt="Reportes"></div>
+          <div class="di-text"><div class="di-name">Reportes de Uso</div><div class="di-desc">Estadísticas</div></div>
+        </div>
+      }
+    </div>
+  </div>
+
+
+  <!-- TITLE -->
+  <div class="page-title-section">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <button class="btn-hamburger" [class.active]="drawerAbierto" (click)="toggleDrawer()">
+        <div class="ham-line"></div>
+        <div class="ham-line"></div>
+        <div class="ham-line"></div>
+      </button>
+      <h1>Auditoría del Sistema</h1>
+    </div>
+    <button class="btn-volver" (click)="volver()">← Volver</button>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-container">
+    <div class="tabs">
+      <button class="tab" [class.active]="tabActiva === 0" (click)="cambiarTab(0)">Registros</button>
+      <button class="tab" [class.active]="tabActiva === 1" (click)="cambiarTab(1)">Sesiones Activas</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-icon sc-blue">📋</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ auditorias.length }}</span>
+        <span class="stat-label">Total Registros</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon sc-green">✅</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ totalExitosos }}</span>
+        <span class="stat-label">Exitosos</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon sc-red">🚫</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ totalFallidos }}</span>
+        <span class="stat-label">Fallidos</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon sc-purple">👥</div>
+      <div class="stat-info">
+        <span class="stat-num">{{ sesionesActivas.length }}</span>
+        <span class="stat-label">Sesiones Activas</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-wrapper">
+
+    <!-- TAB 0: REGISTROS -->
+    <div class="tab-content" *ngIf="tabActiva === 0">
+      <div class="toolbar">
+        <div class="filters-group">
+          <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" [(ngModel)]="busqueda"
+                   (input)="filtrar()" placeholder="Buscar por usuario, acción o módulo">
+          </div>
+          <select class="filter-select" [(ngModel)]="filtroModulo" (change)="filtrar()">
+            <option value="Todos">Todos los módulos</option>
+            <option *ngFor="let m of modulos" [value]="m">{{ m }}</option>
+          </select>
+          <select class="filter-select" [(ngModel)]="filtroResultado" (change)="filtrar()">
+            <option value="Todos">Todos los resultados</option>
+            <option value="EXITOSO">Exitoso</option>
+            <option value="FALLIDO">Fallido</option>
+          </select>
+        </div>
+        <div class="pagination-controls" *ngIf="auditoriasFiltradas.length > 0">
+          <span class="pagination-info-inline">{{ paginaActual }}/{{ totalPaginas }}</span>
+          <button class="btn-pag" (click)="irAPagina(1)" [disabled]="paginaActual === 1">«</button>
+          <button class="btn-pag" (click)="irAPagina(paginaActual - 1)" [disabled]="paginaActual === 1">‹</button>
+          <button class="btn-pag" *ngFor="let p of paginas" [class.active]="p === paginaActual" (click)="irAPagina(p)">{{ p }}</button>
+          <button class="btn-pag" (click)="irAPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">›</button>
+          <button class="btn-pag" (click)="irAPagina(totalPaginas)" [disabled]="paginaActual === totalPaginas">»</button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th>USUARIO</th>
+            <th>ACCIÓN</th>
+            <th>MÓDULO</th>
+            <th>DESCRIPCIÓN</th>
+            <th>IP</th>
+            <th>RESULTADO</th>
+            <th>FECHA</th>
+            <th>DETALLE</th>  <!-- ← nuevo -->
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let a of auditoriasPaginadas">
+            <td><strong>{{ a.usuario || 'Sistema' }}</strong></td>
+            <td><span class="badge accion-badge">{{ a.accion }}</span></td>
+            <td>{{ a.modulo }}</td>
+            <td>{{ a.descripcion }}</td>
+            <td><small>{{ a.ip }}</small></td>
+            <td>
+      <span class="badge" [ngClass]="a.resultado === 'EXITOSO' ? 'activo' : 'inactivo'">
+        {{ a.resultado }}
+      </span>
+            </td>
+            <td><small>{{ a.fechaHora | date:'dd/MM/yyyy HH:mm:ss' }}</small></td>
+            <td>  <!-- ← nuevo -->
+              <button *ngIf="tieneDetalle(a)" class="btn-detalle" (click)="verDetalle(a)">
+                Ver
+              </button>
+              <span *ngIf="!tieneDetalle(a)" style="color:#4a4a4a;font-size:11px;">—</span>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 1: SESIONES ACTIVAS -->
+    <div class="tab-content" *ngIf="tabActiva === 1">
+      <div class="toolbar">
+        <div class="filters-group"></div>
+        <button class="btn-agregar" (click)="cargarSesiones()">↻ Actualizar</button>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th>USUARIO</th>
+            <th>IP</th>
+            <th>INICIO DE SESIÓN</th>
+            <th>EXPIRA</th>
+            <th>ESTADO</th>
+            <th>ACCIONES</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let s of sesionesActivas">
+            <td><strong>{{ s.usuario }}</strong></td>
+            <td><small>{{ s.ip }}</small></td>
+            <td><small>{{ s.fechaInicio | date:'dd/MM/yyyy HH:mm:ss' }}</small></td>
+            <td><small>{{ s.fechaExpira | date:'dd/MM/yyyy HH:mm:ss' }}</small></td>
+            <td><span class="badge activo">ACTIVA</span></td>
+            <td>
+              <button class="btn-forzar-logout"
+                      (click)="forzarLogout(s)"
+                      [disabled]="forzandoLogout === s.idUsuario">
+                {{ forzandoLogout === s.idUsuario ? 'Cerrando...' : 'Forzar cierre' }}
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="sesionesActivas.length === 0">
+            <td colspan="6" class="empty-message">No hay sesiones activas en este momento</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL FORZAR LOGOUT -->
+  <div class="modal-overlay" *ngIf="modalForzarAbierto" (click)="cancelarForzar()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-icon">⚠</div>
+      <h3 class="modal-titulo">Forzar cierre de sesión</h3>
+      <p class="modal-desc">
+        ¿Estás seguro de cerrar la sesión de <strong>{{ sesionAForzar?.usuario }}</strong>?
+        Esta acción quedará registrada en auditoría.
+      </p>
+      <div class="modal-actions">
+        <button class="btn-cancelar-modal" (click)="cancelarForzar()">Cancelar</button>
+        <button class="btn-confirmar-forzar"
+                (click)="confirmarForzar()"
+                [disabled]="forzandoLogout !== null">
+          {{ forzandoLogout !== null ? 'Cerrando...' : 'Sí, cerrar sesión' }}
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- MODAL ERROR -->
+  <div class="modal-overlay" *ngIf="modalErrorAbierto" (click)="modalErrorAbierto = false">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-icon">🚫</div>
+      <h3 class="modal-titulo" style="color:#ff4444">Acción no permitida</h3>
+      <p class="modal-desc">{{ modalErrorMensaje }}</p>
+      <div class="modal-actions">
+        <button class="btn-confirmar-forzar" (click)="modalErrorAbierto = false">Entendido</button>
+      </div>
+    </div>
+  </div>
+  <!-- MODAL DETALLE AUDITORÍA -->
+  <div class="modal-overlay" *ngIf="modalDetalleAbierto" (click)="cerrarDetalle()">
+    <div class="modal-detalle" (click)="$event.stopPropagation()">
+
+      <div class="modal-detalle-header">
+        <div>
+          <h3>Detalle del Registro</h3>
+          <small>{{ auditoriaDetalle?.accion }} · {{ auditoriaDetalle?.modulo }} · {{ auditoriaDetalle?.fechaHora | date:'dd/MM/yyyy HH:mm:ss' }}</small>
+        </div>
+        <button class="btn-close-drawer" (click)="cerrarDetalle()">×</button>
+      </div>
+
+      <div class="modal-detalle-body">
+
+        <!-- Solo datos nuevos (CREAR) -->
+        <ng-container *ngIf="!parsearJSON(auditoriaDetalle?.datosAnteriores) && parsearJSON(auditoriaDetalle?.datosNuevos)">
+          <div class="detalle-seccion nuevo">
+            <div class="detalle-seccion-titulo">✦ Datos creados</div>
+            <div class="detalle-grid">
+              <div class="detalle-fila" *ngFor="let item of parsearJSON(auditoriaDetalle?.datosNuevos) | keyvalue">
+                <span class="detalle-key">{{ item.key }}</span>
+                <span class="detalle-val nuevo-val">{{ item.value }}</span>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Comparación antes/después (EDITAR) -->
+        <ng-container *ngIf="parsearJSON(auditoriaDetalle?.datosAnteriores) && parsearJSON(auditoriaDetalle?.datosNuevos)">
+          <div class="detalle-comparacion">
+            <div class="detalle-seccion antes">
+              <div class="detalle-seccion-titulo">← Antes</div>
+              <div class="detalle-grid">
+                <div class="detalle-fila" *ngFor="let item of parsearJSON(auditoriaDetalle?.datosAnteriores) | keyvalue">
+                  <span class="detalle-key">{{ item.key }}</span>
+                  <span class="detalle-val antes-val"
+                        [class.changed]="parsearJSON(auditoriaDetalle?.datosNuevos)?.[item.key] !== item.value">
+                  {{ item.value }}
+                </span>
+                </div>
+              </div>
+            </div>
+            <div class="detalle-seccion despues">
+              <div class="detalle-seccion-titulo">→ Después</div>
+              <div class="detalle-grid">
+                <div class="detalle-fila" *ngFor="let item of parsearJSON(auditoriaDetalle?.datosNuevos) | keyvalue">
+                  <span class="detalle-key">{{ item.key }}</span>
+                  <span class="detalle-val despues-val"
+                        [class.changed]="parsearJSON(auditoriaDetalle?.datosAnteriores)?.[item.key] !== item.value">
+                  {{ item.value }}
+                </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Solo datos anteriores (DESACTIVAR) -->
+        <ng-container *ngIf="parsearJSON(auditoriaDetalle?.datosAnteriores) && !parsearJSON(auditoriaDetalle?.datosNuevos)">
+          <div class="detalle-seccion antes">
+            <div class="detalle-seccion-titulo">← Estado anterior</div>
+            <div class="detalle-grid">
+              <div class="detalle-fila" *ngFor="let item of parsearJSON(auditoriaDetalle?.datosAnteriores) | keyvalue">
+                <span class="detalle-key">{{ item.key }}</span>
+                <span class="detalle-val antes-val">{{ item.value }}</span>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+</div>

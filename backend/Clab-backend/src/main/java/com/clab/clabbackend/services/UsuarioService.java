@@ -1,147 +1,184 @@
 package com.clab.clabbackend.services;
 
-import com.clab.clabbackend.dto.UsuarioDTO;
+import com.clab.clabbackend.dto.UsuarioRequestDTO;
 import com.clab.clabbackend.dto.UsuarioResponseDTO;
-import com.clab.clabbackend.entities.Rol;
 import com.clab.clabbackend.entities.Usuario;
-import com.clab.clabbackend.entities.UsuarioRol;
-import com.clab.clabbackend.repository.RolRepository;
 import com.clab.clabbackend.repository.UsuarioRepository;
 import com.clab.clabbackend.repository.UsuarioRolRepository;
+import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Service
-@Transactional
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
-    private final RolRepository rolRepository;
+    private final EntityManager entityManager;
     private final UsuarioRolRepository usuarioRolRepository;
+    private final NotificacionService notificacionService;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
-    public UsuarioService(
-            UsuarioRepository usuarioRepository,
-            RolRepository rolRepository,
-            UsuarioRolRepository usuarioRolRepository
-    ) {
+    public UsuarioService(UsuarioRepository usuarioRepository,
+                          EntityManager entityManager,
+                          UsuarioRolRepository usuarioRolRepository,
+                          NotificacionService notificacionService,
+                          org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
-        this.rolRepository = rolRepository;
+        this.entityManager = entityManager;
         this.usuarioRolRepository = usuarioRolRepository;
+        this.notificacionService = notificacionService;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    /*CREAR USUARIO*/
-    public Usuario crear(UsuarioDTO dto) {
-
-        Usuario usuario = new Usuario();
-        usuario.setIdentidad(dto.getIdentidad());
-        usuario.setNombres(dto.getNombres());
-        usuario.setApellidos(dto.getApellidos());
-        usuario.setEmail(dto.getEmail());
-        usuario.setTelefono(dto.getTelefono());
-        usuario.setUsuario(generarUsuario(dto.getNombres(), dto.getApellidos()));
-        usuario.setContrasenia(dto.getContrasenia());
-        usuario.setEstado("Activo");
-        usuario.setFechaRegistro(LocalDate.now());
-        usuario.setFoto(null);
-
-        Usuario usuarioGuardado = usuarioRepository.save(usuario);
-
-        asignarRol(usuarioGuardado, dto.getIdRol());
-
-        return usuarioGuardado;
+    // ─── LISTAR ──────────────────────────────────────────────────────────────
+    public List<UsuarioResponseDTO> listar() {
+        return usuarioRepository.findAll().stream()
+                .map(this::toDTO)
+                .toList();
     }
 
-    /* ACTUALIZAR USUARIO*/
-    public Usuario actualizar(Integer id, UsuarioDTO dto) {
+    // ─── CREAR via SP ─────────────────────────────────────────────────────────
+    @Transactional
+    public UsuarioResponseDTO crear(UsuarioRequestDTO dto,
+                                    Integer actorId, String actorUsuario, String ip) {
+        Object result = entityManager.createNativeQuery(
+                        "SELECT usuarios.fn_crear_usuario(:identidad, :nombres, :apellidos, :email, " +
+                                ":telefono, :usuario, :contrasenia, CAST(:idsRoles AS integer[]), :actorId, :actorUsuario, :ip)"
+                )
+                .setParameter("identidad",    dto.getIdentidad())
+                .setParameter("nombres",      dto.getNombres())
+                .setParameter("apellidos",    dto.getApellidos())
+                .setParameter("email",        dto.getEmail())
+                .setParameter("telefono",     dto.getTelefono())
+                .setParameter("usuario",      dto.getUsuario())
+                .setParameter("contrasenia", passwordEncoder.encode(dto.getContrasenia()))
+                .setParameter("idsRoles",     idsRolesArray(dto))
+                .setParameter("actorId",      actorId)
+                .setParameter("actorUsuario", actorUsuario)
+                .setParameter("ip",           ip)
+                .getSingleResult();
 
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        Integer idGenerado = ((Number) result).intValue();
+        UsuarioResponseDTO response = usuarioRepository.findById(idGenerado)
+                .map(this::toDTO)
+                .orElseThrow(() -> new RuntimeException("Usuario creado pero no encontrado"));
 
-        usuario.setIdentidad(dto.getIdentidad());
-        usuario.setNombres(dto.getNombres());
-        usuario.setApellidos(dto.getApellidos());
-        usuario.setEmail(dto.getEmail());
-        usuario.setTelefono(dto.getTelefono());
-
-        if (dto.getContrasenia() != null && !dto.getContrasenia().isBlank()) {
-            usuario.setContrasenia(dto.getContrasenia());
+        //  Notificar a todos los Administradores del nuevo usuario
+        try {
+            String nombreCompleto = dto.getNombres() + " " + dto.getApellidos();
+            usuarioRolRepository.findUsuariosByRolNombre("Administradorr")
+                    .forEach(admin ->
+                            notificacionService.notificarAdminUsuarioNuevo(
+                                    admin, nombreCompleto)
+                    );
+        } catch (Exception e) {
+            System.err.println("Error notificación nuevo usuario: " + e.getMessage());
         }
 
-        Usuario actualizado = usuarioRepository.save(usuario);
-
-        cambiarRol(actualizado, dto.getIdRol());
-
-        return actualizado;
+        return response;
     }
 
-    /* LISTAR*/
-    public List<UsuarioResponseDTO> listar() {
+    // ─── ACTUALIZAR via SP ────────────────────────────────────────────────────
+    @Transactional
+    public UsuarioResponseDTO actualizar(Integer id, UsuarioRequestDTO dto,
+                                         Integer actorId, String actorUsuario, String ip) {
+        entityManager.createNativeQuery(
+                        "CALL usuarios.sp_actualizar_usuario(:idUsuario, :identidad, :nombres, :apellidos, " +
+                                ":email, :telefono, :usuario, CAST(:idsRoles AS integer[]), :actorId, :actorUsuario, :ip)"
+                )
+                .setParameter("idUsuario",    id)
+                .setParameter("identidad",    dto.getIdentidad())
+                .setParameter("nombres",      dto.getNombres())
+                .setParameter("apellidos",    dto.getApellidos())
+                .setParameter("email",        dto.getEmail())
+                .setParameter("telefono",     dto.getTelefono())
+                .setParameter("usuario",      dto.getUsuario())
+                .setParameter("idsRoles",     idsRolesArray(dto))
+                .setParameter("actorId",      actorId)
+                .setParameter("actorUsuario", actorUsuario)
+                .setParameter("ip",           ip)
+                .executeUpdate();
 
-        return usuarioRepository.findAll().stream().map(u -> {
-
-            UsuarioRol ur = usuarioRolRepository
-                    .findByUsuario_IdUsuarioAndVigenteTrue(u.getIdUsuario())
-                    .orElse(null);
-
-            return new UsuarioResponseDTO(
-                    u.getIdUsuario(),
-                    u.getIdentidad(),
-                    u.getNombres(),
-                    u.getApellidos(),
-                    u.getEmail(),
-                    u.getTelefono(),
-                    u.getUsuario(),
-                    u.getEstado(),
-                    u.getFechaRegistro(),
-                    ur != null ? ur.getRol().getIdRol() : null,
-                    ur != null ? ur.getRol().getNombreRol() : "Sin rol"
-            );
-        }).toList();
+        return usuarioRepository.findById(id).map(this::toDTO)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
-
-    /* DESACTIVAR (SOFT DELETE) */
-    public void desactivar(Integer id) {
-        Usuario usuario = usuarioRepository.findById(id)
+    // ─── DESACTIVAR via SP ────────────────────────────────────────────────────
+    @Transactional
+    public void desactivar(Integer id, Integer actorId, String actorUsuario, String ip) {
+        entityManager.createNativeQuery(
+                        "CALL usuarios.sp_desactivar_usuario(:idUsuario, :actorId, :actorUsuario, :ip)"
+                )
+                .setParameter("idUsuario",    id)
+                .setParameter("actorId",      actorId)
+                .setParameter("actorUsuario", actorUsuario)
+                .setParameter("ip",           ip)
+                .executeUpdate();
+    }
+    // ─── CAMBIAR CONTRASEÑA via SP ────────────────────────────────────────────
+    @Transactional
+    public void cambiarContrasenia(Integer idUsuario, String contraseniaActual,
+                                   String contraseniaNueva,
+                                   Integer actorId, String actorUsuario, String ip) {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        usuario.setEstado("INACTIVO");
-        usuarioRepository.save(usuario);
+        if (!passwordEncoder.matches(contraseniaActual, usuario.getContrasenia())) {
+            throw new RuntimeException("La contraseña actual es incorrecta");
+        }
+
+        String hashNueva = passwordEncoder.encode(contraseniaNueva);
+
+        entityManager.createNativeQuery(
+                        "CALL usuarios.sp_cambiar_contrasenia(:idUsuario, :contrasenia, :actorId, :actorUsuario, :ip)"
+                )
+                .setParameter("idUsuario",    idUsuario)
+                .setParameter("contrasenia",  hashNueva)
+                .setParameter("actorId",      actorId)
+                .setParameter("actorUsuario", actorUsuario)
+                .setParameter("ip",           ip)
+                .executeUpdate();
     }
 
-    /*MÉTODOS PRIVADOS*/
-    private void asignarRol(Usuario usuario, Integer idRol) {
-
-        Rol rol = rolRepository.findById(idRol)
-                .orElseThrow(() -> new RuntimeException("Rol no válido"));
-
-        UsuarioRol ur = new UsuarioRol();
-        ur.setUsuario(usuario);
-        ur.setRol(rol);
-        ur.setFechaAsignacion(LocalDate.now());
-        ur.setVigente(true);
-
-        usuarioRolRepository.save(ur);
+    // ─── HELPERS ─────────────────────────────────────────────────────────────
+    private String idsRolesArray(UsuarioRequestDTO dto) {
+        if (dto.getIdsRoles() == null || dto.getIdsRoles().isEmpty()) return "{}";
+        return "{" + dto.getIdsRoles().stream()
+                .map(String::valueOf)
+                .reduce((a, b) -> a + "," + b)
+                .orElse("") + "}";
     }
 
-    private void cambiarRol(Usuario usuario, Integer idRol) {
+    private UsuarioResponseDTO toDTO(Usuario u) {
+        UsuarioResponseDTO dto = new UsuarioResponseDTO();
+        dto.setIdUsuario(u.getIdUsuario());
+        dto.setIdentidad(u.getIdentidad());
+        dto.setNombres(u.getNombres());
+        dto.setApellidos(u.getApellidos());
+        dto.setEmail(u.getEmail());
+        dto.setTelefono(u.getTelefono());
+        dto.setUsuario(u.getUsuario());
+        dto.setEstado(u.getEstado());
+        dto.setFechaRegistro(u.getFechaRegistro());
 
-        usuarioRolRepository
-                .findByUsuario_IdUsuarioAndVigenteTrue(usuario.getIdUsuario())
-                .ifPresent(urActual -> {
-                    urActual.setVigente(false);
-                    usuarioRolRepository.save(urActual);
-                });
-
-        asignarRol(usuario, idRol);
+        var rolesVigentes = usuarioRolRepository.findAllByUsuario_IdUsuarioAndVigenteTrue(u.getIdUsuario());
+        String todosLosRoles = rolesVigentes.stream()
+                .map(ur -> ur.getRol().getNombreRol())
+                .collect(java.util.stream.Collectors.joining(", "));
+        dto.setRol(todosLosRoles);
+        dto.setRoles(rolesVigentes.stream()
+                .map(ur -> new UsuarioResponseDTO.RolInfo(
+                        ur.getRol().getIdRol(),
+                        ur.getRol().getNombreRol()
+                ))
+                .toList());
+        return dto;
     }
-
-    private String generarUsuario(String nombres, String apellidos) {
-        String n = nombres.trim().split(" ")[0].toLowerCase();
-        String a = apellidos.trim().split(" ")[0].toLowerCase();
-        return n + "." + a;
+    public UsuarioResponseDTO obtenerPorId(Integer id) {
+        return usuarioRepository.findById(id)
+                .map(this::toDTO)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
-}//a
+}

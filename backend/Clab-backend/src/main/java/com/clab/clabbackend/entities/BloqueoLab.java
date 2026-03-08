@@ -3,7 +3,7 @@ package com.clab.clabbackend.entities;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
-import java.util.List;
+
 
 @Getter
 @Setter
@@ -25,9 +25,6 @@ public class BloqueoLab {
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
-    @Column(name = "tipo_bloqueo", length = 15, nullable = false)
-    private String tipoBloqueo;
-
     @Column(name = "motivo", length = 200, nullable = false)
     private String motivo;
 
@@ -36,6 +33,10 @@ public class BloqueoLab {
 
     @Column(name = "fecha_fin", nullable = false)
     private LocalDate fechaFin;
+
+    @ManyToOne
+    @JoinColumn(name = "id_tipo_bloqueo")
+    private TipoBloqueo tipoBloqueo;
 
     @Column(name = "afecta_reservas_existentes", nullable = false)
     private Boolean afectaReservasExistentes;

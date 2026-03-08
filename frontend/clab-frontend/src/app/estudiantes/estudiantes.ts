@@ -77,6 +77,9 @@ interface Asignatura {
 export class EstudiantesComponent implements OnInit {
 
   tabActiva: number = 0;
+  drawerAbierto = false;
+  rol = sessionStorage.getItem('rol') || '';
+  usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
 
   // ===========================
   // DATOS - ESTUDIANTES
@@ -399,6 +402,8 @@ export class EstudiantesComponent implements OnInit {
   constructor(private router: Router) {}
 
   ngOnInit(): void {
+    this.rol = sessionStorage.getItem('rol') || '';
+    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
     this.estudiantesFiltrados = [...this.estudiantes];
     this.matriculasFiltradas = [...this.matriculas];
     this.inscripcionesFiltradas = [...this.inscripciones];
@@ -441,7 +446,18 @@ export class EstudiantesComponent implements OnInit {
       estado: 'Activa'
     };
   }
+  toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
+  cerrarDrawer(): void { this.drawerAbierto = false; }
 
+  navegar(ruta: string, texto: string): void {
+    this.cerrarDrawer();
+    this.router.navigate([`/${ruta}`]);
+  }
+
+  logout(): void {
+    sessionStorage.clear();
+    this.router.navigate(['/login']);
+  }
   // ===========================
   // NAVEGACIÓN
   // ===========================

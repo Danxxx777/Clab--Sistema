@@ -9,29 +9,34 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/tipos-equipo")
 public class TipoEquipoController {
 
     @Autowired
     private TipoEquipoService tipoEquipoService;
 
+    // Lista todos los tipos de equipo
     @GetMapping("/listar")
     public List<TipoEquipo> listar() {
         return tipoEquipoService.listar();
     }
 
+    // Crea un nuevo tipo de equipo
     @PostMapping("/crear")
-    public TipoEquipo crear(@RequestBody TipoEquipoDTO dto) {
-        return tipoEquipoService.crear(dto);
+    public void crear(@RequestBody TipoEquipoDTO dto) {
+        tipoEquipoService.crear(dto);
     }
 
+    // Actualiza un tipo de equipo existente por su ID
     @PutMapping("/actualizar/{id}")
-    public TipoEquipo actualizar(@PathVariable Integer id,
-                                 @RequestBody TipoEquipoDTO dto) {
-        return tipoEquipoService.actualizar(id, dto);
+    public void actualizar(
+            @PathVariable Integer id,
+            @RequestBody TipoEquipoDTO dto) {
+
+        tipoEquipoService.actualizar(id, dto);
     }
 
+    // Elimina un tipo de equipo por su ID
     @DeleteMapping("/eliminar/{id}")
     public void eliminar(@PathVariable Integer id) {
         tipoEquipoService.eliminar(id);

@@ -11,27 +11,45 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "u_auditoria", schema = "usuarios")
 public class Auditoria {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_auditoria")
     private Integer idAuditoria;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "id_usuario", nullable = false)
-    private Usuario usuario;
-
-    @Column(name = "tabla_afectada", length = 50, nullable = false)
-    private String tablaAfectada;
-
-    @Column(name = "id_registro_afectado", nullable = false)
+    @Column(name = "id_registro_afectado")
     private Integer idRegistroAfectado;
 
-    @Column(name = "accion", length = 15, nullable = false)
+    @Column(name = "id_usuario")
+    private Integer idUsuario;
+
+    @Column(name = "usuario", length = 100)
+    private String usuario;
+
+    @Column(name = "fecha_hora")
+    private LocalDateTime fechaHora;
+
+    @Column(name = "accion", length = 255)
     private String accion;
 
-    @Column(name = "descripcion", length = 200)
+    @Column(name = "tabla_afectada", length = 255)
+    private String tablaAfectada;
+
+    @Column(name = "modulo", length = 100)
+    private String modulo;
+
+    @Column(name = "descripcion", length = 255)
     private String descripcion;
 
-    @Column(name = "fecha_hora", nullable = false)
-    private LocalDateTime fechaHora;
+    @Column(name = "ip", length = 50)
+    private String ip;
+
+    @Column(name = "resultado", length = 20)
+    private String resultado;
+
+    @Column(name = "datos_anteriores", columnDefinition = "TEXT")
+    private String datosAnteriores;
+
+    @Column(name = "datos_nuevos", columnDefinition = "TEXT")
+    private String datosNuevos;
 }

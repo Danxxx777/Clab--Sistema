@@ -1,63 +1,353 @@
-<div class="reportes-page">
-  <button class="back-btn" (click)="volver()">Volver</button>
+<div class="reportes-page" (click)="onDocumentClick($event)">
 
-  <div class="reportes-container">
-    <div class="reportes-header">
-      <h1>Gestión de Reportes de Fallas</h1>
-      <div class="header-actions">
-        <select class="filter-estado" [(ngModel)]="filtroEstado" (change)="filtrarReportes()">
-          <option value="">Todos los estados</option>
-          <option value="pendiente">Pendiente</option>
-          <option value="en proceso">En Proceso</option>
-          <option value="resuelto">Resuelto</option>
-        </select>
+  <!-- DRAWER OVERLAY -->
+  <div class="drawer-overlay" [class.open]="drawerAbierto" (click)="cerrarDrawer()"></div>
+
+  <!-- DRAWER -->
+  <div class="drawer" [class.open]="drawerAbierto">
+    <div class="drawer-header">
+      <div class="drawer-brand">CLAB<span>Sistema de Laboratorios</span></div>
+      <button class="btn-close-drawer" (click)="cerrarDrawer()">×</button>
+    </div>
+    <div class="drawer-user">
+      <div class="drawer-avatar">{{ usuarioLogueado.charAt(0).toUpperCase() }}</div>
+      <div class="drawer-user-info">
+        <div class="dui-name">{{ usuarioLogueado }}</div>
+        <div class="role-badge"><span class="role-dot"></span>{{ rol }}</div>
       </div>
     </div>
-
-    <div class="reportes-table-container">
-      <div class="table-wrapper">
-        <table class="reportes-table">
-          <thead>
-          <tr>
-            <th>ID</th>
-            <th>LABORATORIO</th>
-            <th>EQUIPO</th>
-            <th>PROBLEMA</th>
-            <th>RESPONSABLE</th>
-            <th>ESTADO</th>
-            <th>FECHA</th>
-            <th>ACCIONES</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr *ngFor="let reporte of reportesFiltrados">
-            <td>{{reporte.id}}</td>
-            <td>{{reporte.laboratorio}}</td>
-            <td>{{reporte.equipo}}</td>
-            <td>{{reporte.problema}}</td>
-            <td>{{reporte.responsable}}</td>
-            <td>
-                <span class="estado-badge" [ngClass]="getEstadoClass(reporte.estado)">
-                  {{reporte.estado}}
-                </span>
-            </td>
-            <td>{{reporte.fecha}}</td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn-edit" (click)="editar(reporte)" title="Editar">✏️</button>
-                <button class="btn-view" (click)="ver(reporte)" title="Ver detalles">👁️</button>
-              </div>
-            </td>
-          </tr>
-          <tr *ngIf="reportesFiltrados.length === 0">
-            <td colspan="8" class="empty-state">
-              <div class="empty-icon">⚠️</div>
-              <p>No hay reportes de fallas registrados</p>
-            </td>
-          </tr>
-          </tbody>
-        </table>
+    <div class="drawer-section-title">Módulos</div>
+    <div class="drawer-modules">
+      @if(rol === 'Administradorr' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('usuarios')">
+          <div class="di-icon"><img src="/user.png" alt=""></div>
+          <div class="di-text"><div class="di-name">Usuarios</div><div class="di-desc">Gestión de accesos y roles</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
+        <div class="drawer-item" (click)="navegar('laboratorios')">
+          <div class="di-icon"><img src="/laboratorio.png" alt=""></div>
+          <div class="di-text"><div class="di-name">Laboratorios</div><div class="di-desc">Sedes y encargados</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('equipos')">
+          <div class="di-icon"><img src="/equipo.png" alt=""></div>
+          <div class="di-text"><div class="di-name">Equipos</div><div class="di-desc">Inventario y ubicaciones</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Coordinador' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('reservar')">
+          <div class="di-icon"><img src="/calendario.png" alt=""></div>
+          <div class="di-text"><div class="di-name">Reservas</div><div class="di-desc">Disponibilidad</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Coordinador') {
+        <div class="drawer-item" (click)="navegar('academico')">
+          <div class="di-icon"><img src="/academico.png" alt=""></div>
+          <div class="di-text"><div class="di-name">Académico</div><div class="di-desc">Períodos y carreras</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('estudiantes')">
+          <div class="di-icon"><img src="/estudiantes.png" alt=""></div>
+          <div class="di-text"><div class="di-name">Estudiantes</div><div class="di-desc">Matrículas e inscripciones</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('asistencia')">
+          <div class="di-icon"><img src="/asistencia.png" alt=""></div>
+          <div class="di-text"><div class="di-name">Asistencia</div><div class="di-desc">Control de asistencia</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('reporte-fallas')">
+          <div class="di-icon"><img src="/fallas.png" alt=""></div>
+          <div class="di-text"><div class="di-name">Reportes de Fallas</div><div class="di-desc">Seguimiento de equipos</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('bloqueos')">
+          <div class="di-icon"><img src="/bloqueos.png" alt=""></div>
+          <div class="di-text"><div class="di-name">Bloqueos</div><div class="di-desc">Gestión de conflictos</div></div>
+        </div>
+      }
+      <div class="drawer-item" (click)="navegar('notificaciones')">
+        <div class="di-icon"><img src="/campana.png" alt=""></div>
+        <div class="di-text"><div class="di-name">Notificaciones</div><div class="di-desc">Centro de alertas</div></div>
       </div>
+      @if(rol === 'Administradorr' || rol === 'Decano') {
+        <div class="drawer-item" (click)="navegar('auditoria')">
+          <div class="di-icon"><img src="/auditoria.png" alt=""></div>
+          <div class="di-text"><div class="di-name">Auditoría</div><div class="di-desc">Trazabilidad</div></div>
+        </div>
+      }
+      @if(rol === 'Administradorr') {
+        <div class="drawer-item" (click)="navegar('configuracion-correo')">
+          <div class="di-icon"><img src="/configuracion.png" alt=""></div>
+          <div class="di-text"><div class="di-name">Config. Correo</div><div class="di-desc">SMTP y remitente</div></div>
+        </div>
+      }
+    </div>
+    <div class="drawer-footer">
+      <button class="btn-logout-drawer" (click)="logout()">🚪 Cerrar sesión</button>
     </div>
   </div>
+
+  <!-- HEADER -->
+  <div class="notif-header">
+    <div class="notif-header-left">
+      <button class="btn-hamburger" [class.active]="drawerAbierto" (click)="toggleDrawer()">
+        <div class="ham-line"></div>
+        <div class="ham-line"></div>
+        <div class="ham-line"></div>
+      </button>
+      <div>
+        <div class="breadcrumb-row">
+          <span class="brand">CLAB</span>
+          <span class="sep">/</span>
+          <span class="bc-link" [class.clickable]="moduloActivo !== null" (click)="volverAlCentro()">Reportes de Uso</span>
+          @if(moduloActivo !== null) {
+            <span class="sep">/</span>
+            <span class="bc-current">{{ modulos[moduloActivo].titulo }}</span>
+          }
+        </div>
+        @if(moduloActivo === null) {
+        }
+      </div>
+    </div>
+    <div class="header-acciones">
+      @if(moduloActivo !== null) {
+        <button class="btn-exportar-pdf"   (click)="exportarPDF()">⬇ PDF</button>
+        <button class="btn-exportar-excel" (click)="exportarExcel()">⬇ Excel</button>
+      }
+      <button class="btn-volver" (click)="moduloActivo !== null ? volverAlCentro() : volver()">← Volver</button>
+    </div>
+  </div>
+
+  <!-- ═══════ PANTALLA INICIO ═══════ -->
+  @if(moduloActivo === null) {
+
+    <!-- Stats globales -->
+    <div class="notif-stats">
+      <div class="stat-card ok">
+        <div class="stat-icon">📅</div>
+        <div><div class="stat-num">{{ resumenGlobal.reservas }}</div><div class="stat-label">Reservas</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div><div class="stat-num">{{ resumenGlobal.asistencias }}</div><div class="stat-label">Asistencias</div></div>
+      </div>
+      <div class="stat-card alert">
+        <div class="stat-icon">⚠️</div>
+        <div><div class="stat-num">{{ resumenGlobal.fallas }}</div><div class="stat-label">Fallas</div></div>
+      </div>
+      <div class="stat-card warn">
+        <div class="stat-icon">🎓</div>
+        <div><div class="stat-num">{{ resumenGlobal.estudiantes }}</div><div class="stat-label">Estudiantes</div></div>
+      </div>
+      <div class="stat-card azul">
+        <div class="stat-icon">🖥️</div>
+        <div><div class="stat-num">{{ resumenGlobal.equipos }}</div><div class="stat-label">Equipos</div></div>
+      </div>
+      <div class="stat-card cyan">
+        <div class="stat-icon">🚫</div>
+        <div><div class="stat-num">{{ resumenGlobal.bloqueos }}</div><div class="stat-label">Bloqueos</div></div>
+      </div>
+    </div>
+
+    <div class="seccion-titulo">Módulos disponibles</div>
+
+    <!-- Grid de módulos -->
+    <div class="notif-contenido">
+      @for(mod of modulos; track mod.id; let i = $index) {
+        <div class="modulo-card color-{{ mod.color }}" (click)="abrirModulo(i)">
+          <div class="mc-glow"></div>
+          <div class="mc-num">{{ (i+1).toString().padStart(2,'0') }}</div>
+          <div class="mc-icon">
+            <img [src]="mod.icono" alt="{{ mod.titulo }}">
+          </div>
+          <div class="mc-titulo">{{ mod.titulo }}</div>
+          <div class="mc-desc">{{ mod.desc }}</div>
+          <div class="mc-btn">Ver reporte →</div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ═══════ PÁGINA REPORTE ═══════ -->
+  @if(moduloActivo !== null) {
+
+    <!-- Título -->
+    <div class="reporte-titulo-row">
+    <div class="rt-icon"><img [src]="modulos[moduloActivo].icono" style="width:28px;height:28px;object-fit:contain"></div>
+      <div>
+        <div class="rt-titulo">{{ modulos[moduloActivo].titulo }}</div>
+        <div class="rt-desc">{{ modulos[moduloActivo].desc }}</div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filtros-card">
+      <div class="fc-titulo">🔍 Filtros</div>
+      <div class="filtros-row">
+        @if(moduloActivo !== 3) {
+          <div class="filtro-grupo">
+            <label>Laboratorio</label>
+            <select class="f-select" [(ngModel)]="filtros.laboratorio">
+              <option value="">Todos</option>
+              @for(lab of laboratorios; track lab.codLaboratorio) {
+                <option [value]="lab.codLaboratorio">{{ lab.nombreLab }}</option>
+              }
+            </select>
+          </div>
+        }
+        @if(moduloActivo === 0 || moduloActivo === 2 || moduloActivo === 4) {
+          <div class="filtro-grupo">
+            <label>Fecha Inicio</label>
+            <input type="date" class="f-input" [(ngModel)]="filtros.fechaInicio">
+          </div>
+          <div class="filtro-grupo">
+            <label>Fecha Fin</label>
+            <input type="date" class="f-input" [(ngModel)]="filtros.fechaFin">
+          </div>
+        }
+        @if(moduloActivo === 1) {
+          <div class="filtro-grupo">
+            <label>Estado</label>
+            <select class="f-select" [(ngModel)]="filtros.estado">
+              <option value="">Todos</option>
+              <option value="OPERATIVO">Operativo</option>
+              <option value="MANTENIMIENTO">Mantenimiento</option>
+              <option value="FUERA">Fuera de Servicio</option>
+            </select>
+          </div>
+        }
+        @if(moduloActivo === 3) {
+          <div class="filtro-grupo">
+            <label>Estado</label>
+            <select class="f-select" [(ngModel)]="filtros.estado">
+              <option value="">Todos</option>
+              <option value="ACTIVO">Activo</option>
+              <option value="INACTIVO">Inactivo</option>
+            </select>
+          </div>
+        }
+        @if(moduloActivo === 4) {
+          <div class="filtro-grupo">
+            <label>Estado Reserva</label>
+            <select class="f-select" [(ngModel)]="filtros.estado">
+              <option value="">Todos</option>
+              <option value="PENDIENTE">Pendiente</option>
+              <option value="APROBADA">Aprobada</option>
+              <option value="CANCELADA">Cancelada</option>
+              <option value="COMPLETADA">Completada</option>
+            </select>
+          </div>
+        }
+        <div class="filtro-acciones">
+          <button class="btn-generar" (click)="aplicarFiltros()" [disabled]="cargando">
+            @if(cargando) { <span class="dots"><span></span><span></span><span></span></span> }
+            @else { 🔍 Generar }
+          </button>
+          <button class="btn-limpiar" (click)="limpiarFiltros()">🗑 Limpiar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats módulo -->
+    @if(mostrarEstadisticas && statsModulo.length > 0) {
+      <div class="stats-modulo">
+        @for(s of statsModulo; track s.label) {
+          <div class="sm-card">
+            <div class="sm-icon">{{ s.icono }}</div>
+            <div>
+              <div class="sm-num" [style.color]="s.color">{{ s.valor }}</div>
+              <div class="sm-label">{{ s.label }}</div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Gráficas -->
+    @if(mostrarEstadisticas && datosGrafica.length > 0) {
+      <div class="graficas-row">
+        <div class="grafica-card">
+          <div class="gc-titulo">{{ tituloGrafica1 }}</div>
+          <div class="gc-barras">
+            @for(item of datosGrafica; track item.label) {
+              <div class="barra-item">
+                <div class="barra-label">{{ item.label }}</div>
+                <div class="barra-track">
+                  <div class="barra-fill" [style.width.%]="item.pct" [style.background]="modulos[moduloActivo].colorHex"></div>
+                </div>
+                <div class="barra-val">{{ item.valor }}</div>
+              </div>
+            }
+          </div>
+        </div>
+        <div class="grafica-card">
+          <div class="gc-titulo">{{ tituloGrafica2 }}</div>
+          <div class="gc-dona">
+            @for(item of datosDistribucion; track item.label; let i = $index) {
+              <div class="dona-item">
+                <div class="dona-color" [style.background]="coloresGrafica[i % coloresGrafica.length]"></div>
+                <div class="dona-label">{{ item.label }}</div>
+                <div class="dona-pct">{{ item.pct }}%</div>
+                <div class="dona-bar-track">
+                  <div class="dona-bar-fill" [style.width.%]="item.pct" [style.background]="coloresGrafica[i % coloresGrafica.length]"></div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Tabla -->
+    @if(datosReporte.length > 0) {
+      <div class="tabla-card">
+        <div class="tc-header">
+          <div class="tc-titulo">Detalle</div>
+          <div class="tc-count">{{ datosReporte.length }} registros</div>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+            <tr>@for(col of columnasTabla; track col) { <th>{{ col }}</th> }</tr>
+            </thead>
+            <tbody>
+              @for(fila of datosReporte; track $index) {
+                <tr>
+                  @for(val of filasTabla(fila); track $index; let last = $last) {
+                    @if(last) {
+                      <td><span class="badge" [ngClass]="getBadgeClass(val)">{{ val }}</span></td>
+                    } @else {
+                      <td>{{ val }}</td>
+                    }
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    @if(datosReporte.length === 0 && busquedaRealizada) {
+      <div class="notif-estado vacio">
+        <div class="vacio-icon">📭</div>
+        <p>No se encontraron resultados con los filtros aplicados</p>
+      </div>
+    }
+
+    @if(!busquedaRealizada) {
+      <div class="notif-estado vacio">
+        <div class="vacio-icon">🔍</div>
+        <p>Aplica los filtros y pulsa <strong>Generar</strong> para ver el reporte</p>
+      </div>
+    }
+  }
+
 </div>

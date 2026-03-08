@@ -3,6 +3,7 @@ package com.clab.clabbackend.entities;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "n_notificacion", schema = "notificaciones")
 public class Notificacion {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_notificacion")
@@ -26,8 +28,7 @@ public class Notificacion {
     @Column(name = "asunto", length = 200, nullable = false)
     private String asunto;
 
-    @Lob
-    @Column(name = "mensaje")
+    @Column(name = "mensaje", columnDefinition = "text")
     private String mensaje;
 
     @Column(name = "canal", length = 50, nullable = false)
@@ -37,9 +38,14 @@ public class Notificacion {
     private String estado;
 
     @Column(name = "fecha_creacion", nullable = false)
-    private LocalDate fechaCreacion;
+    private LocalDateTime fechaCreacion;
 
     @Column(name = "fecha_envio")
-    private LocalDate fechaEnvio;
-}
+    private LocalDateTime fechaEnvio;
 
+    @Column(name = "rol_destino", length = 50) // ← nuevo
+    private String rolDestino;
+
+    @Column(name = "email_origen", length = 100)
+    private String emailOrigen;
+}

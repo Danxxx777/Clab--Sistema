@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-
 export interface UsuarioRequest {
   identidad: string;
   nombres: string;
@@ -10,7 +9,8 @@ export interface UsuarioRequest {
   email: string;
   telefono?: string;
   contrasenia: string;
-  idRol: number;
+  idsRoles: number[];
+  usuario?: string;
 }
 
 export interface UsuarioResponse {
@@ -19,25 +19,13 @@ export interface UsuarioResponse {
   nombres: string;
   apellidos: string;
   email: string;
-  telefono?: string;
+  telefono: string;
   usuario: string;
   estado: string;
   fechaRegistro: string;
+  rol?: string;
+  roles?: { idRol: number; nombreRol: string }[];
 }
-export interface UsuarioResponse {
-  idUsuario: number;
-  identidad: string;
-  nombres: string;
-  apellidos: string;
-  email: string;
-  telefono?: string;
-  usuario: string;
-  estado: string;
-  fechaRegistro: string;
-  idRol: number;
-  nombreRol: string;
-}
-
 
 @Injectable({
   providedIn: 'root'
@@ -55,12 +43,12 @@ export class UsuarioService {
   crear(data: UsuarioRequest): Observable<UsuarioResponse> {
     return this.http.post<UsuarioResponse>(`${this.baseUrl}/crear`, data);
   }
-//a
-  desactivar(id: number): Observable<void> {
-    return this.http.put<void>(`${this.baseUrl}/desactivar/${id}`, {});
-  }
+
   actualizar(id: number, data: UsuarioRequest): Observable<UsuarioResponse> {
     return this.http.put<UsuarioResponse>(`${this.baseUrl}/actualizar/${id}`, data);
   }
 
+  desactivar(id: number): Observable<void> {
+    return this.http.put<void>(`${this.baseUrl}/desactivar/${id}`, {});
+  }
 }
