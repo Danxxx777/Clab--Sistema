@@ -600,7 +600,11 @@ export class ReservarComponent implements OnInit {
     this.reservasFiltradas = [...this.reservas];
     this.idUsuario = parseInt(sessionStorage.getItem('idUsuario') || '0');
 
-    if (this.rol === 'Encargado_Lab') {
+    const esEncargadoLab = this.rol === 'Encargado_Lab'
+      || this.rol === 'clab_encargado_lab'
+      || this.rol === 'Encargado de Laboratorio';
+
+    if (esEncargadoLab) {
       this.cargarReservasHoy();
       this.cargarUsuariosBloqueados();
     }
