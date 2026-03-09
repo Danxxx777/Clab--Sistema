@@ -244,7 +244,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="mostrarModalEquipo" (click)="cerrarModalEquipo()">
+<div class="modal-overlay" *ngIf="mostrarModalEquipo">
   <div class="modal" (click)="$event.stopPropagation()">
 
     <div class="modal-header">
@@ -333,7 +333,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="mostrarDetalleEquipo" (click)="cerrarDetalleEquipo()">
+<div class="modal-overlay" *ngIf="mostrarDetalleEquipo" >
   <div class="modal modal-detalle" (click)="$event.stopPropagation()">
 
     <div class="modal-header">
@@ -393,7 +393,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="mostrarModalTipo" (click)="cerrarModalTipo()">
+<div class="modal-overlay" *ngIf="mostrarModalTipo" >
   <div class="modal" (click)="$event.stopPropagation()">
 
     <div class="modal-header">
