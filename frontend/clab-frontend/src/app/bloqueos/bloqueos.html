@@ -205,7 +205,7 @@
 
 <!-- ══════════ MODAL TIPO DE BLOQUEO ══════════ -->
 @if(mostrarModalTipo) {
-  <div class="modal-overlay" (click)="cerrarModalTipo()">
+  <div class="modal-overlay" >
     <div class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>{{ modoEdicionTipo ? 'Editar' : 'Nuevo' }} Tipo de Bloqueo</h2>
@@ -238,7 +238,7 @@
 
 <!-- ══════════ MODAL CREAR/EDITAR BLOQUEO ══════════ -->
 @if(mostrarModalBloqueo) {
-  <div class="modal-overlay" (click)="cerrarModalBloqueo()">
+  <div class="modal-overlay" >
     <div class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>{{ modoEdicionBloqueo ? 'Editar Bloqueo' : 'Nuevo Bloqueo' }}</h2>
@@ -307,7 +307,7 @@
 }
 <!-- ══════════ MODAL VER DETALLE BLOQUEO ══════════ -->
 @if(mostrarModalVer) {
-  <div class="modal-overlay" (click)="cerrarModalVer()">
+  <div class="modal-overlay" >
     <div class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Detalles del Bloqueo</h2>
@@ -366,7 +366,7 @@
 
 <!-- ══════════ MODAL CONFIRMAR ELIMINAR ══════════ -->
 @if(mostrarModalConfirm) {
-  <div class="modal-overlay" (click)="cerrarModalConfirm()">
+  <div class="modal-overlay" >
     <div class="modal-card modal-confirm" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Confirmar Eliminación</h2>

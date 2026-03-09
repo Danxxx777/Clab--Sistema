@@ -275,7 +275,7 @@
 </div>
 
 <!-- MODAL: LABORATORIO -->
-<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'laboratorio'" (click)="cerrarModal()">
+<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'laboratorio'" >
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ modoEdicion ? 'Editar Laboratorio' : 'Agregar Nuevo Laboratorio' }}</h2>
@@ -359,7 +359,7 @@
 </div>
 
 <!-- MODAL: SEDE -->
-<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'sede'" (click)="cerrarModal()">
+<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'sede'" >
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ modoEdicion ? 'Editar Sede' : 'Agregar Nueva Sede' }}</h2>
@@ -404,7 +404,7 @@
 </div>
 
 <!-- MODAL: ENCARGADO -->
-<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'encargado'" (click)="cerrarModal()">
+<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'encargado'" >
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ modoEdicion ? 'Editar Encargado' : 'Agregar Nuevo Encargado' }}</h2>
@@ -460,7 +460,7 @@
 </div>
 
 <!-- MODAL: CONFIRMAR ELIMINAR -->
-<div class="modal-overlay" *ngIf="mostrarConfirmarEliminar" (click)="cerrarModalConfirmar()">
+<div class="modal-overlay" *ngIf="mostrarConfirmarEliminar" >
   <div class="modal modal-confirm" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>Confirmar Eliminación</h2>
@@ -478,7 +478,7 @@
 </div>
 
 <!-- MODAL: DETALLE DE SEDE -->
-<div class="modal-overlay" *ngIf="mostrarDetalleSede" (click)="cerrarDetalleSede()">
+<div class="modal-overlay" *ngIf="mostrarDetalleSede" >
   <div class="modal modal-detalle-sede" (click)="$event.stopPropagation()">
     <div class="modal-header-detalle">
       <h2>Detalles de la Sede</h2>
