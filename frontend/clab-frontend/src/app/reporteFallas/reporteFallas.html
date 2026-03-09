@@ -216,7 +216,7 @@
 
 <div class="modal-overlay"
      *ngIf="mostrarModal"
-     (click)="cerrarModal()">
+     >
 
   <div class="modal"
        (click)="$event.stopPropagation()">
@@ -295,7 +295,7 @@
   </div>
 </div>
 <!-- MODAL VER DETALLE -->
-<div class="modal-overlay" *ngIf="mostrarModalDetalle" (click)="cerrarDetalle()">
+<div class="modal-overlay" *ngIf="mostrarModalDetalle" >
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>Detalle del Reporte #{{ reporteDetalle?.idReporte }}</h2>

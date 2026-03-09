@@ -296,7 +296,7 @@
   </div>
 
 <!-- MODAL: ESTUDIANTE -->
-<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'estudiante'" (click)="cerrarModal()">
+<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'estudiante'" >
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ modoEdicion ? 'Editar Estudiante' : 'Agregar Nuevo Estudiante' }}</h2>
@@ -364,7 +364,7 @@
 </div>
 
 <!-- MODAL: MATRÍCULA -->
-<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'matricula'" (click)="cerrarModal()">
+<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'matricula'" >
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ modoEdicion ? 'Editar Matrícula' : 'Agregar Nueva Matrícula' }}</h2>
@@ -425,7 +425,7 @@
 </div>
 
 <!-- MODAL: INSCRIPCIÓN -->
-<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'inscripcion'" (click)="cerrarModal()">
+<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'inscripcion'" >
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ modoEdicion ? 'Editar Inscripción' : 'Agregar Nueva Inscripción' }}</h2>
@@ -478,7 +478,7 @@
 </div>
 
 <!-- MODAL: CONFIRMAR ELIMINAR -->
-<div class="modal-overlay" *ngIf="mostrarConfirmarEliminar" (click)="cerrarModalConfirmar()">
+<div class="modal-overlay" *ngIf="mostrarConfirmarEliminar">
   <div class="modal modal-confirm" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>Confirmar Eliminación</h2>

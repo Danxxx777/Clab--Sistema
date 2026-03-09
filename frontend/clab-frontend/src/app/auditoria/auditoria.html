@@ -261,7 +261,7 @@
   </div>
 
   <!-- MODAL FORZAR LOGOUT -->
-  <div class="modal-overlay" *ngIf="modalForzarAbierto" (click)="cancelarForzar()">
+  <div class="modal-overlay" *ngIf="modalForzarAbierto" >
     <div class="modal-box" (click)="$event.stopPropagation()">
       <div class="modal-icon">⚠</div>
       <h3 class="modal-titulo">Forzar cierre de sesión</h3>
@@ -280,7 +280,7 @@
     </div>
   </div>
   <!-- MODAL ERROR -->
-  <div class="modal-overlay" *ngIf="modalErrorAbierto" (click)="modalErrorAbierto = false">
+  <div class="modal-overlay" *ngIf="modalErrorAbierto" >
     <div class="modal-box" (click)="$event.stopPropagation()">
       <div class="modal-icon">🚫</div>
       <h3 class="modal-titulo" style="color:#ff4444">Acción no permitida</h3>
@@ -291,7 +291,7 @@
     </div>
   </div>
   <!-- MODAL DETALLE AUDITORÍA -->
-  <div class="modal-overlay" *ngIf="modalDetalleAbierto" (click)="cerrarDetalle()">
+  <div class="modal-overlay" *ngIf="modalDetalleAbierto" >
     <div class="modal-detalle" (click)="$event.stopPropagation()">
 
       <div class="modal-detalle-header">
