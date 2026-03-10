@@ -238,11 +238,10 @@
       <div class="table-container">
         <table class="data-table">
           <thead>
-          <tr><th>ID</th><th>NOMBRE</th><th>DESCRIPCIÓN</th><th>ESTADO</th><th>ACCIONES</th></tr>
+          <tr><th>NOMBRE</th><th>DESCRIPCIÓN</th><th>ESTADO</th><th>ACCIONES</th></tr>
           </thead>
           <tbody>
           <tr *ngFor="let tipo of tiposPaginados; let i = index">
-            <td>{{ tipo.id_tipo_reserva }}</td>
             <td><strong>{{ tipo.nombre_tipo }}</strong></td>
             <td>{{ tipo.descripcion }}</td>
             <td>

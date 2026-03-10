@@ -146,7 +146,6 @@
         <table class="data-table">
           <thead>
           <tr>
-            <th>ID PERIODO</th>
             <th>NOMBRE</th>
             <th>FECHA INICIO</th>
             <th>FECHA FIN</th>
@@ -157,7 +156,6 @@
           </thead>
           <tbody>
           <tr *ngFor="let periodo of periodosFiltrado; let i = index">
-            <td>{{ periodo.idPeriodo }}</td>
             <td>{{ periodo.nombrePeriodo }}</td>
             <td>{{ periodo.fechaInicio }}</td>
             <td>{{ periodo.fechaFin }}</td>
@@ -172,7 +170,12 @@
             <td>
               <div class="action-buttons">
                 <button class="btn-action btn-editar" (click)="editar(periodo, i, 'periodo')">Editar</button>
-                <button class="btn-action btn-eliminar" (click)="eliminar(periodo, i, 'periodo')">Eliminar</button>
+                <button class="btn-action"
+                        [class.btn-activar]="periodo.estado !== 'ACTIVO'"
+                        [class.btn-desactivar]="periodo.estado === 'ACTIVO'"
+                        (click)="toggleEstado(periodo, 'periodo')">
+                  {{ periodo.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}
+                </button>
               </div>
             </td>
           </tr>
@@ -225,7 +228,12 @@
             <td>
               <div class="action-buttons">
                 <button class="btn-action btn-editar" (click)="editar(carrera, i, 'carrera')">Editar</button>
-                <button class="btn-action btn-eliminar" (click)="eliminar(carrera, i, 'carrera')">Eliminar</button>
+                <button class="btn-action"
+                        [class.btn-activar]="carrera.estado !== 'ACTIVA'"
+                        [class.btn-desactivar]="carrera.estado === 'ACTIVA'"
+                        (click)="toggleEstado(carrera, 'carrera')">
+                  {{ carrera.estado === 'ACTIVA' ? 'Desactivar' : 'Activar' }}
+                </button>
               </div>
             </td>
           </tr>
@@ -286,7 +294,12 @@
             <td>
               <div class="action-buttons">
                 <button class="btn-action btn-editar" (click)="editar(asignatura, i, 'asignatura')">Editar</button>
-                <button class="btn-action btn-eliminar" (click)="eliminar(asignatura, i, 'asignatura')">Eliminar</button>
+                <button class="btn-action"
+                        [class.btn-activar]="asignatura.estado !== 'ACTIVA'"
+                        [class.btn-desactivar]="asignatura.estado === 'ACTIVA'"
+                        (click)="toggleEstado(asignatura, 'asignatura')">
+                  {{ asignatura.estado === 'ACTIVA' ? 'Desactivar' : 'Activar' }}
+                </button>
               </div>
             </td>
           </tr>
@@ -339,7 +352,12 @@
             <td>
               <div class="action-buttons">
                 <button class="btn-action btn-editar" (click)="editar(facultad, i, 'facultad')">Editar</button>
-                <button class="btn-action btn-eliminar" (click)="eliminar(facultad, i, 'facultad')">Eliminar</button>
+                <button class="btn-action"
+                        [class.btn-activar]="facultad.estado !== 'ACTIVO'"
+                        [class.btn-desactivar]="facultad.estado === 'ACTIVO'"
+                        (click)="toggleEstado(facultad, 'facultad')">
+                  {{ facultad.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}
+                </button>
               </div>
             </td>
           </tr>
@@ -398,7 +416,12 @@
             <td>
               <div class="action-buttons">
                 <button class="btn-action btn-editar" (click)="editar(horario, i, 'horario')">Editar</button>
-                <button class="btn-action btn-eliminar" (click)="eliminar(horario, i, 'horario')">Eliminar</button>
+                <button class="btn-action"
+                        [class.btn-activar]="horario.estado !== 'ACTIVO'"
+                        [class.btn-desactivar]="horario.estado === 'ACTIVO'"
+                        (click)="toggleEstado(horario, 'horario')">
+                  {{ horario.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}
+                </button>
               </div>
             </td>
           </tr>
@@ -651,10 +674,33 @@
       <button class="btn-guardar" (click)="guardar()">{{ modoEdicion ? 'Actualizar' : 'Guardar' }}</button>
     </div>
   </div>
-  <div class="toast" *ngIf="mostrarToast"
-       [class.toast-success]="toastTipo === 'success'"
-       [class.toast-error]="toastTipo === 'error'">
-    {{ toastMensaje }}
-  </div>
 </div>
 
+<!-- ─── MODAL CONFIRMACIÓN ELIMINAR ──────────────────────────────────────────── -->
+<!-- Agregar esto ANTES del cierre del último </div> del archivo academico.html -->
+
+<div class="modal-overlay" *ngIf="mostrarModalConfirm" (click)="cancelarConfirm()">
+  <div class="modal modal-confirm" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>Confirmar Eliminación</h2>
+      <button class="btn-close" (click)="cancelarConfirm()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <p [innerHTML]="confirmMensaje"></p>
+      <p class="warning-text">Esta acción no se puede deshacer.</p>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cancelarConfirm()">Cancelar</button>
+      <button class="btn-eliminar-confirm" (click)="confirmarEliminar()">Sí, Eliminar</button>
+    </div>
+
+  </div>
+</div>
+<div class="toast" *ngIf="mostrarToast"
+     [class.toast-success]="toastTipo === 'success'"
+     [class.toast-error]="toastTipo === 'error'">
+  {{ toastMensaje }}
+</div>
