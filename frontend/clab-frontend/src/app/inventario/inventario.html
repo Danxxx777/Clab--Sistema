@@ -210,7 +210,6 @@
         <table class="data-table">
           <thead>
           <tr>
-            <th>ID</th>
             <th>NOMBRE</th>
             <th>DESCRIPCIÓN</th>
             <th>ACCIONES</th>
@@ -218,7 +217,6 @@
           </thead>
           <tbody>
           <tr *ngFor="let tipo of tiposFiltrados">
-            <td>{{ tipo.id }}</td>
             <td><strong>{{ tipo.nombre }}</strong></td>
             <td>{{ tipo.descripcion || '—' }}</td>
             <td>
