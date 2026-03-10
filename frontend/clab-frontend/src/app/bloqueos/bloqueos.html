@@ -161,7 +161,6 @@
             <table class="bloqueos-table">
               <thead>
               <tr>
-                <th>ID</th>
                 <th>NOMBRE</th>
                 <th>DESCRIPCIÓN</th>
                 <th>ESTADO</th>
@@ -170,7 +169,6 @@
               </thead>
               <tbody>
               <tr *ngFor="let tipo of tiposFiltrados">
-                <td>{{tipo.idTipoBloqueo}}</td>
                 <td><strong>{{tipo.nombreTipo}}</strong></td>
                 <td>{{tipo.descripcion}}</td>
                 <td>

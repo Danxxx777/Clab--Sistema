@@ -2,18 +2,33 @@ package com.clab.clabbackend.services;
 
 import com.clab.clabbackend.dto.CarreraDTO;
 import com.clab.clabbackend.repository.CarreraRepository;
+import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.LinkedHashMap;
 
 @Service
 public class CarreraService {
 
     private final CarreraRepository carreraRepository;
+    private final EntityManager entityManager;
 
-    public CarreraService(CarreraRepository carreraRepository) {
+    public CarreraService(CarreraRepository carreraRepository, EntityManager entityManager) {
         this.carreraRepository = carreraRepository;
+        this.entityManager = entityManager;
+    }
+
+    private void setActorContext(Integer actorId, String actorUsuario) {
+        entityManager.createNativeQuery(
+                        "SELECT set_config('clab.actor_id', :id, true), " +
+                                "set_config('clab.actor_usuario', :usuario, true)"
+                )
+                .setParameter("id",      actorId != null ? actorId.toString() : "0")
+                .setParameter("usuario", actorUsuario != null ? actorUsuario : "Sistema")
+                .getSingleResult();
     }
 
     public List<Map<String, Object>> listar() {
@@ -39,21 +54,22 @@ public class CarreraService {
         }).toList();
     }
 
-    public void crear(CarreraDTO dto) {
+    @Transactional
+    public void crear(CarreraDTO dto, Integer actorId, String actorUsuario) {
+        setActorContext(actorId, actorUsuario);
         carreraRepository.insertar(dto.getNombre(), dto.getIdFacultad(), dto.getIdCoordinador());
     }
 
-    public void editar(Integer idCarrera, CarreraDTO dto) {
-        carreraRepository.actualizar(
-                idCarrera,
-                dto.getNombre(),
-                dto.getIdFacultad(),
-                dto.getIdCoordinador(),
-                dto.getEstado()
-        );
+    @Transactional
+    public void editar(Integer idCarrera, CarreraDTO dto, Integer actorId, String actorUsuario) {
+        setActorContext(actorId, actorUsuario);
+        carreraRepository.actualizar(idCarrera, dto.getNombre(), dto.getIdFacultad(),
+                dto.getIdCoordinador(), dto.getEstado());
     }
 
-    public void eliminar(Integer idCarrera) {
+    @Transactional
+    public void eliminar(Integer idCarrera, Integer actorId, String actorUsuario) {
+        setActorContext(actorId, actorUsuario);
         carreraRepository.baja(idCarrera);
     }
 }

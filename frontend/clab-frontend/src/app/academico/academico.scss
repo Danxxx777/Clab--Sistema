@@ -869,3 +869,28 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   border-radius: 6px;
   font-family: 'Space Grotesk', sans-serif;
 }
+.btn-activar {
+  background: #39ff14;
+  color: #111;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.8rem;
+
+  &:hover { opacity: 0.85; }
+}
+
+.btn-desactivar {
+  background: #e53935;
+  color: #fff;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.8rem;
+
+  &:hover { opacity: 0.85; }
+}
