@@ -204,7 +204,11 @@
               <div class="action-buttons">
                 <button class="btn-action btn-ver"     (click)="abrirModalUsuario('ver', u)">Ver</button>
                 <button class="btn-action btn-editar"  (click)="abrirModalUsuario('editar', u)">Editar</button>
-                <button class="btn-action btn-eliminar"(click)="desactivarUsuario(u)">Desactivar</button>
+                <button class="btn-action"
+                        [ngClass]="u.estado?.toUpperCase() === 'ACTIVO' ? 'btn-eliminar' : 'btn-activar'"
+                        (click)="toggleEstadoUsuario(u)">
+                  {{ u.estado?.toUpperCase() === 'ACTIVO' ? 'Desactivar' : 'Activar' }}
+                </button>
               </div>
             </td>
           </tr>

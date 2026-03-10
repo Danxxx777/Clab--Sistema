@@ -363,16 +363,36 @@ export class UsuariosComponent implements OnInit {
   private esEmailValido(email: string): boolean {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
-  desactivarUsuario(u: Usuario): void {
+
+  toggleEstadoUsuario(u: Usuario): void {
     if (!u.id) return;
+    const nuevoEstado = u.estado?.toUpperCase() === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO';
+    const accion = nuevoEstado === 'ACTIVO' ? 'activar' : 'desactivar';
+
     this.accionPendiente = () => {
-      this.usuarioService.desactivar(u.id!).subscribe(() => {
-        this.cargarUsuarios();
-        this.registrarAuditoria('Desactivar usuario', 'Usuarios');
-        this.mostrarAlerta('Usuario desactivado', `${u.nombres} ${u.apellidos} fue desactivado.`, 'exito');
+      const request$ = nuevoEstado === 'ACTIVO'
+        ? this.usuarioService.activar(u.id!)
+        : this.usuarioService.desactivar(u.id!);
+
+      request$.subscribe({
+        next: () => {
+          this.cargarUsuarios();
+          this.registrarAuditoria(`${nuevoEstado === 'ACTIVO' ? 'Activar' : 'Desactivar'} usuario`, 'Usuarios');
+          this.mostrarAlerta(
+            nuevoEstado === 'ACTIVO' ? '¡Usuario activado!' : 'Usuario desactivado',
+            `${u.nombres} ${u.apellidos} fue ${nuevoEstado === 'ACTIVO' ? 'activado' : 'desactivado'} correctamente.`,
+            'exito'
+          );
+        },
+        error: () => this.mostrarAlerta('Error', 'No se pudo cambiar el estado.', 'error')
       });
     };
-    this.mostrarAlerta('¿Desactivar usuario?', `¿Desactivar a ${u.nombres} ${u.apellidos}?`, 'confirmar');
+
+    this.mostrarAlerta(
+      `¿${nuevoEstado === 'ACTIVO' ? 'Activar' : 'Desactivar'} usuario?`,
+      `¿Deseas ${accion} a ${u.nombres} ${u.apellidos}?`,
+      'confirmar'
+    );
   }
 
   /* ==FILTRADO Y PAGINACIÓN== */
@@ -419,8 +439,14 @@ export class UsuariosComponent implements OnInit {
     this.notificacionTipo = tipo;
     this.mostrarNotificacion = true;
     this.cdr.detectChanges();
-  }
 
+    if (tipo !== 'confirmar') {
+      setTimeout(() => {
+        this.mostrarNotificacion = false;
+        this.cdr.detectChanges();
+      }, 3000);
+    }
+  }
   cerrarNotificacion(): void {
     this.mostrarNotificacion = false;
     this.accionPendiente = null;

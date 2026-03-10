@@ -494,6 +494,10 @@ html, body {
       color: #ff6b6b; border-color: rgba(231, 76, 60, 0.25); background: $red-dim;
       &:hover { background: rgba(231, 76, 60, 0.22); transform: translateY(-2px); }
     }
+    &.btn-activar {
+      color: $neon; border-color: $neon-border; background: $neon-dim;
+      &:hover { background: rgba(57, 255, 20, 0.18); transform: translateY(-2px); }
+    }
   }
 }
 
@@ -710,21 +714,49 @@ html, body {
 // TOAST
 // =====================
 .toast-notif {
-  position: fixed; bottom: 24px; right: 24px;
-  display: flex; align-items: flex-start; gap: 12px;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   padding: 14px 18px;
-  border-radius: 12px;
-  min-width: 300px; max-width: 400px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  border-radius: 10px;
+  min-width: 280px;
+  max-width: 400px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
   z-index: 9999;
-  animation: toastIn 0.35s cubic-bezier(0.4,0,0.2,1);
-  border: 1px solid $border;
-  border-left: 3px solid transparent;
-  background: $surface;
+  animation: toastIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #1e1e1e !important;
+  border: 1px solid #3a3a3a;
+  border-left: 4px solid transparent;
 
-  &.toast-exito    { border-left-color: $neon;    background: linear-gradient(135deg, rgba(57,255,20,0.08), $surface); .toast-body strong { color: $neon; } }
-  &.toast-error    { border-left-color: #ff6b6b;  background: linear-gradient(135deg, rgba(231,76,60,0.08), $surface); .toast-body strong { color: #ff6b6b; } }
-  &.toast-confirmar{ border-left-color: $amber;   background: linear-gradient(135deg, rgba(245,158,11,0.08), $surface); .toast-body strong { color: $amber; } }
+  &.toast-exito {
+    border-left-color: $neon;
+    background: #1e1e1e !important;
+
+    .toast-body strong {
+      color: $neon;
+    }
+  }
+
+  &.toast-error {
+    border-left-color: #ff6b6b;
+    background: #1e1e1e !important;
+
+    .toast-body strong {
+      color: #ff6b6b;
+    }
+  }
+
+  &.toast-confirmar {
+    border-left-color: $amber;
+    background: #1e1e1e !important;
+
+    .toast-body strong {
+      color: $amber;
+    }
+  }
 }
 .toast-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
 .toast-body {

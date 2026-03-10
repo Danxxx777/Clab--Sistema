@@ -36,7 +36,11 @@
         <td>
           <div class="action-buttons">
             <button class="btn-action btn-editar" (click)="abrirModalRol('editar', r)">Editar</button>
-            <button class="btn-action btn-eliminar" (click)="desactivarRol(r)">Desactivar</button>
+            <button class="btn-action"
+                    [ngClass]="r.estado === 'ACTIVO' ? 'btn-eliminar' : 'btn-activar'"
+                    (click)="toggleEstadoRolTabla(r)">
+              {{ r.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}
+            </button>
           </div>
         </td>
       </tr>
@@ -166,14 +170,6 @@
     </div>
 
     <div class="modal-footer">
-      <div class="modal-footer-left" *ngIf="modoModal === 'editar'">
-        <button class="btn-estado-activo"
-                *ngIf="rolActual.estado !== 'ACTIVO'"
-                (click)="cambiarEstadoRol('ACTIVO')">✓ Activar</button>
-        <button class="btn-estado-inactivo"
-                *ngIf="rolActual.estado === 'ACTIVO' || !rolActual.estado"
-                (click)="cambiarEstadoRol('INACTIVO')">⊘ Desactivar</button>
-      </div>
       <div class="modal-footer-right">
         <button class="btn-cancelar" (click)="cerrarModalRol()">Cancelar</button>
         <button class="btn-guardar" (click)="guardarRol()" [disabled]="guardandoRol">
