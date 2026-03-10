@@ -181,4 +181,15 @@ public class UsuarioService {
                 .map(this::toDTO)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
+    @Transactional
+    public void activar(Integer id, Integer actorId, String actorUsuario, String ip) {
+        entityManager.createNativeQuery(
+                        "CALL usuarios.sp_activar_usuario(:idUsuario, :actorId, :actorUsuario, :ip)"
+                )
+                .setParameter("idUsuario",    id)
+                .setParameter("actorId",      actorId)
+                .setParameter("actorUsuario", actorUsuario)
+                .setParameter("ip",           ip)
+                .executeUpdate();
+    }
 }
