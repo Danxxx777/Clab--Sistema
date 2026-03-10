@@ -67,7 +67,7 @@ public class RolService {
     // ─── CREAR ───────────────────────────────────────────────────────────────
 
     @Transactional
-    public Rol crear(RolRequestDTO dto, Integer actorId, String actorUsuario) {
+    public Rol crear(RolRequestDTO dto, Integer actorId, String actorUsuario, String ip) {
         setActorContext(actorId, actorUsuario);
         sincronizarRolesBD();
 
@@ -84,8 +84,7 @@ public class RolService {
                 .setParameter("descripcion", descripcion)
                 .executeUpdate();
 
-        Rol rolGuardado = rolRepository
-                .findByNombreRolIgnoreCase(nombre)
+        Rol rolGuardado = rolRepository.findByNombreRolIgnoreCase(nombre)
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado después de ejecutar SP"));
 
         rolGuardado.setEstado("ACTIVO");
@@ -95,10 +94,8 @@ public class RolService {
 
         if (dto.getRolesBD() != null) {
             for (String nombreRolBD : dto.getRolesBD()) {
-                RolBD rolBdEntidad = rolBDRepository
-                        .findByNombreRolBd(nombreRolBD)
+                RolBD rolBdEntidad = rolBDRepository.findByNombreRolBd(nombreRolBD)
                         .orElseThrow(() -> new RuntimeException("Rol BD no encontrado: " + nombreRolBD));
-
                 RolRolBD relacion = new RolRolBD();
                 relacion.setRol(rolGuardado);
                 relacion.setRolBd(rolBdEntidad);
@@ -107,7 +104,9 @@ public class RolService {
                 rolRolBDRepository.save(relacion);
             }
         }
+
         asignarPermisosEsquemas(dto.getPermisosEsquemas());
+
         return rolGuardado;
     }
 
@@ -138,19 +137,18 @@ public class RolService {
     // ─── ACTUALIZAR ──────────────────────────────────────────────────────────
 
     @Transactional
-    public Rol actualizar(Integer id, RolRequestDTO dto, Integer actorId, String actorUsuario) {
+    public Rol actualizar(Integer id, RolRequestDTO dto, Integer actorId, String actorUsuario, String ip) {
         setActorContext(actorId, actorUsuario);
         sincronizarRolesBD();
 
         Rol rol = rolRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+
         rol.setNombreRol(dto.getNombreRol().trim());
         rol.setDescripcion(dto.getDescripcion());
-
         if (dto.getEstado() != null && !dto.getEstado().isBlank()) {
             rol.setEstado(dto.getEstado());
         }
-
         Rol rolActualizado = rolRepository.save(rol);
 
         rolPermisoRepository.deleteByRol_IdRol(id);
@@ -159,10 +157,8 @@ public class RolService {
         rolRolBDRepository.deleteByRol_IdRol(id);
         if (dto.getRolesBD() != null) {
             for (String nombreRolBD : dto.getRolesBD()) {
-                RolBD rolBdEntidad = rolBDRepository
-                        .findByNombreRolBd(nombreRolBD)
+                RolBD rolBdEntidad = rolBDRepository.findByNombreRolBd(nombreRolBD)
                         .orElseThrow(() -> new RuntimeException("Rol BD no encontrado: " + nombreRolBD));
-
                 RolRolBD relacion = new RolRolBD();
                 relacion.setRol(rolActualizado);
                 relacion.setRolBd(rolBdEntidad);
@@ -171,21 +167,25 @@ public class RolService {
                 rolRolBDRepository.save(relacion);
             }
         }
+
         asignarPermisosEsquemas(dto.getPermisosEsquemas());
+
         return rolActualizado;
     }
 
     // ─── CAMBIAR ESTADO ──────────────────────────────────────────────────────
 
     @Transactional
-    public void cambiarEstado(Integer id, String estado, Integer actorId, String actorUsuario) {
+    public void cambiarEstado(Integer id, String estado, Integer actorId, String actorUsuario, String ip) {
         setActorContext(actorId, actorUsuario);
 
         Rol rol = rolRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+
         if (!estado.equals("ACTIVO") && !estado.equals("INACTIVO")) {
             throw new RuntimeException("Estado inválido. Use ACTIVO o INACTIVO");
         }
+
         rol.setEstado(estado);
         rolRepository.save(rol);
     }
@@ -193,11 +193,13 @@ public class RolService {
     // ─── ELIMINAR ────────────────────────────────────────────────────────────
 
     @Transactional
-    public void eliminar(Integer id, Integer actorId, String actorUsuario) {
+    public void eliminar(Integer id, Integer actorId, String actorUsuario, String ip) {
         setActorContext(actorId, actorUsuario);
 
         Rol rol = rolRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+
+        String nombreRol = rol.getNombreRol();
 
         UsuarioRolRepository.deleteByRol_IdRol(id);
         rolRolBDRepository.deleteByRol_IdRol(id);
@@ -205,7 +207,7 @@ public class RolService {
         rolRepository.delete(rol);
 
         entityManager.createNativeQuery(
-                "DROP ROLE IF EXISTS \"" + rol.getNombreRol().toLowerCase() + "\""
+                "DROP ROLE IF EXISTS \"" + nombreRol.toLowerCase() + "\""
         ).executeUpdate();
     }
 

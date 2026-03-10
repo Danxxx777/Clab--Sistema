@@ -236,18 +236,31 @@ export class RolesComponent implements OnInit {
     });
   }
 
-  desactivarRol(r: RolView): void {
+  toggleEstadoRolTabla(r: RolView): void {
     if (!r.id) return;
+    const nuevoEstado = r.estado === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO';
+    const accion = nuevoEstado === 'ACTIVO' ? 'activar' : 'desactivar';
+
     this.accionPendiente = () => {
-      this.rolService.desactivar(r.id!).subscribe(() => {
-        this.cargarRoles();
-        this.registrarAuditoria('Desactivar rol', 'Roles');
-        this.mostrarAlerta('Rol desactivado', `El rol "${r.nombre}" fue desactivado.`, 'exito');
+      this.rolService.cambiarEstado(r.id!, nuevoEstado).subscribe({
+        next: () => {
+          this.cargarRoles();
+          this.mostrarAlerta(
+            nuevoEstado === 'ACTIVO' ? '¡Rol activado!' : 'Rol desactivado',
+            `El rol "${r.nombre}" fue ${nuevoEstado === 'ACTIVO' ? 'activado' : 'desactivado'} correctamente.`,
+            'exito'
+          );
+        },
+        error: () => this.mostrarAlerta('Error', 'No se pudo cambiar el estado.', 'error')
       });
     };
-    this.mostrarAlerta('¿Desactivar rol?', `¿Desactivar el rol "${r.nombre}"?`, 'confirmar');
-  }
 
+    this.mostrarAlerta(
+      `¿${nuevoEstado === 'ACTIVO' ? 'Activar' : 'Desactivar'} rol?`,
+      `¿Deseas ${accion} el rol "${r.nombre}"?`,
+      'confirmar'
+    );
+  }
   cambiarEstadoRol(estado: string): void {
     if (!this.rolActual.id) return;
     this.rolService.cambiarEstado(this.rolActual.id, estado).subscribe({
