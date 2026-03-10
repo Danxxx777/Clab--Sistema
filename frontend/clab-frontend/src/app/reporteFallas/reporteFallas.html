@@ -162,7 +162,6 @@
     <table class="data-table">
       <thead>
       <tr>
-        <th>ID REPORTE</th>
         <th>FECHA</th>
         <th>LABORATORIO</th>
         <th>EQUIPO</th>
@@ -174,7 +173,6 @@
 
       <tbody>
       <tr *ngFor="let reporte of reportesFiltrados">
-        <td>{{ reporte.idReporte }}</td>
 
         <td>{{ formatearFecha(reporte.fechaReporte) }}</td>
 
