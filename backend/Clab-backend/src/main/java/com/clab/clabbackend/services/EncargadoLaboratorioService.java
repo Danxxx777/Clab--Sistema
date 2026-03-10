@@ -2,8 +2,11 @@ package com.clab.clabbackend.services;
 
 import com.clab.clabbackend.dto.EncargadoLaboratorioDTO;
 import com.clab.clabbackend.repository.EncargadoLaboratorioRepository;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,6 +18,21 @@ import java.util.stream.Collectors;
 public class EncargadoLaboratorioService {
 
     private final EncargadoLaboratorioRepository encargadoLaboratorioRepository;
+    private final EntityManager entityManager;
+
+    // ─── CONTEXT ─────────────────────────────────────────────────────────────
+
+    private void setActorContext(Integer actorId, String actorUsuario) {
+        entityManager.createNativeQuery(
+                        "SELECT set_config('clab.actor_id', :id, true), " +
+                                "set_config('clab.actor_usuario', :usuario, true)"
+                )
+                .setParameter("id",      actorId != null ? actorId.toString() : "0")
+                .setParameter("usuario", actorUsuario != null ? actorUsuario : "Sistema")
+                .getSingleResult();
+    }
+
+    // ─── LISTAR ──────────────────────────────────────────────────────────────
 
     public List<Map<String, Object>> listarEncargados() {
         List<Object[]> resultados = encargadoLaboratorioRepository.listarEncargados();
@@ -34,8 +52,8 @@ public class EncargadoLaboratorioService {
     public List<Map<String, Object>> listarRolEncargados() {
         return encargadoLaboratorioRepository.listarRolEncargados().stream().map(row -> {
             Map<String, Object> map = new LinkedHashMap<>();
-            map.put("idUsuario",      row[0]);
-            map.put("nombreEncargado",  row[1]);
+            map.put("idUsuario",       row[0]);
+            map.put("nombreEncargado", row[1]);
             return map;
         }).toList();
     }
@@ -43,13 +61,17 @@ public class EncargadoLaboratorioService {
     public List<Map<String, Object>> listarLaboratorios() {
         return encargadoLaboratorioRepository.listarLaboratorios().stream().map(row -> {
             Map<String, Object> map = new LinkedHashMap<>();
-            map.put("codLaboratorio",      row[0]);
-            map.put("nombreLab",  row[1]);
+            map.put("codLaboratorio", row[0]);
+            map.put("nombreLab",      row[1]);
             return map;
         }).toList();
     }
 
-    public void insertarEncargado(EncargadoLaboratorioDTO dto) {
+    // ─── CREAR ───────────────────────────────────────────────────────────────
+
+    @Transactional
+    public void insertarEncargado(EncargadoLaboratorioDTO dto, Integer actorId, String actorUsuario) {
+        setActorContext(actorId, actorUsuario);
         encargadoLaboratorioRepository.insertarEncargado(
                 dto.getLaboratorio(),
                 dto.getFechaAsignacion(),
@@ -58,7 +80,11 @@ public class EncargadoLaboratorioService {
         );
     }
 
-    public void actualizarEncargado(EncargadoLaboratorioDTO dto) {
+    // ─── ACTUALIZAR ──────────────────────────────────────────────────────────
+
+    @Transactional
+    public void actualizarEncargado(EncargadoLaboratorioDTO dto, Integer actorId, String actorUsuario) {
+        setActorContext(actorId, actorUsuario);
         encargadoLaboratorioRepository.actualizarEncargado(
                 dto.getIdEncargadoLaboratorio(),
                 dto.getLaboratorio(),
@@ -68,7 +94,11 @@ public class EncargadoLaboratorioService {
         );
     }
 
-    public void eliminarEncargado(Integer id) {
+    // ─── ELIMINAR ────────────────────────────────────────────────────────────
+
+    @Transactional
+    public void eliminarEncargado(Integer id, Integer actorId, String actorUsuario) {
+        setActorContext(actorId, actorUsuario);
         encargadoLaboratorioRepository.eliminarEncargado(id);
     }
 }

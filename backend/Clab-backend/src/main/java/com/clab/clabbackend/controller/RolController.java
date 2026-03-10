@@ -25,6 +25,9 @@ public class RolController {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private com.clab.clabbackend.services.AuditoriaService auditoriaService;
+
     // ─── HELPERS JWT ─────────────────────────────────────────────────────────
 
     private Integer obtenerIdUsuario(HttpServletRequest request) {
@@ -65,18 +68,20 @@ public class RolController {
 
     @PostMapping("/crear")
     public Rol crear(@RequestBody RolRequestDTO dto, HttpServletRequest request) {
-        return rolService.crear(dto, obtenerIdUsuario(request), obtenerUsuario(request));
+        return rolService.crear(dto, obtenerIdUsuario(request), obtenerUsuario(request),
+                auditoriaService.obtenerIp(request));
     }
 
     @PutMapping("/actualizar/{id}")
     public Rol actualizar(@PathVariable Integer id, @RequestBody RolRequestDTO dto,
                           HttpServletRequest request) {
-        return rolService.actualizar(id, dto, obtenerIdUsuario(request), obtenerUsuario(request));
+        return rolService.actualizar(id, dto, obtenerIdUsuario(request), obtenerUsuario(request),
+                auditoriaService.obtenerIp(request));
     }
-
     @DeleteMapping("/eliminar/{id}")
     public void eliminar(@PathVariable Integer id, HttpServletRequest request) {
-        rolService.eliminar(id, obtenerIdUsuario(request), obtenerUsuario(request));
+        rolService.eliminar(id, obtenerIdUsuario(request), obtenerUsuario(request),
+                auditoriaService.obtenerIp(request));
     }
 
     @GetMapping("/{id}/permisos")
@@ -95,13 +100,13 @@ public class RolController {
                                            HttpServletRequest request) {
         try {
             String estado = body.get("estado");
-            rolService.cambiarEstado(id, estado, obtenerIdUsuario(request), obtenerUsuario(request));
+            rolService.cambiarEstado(id, estado, obtenerIdUsuario(request), obtenerUsuario(request),
+                    auditoriaService.obtenerIp(request));
             return ResponseEntity.ok(Map.of("mensaje", "Estado actualizado a " + estado));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
-
     @GetMapping("/roles-bd/{idRolBd}/permisos-esquemas")
     public ResponseEntity<List<Map<String, Object>>> obtenerPermisosEsquemas(@PathVariable Integer idRolBd) {
         return ResponseEntity.ok(rolService.obtenerPermisosEsquemas(idRolBd));
@@ -111,4 +116,5 @@ public class RolController {
     public ResponseEntity<List<String>> listarEsquemas() {
         return ResponseEntity.ok(rolService.listarEsquemas());
     }
+
 }

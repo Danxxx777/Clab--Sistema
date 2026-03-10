@@ -7,6 +7,8 @@ import com.clab.clabbackend.repository.LaboratorioRepository;
 import com.clab.clabbackend.repository.SedeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import jakarta.persistence.EntityManager;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -19,39 +21,113 @@ public class LaboratorioService {
     @Autowired
     private SedeRepository sedeRepository;
 
-    public Laboratorio crear(LaboratorioDTO dto) {
-        Sede sede = sedeRepository.findById(dto.getIdSede()).orElseThrow(() -> new RuntimeException("Sede no encontrada con id: " + dto.getIdSede()));
-        Integer nuevoCodigo = generarNuevoCodigo();
-        Laboratorio laboratorio = new Laboratorio();
-        laboratorio.setCodLaboratorio(nuevoCodigo);
-        laboratorio.setNombreLab(dto.getNombreLab());
-        laboratorio.setUbicacion(dto.getUbicacion());
-        laboratorio.setCapacidadEstudiantes(dto.getCapacidadEstudiantes());
-        laboratorio.setNumeroEquipos(dto.getNumeroEquipos());
-        laboratorio.setDescripcion(dto.getDescripcion());
-        laboratorio.setEstadoLab(dto.getEstadoLab() != null ? dto.getEstadoLab() : "Disponible");
-        laboratorio.setSede(sede);
-        return laboratorioRepository.save(laboratorio);
+    @Autowired
+    private EntityManager entityManager;
+
+    private void registrarAuditoria(Integer actorId, String actorUsuario, String accion,
+                                    String descripcion, String ip, String resultado,
+                                    Integer idRegistro, String datosAntes, String datosDespues) {
+        entityManager.createNativeQuery(
+                        "INSERT INTO usuarios.u_auditoria " +
+                                "(id_usuario, usuario, accion, modulo, tabla_afectada, id_registro_afectado, " +
+                                "descripcion, ip, resultado, fecha_hora, datos_anteriores, datos_nuevos) " +
+                                "VALUES (:actorId, :actorUsuario, :accion, 'LABORATORIOS', 'laboratorio', :idRegistro, " +
+                                ":descripcion, :ip, :resultado, NOW(), :datosAntes, :datosDespues)"
+                )
+                .setParameter("actorId",      actorId)
+                .setParameter("actorUsuario", actorUsuario)
+                .setParameter("accion",       accion)
+                .setParameter("idRegistro",   idRegistro)
+                .setParameter("descripcion",  descripcion)
+                .setParameter("ip",           ip)
+                .setParameter("resultado",    resultado)
+                .setParameter("datosAntes",   datosAntes)
+                .setParameter("datosDespues", datosDespues)
+                .executeUpdate();
+    }
+
+    private String capturarLabJson(Laboratorio lab) {
+        return String.format(
+                "{\"cod_laboratorio\":%d,\"nombre\":\"%s\",\"ubicacion\":\"%s\"," +
+                        "\"capacidad_estudiantes\":%d,\"numero_equipos\":%d," +
+                        "\"descripcion\":\"%s\",\"estado\":\"%s\",\"sede_id\":%d}",
+                lab.getCodLaboratorio(),
+                lab.getNombreLab()       != null ? lab.getNombreLab()       : "",
+                lab.getUbicacion()       != null ? lab.getUbicacion()       : "",
+                lab.getCapacidadEstudiantes() != null ? lab.getCapacidadEstudiantes() : 0,
+                lab.getNumeroEquipos()   != null ? lab.getNumeroEquipos()   : 0,
+                lab.getDescripcion()     != null ? lab.getDescripcion()     : "",
+                lab.getEstadoLab()       != null ? lab.getEstadoLab()       : "",
+                lab.getSede()            != null ? lab.getSede().getIdSede() : 0
+        );
+    }
+
+    // ─── CREAR ───────────────────────────────────────────────────────────────
+    @Transactional
+    public Laboratorio crear(LaboratorioDTO dto, Integer actorId, String actorUsuario, String ip) {
+        Sede sede = sedeRepository.findById(dto.getIdSede())
+                .orElseThrow(() -> new RuntimeException("Sede no encontrada con id: " + dto.getIdSede()));
+        try {
+            Laboratorio lab = new Laboratorio();
+            lab.setCodLaboratorio(generarNuevoCodigo());
+            lab.setNombreLab(dto.getNombreLab());
+            lab.setUbicacion(dto.getUbicacion());
+            lab.setCapacidadEstudiantes(dto.getCapacidadEstudiantes());
+            lab.setNumeroEquipos(dto.getNumeroEquipos());
+            lab.setDescripcion(dto.getDescripcion());
+            lab.setEstadoLab(dto.getEstadoLab() != null ? dto.getEstadoLab() : "Disponible");
+            lab.setSede(sede);
+            Laboratorio guardado = laboratorioRepository.save(lab);
+
+            registrarAuditoria(actorId, actorUsuario, "CREAR_LABORATORIO",
+                    "Creó el laboratorio: " + guardado.getNombreLab(),
+                    ip, "EXITOSO", guardado.getCodLaboratorio(),
+                    null, capturarLabJson(guardado));
+            return guardado;
+        } catch (Exception e) {
+            registrarAuditoria(actorId, actorUsuario, "CREAR_LABORATORIO",
+                    "Error al crear laboratorio: " + dto.getNombreLab() + " | " + e.getMessage(),
+                    ip, "FALLIDO", null, null, null);
+            throw e;
+        }
     }
 
     public List<Laboratorio> listar() {
         return laboratorioRepository.findAll();
     }
 
-    public Laboratorio actualizar(Integer codLaboratorio, LaboratorioDTO dto) {
-        Laboratorio laboratorio = laboratorioRepository.findById(codLaboratorio).orElseThrow(() -> new RuntimeException("Laboratorio no encontrado con código: " + codLaboratorio));
+    // ─── ACTUALIZAR ──────────────────────────────────────────────────────────
+    @Transactional
+    public Laboratorio actualizar(Integer codLaboratorio, LaboratorioDTO dto,
+                                  Integer actorId, String actorUsuario, String ip) {
+        Laboratorio lab = laboratorioRepository.findById(codLaboratorio)
+                .orElseThrow(() -> new RuntimeException("Laboratorio no encontrado: " + codLaboratorio));
+        Sede sede = sedeRepository.findById(dto.getIdSede())
+                .orElseThrow(() -> new RuntimeException("Sede no encontrada: " + dto.getIdSede()));
 
-        Sede sede = sedeRepository.findById(dto.getIdSede()).orElseThrow(() -> new RuntimeException("Sede no encontrada con id: " + dto.getIdSede()));
-        laboratorio.setNombreLab(dto.getNombreLab());
-        laboratorio.setUbicacion(dto.getUbicacion());
-        laboratorio.setCapacidadEstudiantes(dto.getCapacidadEstudiantes());
-        laboratorio.setNumeroEquipos(dto.getNumeroEquipos());
-        laboratorio.setDescripcion(dto.getDescripcion());
-        laboratorio.setEstadoLab(dto.getEstadoLab());
-        laboratorio.setSede(sede);
-        return laboratorioRepository.save(laboratorio);
+        String datosAntes = capturarLabJson(lab);
+        try {
+            lab.setNombreLab(dto.getNombreLab());
+            lab.setUbicacion(dto.getUbicacion());
+            lab.setCapacidadEstudiantes(dto.getCapacidadEstudiantes());
+            lab.setNumeroEquipos(dto.getNumeroEquipos());
+            lab.setDescripcion(dto.getDescripcion());
+            lab.setEstadoLab(dto.getEstadoLab());
+            lab.setSede(sede);
+            Laboratorio actualizado = laboratorioRepository.save(lab);
+
+            registrarAuditoria(actorId, actorUsuario, "EDITAR_LABORATORIO",
+                    "Actualizó el laboratorio: " + actualizado.getNombreLab(),
+                    ip, "EXITOSO", codLaboratorio,
+                    datosAntes, capturarLabJson(actualizado));
+            return actualizado;
+        } catch (Exception e) {
+            registrarAuditoria(actorId, actorUsuario, "EDITAR_LABORATORIO",
+                    "Error al actualizar laboratorio id: " + codLaboratorio + " | " + e.getMessage(),
+                    ip, "FALLIDO", codLaboratorio, datosAntes, null);
+            throw e;
+        }
     }
-
     private Integer generarNuevoCodigo() {
         List<Laboratorio> laboratorios = laboratorioRepository.findAll();
 
@@ -63,11 +139,23 @@ public class LaboratorioService {
     }
 
 
-    public void eliminar(Integer codLaboratorio) {
-        if (!laboratorioRepository.existsById(codLaboratorio)) {
-            throw new RuntimeException("Laboratorio no encontrado con código: " + codLaboratorio);
+    // ─── ELIMINAR ────────────────────────────────────────────────────────────
+    @Transactional
+    public void eliminar(Integer codLaboratorio, Integer actorId, String actorUsuario, String ip) {
+        Laboratorio lab = laboratorioRepository.findById(codLaboratorio)
+                .orElseThrow(() -> new RuntimeException("Laboratorio no encontrado: " + codLaboratorio));
+        String datosAntes = capturarLabJson(lab);
+        try {
+            laboratorioRepository.deleteById(codLaboratorio);
+            registrarAuditoria(actorId, actorUsuario, "ELIMINAR_LABORATORIO",
+                    "Eliminó el laboratorio: " + lab.getNombreLab(),
+                    ip, "EXITOSO", codLaboratorio, datosAntes, null);
+        } catch (Exception e) {
+            registrarAuditoria(actorId, actorUsuario, "ELIMINAR_LABORATORIO",
+                    "Error al eliminar laboratorio id: " + codLaboratorio + " | " + e.getMessage(),
+                    ip, "FALLIDO", codLaboratorio, datosAntes, null);
+            throw e;
         }
-        laboratorioRepository.deleteById(codLaboratorio);
     }
 
     public Laboratorio obtenerPorId(Integer codLaboratorio) {
