@@ -47,7 +47,9 @@ export class UsuarioService {
   actualizar(id: number, data: UsuarioRequest): Observable<UsuarioResponse> {
     return this.http.put<UsuarioResponse>(`${this.baseUrl}/actualizar/${id}`, data);
   }
-
+  activar(id: number): Observable<any> {
+    return this.http.put(`${this.baseUrl}/activar/${id}`, {});
+  }
   desactivar(id: number): Observable<void> {
     return this.http.put<void>(`${this.baseUrl}/desactivar/${id}`, {});
   }
