@@ -53,6 +53,7 @@ public class SecurityConfig {
                         .requestMatchers("/encargados-laboratorios/**").permitAll()
                         .requestMatchers("/usuarios/**").permitAll()
                         .requestMatchers("/notificaciones/**").permitAll()
+                        .requestMatchers("/api/reportes/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
