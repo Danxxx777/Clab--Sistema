@@ -13,7 +13,7 @@ import { ReporteEquipoItem } from '../interfaces/Reportar.model';
   templateUrl: './reportar.html',
   styleUrls: ['./reportar.scss']
 })
-export class ReportarComponent{
+export class ReportarComponent implements OnInit{
   constructor(
     private router: Router,
     private cdr: ChangeDetectorRef,
@@ -138,16 +138,20 @@ export class ReportarComponent{
   }
 
   cargarLaboratorios(): void {
-    // TODO: conectar al servicio real
-    // this.labService.listar().subscribe(data => this.laboratorios = data);
-    this.laboratorios = [
-      { codLaboratorio: 1, nombreLab: 'Lab. Programación' },
-      { codLaboratorio: 2, nombreLab: 'Lab. Redes' },
-      { codLaboratorio: 3, nombreLab: 'Lab. Base de Datos' },
-      { codLaboratorio: 4, nombreLab: 'Lab. IA' },
-      { codLaboratorio: 5, nombreLab: 'Lab. SO' },
-    ];
+    this.reportarService.getLaboratorios().subscribe({
+      next: (data) => {
+        this.laboratorios = data.map(l => ({
+          codLaboratorio: l.codLaboratorio,
+          nombreLab:      l.nombreLab
+        }));
+      },
+      error: () => {
+        this.mostrarNotif('Error al cargar laboratorios', 'error');
+      }
+    });
   }
+
+
 
   cargarResumenGlobal(): void {
     // TODO: conectar al endpoint real de resumen
@@ -176,8 +180,6 @@ export class ReportarComponent{
 
     if (id === 'equipos') {
       this.generarEquipos();          // ← llama directo, sin setTimeout
-      this.cargando = false;
-      this.mostrarNotif('Reporte generado correctamente');
     } else {
       // Los demás módulos siguen con mock por ahora
       setTimeout(() => {
