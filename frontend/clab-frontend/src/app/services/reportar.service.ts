@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Laboratorio } from '../interfaces/Reportar.model';
 import {
   FiltrosReporte,
   ResumenGlobal,
@@ -14,6 +15,7 @@ import {
   ReporteAcademicoItem,
   ReporteBloqueosItem,
 } from '../interfaces/Reportar.model';
+
 
 @Injectable({ providedIn: 'root' })
 export class ReportarService {
@@ -57,6 +59,10 @@ export class ReportarService {
 
   getReporteBloqueos(filtros: FiltrosReporte): Observable<ReporteResponse<ReporteBloqueosItem>> {
     return this.http.get<ReporteResponse<ReporteBloqueosItem>>(`${this.api}/reportes/bloqueos`, { params: this.buildParams(filtros) });
+  }
+
+  getLaboratorios(): Observable<Laboratorio[]> {
+    return this.http.get<Laboratorio[]>(`http://localhost:8080/laboratorios/listar`);
   }
 
   private buildParams(filtros: FiltrosReporte): HttpParams {

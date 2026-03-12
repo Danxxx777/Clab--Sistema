@@ -8,9 +8,13 @@ export interface TipoEquipoDTO {
   descripcion: string;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+// ✅ Payload corregido: usa nombreTipo (como espera el backend)
+export interface TipoEquipoPayload {
+  nombreTipo: string;
+  descripcion: string;
+}
+
+@Injectable({ providedIn: 'root' })
 export class TipoEquipoService {
 
   private apiUrl = 'http://localhost:8080/tipos-equipo';
