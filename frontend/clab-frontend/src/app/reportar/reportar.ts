@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {Laboratorio, ModuloConfig, StatModulo, DatoGrafica } from '../interfaces/Reportar.model';
-
+import { ReportarService } from '../services/reportar.service';
+import { ReporteEquipoItem } from '../interfaces/Reportar.model';
 
 @Component({
   selector: 'app-reportar',
@@ -15,7 +16,8 @@ import {Laboratorio, ModuloConfig, StatModulo, DatoGrafica } from '../interfaces
 export class ReportarComponent{
   constructor(
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private reportarService: ReportarService
   ) {}
 
   // ─── ESTADO GENERAL ────────────────────────────────────────────────────────
@@ -170,23 +172,29 @@ export class ReportarComponent{
     this.busquedaRealizada = true;
     this.cargando = true;
 
-    // Simula carga (quitar cuando conectes el backend)
-    setTimeout(() => {
+    const id = this.modulos[this.moduloActivo!].id;
+
+    if (id === 'equipos') {
+      this.generarEquipos();          // ← llama directo, sin setTimeout
       this.cargando = false;
-      const id = this.modulos[this.moduloActivo!].id;
-      switch (id) {
-        case 'uso':        this.generarUso();       break;
-        case 'equipos':    this.generarEquipos();    break;
-        case 'fallas':     this.generarFallas();     break;
-        case 'usuarios':   this.generarUsuarios();   break;
-        case 'reservas':   this.generarReservas();   break;
-        case 'asistencia': this.generarAsistencia(); break;
-        case 'academico':  this.generarAcademico();  break;
-        case 'bloqueos':   this.generarBloqueos();   break;
-      }
       this.mostrarNotif('Reporte generado correctamente');
-      this.cdr.detectChanges();
-    }, 600);
+    } else {
+      // Los demás módulos siguen con mock por ahora
+      setTimeout(() => {
+        this.cargando = false;
+        switch (id) {
+          case 'uso':        this.generarUso();       break;
+          case 'fallas':     this.generarFallas();     break;
+          case 'usuarios':   this.generarUsuarios();   break;
+          case 'reservas':   this.generarReservas();   break;
+          case 'asistencia': this.generarAsistencia(); break;
+          case 'academico':  this.generarAcademico();  break;
+          case 'bloqueos':   this.generarBloqueos();   break;
+        }
+        this.mostrarNotif('Reporte generado correctamente');
+        this.cdr.detectChanges();
+      }, 600);
+    }
   }
 
   limpiarFiltros(): void {
@@ -235,33 +243,47 @@ export class ReportarComponent{
   }
 
   private generarEquipos(): void {
-    this.statsModulo = [
-      { icono: '🖥️', valor: 112, label: 'Total Equipos',       color: '#39ff14'  },
-      { icono: '✅', valor: 97,  label: 'Operativos',           color: '#39ff14'  },
-      { icono: '🔧', valor: 10,  label: 'En Mantenimiento',     color: '#e67e22'  },
-      { icono: '❌', valor: 5,   label: 'Fuera de Servicio',    color: '#e74c3c'  },
-    ];
-    this.tituloGrafica1 = 'Equipos por Laboratorio';
-    this.tituloGrafica2 = 'Estado de Equipos';
-    this.datosGrafica = [
-      { label: 'Lab. Prog.',  valor: 30, pct: 100 },
-      { label: 'Lab. BD',     valor: 25, pct: 83  },
-      { label: 'Lab. SO',     valor: 22, pct: 73  },
-      { label: 'Lab. Redes',  valor: 20, pct: 67  },
-      { label: 'Lab. IA',     valor: 15, pct: 50  },
-    ];
-    this.datosDistribucion = [
-      { label: 'Operativo',        valor: 97, pct: 87 },
-      { label: 'Mantenimiento',    valor: 10, pct: 9  },
-      { label: 'Fuera de Servicio',valor: 5,  pct: 4  },
-    ];
-    this.columnasTabla = ['SERIE', 'NOMBRE', 'TIPO', 'LABORATORIO', 'ESTADO'];
-    this.datosReporte = [
-      { a: 'PC-001',  b: 'Computadora Dell', c: 'PC',         d: 'Lab. Programación', estado: 'OPERATIVO'     },
-      { a: 'SW-005',  b: 'Switch Cisco',      c: 'Networking', d: 'Lab. Redes',         estado: 'MANTENIMIENTO' },
-      { a: 'PC-007',  b: 'Computadora HP',   c: 'PC',         d: 'Lab. Redes',         estado: 'FUERA'         },
-    ];
-    this.mostrarEstadisticas = true;
+    this.reportarService.getReporteEquipos({
+      laboratorio: this.filtros.laboratorio || undefined,
+      estado:      this.filtros.estado      || undefined
+    }).subscribe({
+      next: (res) => {
+        this.cargando= false;
+        this.mostrarNotif('Reporte generado correctamente');
+        // ── Stats ──────────────────────────────────────────────
+        this.statsModulo = [
+          { icono: '🖥️', valor: res.stats['totalEquipos'],  label: 'Total Equipos',    color: '#39ff14' },
+          { icono: '✅', valor: res.stats['operativos'],    label: 'Operativos',       color: '#39ff14' },
+          { icono: '🔧', valor: res.stats['mantenimiento'], label: 'En Mantenimiento', color: '#e67e22' },
+          { icono: '❌', valor: res.stats['fueraServicio'], label: 'Fuera de Servicio',color: '#e74c3c' },
+        ];
+
+        // ── Gráficas ───────────────────────────────────────────
+        this.tituloGrafica1    = 'Equipos por Laboratorio';
+        this.tituloGrafica2    = 'Estado de Equipos';
+        this.datosGrafica      = res.grafica1;
+        this.datosDistribucion = res.grafica2;
+
+        // ── Tabla ──────────────────────────────────────────────
+        this.columnasTabla = ['SERIE', 'NOMBRE', 'TIPO', 'LABORATORIO', 'ESTADO'];
+        this.datosReporte  = res.datos.map((d: ReporteEquipoItem) => ({
+          a: d.serie,
+          b: d.nombre,
+          c: d.tipo,
+          d: d.laboratorio,
+          estado: d.estado
+        }));
+
+        this.mostrarEstadisticas = true;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error cargando reporte equipos', err);
+        this.mostrarNotif('Error al cargar el reporte de equipos', 'error');
+        this.cargando = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   private generarFallas(): void {
