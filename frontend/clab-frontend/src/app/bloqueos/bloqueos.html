@@ -180,7 +180,8 @@
                 </td>
                 <td>
                   <div class="tipo-actions">
-                    <button class="btn-editar-tipo"   (click)="abrirModalEditarTipo(tipo)">Editar</button>
+                    <button class="btn-ver-tipo" (click)="verTipo(tipo)">Ver</button>
+                    <button class="btn-editar-tipo" (click)="abrirModalEditarTipo(tipo)">Editar</button>
                     <button class="btn-eliminar-tipo" (click)="eliminarTipo(tipo)">Eliminar</button>
                   </div>
                 </td>
@@ -349,6 +350,53 @@
       </div>
       <div class="modal-footer">
         <button class="btn-cancelar" (click)="cerrarModalVer()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if(mostrarModalConfirmTipo) {
+  <div class="modal-overlay">
+    <div class="modal-card modal-confirm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Confirmar Eliminación</h2>
+        <button class="modal-close" (click)="cerrarModalConfirmTipo()">×</button>
+      </div>
+      <div class="modal-body">
+        <p [innerHTML]="confirmMensajeTipo"></p>
+        <p class="warning-text">⚠️ Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancelar" (click)="cerrarModalConfirmTipo()">Cancelar</button>
+        <button class="btn-eliminar-confirm" (click)="ejecutarEliminarTipo()">Sí, Eliminar</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if(mostrarModalVerTipo) {
+  <div class="modal-overlay">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Detalle del Tipo de Bloqueo</h2>
+        <button class="modal-close" (click)="cerrarModalVerTipo()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Nombre</label>
+          <input type="text" [value]="tipoDetalle?.nombreTipo" disabled />
+        </div>
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea rows="3" disabled>{{ tipoDetalle?.descripcion }}</textarea>
+        </div>
+        <div class="form-group">
+          <label>Estado</label>
+          <input type="text" [value]="tipoDetalle?.estado" disabled />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancelar" (click)="cerrarModalVerTipo()">Cerrar</button>
       </div>
     </div>
   </div>
