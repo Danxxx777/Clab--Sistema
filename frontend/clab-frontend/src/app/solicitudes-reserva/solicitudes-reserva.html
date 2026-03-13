@@ -1,4 +1,4 @@
-<div class="solicitudes-container">
+<div class="solicitudes-container" (click)="cerrarTimePickerSiAfuera($event)">
 
   <!-- DRAWER OVERLAY -->
   <div class="drawer-overlay" [class.open]="drawerAbierto" (click)="cerrarDrawer()"></div>
@@ -174,7 +174,6 @@
         <button class="btn-pag" (click)="irAPagina(totalPaginas)" [disabled]="paginaActual === totalPaginas">»</button>
       </div>
 
-      <!-- cambia el botón Nueva Solicitud -->
       <button class="btn-agregar"
               (click)="abrirModal()"
               [disabled]="usuarioBloqueado"
@@ -291,7 +290,6 @@
         </div>
         <div class="form-group">
           <label>Horario Académico</label>
-
           <select *ngIf="modoModal !== 'ver'" class="form-control"
                   [(ngModel)]="solicitudActual.id_horario_academico"
                   (change)="onHorarioChange()">
@@ -305,6 +303,7 @@
           </div>
         </div>
       </div>
+
       <!-- FILA 3: Tipo de Reserva + Estudiantes -->
       <div class="form-row">
         <div class="form-group">
@@ -323,30 +322,76 @@
                  placeholder="Ej: 25" min="1">
         </div>
       </div>
-      <!-- FILA 4: Fecha + Hora Inicio -->
-      <div class="form-row">
+
+      <!-- FILA 4: Fecha + Hora Inicio + Hora Fin -->
+      <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
+
         <div class="form-group">
           <label>Fecha de Reserva <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
           <input type="date" class="form-control"
                  [(ngModel)]="solicitudActual.fecha"
                  [disabled]="modoModal === 'ver'">
         </div>
+
+        <!-- TIME PICKER: HORA INICIO -->
         <div class="form-group">
           <label>Hora Inicio <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
-          <input type="time" class="form-control"
-                 [(ngModel)]="solicitudActual.horaInicio"
-                 [disabled]="modoModal === 'ver' || solicitudActual.id_horario_academico">
+          <div *ngIf="modoModal === 'ver'" class="form-control" style="cursor:default">
+            {{ solicitudActual.horaInicio || '--:--' }}
+          </div>
+          <div *ngIf="modoModal !== 'ver' && solicitudActual.id_horario_academico && solicitudActual.id_horario_academico !== 'null' && +solicitudActual.id_horario_academico > 0"
+               class="form-control" style="cursor:default; color:#6b6b6b">
+            {{ solicitudActual.horaInicio || '--:--' }}
+          </div>
+          <div *ngIf="modoModal !== 'ver' && (!solicitudActual.id_horario_academico || solicitudActual.id_horario_academico === 'null' || +solicitudActual.id_horario_academico === 0)"
+               class="time-picker-wrap"
+               (click)="$event.stopPropagation()">
+            <div class="time-display"
+                 [class.active]="timePickerAbierto === 'inicio'"
+                 (click)="toggleTimePicker('inicio', $event)">
+              <span>{{ solicitudActual.horaInicio || '--:--' }}</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div class="time-picker-dropdown" *ngIf="timePickerAbierto === 'inicio'">
+              <div class="tp-option"
+                   *ngFor="let h of horasDisponibles"
+                   [class.tp-selected]="solicitudActual.horaInicio === h"
+                   (click)="selectHora('inicio', h)">{{ h }}</div>
+            </div>
+          </div>
         </div>
-      </div>
-      <!-- FILA 5: Hora Fin -->
-      <div class="form-row">
+
+        <!-- TIME PICKER: HORA FIN -->
         <div class="form-group">
           <label>Hora Fin <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
-          <input type="time" class="form-control"
-                 [(ngModel)]="solicitudActual.horaFin"
-                 [disabled]="modoModal === 'ver' || solicitudActual.id_horario_academico">
+          <div *ngIf="modoModal === 'ver'" class="form-control" style="cursor:default">
+            {{ solicitudActual.horaFin || '--:--' }}
+          </div>
+          <div *ngIf="modoModal !== 'ver' && solicitudActual.id_horario_academico && solicitudActual.id_horario_academico !== 'null' && +solicitudActual.id_horario_academico > 0"
+               class="form-control" style="cursor:default; color:#6b6b6b">
+            {{ solicitudActual.horaFin || '--:--' }}
+          </div>
+          <div *ngIf="modoModal !== 'ver' && (!solicitudActual.id_horario_academico || solicitudActual.id_horario_academico === 'null' || +solicitudActual.id_horario_academico === 0)"
+               class="time-picker-wrap"
+               (click)="$event.stopPropagation()">
+            <div class="time-display"
+                 [class.active]="timePickerAbierto === 'fin'"
+                 (click)="toggleTimePicker('fin', $event)">
+              <span>{{ solicitudActual.horaFin || '--:--' }}</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div class="time-picker-dropdown" *ngIf="timePickerAbierto === 'fin'">
+              <div class="tp-option"
+                   *ngFor="let h of horasDisponibles"
+                   [class.tp-selected]="solicitudActual.horaFin === h"
+                   (click)="selectHora('fin', h)">{{ h }}</div>
+            </div>
+          </div>
         </div>
-        <div class="form-group"></div>
       </div>
       <!-- MOTIVO -->
       <div class="form-group full-width">
@@ -357,15 +402,17 @@
                   rows="2"
                   placeholder="Describe el propósito de la reserva..."></textarea>
       </div>
+
       <!-- DESCRIPCIÓN -->
-      <div class="form-group full-width">
+      <div class="form-group full-width" style="margin-top: 12px;">
         <label>Descripción</label>
         <textarea class="form-control"
                   [(ngModel)]="solicitudActual.descripcion"
                   [disabled]="modoModal === 'ver'"
-                  rows="2"
+                  rows="0"
                   placeholder="Información adicional..."></textarea>
       </div>
+
       <!-- ESTADO (solo ver) -->
       <div class="form-group full-width" *ngIf="modoModal === 'ver'">
         <label>Estado</label>
@@ -375,6 +422,7 @@
         </span>
       </div>
     </div>
+
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cerrarModal()">
         {{ modoModal === 'ver' ? 'Cerrar' : 'Cancelar' }}

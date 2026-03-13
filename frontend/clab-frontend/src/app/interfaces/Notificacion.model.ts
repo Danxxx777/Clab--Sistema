@@ -7,5 +7,7 @@ export interface Notificacion {
   fechaCreacion: string;
   fechaEnvio: string | null;
   emailOrigen: string | null;
+  canal: string | null;
+  rolDestino: string | null;
   usuario: { idUsuario: number; nombres: string; email: string; };
 }

@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { ReporteFallasService } from '../services/reporte-fallas.service';
-import { Laboratorio, Equipo } from '../interfaces/ReporteFallas,model';
+import { Laboratorio, Equipo } from '../interfaces/ReporteFallas.model';
 
 @Component({
   selector: 'app-reporte-fallas',

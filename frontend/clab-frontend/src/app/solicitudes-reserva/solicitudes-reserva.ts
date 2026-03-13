@@ -22,7 +22,7 @@ export class SolicitudesReservaComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private route: ActivatedRoute,       // ← AÑADIDO para leer queryParams
+    private route: ActivatedRoute,
     private reservaService: ReservaService,
     private laboratorioService: LaboratorioService,
     private asignaturaService: AsignaturaService,
@@ -67,6 +67,51 @@ export class SolicitudesReservaComponent implements OnInit {
 
   usuarioBloqueado = false;
 
+  // ── Time Picker ────────────────────────────────────────────────────────────
+  timePickerAbierto: 'inicio' | 'fin' | null = null;
+
+  horasDisponibles: string[] = [
+    '07:00','07:30','08:00','08:30','09:00','09:30',
+    '10:00','10:30','11:00','11:30','12:00','12:30',
+    '13:00','13:30','14:00','14:30','15:00','15:30',
+    '16:00','16:30','17:00','17:30','18:00'
+  ];
+
+
+  toggleTimePicker(cual: 'inicio' | 'fin', event?: MouseEvent): void {
+    if (this.timePickerAbierto === cual) {
+      this.timePickerAbierto = null;
+      return;
+    }
+    this.timePickerAbierto = cual;
+    setTimeout(() => {
+      const wrap = (event?.target as HTMLElement)?.closest('.time-picker-wrap');
+      const input   = wrap?.querySelector('.time-display') as HTMLElement;
+      const dropdown = wrap?.querySelector('.time-picker-dropdown') as HTMLElement;
+      if (input && dropdown) {
+        const rect = input.getBoundingClientRect();
+        dropdown.style.top  = `${rect.bottom + 4}px`;
+        dropdown.style.left = `${rect.left}px`;
+        dropdown.style.width = `${rect.width}px`;
+      }
+    }, 0);
+  }
+
+  selectHora(cual: 'inicio' | 'fin', hora: string): void {
+    if (cual === 'inicio') this.solicitudActual.horaInicio = hora;
+    else                   this.solicitudActual.horaFin   = hora;
+    this.timePickerAbierto = null;
+    this.cdr.detectChanges();
+  }
+
+  cerrarTimePickerSiAfuera(event: Event): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.time-picker-wrap')) {
+      this.timePickerAbierto = null;
+    }
+  }
+  // ──────────────────────────────────────────────────────────────────────────
+
   ngOnInit(): void {
     this.rol = sessionStorage.getItem('rol') || '';
     this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
@@ -80,14 +125,12 @@ export class SolicitudesReservaComponent implements OnInit {
     this.cargarTodosLosHorarios();
     this.verificarBloqueoUsuario();
 
-    // ── Leer queryParams del calendario ──────────────────────────────────────
     this.route.queryParams.subscribe(params => {
       const fecha      = params['fecha'];
       const horaInicio = params['horaInicio'];
       const horaFin    = params['horaFin'];
 
       if (fecha && horaInicio && horaFin) {
-        // Esperar a que los selects estén cargados antes de abrir el modal
         setTimeout(() => {
           this.solicitudActual = {
             ...this.nuevaSolicitud(),
@@ -105,10 +148,7 @@ export class SolicitudesReservaComponent implements OnInit {
 
   verificarBloqueoUsuario(): void {
     this.asistenciaUsuarioService.usuarioBloqueado(this.idUsuario).subscribe({
-      next: (bloqueado) => {
-        this.usuarioBloqueado = bloqueado;
-        this.cdr.detectChanges();
-      },
+      next: (bloqueado) => { this.usuarioBloqueado = bloqueado; this.cdr.detectChanges(); },
       error: (err) => console.error('Error verificando bloqueo:', err)
     });
   }
@@ -148,10 +188,7 @@ export class SolicitudesReservaComponent implements OnInit {
   cargarLaboratorios(): void {
     this.laboratorioService.listar().subscribe({
       next: (data: any[]) => {
-        this.laboratorios = data.map(l => ({
-          cod_laboratorio: l.codLaboratorio,
-          nombre: l.nombreLab
-        }));
+        this.laboratorios = data.map(l => ({ cod_laboratorio: l.codLaboratorio, nombre: l.nombreLab }));
         this.cdr.detectChanges();
       },
       error: (err: any) => console.error('Error cargando laboratorios:', err)
@@ -161,10 +198,7 @@ export class SolicitudesReservaComponent implements OnInit {
   cargarAsignaturas(): void {
     this.asignaturaService.listar().subscribe({
       next: (data: any[]) => {
-        this.asignaturas = data.map(a => ({
-          id_asignatura: a.idAsignatura || 0,
-          nombre: a.nombre
-        }));
+        this.asignaturas = data.map(a => ({ id_asignatura: a.idAsignatura || 0, nombre: a.nombre }));
         this.cdr.detectChanges();
       },
       error: (err: any) => console.error('Error cargando asignaturas:', err)
@@ -174,23 +208,18 @@ export class SolicitudesReservaComponent implements OnInit {
   cargarPeriodos(): void {
     this.periodoService.listar().subscribe({
       next: (data: any[]) => {
-        this.periodos = data.map(p => ({
-          id_periodo: p.idPeriodo || 0,
-          nombre_periodo: p.nombrePeriodo
-        }));
+        this.periodos = data
+          .filter(p => p.estado === 'ACTIVO')
+          .map(p => ({ id_periodo: p.idPeriodo || 0, nombre_periodo: p.nombrePeriodo }));
         this.cdr.detectChanges();
       },
       error: (err: any) => console.error('Error cargando periodos:', err)
     });
   }
-
   cargarTipos(): void {
     this.tipoReservaService.listar().subscribe({
       next: (data: any[]) => {
-        this.tipos = data.map(t => ({
-          id_tipo_reserva: t.idTipoReserva,
-          nombre_tipo: t.nombreTipo
-        }));
+        this.tipos = data.map(t => ({ id_tipo_reserva: t.idTipoReserva, nombre_tipo: t.nombreTipo }));
         this.cdr.detectChanges();
       },
       error: (err: any) => console.error('Error cargando tipos:', err)
@@ -233,20 +262,19 @@ export class SolicitudesReservaComponent implements OnInit {
 
   onAsignaturaChange(): void {
     const id = this.solicitudActual.id_asignatura;
-    if (id) {
-      this.cargarHorariosPorAsignatura(id);
-    } else {
-      this.horariosAcademicos = [];
-    }
+    if (id) { this.cargarHorariosPorAsignatura(id); } else { this.horariosAcademicos = []; }
   }
 
   onHorarioChange(): void {
     const idHorario = this.solicitudActual.id_horario_academico;
-    if (!idHorario) {
+    const sinHorario = !idHorario || idHorario === 'null' || +idHorario === 0;
+    if (sinHorario) {
+      this.solicitudActual.id_horario_academico = null;
       this.solicitudActual.horaInicio = '';
       this.solicitudActual.horaFin = '';
       return;
     }
+
     const horario = this.horariosAcademicos.find(h => h.id_horario_academico == idHorario);
     if (horario) {
       this.solicitudActual.horaInicio = horario.hora_inicio;
@@ -287,6 +315,7 @@ export class SolicitudesReservaComponent implements OnInit {
   abrirModal(): void {
     this.modoModal = 'crear';
     this.solicitudActual = this.nuevaSolicitud();
+    this.timePickerAbierto = null;
     this.cargarTodosLosHorarios();
     this.mostrarModal = true;
   }
@@ -300,16 +329,13 @@ export class SolicitudesReservaComponent implements OnInit {
   cerrarModal(): void {
     this.mostrarModal = false;
     this.guardando = false;
+    this.timePickerAbierto = null;
     this.cdr.detectChanges();
   }
 
   guardarSolicitud(): void {
     if (this.usuarioBloqueado) {
-      this.mostrarAlerta(
-        '🔒 Usuario bloqueado',
-        'Tienes 2 inasistencias consecutivas. No puedes realizar solicitudes de reserva hasta ser desbloqueado.',
-        'error'
-      );
+      this.mostrarAlerta('🔒 Usuario bloqueado', 'Tienes 2 inasistencias consecutivas. No puedes realizar solicitudes de reserva hasta ser desbloqueado.', 'error');
       return;
     }
     const s = this.solicitudActual;
@@ -353,25 +379,12 @@ export class SolicitudesReservaComponent implements OnInit {
       error: (err: any) => {
         console.error('Error creando solicitud:', err);
         this.guardando = false;
-
-        const rawMsg: string =
-          err.error?.mensaje ||
-          err.error?.message ||
-          err.error?.error ||
-          '';
-
+        const rawMsg: string = err.error?.mensaje || err.error?.message || err.error?.error || '';
         let mensajeUsuario = 'No se pudo enviar la solicitud.';
-
-        if (rawMsg.toLowerCase().includes('ya está reservado')) {
-          mensajeUsuario = 'Este laboratorio ya está reservado en ese horario. Elige otro horario o laboratorio.';
-        } else if (rawMsg.toLowerCase().includes('bloqueado')) {
-          mensajeUsuario = 'El laboratorio está bloqueado y no puede recibir reservas.';
-        } else if (rawMsg.toLowerCase().includes('horario')) {
-          mensajeUsuario = 'El horario seleccionado no es válido.';
-        } else if (rawMsg) {
-          mensajeUsuario = rawMsg;
-        }
-
+        if (rawMsg.toLowerCase().includes('ya está reservado')) mensajeUsuario = 'Este laboratorio ya está reservado en ese horario. Elige otro horario o laboratorio.';
+        else if (rawMsg.toLowerCase().includes('bloqueado'))    mensajeUsuario = 'El laboratorio está bloqueado y no puede recibir reservas.';
+        else if (rawMsg.toLowerCase().includes('horario'))      mensajeUsuario = 'El horario seleccionado no es válido.';
+        else if (rawMsg)                                        mensajeUsuario = rawMsg;
         this.mostrarAlerta('No se pudo reservar', mensajeUsuario, 'error');
       }
     });
@@ -379,20 +392,10 @@ export class SolicitudesReservaComponent implements OnInit {
 
   cancelarSolicitud(s: any): void {
     this.accionPendiente = () => {
-      const dto = {
-        idReserva: s.id,
-        idUsuarioCancela: this.idUsuario,
-        motivoCancelacion: 'Cancelado por el docente'
-      };
+      const dto = { idReserva: s.id, idUsuarioCancela: this.idUsuario, motivoCancelacion: 'Cancelado por el docente' };
       this.reservaService.cancelar(dto).subscribe({
-        next: () => {
-          this.cargarSolicitudes();
-          this.mostrarAlerta('Solicitud cancelada', 'La solicitud fue cancelada correctamente.', 'exito');
-        },
-        error: (err: any) => {
-          console.error('Error cancelando:', err);
-          this.mostrarAlerta('Error', 'No se pudo cancelar la solicitud.', 'error');
-        }
+        next: () => { this.cargarSolicitudes(); this.mostrarAlerta('Solicitud cancelada', 'La solicitud fue cancelada correctamente.', 'exito'); },
+        error: (err: any) => { console.error('Error cancelando:', err); this.mostrarAlerta('Error', 'No se pudo cancelar la solicitud.', 'error'); }
       });
     };
     this.mostrarAlerta('¿Cancelar solicitud?', `¿Estás seguro de cancelar la reserva del ${s.nombre_laboratorio}?`, 'confirmar');
@@ -410,18 +413,10 @@ export class SolicitudesReservaComponent implements OnInit {
 
   nuevaSolicitud(): any {
     return {
-      cod_laboratorio: 0,
-      id_asignatura: 0,
-      id_periodo: 0,
-      id_horario_academico: null,
-      id_tipo_reserva: 0,
-      fecha: '',
-      horaInicio: '',
-      horaFin: '',
-      cantidadEstudiantes: null,
-      motivo: '',
-      descripcion: '',
-      estado: 'Pendiente'
+      cod_laboratorio: 0, id_asignatura: 0, id_periodo: 0,
+      id_horario_academico: null, id_tipo_reserva: 0,
+      fecha: '', horaInicio: '', horaFin: '',
+      cantidadEstudiantes: null, motivo: '', descripcion: '', estado: 'Pendiente'
     };
   }
 
@@ -431,32 +426,22 @@ export class SolicitudesReservaComponent implements OnInit {
     this.notificacionTipo = tipo;
     this.mostrarNotificacion = true;
     if (tipo !== 'confirmar') {
-      setTimeout(() => {
-        this.mostrarNotificacion = false;
-        this.cdr.detectChanges();
-      }, 3000);
+      setTimeout(() => { this.mostrarNotificacion = false; this.cdr.detectChanges(); }, 3000);
     }
     this.cdr.detectChanges();
   }
 
-  cerrarNotificacion(): void {
-    this.mostrarNotificacion = false;
-    this.accionPendiente = null;
-    this.cdr.detectChanges();
-  }
+  cerrarNotificacion(): void { this.mostrarNotificacion = false; this.accionPendiente = null; this.cdr.detectChanges(); }
 
   confirmarAccion(): void {
     this.mostrarNotificacion = false;
-    if (this.accionPendiente) {
-      this.accionPendiente();
-      this.accionPendiente = null;
-    }
+    if (this.accionPendiente) { this.accionPendiente(); this.accionPendiente = null; }
     this.cdr.detectChanges();
   }
 
   volver(): void { this.router.navigate(['/dashboard']); }
   navegar(ruta: string): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
   logout(): void { sessionStorage.clear(); this.router.navigate(['/login']); }
-  toggleDrawer(): void  { this.drawerAbierto = !this.drawerAbierto; }
-  cerrarDrawer(): void  { this.drawerAbierto = false; }
+  toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
+  cerrarDrawer(): void { this.drawerAbierto = false; }
 }
