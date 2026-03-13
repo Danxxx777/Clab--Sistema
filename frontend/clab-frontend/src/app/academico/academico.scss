@@ -870,27 +870,34 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   font-family: 'Space Grotesk', sans-serif;
 }
 .btn-activar {
-  background: #39ff14;
-  color: #111;
-  border: none;
-  padding: 4px 12px;
+  background: rgba(57, 255, 20, 0.10);
+  color: #39ff14;
+  border: 1px solid rgba(57, 255, 20, 0.25);
+  padding: 5px 12px;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.8rem;
-
-  &:hover { opacity: 0.85; }
+  font-size: 11px;
+  font-family: 'Space Grotesk', sans-serif;
+  transition: all 0.2s ease;
+  &:hover { background: rgba(57, 255, 20, 0.18); transform: translateY(-2px); }
 }
 
 .btn-desactivar {
-  background: #e53935;
-  color: #fff;
-  border: none;
-  padding: 4px 12px;
+  background: rgba(231, 76, 60, 0.12);
+  color: #ff6b6b;
+  border: 1px solid rgba(231, 76, 60, 0.25);
+  padding: 5px 12px;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 11px;
+  font-family: 'Space Grotesk', sans-serif;
+  transition: all 0.2s ease;
+  &:hover { background: rgba(231, 76, 60, 0.22); transform: translateY(-2px); }
+}
 
-  &:hover { opacity: 0.85; }
+
+input[type="date"].form-control {
+  color-scheme: dark;
 }
