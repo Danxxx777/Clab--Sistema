@@ -4,26 +4,17 @@
 <!-- DRAWER LATERAL -->
 <div class="drawer" [class.open]="drawerAbierto">
   <div class="drawer-header">
-    <div class="drawer-brand">
-      CLAB
-      <span>Sistema de Laboratorios</span>
-    </div>
+    <div class="drawer-brand">CLAB<span>Sistema de Laboratorios</span></div>
     <button class="btn-close-drawer" (click)="cerrarDrawer()">×</button>
   </div>
-
   <div class="drawer-user">
     <div class="drawer-avatar">{{ usuarioLogueado.charAt(0).toUpperCase() }}</div>
     <div class="drawer-user-info">
       <div class="dui-name">{{ usuarioLogueado }}</div>
-      <div class="role-badge">
-        <span class="role-dot"></span>
-        {{ rol }}
-      </div>
+      <div class="role-badge"><span class="role-dot"></span>{{ rol }}</div>
     </div>
   </div>
-
   <div class="drawer-section-title">Módulos</div>
-
   <div class="drawer-modules">
     @if(rol === 'Administradorr' || rol === 'Decano') {
       <div class="drawer-item" (click)="navegar('usuarios', '')">
@@ -96,73 +87,209 @@
       </div>
     }
   </div>
-
   <div class="drawer-footer">
     <button class="btn-logout-drawer" (click)="logout()">🚪 Cerrar sesión</button>
   </div>
 </div>
 
+<!-- ══ CONTENIDO PRINCIPAL ════════════════════════════════════════════════ -->
 <div class="inventario-container">
 
   <div class="page-title-section">
     <div style="display:flex; align-items:center; gap:14px;">
       <button class="btn-hamburger" [class.active]="drawerAbierto" (click)="toggleDrawer()">
-        <div class="ham-line"></div>
-        <div class="ham-line"></div>
-        <div class="ham-line"></div>
+        <div class="ham-line"></div><div class="ham-line"></div><div class="ham-line"></div>
       </button>
       <h1>Gestión de Reservas de Laboratorio</h1>
     </div>
     <button class="btn-volver" (click)="volver()">← Volver</button>
   </div>
 
-  <!-- STATS -->
-  <div class="stats-bar">
+  <!-- STATS — solo visible en tabs Reservas y Tipos -->
+  <div class="stats-bar" *ngIf="tabActiva === 1 || tabActiva === 2">
     <div class="stat-card">
       <div class="stat-icon sc-blue">📋</div>
-      <div class="stat-info">
-        <span class="stat-num">{{ reservas.length }}</span>
-        <span class="stat-label">Total</span>
-      </div>
+      <div class="stat-info"><span class="stat-num">{{ reservas.length }}</span><span class="stat-label">Total</span></div>
     </div>
     <div class="stat-card">
       <div class="stat-icon sc-amber">⏳</div>
-      <div class="stat-info">
-        <span class="stat-num">{{ totalPorEstado('Pendiente') }}</span>
-        <span class="stat-label">Pendientes</span>
-      </div>
+      <div class="stat-info"><span class="stat-num">{{ totalPorEstado('Pendiente') }}</span><span class="stat-label">Pendientes</span></div>
     </div>
     <div class="stat-card">
       <div class="stat-icon sc-green">✅</div>
-      <div class="stat-info">
-        <span class="stat-num">{{ totalPorEstado('Aprobada') }}</span>
-        <span class="stat-label">Aprobadas</span>
-      </div>
+      <div class="stat-info"><span class="stat-num">{{ totalPorEstado('Aprobada') }}</span><span class="stat-label">Aprobadas</span></div>
     </div>
     <div class="stat-card">
       <div class="stat-icon sc-red">🚫</div>
-      <div class="stat-info">
-        <span class="stat-num">{{ totalPorEstado('Rechazada') }}</span>
-        <span class="stat-label">Rechazadas</span>
-      </div>
+      <div class="stat-info"><span class="stat-num">{{ totalPorEstado('Rechazada') }}</span><span class="stat-label">Rechazadas</span></div>
     </div>
   </div>
 
   <!-- TABS -->
   <div class="tabs-container">
     <div class="tabs">
-      <button class="tab" [class.active]="tabActiva === 0" (click)="cambiarTab(0)">Reservas</button>
-      <button class="tab" [class.active]="tabActiva === 1" (click)="cambiarTab(1)">Tipos de Reserva</button>
+      <button class="tab" [class.active]="tabActiva === 0" (click)="cambiarTab(0)">Calendario</button>
+      <button class="tab" [class.active]="tabActiva === 1" (click)="cambiarTab(1)">Reservas</button>
+      <button class="tab" [class.active]="tabActiva === 2" (click)="cambiarTab(2)">Tipos de Reserva</button>
       @if(rol === 'Encargado_Lab' || rol === 'clab_encargado_lab' || rol === 'Encargado de Laboratorio') {
-        <button class="tab" [class.active]="tabActiva === 2" (click)="cambiarTab(2)">Control de Asistencia</button>
+        <button class="tab" [class.active]="tabActiva === 3" (click)="cambiarTab(3)">Control de Asistencia</button>
       }
     </div>
   </div>
 
   <div class="content-wrapper">
 
-    <!-- TAB 0: RESERVAS -->
-    <div class="tab-content" *ngIf="tabActiva === 0">
+    <!-- TAB 0: CALENDARIO ═════════════════════════════════════════════════ -->
+    <div class="tab-content tab-content--cal" *ngIf="tabActiva === 0">
+
+      <div class="cal-toolbar-inline">
+        <div class="cal-toolbar__nav">
+          <ng-container *ngIf="cal_vistaActiva === 'Semana'">
+            <button class="btn-nav" (click)="cal_semanaAnterior()">‹</button>
+            <span class="cal-periodo-label">{{ cal_semanaLabel }}</span>
+            <button class="btn-nav" (click)="cal_semanaSiguiente()">›</button>
+          </ng-container>
+          <ng-container *ngIf="cal_vistaActiva === 'Mes'">
+            <button class="btn-nav" (click)="cal_mesAnterior()">‹</button>
+            <span class="cal-periodo-label">{{ cal_mesLabel }}</span>
+            <button class="btn-nav" (click)="cal_mesSiguiente()">›</button>
+          </ng-container>
+        </div>
+        <div class="cal-toolbar__vistas">
+          <button
+            *ngFor="let v of ['Hoy', 'Semana', 'Mes']"
+            class="btn-vista"
+            [class.btn-vista--active]="cal_vistaActiva === v"
+            (click)="v === 'Hoy' ? cal_semanaHoy() : cal_setVista(v)">
+            {{ v }}
+          </button>
+        </div>
+      </div>
+
+      <div class="cal-status" *ngIf="cal_cargandoDatos">
+        <div class="cal-status__spinner"></div><span>Cargando reservas…</span>
+      </div>
+      <div class="cal-status cal-status--error" *ngIf="cal_errorCarga && !cal_cargandoDatos">
+        ⚠️ No se pudo cargar las reservas.
+        <button class="btn-retry" (click)="cal_vistaActiva === 'Mes' ? cal_cargarReservasMes() : cal_cargarReservas()">Reintentar</button>
+      </div>
+
+      <!-- VISTA SEMANA -->
+      <div class="cal-scroll" *ngIf="cal_vistaActiva === 'Semana' && !cal_cargandoDatos && !cal_errorCarga">
+        <div class="cal-grid">
+          <div class="cal-grid__header">
+            <div class="cal-grid__corner"></div>
+            <div class="cal-grid__day" *ngFor="let dia of cal_dias">{{ dia }}</div>
+          </div>
+          <div class="cal-empty" *ngIf="cal_horasVisibles.length === 0">No hay reservas esta semana.</div>
+          <div class="cal-grid__row"
+               [class.cal-grid__row--half]="hora.endsWith(':30')"
+               *ngFor="let hora of cal_horasVisibles; let hi = index">
+            <div class="cal-grid__hour-label">{{ hora }}</div>
+            <div
+              class="cal-grid__cell"
+              *ngFor="let dia of cal_dias; let di = index"
+              (click)="cal_getReservasDeCelda(di, hi).length === 0 && cal_mostrarModalReserva(di, hi)"
+              [style.cursor]="cal_getReservasDeCelda(di, hi).length === 0 ? 'pointer' : 'default'"
+              title="{{ cal_getReservasDeCelda(di, hi).length === 0 ? 'Reservar aquí' : '' }}">
+              <div
+                *ngFor="let res of cal_getReservasDeCelda(di, hi); let ri = index"
+                class="cal-block"
+                [class.cal-block--selected]="cal_reservaSeleccionada?.id === res.id"
+                [style.border-left-color]="cal_getColorLab(res.laboratorio)"
+                [style.background]="cal_getColorLab(res.laboratorio) + '18'"
+                [style.height.px]="cal_getAlturaBloque(res.duracion)"
+                [style.top.px]="cal_getTopOffset(res)"
+                (click)="$event.stopPropagation(); cal_seleccionar(res)">
+                <span class="cal-block__titulo" [style.color]="cal_getColorLab(res.laboratorio)">{{ res.titulo }}</span>
+                <span class="cal-block__lab">{{ res.laboratorio }}</span>
+                <span class="cal-block__docente">{{ res.docente }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VISTA MES -->
+      <div class="cal-mes" *ngIf="cal_vistaActiva === 'Mes' && !cal_cargandoDatos && !cal_errorCarga">
+        <div class="cal-mes__header">
+          <div *ngFor="let d of ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom']">{{ d }}</div>
+        </div>
+        <div class="cal-mes__grid">
+          <div
+            *ngFor="let fecha of cal_diasMes"
+            class="cal-mes__dia"
+            [class.cal-mes__dia--vacio]="!fecha"
+            [class.cal-mes__dia--hoy]="cal_esDiaHoy(fecha)"
+            (click)="fecha && cal_diaClick(fecha)"
+            [style.cursor]="fecha ? 'pointer' : 'default'">
+            <span class="cal-mes__dia-num" *ngIf="fecha">{{ fecha.getDate() }}</span>
+            <ng-container *ngIf="fecha">
+              <div
+                *ngFor="let res of cal_getReservasDeDia(fecha).slice(0, 3)"
+                class="cal-mes__evento"
+                [style.background]="cal_getColorLab(res.laboratorio) + '28'"
+                [style.border-left-color]="cal_getColorLab(res.laboratorio)"
+                [style.color]="cal_getColorLab(res.laboratorio)"
+                (click)="$event.stopPropagation(); cal_seleccionar(res)">
+                {{ res.titulo }}
+              </div>
+              <div class="cal-mes__mas" *ngIf="cal_getReservasDeDia(fecha).length > 3">
+                +{{ cal_getReservasDeDia(fecha).length - 3 }} más
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hint -->
+      <p class="cal-hint" *ngIf="!cal_cargandoDatos">
+        💡 Toca una celda vacía para crear una reserva en esa fecha y hora.
+      </p>
+
+      <!-- Leyenda labs — ABAJO -->
+      <div class="cal-legend-bottom" *ngIf="!cal_cargandoDatos && cal_laboratorios.length > 0">
+        <span class="cal-legend-bottom__titulo">Laboratorios:</span>
+        <div class="cal-legend-bottom__items">
+          <div class="cal-legend__item" *ngFor="let lab of cal_laboratorios">
+            <span class="cal-legend__dot" [style.background]="cal_getColorLab(lab)"></span>
+            <span class="cal-legend__name">{{ lab }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel detalle reserva -->
+      <div class="cal-detail"
+           *ngIf="cal_reservaSeleccionada"
+           [style.border-color]="cal_getColorLab(cal_reservaSeleccionada.laboratorio)"
+           [style.box-shadow]="'0 0 30px ' + cal_getColorLab(cal_reservaSeleccionada.laboratorio) + '40'">
+        <span class="cal-detail__badge" [style.color]="cal_getColorLab(cal_reservaSeleccionada.laboratorio)">DETALLE RESERVA</span>
+        <p class="cal-detail__titulo">{{ cal_reservaSeleccionada.titulo }}</p>
+        <p class="cal-detail__meta">{{ cal_reservaSeleccionada.laboratorio }}</p>
+        <p class="cal-detail__meta">{{ cal_reservaSeleccionada.docente }}</p>
+        <p class="cal-detail__horario" [style.color]="cal_getColorLab(cal_reservaSeleccionada.laboratorio)">
+          <ng-container *ngIf="cal_vistaActiva === 'Semana'">
+            {{ cal_dias[cal_reservaSeleccionada.dia] }}
+            · {{ cal_reservaSeleccionada.horaInicioStr }}
+            – {{ cal_reservaSeleccionada.horaFinStr }}
+          </ng-container>
+          <ng-container *ngIf="cal_vistaActiva === 'Mes'">
+            {{ cal_reservaSeleccionada.fecha | date:'EEEE d \'de\' MMMM':'':'es-EC' }}
+          </ng-container>
+        </p>
+        <span class="cal-detail__estado" [class]="cal_getBadgeEstado(cal_reservaSeleccionada.estado)">
+          {{ cal_reservaSeleccionada.estado }}
+        </span>
+        <button class="cal-detail__close"
+                [style.border-color]="cal_getColorLab(cal_reservaSeleccionada.laboratorio)"
+                [style.color]="cal_getColorLab(cal_reservaSeleccionada.laboratorio)"
+                (click)="cal_cerrarDetalle()">CERRAR</button>
+      </div>
+
+    </div><!-- /tab calendario -->
+
+    <!-- TAB 1: RESERVAS ═══════════════════════════════════════════════════ -->
+    <div class="tab-content" *ngIf="tabActiva === 1">
       <div class="toolbar">
         <div class="search-container">
           <span class="search-icon">🔍</span>
@@ -179,7 +306,6 @@
           <button class="btn-agregar" (click)="abrirModal('reserva')">+ Nueva Reserva</button>
         </div>
       </div>
-
       <div class="table-container">
         <table class="data-table">
           <thead>
@@ -216,8 +342,8 @@
       </div>
     </div>
 
-    <!-- TAB 1: TIPOS DE RESERVA -->
-    <div class="tab-content" *ngIf="tabActiva === 1">
+    <!-- TAB 2: TIPOS DE RESERVA ═══════════════════════════════════════════ -->
+    <div class="tab-content" *ngIf="tabActiva === 2">
       <div class="toolbar">
         <div class="search-container">
           <span class="search-icon">🔍</span>
@@ -234,7 +360,6 @@
           <button class="btn-agregar" (click)="abrirModal('tipo')">+ Nuevo Tipo de Reserva</button>
         </div>
       </div>
-
       <div class="table-container">
         <table class="data-table">
           <thead>
@@ -244,9 +369,7 @@
           <tr *ngFor="let tipo of tiposPaginados; let i = index">
             <td><strong>{{ tipo.nombre_tipo }}</strong></td>
             <td>{{ tipo.descripcion }}</td>
-            <td>
-              <span class="badge" [ngClass]="tipo.estado === 'Activo' ? 'badge-activo' : 'badge-inactivo'">{{ tipo.estado }}</span>
-            </td>
+            <td><span class="badge" [ngClass]="tipo.estado === 'Activo' ? 'badge-activo' : 'badge-inactivo'">{{ tipo.estado }}</span></td>
             <td>
               <div class="action-buttons">
                 <button class="btn-action btn-editar" (click)="editarTipo(tipo, i)">Editar</button>
@@ -261,104 +384,106 @@
         </table>
       </div>
     </div>
-    <!-- TAB 2: CONTROL DE ASISTENCIA (solo Encargado_Lab) -->
-    @if(rol === 'Encargado_Lab' || rol === 'clab_encargado_lab' || rol === 'Encargado de Laboratorio') {
-      <div class="tab-content" *ngIf="tabActiva === 2">
 
-        <!-- RESERVAS DE HOY -->
+    <!-- TAB 3: CONTROL DE ASISTENCIA ══════════════════════════════════════ -->
+    @if(rol === 'Encargado_Lab' || rol === 'clab_encargado_lab' || rol === 'Encargado de Laboratorio') {
+      <div class="tab-content" *ngIf="tabActiva === 3">
         <div class="asistencia-section">
-          <h3 class="section-title"> Reservas de Hoy</h3>
+          <h3 class="section-title">Reservas de Hoy</h3>
           <div class="table-container">
             <table class="data-table">
               <thead>
-              <tr>
-                <th>DOCENTE</th>
-                <th>LABORATORIO</th>
-                <th>HORA INICIO</th>
-                <th>HORA FIN</th>
-                <th>ASIGNATURA</th>
-                <th>ESTUDIANTES</th>
-                <th>ASISTENCIA</th>
-                <th>ACCIONES</th>
-              </tr>
+              <tr><th>DOCENTE</th><th>LABORATORIO</th><th>HORA INICIO</th><th>HORA FIN</th><th>ASIGNATURA</th><th>ESTUDIANTES</th><th>ASISTENCIA</th><th>ACCIONES</th></tr>
               </thead>
               <tbody>
               <tr *ngFor="let res of reservasHoy">
                 <td><strong>{{ res.nombreUsuario }}</strong></td>
                 <td>{{ res.nombreLaboratorio }}</td>
-                <td>{{ res.horaInicio }}</td>
-                <td>{{ res.horaFin }}</td>
-                <td>{{ res.nombreAsignatura }}</td>
-                <td>{{ res.numeroEstudiantes }}</td>
+                <td>{{ res.horaInicio }}</td><td>{{ res.horaFin }}</td>
+                <td>{{ res.nombreAsignatura }}</td><td>{{ res.numeroEstudiantes }}</td>
                 <td>
-                <span class="badge"
-                      [class.badge-activo]="res.asistio === true"
-                      [class.badge-falta]="res.asistio === false"
-                      [class.badge-pendiente]="res.asistio === null || res.asistio === undefined">
-                  {{ res.asistio === true ? 'Asistió' : res.asistio === false ? 'Falta' : 'Pendiente' }}
-                </span>
+                  <span class="badge"
+                        [class.badge-activo]="res.asistio === true"
+                        [class.badge-falta]="res.asistio === false"
+                        [class.badge-pendiente]="res.asistio === null || res.asistio === undefined">
+                    {{ res.asistio === true ? 'Asistió' : res.asistio === false ? 'Falta' : 'Pendiente' }}
+                  </span>
                 </td>
                 <td>
                   <div class="action-buttons">
-                    <button class="btn-action btn-aprobar"
-                            [disabled]="res.asistio === true"
-                            (click)="registrarAsistencia(res)">
-                      Asistencia
-                    </button>
-                    <button class="btn-action btn-rechazar"
-                            [disabled]="res.asistio === true"
-                            (click)="registrarFalta(res)">
-                      Falta
-                    </button>
+                    <button class="btn-action btn-aprobar" [disabled]="res.asistio === true" (click)="registrarAsistencia(res)">Asistencia</button>
+                    <button class="btn-action btn-rechazar" [disabled]="res.asistio === true" (click)="registrarFalta(res)">Falta</button>
                   </div>
                 </td>
               </tr>
-              <tr *ngIf="reservasHoy.length === 0">
-                <td colspan="8" class="empty-message">No hay reservas para hoy</td>
-              </tr>
+              <tr *ngIf="reservasHoy.length === 0"><td colspan="8" class="empty-message">No hay reservas para hoy</td></tr>
               </tbody>
             </table>
           </div>
         </div>
-
-        <!-- USUARIOS BLOQUEADOS -->
         <div class="asistencia-section" style="margin-top: 32px;">
-          <h3 class="section-title"> Usuarios Bloqueados</h3>
+          <h3 class="section-title">Usuarios Bloqueados</h3>
           <div class="table-container">
             <table class="data-table">
-              <thead>
-              <tr>
-                <th>DOCENTE</th>
-                <th>MOTIVO</th>
-                <th>FECHA BLOQUEO</th>
-                <th>ACCIONES</th>
-              </tr>
-              </thead>
+              <thead><tr><th>DOCENTE</th><th>MOTIVO</th><th>FECHA BLOQUEO</th><th>ACCIONES</th></tr></thead>
               <tbody>
-              <tr *ngFor="let bloqueado of usuariosBloqueados">
-                <td><strong>{{ bloqueado.nombreUsuario }}</strong></td>
-                <td>{{ bloqueado.motivo }}</td>
-                <td>{{ bloqueado.fechaBloqueo }}</td>
-                <td>
-                  <button class="btn-action btn-aprobar"
-                          (click)="desbloquearUsuario(bloqueado.idUsuario)">
-                    Desbloquear
-                  </button>
-                </td>
+              <tr *ngFor="let b of usuariosBloqueados">
+                <td><strong>{{ b.nombreUsuario }}</strong></td>
+                <td>{{ b.motivo }}</td><td>{{ b.fechaBloqueo }}</td>
+                <td><button class="btn-action btn-aprobar" (click)="desbloquearUsuario(b.idUsuario)">Desbloquear</button></td>
               </tr>
-              <tr *ngIf="usuariosBloqueados.length === 0">
-                <td colspan="4" class="empty-message">No hay usuarios bloqueados</td>
-              </tr>
+              <tr *ngIf="usuariosBloqueados.length === 0"><td colspan="4" class="empty-message">No hay usuarios bloqueados</td></tr>
               </tbody>
             </table>
           </div>
         </div>
-
       </div>
     }
 
+  </div><!-- /content-wrapper -->
+</div><!-- /inventario-container -->
+
+<!-- ══ MODALES ════════════════════════════════════════════════════════════ -->
+
+<!-- MODAL: CONFIRMAR NUEVA RESERVA DESDE CALENDARIO -->
+<div class="modal-overlay" *ngIf="cal_mostrarModalConfirm">
+  <div class="modal modal-reserva-confirm" (click)="$event.stopPropagation()">
+    <div class="modal-header modal-header-cal">
+      <div class="modal-header-cal__icon">📅</div>
+      <div style="flex:1">
+        <h2>Nueva Reserva</h2>
+        <p class="modal-header-cal__sub">¿Deseas reservar este espacio?</p>
+      </div>
+      <button class="btn-close" (click)="cal_cerrarModalConfirm()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="cal-confirm-info">
+        <div class="cal-confirm-row">
+          <span class="cal-confirm-label">📆 Fecha</span>
+          <span class="cal-confirm-value">{{ cal_confirmData.fechaLabel }}</span>
+        </div>
+        <div class="cal-confirm-row">
+          <span class="cal-confirm-label">🕐 Hora inicio</span>
+          <span class="cal-confirm-value">{{ cal_confirmData.horaInicio }}</span>
+        </div>
+        <div class="cal-confirm-row">
+          <span class="cal-confirm-label">🕑 Hora fin</span>
+          <span class="cal-confirm-value">{{ cal_confirmData.horaFin }}</span>
+        </div>
+      </div>
+      <p class="cal-confirm-desc">
+        Se abrirá el formulario de <strong>Nueva Reserva</strong> con la fecha y hora preseleccionadas.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cal_cerrarModalConfirm()">Cancelar</button>
+      <button class="btn-guardar btn-confirm-reserva" (click)="cal_confirmarYReservar()">
+         Sí, Reservar
+      </button>
+    </div>
   </div>
 </div>
+
 <!-- MODAL: RESERVA (crear / editar) -->
 <div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'reserva'">
   <div class="modal modal-large" (click)="$event.stopPropagation()">
@@ -366,48 +491,38 @@
       <h2>{{ modoEdicion ? 'Editar Reserva' : 'Nueva Reserva' }}</h2>
       <button class="btn-close" (click)="cerrarModal()">×</button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body" (click)="cerrarTimePickerSiAfuera($event)">
 
-      <!-- FILA 1: Laboratorio + Asignatura -->
+      <!-- Fila 1: Laboratorio + Asignatura -->
       <div class="form-row">
         <div class="form-group">
           <label>Laboratorio <span class="required">*</span></label>
           <select class="form-control" [(ngModel)]="formularioReserva.cod_laboratorio">
             <option [value]="0">Seleccione un laboratorio</option>
-            <option *ngFor="let lab of laboratorios" [value]="lab.cod_laboratorio">
-              {{ lab.nombre }}
-            </option>
+            <option *ngFor="let lab of laboratorios" [value]="lab.cod_laboratorio">{{ lab.nombre }}</option>
           </select>
         </div>
         <div class="form-group">
           <label>Asignatura <span class="required">*</span></label>
-          <select class="form-control"
-                  [(ngModel)]="formularioReserva.id_asignatura"
-                  (change)="onAsignaturaChange()">
+          <select class="form-control" [(ngModel)]="formularioReserva.id_asignatura" (change)="onAsignaturaChange()">
             <option [value]="0">Seleccione una asignatura</option>
-            <option *ngFor="let asig of asignaturas" [value]="asig.id_asignatura">
-              {{ asig.nombre }}
-            </option>
+            <option *ngFor="let asig of asignaturas" [value]="asig.id_asignatura">{{ asig.nombre }}</option>
           </select>
         </div>
       </div>
 
-      <!-- FILA 2: Período + Horario Académico -->
+      <!-- Fila 2: Período + Horario académico -->
       <div class="form-row">
         <div class="form-group">
           <label>Período Académico <span class="required">*</span></label>
           <select class="form-control" [(ngModel)]="formularioReserva.id_periodo">
             <option [value]="0">Seleccione un período</option>
-            <option *ngFor="let periodo of periodos" [value]="periodo.id_periodo">
-              {{ periodo.nombre_periodo }}
-            </option>
+            <option *ngFor="let periodo of periodos" [value]="periodo.id_periodo">{{ periodo.nombre_periodo }}</option>
           </select>
         </div>
         <div class="form-group">
           <label>Horario Académico</label>
-          <select class="form-control"
-                  [(ngModel)]="formularioReserva.id_horario_academico"
-                  (change)="onHorarioChange()">
+          <select class="form-control" [(ngModel)]="formularioReserva.id_horario_academico" (change)="onHorarioChange()">
             <option [value]="null">Sin horario académico</option>
             <option *ngFor="let h of horariosAcademicos" [value]="h.id_horario_academico">
               {{ h.nombre_asignatura }} - {{ h.dia_semana }} {{ h.hora_inicio }} - {{ h.hora_fin }}
@@ -416,74 +531,80 @@
         </div>
       </div>
 
-      <!-- FILA 3: Fecha de Reserva -->
-      <div class="form-row">
-        <div class="form-group">
+      <!-- Fila 3: Fecha (izq) + Hora inicio & Hora fin (der, mitad cada una) -->
+      <div class="form-row" style="margin-bottom:18px;">
+        <div class="form-group" style="margin:0;">
           <label>Fecha de Reserva <span class="required">*</span></label>
-          <input type="date" class="form-control"
-                 [(ngModel)]="formularioReserva.fecha_reserva">
+          <input type="date" class="form-control" [(ngModel)]="formularioReserva.fecha_reserva">
         </div>
-        <div class="form-group"></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px;">
+          <div class="form-group" style="margin:0;">
+            <label>Hora de Inicio <span class="required">*</span></label>
+            <div class="time-picker-wrap">
+              <input type="text" class="form-control time-display" readonly
+                     [value]="formularioReserva.hora_inicio || '--:--'"
+                     (click)="toggleTimePicker('inicio', $event)"
+                     [attr.disabled]="formularioReserva.id_horario_academico ? '' : null">
+              <div class="time-picker-dropdown" *ngIf="timePickerAbierto === 'inicio'">
+                <div class="tp-scroll">
+                  <div class="tp-option" *ngFor="let h of horasDisponibles"
+                       [class.tp-selected]="formularioReserva.hora_inicio === h"
+                       (click)="selectHora('inicio', h)">{{ h }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label>Hora de Fin <span class="required">*</span></label>
+            <div class="time-picker-wrap">
+              <input type="text" class="form-control time-display" readonly
+                     [value]="formularioReserva.hora_fin || '--:--'"
+                     (click)="toggleTimePicker('fin', $event)"
+                     [attr.disabled]="formularioReserva.id_horario_academico ? '' : null">
+              <div class="time-picker-dropdown" *ngIf="timePickerAbierto === 'fin'">
+                <div class="tp-scroll">
+                  <div class="tp-option" *ngFor="let h of horasDisponibles"
+                       [class.tp-selected]="formularioReserva.hora_fin === h"
+                       (click)="selectHora('fin', h)">{{ h }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- FILA 4: Hora Inicio + Hora Fin (bloqueadas si hay horario académico) -->
-      <div class="form-row">
-        <div class="form-group">
-          <label>Hora de Inicio <span class="required">*</span></label>
-          <input type="time" class="form-control"
-                 [(ngModel)]="formularioReserva.hora_inicio"
-                 [attr.disabled]="formularioReserva.id_horario_academico ? '' : null">
-        </div>
-        <div class="form-group">
-          <label>Hora de Fin <span class="required">*</span></label>
-          <input type="time" class="form-control"
-                 [(ngModel)]="formularioReserva.hora_fin"
-                 [attr.disabled]="formularioReserva.id_horario_academico ? '' : null">
-        </div>
-      </div>
-
-      <!-- FILA 5: Estudiantes + Tipo de Reserva -->
+      <!-- Fila 5: Estudiantes + Tipo de reserva -->
       <div class="form-row">
         <div class="form-group">
           <label>Número de Estudiantes <span class="required">*</span></label>
-          <input type="number" class="form-control"
-                 [(ngModel)]="formularioReserva.numero_estudiantes"
-                 min="1" placeholder="Ej: 25">
+          <input type="number" class="form-control" [(ngModel)]="formularioReserva.numero_estudiantes" min="1" placeholder="Ej: 25">
         </div>
         <div class="form-group">
           <label>Tipo de Reserva <span class="required">*</span></label>
           <select class="form-control" [(ngModel)]="formularioReserva.id_tipo_reserva">
             <option [value]="0">Seleccione un tipo</option>
-            <option *ngFor="let tipo of tipos" [value]="tipo.id_tipo_reserva">
-              {{ tipo.nombre_tipo }}
-            </option>
+            <option *ngFor="let tipo of tipos" [value]="tipo.id_tipo_reserva">{{ tipo.nombre_tipo }}</option>
           </select>
         </div>
       </div>
 
-      <!-- FILA 6: Descripción -->
+      <!-- Fila 6: Descripción -->
       <div class="form-row">
         <div class="form-group full-width">
           <label>Descripción</label>
-          <textarea class="form-control"
-                    [(ngModel)]="formularioReserva.descripcion"
-                    rows="3"
-                    placeholder="Descripción de la reserva..."></textarea>
+          <textarea class="form-control" [(ngModel)]="formularioReserva.descripcion" rows="3" placeholder="Descripción de la reserva..."></textarea>
         </div>
       </div>
 
-      <!-- FILA 7: Motivo -->
+      <!-- Fila 7: Motivo -->
       <div class="form-row">
         <div class="form-group full-width">
           <label>Motivo <span class="required">*</span></label>
-          <textarea class="form-control"
-                    [(ngModel)]="formularioReserva.motivo"
-                    rows="2"
-                    placeholder="Motivo de la reserva..."></textarea>
+          <textarea class="form-control" [(ngModel)]="formularioReserva.motivo" rows="2" placeholder="Motivo de la reserva..."></textarea>
         </div>
       </div>
 
-      <!-- ESTADO: solo visible en modo edición -->
+      <!-- Fila 8: Estado (solo edición) -->
       <div class="form-row" *ngIf="modoEdicion">
         <div class="form-group">
           <label>Estado <span class="required">*</span></label>
@@ -498,7 +619,7 @@
         <div class="form-group"></div>
       </div>
 
-    </div>
+    </div><!-- /modal-body -->
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
       <button class="btn-guardar" (click)="guardarReserva()">{{ modoEdicion ? 'Actualizar' : 'Guardar' }}</button>
@@ -507,118 +628,50 @@
 </div>
 
 <!-- MODAL: VER DETALLE RESERVA -->
-<div class="modal-overlay" *ngIf="mostrarModalDetalle" >
+<div class="modal-overlay" *ngIf="mostrarModalDetalle">
   <div class="modal modal-large" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>Detalle de Reserva</h2>
       <button class="btn-close" (click)="cerrarModalDetalle()">×</button>
     </div>
     <div class="modal-body" *ngIf="reservaDetalle">
+      <div class="form-row">
+        <div class="form-group"><label>Laboratorio</label><select class="form-control" [ngModel]="reservaDetalle.cod_laboratorio" disabled><option *ngFor="let lab of laboratorios" [value]="lab.cod_laboratorio">{{ lab.nombre }}</option></select></div>
+        <div class="form-group"><label>Asignatura</label><select class="form-control" [ngModel]="reservaDetalle.id_asignatura" disabled><option *ngFor="let asig of asignaturas" [value]="asig.id_asignatura">{{ asig.nombre }}</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Período</label><select class="form-control" [ngModel]="reservaDetalle.id_periodo" disabled><option *ngFor="let p of periodos" [value]="p.id_periodo">{{ p.nombre_periodo }}</option></select></div>
+        <div class="form-group"><label>Horario</label><select class="form-control" disabled><option>Sin horario académico</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Fecha de Reserva</label><input type="date" class="form-control" [ngModel]="reservaDetalle.fecha_reserva" disabled></div>
+        <div class="form-group"><label>Fecha de Solicitud</label><input type="date" class="form-control" [ngModel]="reservaDetalle.fecha_solicitud" disabled></div>
+      </div>
 
-      <!-- FILA 1: Laboratorio + Asignatura -->
+      <!-- Hora inicio + fin en detalle -->
       <div class="form-row">
         <div class="form-group">
-          <label>Laboratorio <span class="required">*</span></label>
-          <select class="form-control" [ngModel]="reservaDetalle.cod_laboratorio" disabled>
-            <option *ngFor="let lab of laboratorios" [value]="lab.cod_laboratorio">{{ lab.nombre }}</option>
-          </select>
+          <label>Hora Inicio</label>
+          <input type="time" step="1800" class="form-control" [ngModel]="reservaDetalle.hora_inicio" disabled>
         </div>
         <div class="form-group">
-          <label>Asignatura <span class="required">*</span></label>
-          <select class="form-control" [ngModel]="reservaDetalle.id_asignatura" disabled>
-            <option *ngFor="let asig of asignaturas" [value]="asig.id_asignatura">{{ asig.nombre }}</option>
-          </select>
+          <label>Hora Fin</label>
+          <input type="time" step="1800" class="form-control" [ngModel]="reservaDetalle.hora_fin" disabled>
         </div>
       </div>
 
-      <!-- FILA 2: Período + Horario -->
       <div class="form-row">
-        <div class="form-group">
-          <label>Período Académico <span class="required">*</span></label>
-          <select class="form-control" [ngModel]="reservaDetalle.id_periodo" disabled>
-            <option *ngFor="let p of periodos" [value]="p.id_periodo">{{ p.nombre_periodo }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Horario Académico</label>
-          <select class="form-control" disabled>
-            <option>Sin horario académico</option>
-          </select>
-        </div>
+        <div class="form-group"><label>Estudiantes</label><input type="number" class="form-control" [ngModel]="reservaDetalle.numero_estudiantes" disabled></div>
+        <div class="form-group"><label>Tipo de Reserva</label><select class="form-control" [ngModel]="reservaDetalle.id_tipo_reserva" disabled><option *ngFor="let tipo of tipos" [value]="tipo.id_tipo_reserva">{{ tipo.nombre_tipo }}</option></select></div>
       </div>
-
-      <!-- FILA 3: Fecha -->
-      <div class="form-row">
-        <div class="form-group">
-          <label>Fecha de Reserva <span class="required">*</span></label>
-          <input type="date" class="form-control" [ngModel]="reservaDetalle.fecha_reserva" disabled>
-        </div>
-        <div class="form-group">
-          <label>Fecha de Solicitud</label>
-          <input type="date" class="form-control" [ngModel]="reservaDetalle.fecha_solicitud" disabled>
-        </div>
-      </div>
-
-      <!-- FILA 4: Horas -->
-      <div class="form-row">
-        <div class="form-group">
-          <label>Hora de Inicio <span class="required">*</span></label>
-          <input type="time" class="form-control" [ngModel]="reservaDetalle.hora_inicio" disabled>
-        </div>
-        <div class="form-group">
-          <label>Hora de Fin <span class="required">*</span></label>
-          <input type="time" class="form-control" [ngModel]="reservaDetalle.hora_fin" disabled>
-        </div>
-      </div>
-
-      <!-- FILA 5: Estudiantes + Tipo -->
-      <div class="form-row">
-        <div class="form-group">
-          <label>Número de Estudiantes <span class="required">*</span></label>
-          <input type="number" class="form-control" [ngModel]="reservaDetalle.numero_estudiantes" disabled>
-        </div>
-        <div class="form-group">
-          <label>Tipo de Reserva <span class="required">*</span></label>
-          <select class="form-control" [ngModel]="reservaDetalle.id_tipo_reserva" disabled>
-            <option *ngFor="let tipo of tipos" [value]="tipo.id_tipo_reserva">{{ tipo.nombre_tipo }}</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- FILA 6: Descripción -->
-      <div class="form-row">
-        <div class="form-group full-width">
-          <label>Descripción</label>
-          <textarea class="form-control" rows="3" disabled>{{ reservaDetalle.descripcion }}</textarea>
-        </div>
-      </div>
-
-      <!-- FILA 7: Motivo -->
-      <div class="form-row" *ngIf="reservaDetalle.motivo">
-        <div class="form-group full-width">
-          <label>Motivo <span class="required">*</span></label>
-          <textarea class="form-control" rows="2" disabled>{{ reservaDetalle.motivo }}</textarea>
-        </div>
-      </div>
-
-      <!-- FILA 8: Estado -->
-      <div class="form-row">
-        <div class="form-group">
-          <label>Estado</label>
-          <input type="text" class="form-control" [ngModel]="reservaDetalle.estado" disabled>
-        </div>
-        <div class="form-group"></div>
-      </div>
-
+      <div class="form-row"><div class="form-group full-width"><label>Descripción</label><textarea class="form-control" rows="3" disabled>{{ reservaDetalle.descripcion }}</textarea></div></div>
+      <div class="form-row" *ngIf="reservaDetalle.motivo"><div class="form-group full-width"><label>Motivo</label><textarea class="form-control" rows="2" disabled>{{ reservaDetalle.motivo }}</textarea></div></div>
+      <div class="form-row"><div class="form-group"><label>Estado</label><input type="text" class="form-control" [ngModel]="reservaDetalle.estado" disabled></div><div class="form-group"></div></div>
     </div>
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cerrarModalDetalle()">Cerrar</button>
-      <button class="btn-guardar"
-              *ngIf="reservaDetalle?.estado === 'Pendiente'"
-              (click)="aprobarReserva(reservaDetalle); cerrarModalDetalle()">Aprobar</button>
-      <button class="btn-rechazar-footer"
-              *ngIf="reservaDetalle?.estado === 'Pendiente'"
-              (click)="rechazarReserva(reservaDetalle); cerrarModalDetalle()">Rechazar</button>
+      <button class="btn-guardar" *ngIf="reservaDetalle?.estado === 'Pendiente'" (click)="aprobarReserva(reservaDetalle); cerrarModalDetalle()">Aprobar</button>
+      <button class="btn-rechazar-footer" *ngIf="reservaDetalle?.estado === 'Pendiente'" (click)="rechazarReserva(reservaDetalle); cerrarModalDetalle()">Rechazar</button>
     </div>
   </div>
 </div>
@@ -627,23 +680,17 @@
 <div class="modal-overlay" *ngIf="mostrarModalCancelar">
   <div class="modal modal-cancelar" (click)="$event.stopPropagation()">
     <div class="modal-header modal-header-danger">
-      <h2>Cancelar Reserva</h2>
-      <button class="btn-close" (click)="cerrarModalCancelar()">×</button>
+      <h2>Cancelar Reserva</h2><button class="btn-close" (click)="cerrarModalCancelar()">×</button>
     </div>
     <div class="modal-body">
-
       <div class="cancelar-info" *ngIf="itemSeleccionado">
         <p class="cancelar-lab">{{ itemSeleccionado.nombre_laboratorio }}</p>
-        <p class="cancelar-fecha">{{ itemSeleccionado.fecha_reserva | date:'dd/MM/yyyy' }} &nbsp;·&nbsp; {{ itemSeleccionado.hora_inicio }} - {{ itemSeleccionado.hora_fin }}</p>
+        <p class="cancelar-fecha">{{ itemSeleccionado.fecha_reserva | date:'dd/MM/yyyy' }} · {{ itemSeleccionado.hora_inicio }} - {{ itemSeleccionado.hora_fin }}</p>
       </div>
-
       <div class="form-row" style="margin-top: 20px;">
         <div class="form-group full-width">
           <label>Motivo de Cancelación <span class="required">*</span></label>
-          <textarea class="form-control"
-                    [(ngModel)]="formularioCancelacion.motivo_cancelacion"
-                    rows="3"
-                    placeholder="Describa el motivo de la cancelación..."></textarea>
+          <textarea class="form-control" [(ngModel)]="formularioCancelacion.motivo_cancelacion" rows="3" placeholder="Describa el motivo..."></textarea>
         </div>
       </div>
     </div>
@@ -653,6 +700,7 @@
     </div>
   </div>
 </div>
+
 <!-- MODAL: TIPO DE RESERVA -->
 <div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'tipo'">
   <div class="modal" (click)="$event.stopPropagation()">
@@ -661,33 +709,9 @@
       <button class="btn-close" (click)="cerrarModal()">×</button>
     </div>
     <div class="modal-body">
-
-      <div class="form-row">
-        <div class="form-group full-width">
-          <label>Nombre del Tipo <span class="required">*</span></label>
-          <input type="text" class="form-control"
-                 [(ngModel)]="formularioTipo.nombre_tipo"
-                 placeholder="Ej: Clase Regular">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group full-width">
-          <label>Descripción</label>
-          <textarea class="form-control"
-                    [(ngModel)]="formularioTipo.descripcion"
-                    rows="3"
-                    placeholder="Descripción del tipo de reserva..."></textarea>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Estado <span class="required">*</span></label>
-          <select class="form-control" [(ngModel)]="formularioTipo.estado">
-            <option value="Activo">Activo</option>
-            <option value="Inactivo">Inactivo</option>
-          </select>
-        </div>
-      </div>
+      <div class="form-row"><div class="form-group full-width"><label>Nombre <span class="required">*</span></label><input type="text" class="form-control" [(ngModel)]="formularioTipo.nombre_tipo" placeholder="Ej: Clase Regular"></div></div>
+      <div class="form-row"><div class="form-group full-width"><label>Descripción</label><textarea class="form-control" [(ngModel)]="formularioTipo.descripcion" rows="3"></textarea></div></div>
+      <div class="form-row"><div class="form-group"><label>Estado <span class="required">*</span></label><select class="form-control" [(ngModel)]="formularioTipo.estado"><option value="Activo">Activo</option><option value="Inactivo">Inactivo</option></select></div></div>
     </div>
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
@@ -696,13 +720,10 @@
   </div>
 </div>
 
-<!-- MODAL: CONFIRMAR ELIMINAR TIPO -->
-<div class="modal-overlay" *ngIf="mostrarConfirmarEliminar" >
+<!-- MODAL: CONFIRMAR ELIMINAR -->
+<div class="modal-overlay" *ngIf="mostrarConfirmarEliminar">
   <div class="modal modal-confirm" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>Confirmar Eliminación</h2>
-      <button class="btn-close" (click)="cerrarModalConfirmar()">×</button>
-    </div>
+    <div class="modal-header"><h2>Confirmar Eliminación</h2><button class="btn-close" (click)="cerrarModalConfirmar()">×</button></div>
     <div class="modal-body">
       <p>Estás a punto de eliminar <strong>{{ getItemNombre() }}</strong>.</p>
       <p class="warning-text">Esta acción no se puede deshacer.</p>
@@ -713,11 +734,10 @@
     </div>
   </div>
 </div>
-<!-- TOAST NOTIFICACIÓN -->
-<div
-  class="toast"
-  *ngIf="mostrarToast"
-  [class.toast-success]="toastTipo === 'success'"
-  [class.toast-error]="toastTipo === 'error'">
+
+<!-- TOAST -->
+<div class="toast" *ngIf="mostrarToast"
+     [class.toast-success]="toastTipo === 'success'"
+     [class.toast-error]="toastTipo === 'error'">
   {{ toastMensaje }}
 </div>

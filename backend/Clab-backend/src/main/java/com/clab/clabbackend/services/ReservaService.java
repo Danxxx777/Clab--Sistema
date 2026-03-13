@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.sql.Time;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,21 @@ public class ReservaService {
     public List<Map<String, Object>> listarPorEncargado(Integer idUsuario) {
         return mapearReservas(reservaRepository.listarReservasPorEncargado(idUsuario));
     }
+
+    // ── NUEVO: filtrar por rango de fechas (para el calendario semanal) ───────
+    public List<Map<String, Object>> listarPorSemana(LocalDate inicio, LocalDate fin) {
+        return mapearReservas(reservaRepository.listarReservas())
+                .stream()
+                .filter(r -> {
+                    Object fechaObj = r.get("fechaReserva");
+                    if (fechaObj == null) return false;
+                    LocalDate fecha = (LocalDate) fechaObj;
+                    return !fecha.isBefore(inicio) && !fecha.isAfter(fin);
+                })
+                .collect(Collectors.toList());
+    }
+
+    // ─── MAPEO ───────────────────────────────────────────────────────────────
 
     private List<Map<String, Object>> mapearReservas(List<Object[]> resultados) {
         return resultados.stream().map(r -> {

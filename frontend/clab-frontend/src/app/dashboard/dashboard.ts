@@ -65,9 +65,7 @@ export class DashboardComponent implements OnInit {
     const rolesGuardados = sessionStorage.getItem('rolesDisponibles');
     if (rolesGuardados) this.rolesDisponibles = JSON.parse(rolesGuardados);
 
-    this.cargarNoLeidas(); // ← solo el conteo del badge
-
-    // ← QUITA cargarNotificaciones() de aquí
+    this.cargarNoLeidas();
 
     this.testService.getTest().subscribe({
       next:  res => { this.mensajeBackend = res; this.cdr.detectChanges(); },
@@ -90,14 +88,10 @@ export class DashboardComponent implements OnInit {
       { headers: this.getHeaders() }
     ).subscribe({
       next: res => {
-        console.log('noLeidas response:', res); // ← temporal
         this.noLeidas = res.noLeidas;
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.log('noLeidas error:', err); // ← temporal
-        this.noLeidas = 0;
-      }
+      error: () => { this.noLeidas = 0; }
     });
   }
 
@@ -105,7 +99,7 @@ export class DashboardComponent implements OnInit {
     this.notifPanelAbierto = !this.notifPanelAbierto;
     this.userMenuAbierto = false;
     if (this.notifPanelAbierto) {
-      this.notificaciones = []; // limpiar antes de cargar
+      this.notificaciones = [];
       this.cargarNotificaciones();
     }
   }
@@ -124,20 +118,20 @@ export class DashboardComponent implements OnInit {
       error: () => { this.cargandoNotifs = false; }
     });
   }
+
   getTimeAgo(fecha: string | Date): string {
     if (!fecha) return '';
     const date = new Date(fecha);
     if (isNaN(date.getTime())) return '';
-
     const now = new Date();
     const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
-
     if (diff < 60)      return 'ahora';
     if (diff < 3600)    return `${Math.floor(diff / 60)} min`;
     if (diff < 86400)   return `${Math.floor(diff / 3600)} h`;
     if (diff < 2592000) return `${Math.floor(diff / 86400)} d`;
     return `${Math.floor(diff / 2592000)} mes`;
   }
+
   marcarLeida(notif: any): void {
     if (notif.estado !== 'LEIDA') {
       this.http.put(
@@ -163,12 +157,13 @@ export class DashboardComponent implements OnInit {
       { headers: this.getHeaders() }
     ).subscribe({
       next: () => {
-        this.notificaciones = []; // vaciar el panel
+        this.notificaciones = [];
         this.noLeidas = 0;
         this.cdr.detectChanges();
       }
     });
   }
+
   // ── Roles ────────────────────────────────────────────────────────
 
   toggleSelectorRol(): void {
@@ -179,22 +174,18 @@ export class DashboardComponent implements OnInit {
 
   cambiarRol(nombreRol: string): void {
     if (nombreRol === this.rolActual) { this.mostrarSelectorRol = false; return; }
-
     this.cambiandoRol = true;
     this.mostrarSelectorRol = false;
     const idUsuario = parseInt(sessionStorage.getItem('idUsuario') || '0');
-
     this.http.post<any>(`${this.apiUrl}/auth/cambiar-rol`, { idUsuario, nombreRol }).subscribe({
       next: res => {
         sessionStorage.setItem('token',            res.token);
         sessionStorage.setItem('rol',              res.rol);
         sessionStorage.setItem('rolesDisponibles', JSON.stringify(res.rolesDisponibles));
-
-        this.rol             = res.rol;
-        this.rolActual       = res.rol;
+        this.rol              = res.rol;
+        this.rolActual        = res.rol;
         this.rolesDisponibles = res.rolesDisponibles;
-        this.cambiandoRol    = false;
-
+        this.cambiandoRol     = false;
         this.cargarNoLeidas();
         this.cdr.detectChanges();
       },
@@ -252,10 +243,12 @@ export class DashboardComponent implements OnInit {
     this.userMenuAbierto   = !this.userMenuAbierto;
     this.notifPanelAbierto = false;
   }
+
   stripHtml(html: string): string {
     if (!html) return '';
     return html.replace(/<[^>]*>/g, '').trim();
   }
+
   // ── Métodos legacy ───────────────────────────────────────────────
   protected auditoria(_: string)    {}
   protected reportesuso(_: string)  {}
