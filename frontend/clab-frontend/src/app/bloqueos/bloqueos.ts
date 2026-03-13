@@ -55,6 +55,13 @@ export class BloqueosComponent implements OnInit {
   mostrarModalConfirm= false;
   bloqueoAEliminar: Bloqueo | null= null;
 
+  mostrarModalConfirmTipo = false;
+  confirmMensajeTipo = '';
+  tipoAEliminar: TipoBloqueo | null = null;
+
+  mostrarModalVerTipo = false;
+  tipoDetalle: TipoBloqueo | null = null;
+
   confirmarEliminar(bloqueo: Bloqueo): void {
     this.bloqueoAEliminar = bloqueo;
     this.mostrarModalConfirm = true;
@@ -258,37 +265,66 @@ export class BloqueosComponent implements OnInit {
     if (this.modoEdicionTipo && this.tipoSeleccionado) {
       this.tipoBloqueoService.actualizar(this.tipoSeleccionado.idTipoBloqueo, this.formTipo).subscribe({
         next: () => {
-          this.cargarTiposBloqueo();
+          const idx = this.tiposBloqueo.findIndex(t => t.idTipoBloqueo === this.tipoSeleccionado!.idTipoBloqueo);
+          if (idx !== -1) this.tiposBloqueo[idx] = { ...this.tiposBloqueo[idx], ...this.formTipo };
           this.cerrarModalTipo();
-          this.mostrarNotificacion('✅ Tipo bloqueo actualizado correctamente');
+          this.mostrarNotificacion('✅ Tipo actualizado correctamente');
+          this.cdr.detectChanges();
         },
-        error: (err) => {
-          console.error('Error actualizando tipo:', err);
-          this.mostrarNotificacion('❌ Error al actualizar el tipo', 'error');
-        }
+        error: () => this.mostrarNotificacion('❌ Error al actualizar', 'error')
       });
     } else {
       this.tipoBloqueoService.crear(this.formTipo).subscribe({
         next: () => {
-          this.cargarTiposBloqueo();
+
+          this.tiposBloqueo = [...this.tiposBloqueo, {
+            idTipoBloqueo: Date.now(),
+            nombreTipo: this.formTipo.nombreTipo,
+            descripcion: this.formTipo.descripcion,
+            estado: this.formTipo.estado
+          } as TipoBloqueo];
           this.cerrarModalTipo();
-          this.mostrarNotificacion('✅ Tipo de bloqueo creado exitosamente');
+          this.mostrarNotificacion('✅ Tipo creado exitosamente');
+          this.cdr.detectChanges();
+
+          this.cargarTiposBloqueo();
         },
-        error: (err) => {
-          console.error('Error creando tipo:', err);
-          this.mostrarNotificacion('❌ Error al crear el tipo', 'error');
-        }
+        error: () => this.mostrarNotificacion('❌ Error al crear', 'error')
       });
     }
   }
 
   eliminarTipo(tipo: TipoBloqueo) {
-    if (confirm(`¿Eliminar el tipo "${tipo.nombreTipo}"?`)) {
-      this.tipoBloqueoService.eliminar(tipo.idTipoBloqueo).subscribe({
-        next: () => this.cargarTiposBloqueo(),
-        error: (err) => console.error('Error eliminando tipo', err)
-      });
-    }
+    this.tipoAEliminar = tipo;
+    this.confirmMensajeTipo = `¿Eliminar el tipo <strong>${tipo.nombreTipo}</strong>?`;
+    this.mostrarModalConfirmTipo = true;
+  }
+
+  cerrarModalConfirmTipo(): void {
+    this.mostrarModalConfirmTipo = false;
+    this.tipoAEliminar = null;
+  }
+
+  ejecutarEliminarTipo(): void {
+    if (!this.tipoAEliminar) return;
+    const id = this.tipoAEliminar.idTipoBloqueo;
+    this.tiposBloqueo = this.tiposBloqueo.filter(t => t.idTipoBloqueo !== id);
+    this.cerrarModalConfirmTipo();
+    this.mostrarNotificacion('✅ Tipo eliminado correctamente');
+    this.cdr.detectChanges();
+    this.tipoBloqueoService.eliminar(id).subscribe({
+      error: () => { this.mostrarNotificacion('❌ Error al eliminar', 'error'); this.cargarTiposBloqueo(); }
+    });
+  }
+
+  verTipo(tipo: TipoBloqueo): void {
+    this.tipoDetalle = tipo;
+    this.mostrarModalVerTipo = true;
+  }
+
+  cerrarModalVerTipo(): void {
+    this.mostrarModalVerTipo = false;
+    this.tipoDetalle = null;
   }
 
   // ───── NOTIFICACION ─────

@@ -637,3 +637,17 @@ $purple-dim:  rgba(168, 85, 247, 0.10);
     }
   }
 }
+
+.btn-eliminar-confirm {
+  background: $red-dim;
+  border: 1px solid rgba(231,76,60,0.25);
+  color: #ff6b6b;
+  padding: 9px 20px;
+  border-radius: 8px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  &:hover { background: rgba(231,76,60,0.25); transform: translateY(-2px); }
+}
