@@ -607,3 +607,169 @@ $blue-border: rgba(59, 130, 246, 0.25);
   &:hover:not(:disabled) { background: rgba($blue, 0.2); border-color: rgba($blue, 0.5); }
   &:disabled { opacity: 0.4; cursor: not-allowed; }
 }
+// ── MODAL DETALLE ─────────────────────────────────────────────────
+.modal-detalle {
+  width: 560px;
+  background: #1a1a1a !important;
+  border: 1px solid #2a2a2a !important;
+  padding: 0;
+
+  .modal-body { background: #1a1a1a !important; padding: 20px; }
+  .modal-footer { background: #1a1a1a !important; border-top: 1px solid #2a2a2a !important; }
+}
+
+.detalle-banda {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 20px 18px;
+  border-bottom: 1px solid #2a2a2a;
+  position: relative;
+
+  &.warning { background: rgba(230,126,34,0.08); border-bottom-color: rgba(230,126,34,0.25); }
+  &.info    { background: rgba(59,130,246,0.10);  border-bottom-color: rgba(59,130,246,0.25); }
+  &.danger  { background: rgba(231,76,60,0.12);   border-bottom-color: rgba(231,76,60,0.3); }
+  &.success { background: rgba(57,255,20,0.06);   border-bottom-color: rgba(57,255,20,0.25); }
+
+  .detalle-banda-icono {
+    font-size: 32px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .detalle-banda-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .detalle-banda-titulo {
+      font-size: 15px;
+      font-weight: 700;
+      color: #f0f0f0;
+      line-height: 1.3;
+    }
+
+    .detalle-banda-tipo {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #6b6b6b;
+    }
+  }
+
+  .modal-cerrar {
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 28px; height: 28px;
+    background: transparent;
+    border: 1px solid #2a2a2a;
+    border-radius: 6px;
+    color: #6b6b6b;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    &:hover { border-color: #e74c3c; color: #e74c3c; }
+  }
+}
+
+.detalle-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.detalle-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  &.full { grid-column: 1 / -1; }
+
+  .detalle-field-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #6b6b6b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .detalle-field-value {
+    font-size: 13px;
+    color: #f0f0f0;
+    background: #1e1e1e;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+}
+
+.detalle-mensaje-body {
+  background: #1e1e1e;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-size: 13px;
+  color: #f0f0f0;
+  line-height: 1.7;
+
+  &.warning { border-color: rgba(230,126,34,0.25); }
+  &.info    { border-color: rgba(59,130,246,0.25); }
+  &.danger  { border-color: rgba(231,76,60,0.3); }
+  &.success { border-color: rgba(57,255,20,0.25); }
+
+  b { color: #39ff14; font-weight: 700; }
+}
+.detalle-mensaje {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .modal-label { font-size: 10px; font-weight: 700; color: #6b6b6b; text-transform: uppercase; letter-spacing: 1px; }
+
+  .detalle-mensaje-body {
+    background: #1e1e1e;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    padding: 16px;
+    font-size: 13px;
+    color: #f0f0f0;
+    line-height: 1.7;
+
+    b { color: #39ff14; font-weight: 700; }
+  }
+}
+.detalle-meta {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: #1e1e1e;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+
+  .detalle-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .modal-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #6b6b6b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .modal-valor {
+    font-size: 13px;
+    color: #f0f0f0;
+  }
+}
