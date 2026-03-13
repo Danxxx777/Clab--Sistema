@@ -8,9 +8,11 @@ import com.clab.clabbackend.services.ReservaService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -57,6 +59,15 @@ public class ReservaController {
     @GetMapping("/listar")
     public ResponseEntity<List<Map<String, Object>>> listar() {
         return ResponseEntity.ok(reservaService.listar());
+    }
+
+    // ── NUEVO: reservas filtradas por semana ──────────────────────────────────
+    // Uso: GET /reservas/semana?inicio=2026-03-10&fin=2026-03-15
+    @GetMapping("/semana")
+    public ResponseEntity<List<Map<String, Object>>> listarPorSemana(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin) {
+        return ResponseEntity.ok(reservaService.listarPorSemana(inicio, fin));
     }
 
     @GetMapping("/usuario/{id}")
