@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ReservaService } from '../services/reserva.service';
 import { LaboratorioService } from '../services/laboratorio.service';
 import { AsignaturaService } from '../services/asignatura.service';
@@ -9,7 +9,7 @@ import { PeriodoService } from '../services/periodo.service';
 import { HorarioService } from '../services/horario.service';
 import { TipoReservaService } from '../services/tipo-reserva.service';
 import { AsistenciaUsuarioService } from '../services/asistencia-usuario.service';
-import {SolicitudReserva} from '../interfaces/SolicitudReserva.model'
+import { SolicitudReserva } from '../interfaces/SolicitudReserva.model';
 
 @Component({
   selector: 'app-solicitudes-reserva',
@@ -22,6 +22,7 @@ export class SolicitudesReservaComponent implements OnInit {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,       // ← AÑADIDO para leer queryParams
     private reservaService: ReservaService,
     private laboratorioService: LaboratorioService,
     private asignaturaService: AsignaturaService,
@@ -58,7 +59,6 @@ export class SolicitudesReservaComponent implements OnInit {
   itemsPorPagina = 10;
   totalPaginas = 1;
 
-  // Listas para selects
   laboratorios: any[] = [];
   asignaturas: any[] = [];
   periodos: any[] = [];
@@ -79,6 +79,28 @@ export class SolicitudesReservaComponent implements OnInit {
     this.cargarTipos();
     this.cargarTodosLosHorarios();
     this.verificarBloqueoUsuario();
+
+    // ── Leer queryParams del calendario ──────────────────────────────────────
+    this.route.queryParams.subscribe(params => {
+      const fecha      = params['fecha'];
+      const horaInicio = params['horaInicio'];
+      const horaFin    = params['horaFin'];
+
+      if (fecha && horaInicio && horaFin) {
+        // Esperar a que los selects estén cargados antes de abrir el modal
+        setTimeout(() => {
+          this.solicitudActual = {
+            ...this.nuevaSolicitud(),
+            fecha,
+            horaInicio,
+            horaFin
+          };
+          this.modoModal = 'crear';
+          this.mostrarModal = true;
+          this.cdr.detectChanges();
+        }, 600);
+      }
+    });
   }
 
   verificarBloqueoUsuario(): void {
@@ -225,7 +247,6 @@ export class SolicitudesReservaComponent implements OnInit {
       this.solicitudActual.horaFin = '';
       return;
     }
-
     const horario = this.horariosAcademicos.find(h => h.id_horario_academico == idHorario);
     if (horario) {
       this.solicitudActual.horaInicio = horario.hora_inicio;
@@ -329,12 +350,10 @@ export class SolicitudesReservaComponent implements OnInit {
         this.cerrarModal();
         this.mostrarAlerta('¡Solicitud enviada!', 'Tu solicitud está pendiente de aprobación.', 'exito');
       },
-      // ✅ BLOQUE ERROR CORREGIDO
       error: (err: any) => {
         console.error('Error creando solicitud:', err);
         this.guardando = false;
 
-        // Extraer el mensaje real del backend
         const rawMsg: string =
           err.error?.mensaje ||
           err.error?.message ||
