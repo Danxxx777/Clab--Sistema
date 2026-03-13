@@ -26,6 +26,10 @@ export class NotificacionesComponent implements OnInit {
   pestanaActiva: 'TODAS' | 'NO_LEIDA' | 'LEIDA' = 'TODAS';
   filtroTipo: string = 'TODOS';
 
+  // Modal detalle
+  modalDetalleAbierto = false;
+  notifDetalle: Notificacion | null = null;
+
   // Modal responder
   modalResponderAbierto = false;
   notifAResponder: Notificacion | null = null;
@@ -124,6 +128,21 @@ export class NotificacionesComponent implements OnInit {
   }
 
   // ── Acciones ─────────────────────────────────────────────────────
+
+  verDetalle(n: Notificacion): void {
+    this.notifDetalle = n;
+    this.modalDetalleAbierto = true;
+    if (n.estado === 'NO_LEIDA') {
+      this.marcarLeida(n.idNotificacion);
+    }
+    this.cdr.detectChanges();
+  }
+
+  cerrarDetalle(): void {
+    this.modalDetalleAbierto = false;
+    this.notifDetalle = null;
+    this.cdr.detectChanges();
+  }
 
   marcarLeida(id: number): void {
     const n = this.notificaciones.find(x => x.idNotificacion === id);
@@ -233,6 +252,11 @@ export class NotificacionesComponent implements OnInit {
       case 'BLOQUEO':        return '🚫';
       default:               return '🔔';
     }
+  }
+
+  stripHtml(html: string): string {
+    if (!html) return '';
+    return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   }
 
   // ── Navegación ───────────────────────────────────────────────────

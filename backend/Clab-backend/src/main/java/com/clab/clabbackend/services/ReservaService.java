@@ -2,6 +2,7 @@ package com.clab.clabbackend.services;
 
 import com.clab.clabbackend.dto.CancelacionDTO;
 import com.clab.clabbackend.dto.ReservaDTO;
+import com.clab.clabbackend.entities.Usuario;
 import com.clab.clabbackend.repository.ReservaRepository;
 import com.clab.clabbackend.repository.UsuarioRepository;
 import com.clab.clabbackend.repository.UsuarioRolRepository;
@@ -32,11 +33,11 @@ public class ReservaService {
 
     private void setActorContext(Integer actorId, String actorUsuario) {
         entityManager.createNativeQuery(
-                        "SELECT set_config('clab.actor_id', :id, true), " +
-                                "set_config('clab.actor_usuario', :usuario, true)"
+                        "SELECT set_config('clab.actor_id', ?, true), " +
+                                "set_config('clab.actor_usuario', ?, true)"
                 )
-                .setParameter("id",      actorId != null ? actorId.toString() : "0")
-                .setParameter("usuario", actorUsuario != null ? actorUsuario : "Sistema")
+                .setParameter(1, actorId != null ? actorId.toString() : "0")
+                .setParameter(2, actorUsuario != null ? actorUsuario : "Sistema")
                 .getSingleResult();
     }
 
@@ -54,7 +55,6 @@ public class ReservaService {
         return mapearReservas(reservaRepository.listarReservasPorEncargado(idUsuario));
     }
 
-    // ── NUEVO: filtrar por rango de fechas (para el calendario semanal) ───────
     public List<Map<String, Object>> listarPorSemana(LocalDate inicio, LocalDate fin) {
         return mapearReservas(reservaRepository.listarReservas())
                 .stream()
@@ -108,6 +108,31 @@ public class ReservaService {
                 dto.getFechaReserva(), dto.getHoraInicio(), dto.getHoraFin(),
                 dto.getMotivo(), dto.getNumeroEstudiantes(), dto.getDescripcion()
         );
+
+        // Notificar a admins y encargados del lab que hay una nueva solicitud
+        try {
+            usuarioRepository.findById(dto.getIdUsuario()).ifPresent(solicitante -> {
+                String nombreSolicitante = solicitante.getNombres() + " " + solicitante.getApellidos();
+                String mensaje = "Nueva solicitud de reserva de <b>" + nombreSolicitante + "</b>" +
+                        " para el " + dto.getFechaReserva() + " de " + dto.getHoraInicio() + " a " + dto.getHoraFin();
+
+                usuarioRolRepository.findUsuariosByRolNombre("Administradorr")
+                        .forEach(admin -> notificacionService.crearNotificacion(
+                                admin, "RESERVA",
+                                "Nueva solicitud de reserva",
+                                mensaje,
+                                "SISTEMA", "Administradorr"));
+
+                usuarioRolRepository.findUsuariosByRolNombre("Encargado de Laboratorio")
+                        .forEach(encargado -> notificacionService.crearNotificacion(
+                                encargado, "RESERVA",
+                                "Nueva solicitud de reserva",
+                                mensaje,
+                                "SISTEMA", "Encargado de Laboratorio"));
+            });
+        } catch (Exception e) {
+            System.err.println("Error notificación nueva reserva: " + e.getMessage());
+        }
     }
 
     @Transactional
@@ -149,7 +174,9 @@ public class ReservaService {
     @Transactional
     public void aprobar(Integer id, Integer actorId, String actorUsuario) {
         setActorContext(actorId, actorUsuario);
-        Object[] datos = reservaRepository.obtenerDatosNotificacion(id);
+        List<Object[]> resultado = reservaRepository.obtenerDatosNotificacion(id);
+        Object[] datos = resultado != null && !resultado.isEmpty() ? resultado.get(0) : null;
+
         reservaRepository.aprobar(id);
 
         try {
@@ -159,18 +186,10 @@ public class ReservaService {
                 String fecha     = datos[3] != null ? datos[3].toString() : "";
                 String hora      = datos[4] != null ? datos[4].toString() : "";
 
+                // Notificar solo al solicitante
                 usuarioRepository.findByEmail(email).ifPresent(usuario ->
                         notificacionService.notificarReservaAprobada(usuario, labNombre, fecha, hora)
                 );
-
-                usuarioRolRepository.findUsuariosByRolNombre("Administradorr")
-                        .forEach(admin ->
-                                notificacionService.crearNotificacion(
-                                        admin, "RESERVA",
-                                        "Reserva aprobada en " + labNombre,
-                                        "Se aprobó una reserva para el " + fecha + " a las " + hora,
-                                        "SISTEMA", "Administradorr")
-                        );
             }
         } catch (Exception e) {
             System.err.println("Error notificación aprobación: " + e.getMessage());
@@ -182,7 +201,9 @@ public class ReservaService {
     @Transactional
     public void rechazar(Integer id, Integer actorId, String actorUsuario) {
         setActorContext(actorId, actorUsuario);
-        Object[] datos = reservaRepository.obtenerDatosNotificacion(id);
+        List<Object[]> resultado = reservaRepository.obtenerDatosNotificacion(id);
+        Object[] datos = resultado != null && !resultado.isEmpty() ? resultado.get(0) : null;
+
         reservaRepository.rechazar(id);
 
         try {
@@ -190,18 +211,10 @@ public class ReservaService {
                 String labNombre = (String) datos[0];
                 String email     = (String) datos[1];
 
+                // Notificar solo al solicitante
                 usuarioRepository.findByEmail(email).ifPresent(usuario ->
                         notificacionService.notificarReservaRechazada(usuario, labNombre, "Solicitud no aprobada")
                 );
-
-                usuarioRolRepository.findUsuariosByRolNombre("Administradorr")
-                        .forEach(admin ->
-                                notificacionService.crearNotificacion(
-                                        admin, "RESERVA",
-                                        "Reserva rechazada en " + labNombre,
-                                        "Se rechazó una solicitud de reserva en " + labNombre,
-                                        "SISTEMA", "Administradorr")
-                        );
             }
         } catch (Exception e) {
             System.err.println("Error notificación rechazo: " + e.getMessage());
