@@ -1,0 +1,216 @@
+<!-- ══ NAVBAR ════════════════════════════════════════════════════════════════ -->
+<div class="page-header">
+  <div class="page-header__left">
+    <button class="btn-menu" [class.active]="drawerAbierto" (click)="toggleDrawer()">
+      <span></span><span></span><span></span>
+    </button>
+    <h1 class="page-title">Calendario de Reservas</h1>
+  </div>
+  <button class="btn-back" (click)="navegar('dashboard', 'Volviendo...')">← Volver</button>
+</div>
+
+<!-- ══ DRAWER OVERLAY ════════════════════════════════════════════════════════ -->
+<div class="drawer-overlay" [class.open]="drawerAbierto" (click)="cerrarDrawer()"></div>
+
+<!-- ══ DRAWER ════════════════════════════════════════════════════════════════ -->
+<div class="drawer" [class.open]="drawerAbierto">
+  <div class="drawer-header">
+    <div class="drawer-brand">CLAB <span>Sistema de Laboratorios</span></div>
+    <button class="btn-close-drawer" (click)="cerrarDrawer()">×</button>
+  </div>
+  <div class="drawer-user">
+    <div class="drawer-avatar">{{ usuarioLogueado.charAt(0).toUpperCase() }}</div>
+    <div class="drawer-user-info">
+      <div class="dui-name">{{ usuarioLogueado }}</div>
+      <div class="role-badge"><span class="role-dot"></span>{{ rolActual }}</div>
+    </div>
+  </div>
+  <div class="drawer-section-title">Módulos</div>
+  <div class="drawer-modules">
+    <div class="drawer-item" (click)="navegar('dashboard')">
+      <div class="di-icon"><img src="/favicon.ico" alt="Dashboard"></div>
+      <div class="di-text"><div class="di-name">Dashboard</div><div class="di-desc">Panel principal</div></div>
+    </div>
+    <div class="drawer-item" (click)="navegar('solicitar-reserva')">
+      <div class="di-icon"><img src="/calendario.png" alt="Reservas"></div>
+      <div class="di-text"><div class="di-name">Solicitar Reserva</div><div class="di-desc">Nueva solicitud</div></div>
+    </div>
+    <div class="drawer-item" (click)="navegar('notificaciones')">
+      <div class="di-icon"><img src="/campana.png" alt="Notificaciones"></div>
+      <div class="di-text"><div class="di-name">Notificaciones</div><div class="di-desc">Centro de alertas</div></div>
+    </div>
+  </div>
+  <div class="drawer-footer">
+    <button class="btn-logout-drawer" (click)="logout()">🚪 Cerrar sesión</button>
+  </div>
+</div>
+
+<!-- ══ MODAL DE CARGA ════════════════════════════════════════════════════════ -->
+<div class="loading-modal" *ngIf="cargando">
+  <div class="loading-card">
+    <div class="loading-spinner">
+      <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+    </div>
+    <p class="loading-label">{{ loadingText }}</p>
+  </div>
+</div>
+
+<!-- ══ CONTENIDO ════════════════════════════════════════════════════════════ -->
+<div class="cal-wrapper" [class.page-blur]="drawerAbierto || cargando">
+
+  <!-- Toolbar centrada: ‹ Hoy › fecha -->
+  <div class="cal-toolbar">
+    <div class="cal-toolbar__nav">
+      <button class="btn-nav" (click)="semanaAnterior()">‹</button>
+      <span class="cal-semana-label">{{ semanaLabel }}</span>
+      <button class="btn-nav" (click)="semanaSiguiente()">›</button>
+      <button class="btn-hoy" (click)="irAHoy()" [class.btn-hoy--active]="esHoy">Hoy</button>
+    </div>
+  </div>
+
+  <!-- Estado: cargando -->
+  <div class="cal-estado" *ngIf="cargandoDatos">
+    <div class="cal-spinner"></div>
+    <span>Cargando reservas...</span>
+  </div>
+
+  <!-- Estado: error -->
+  <div class="cal-estado cal-estado--error" *ngIf="errorCarga && !cargandoDatos">
+    <span>⚠ No se pudieron cargar las reservas.</span>
+    <button class="btn-reintentar" (click)="cargarReservas()">Reintentar</button>
+  </div>
+
+  <!-- Grid -->
+  <div class="cal-scroll" *ngIf="!cargandoDatos && !errorCarga">
+    <div class="cal-grid">
+
+      <!-- Header con días alineados al grid -->
+      <div class="cal-grid__header">
+        <div class="cal-grid__corner"></div>
+        <div class="cal-grid__day" *ngFor="let dia of dias">{{ dia }}</div>
+      </div>
+
+      <!-- Filas de horas (cada 30 min) -->
+      <div
+        class="cal-grid__row"
+        [class.cal-grid__row--half]="hora.endsWith(':30')"
+        *ngFor="let hora of horas; let hi = index">
+
+        <div class="cal-grid__hour-label">
+          {{ hora.endsWith(':00') ? (hora.startsWith('0') ? hora.substring(1) : hora) : '' }}
+        </div>
+
+        <div
+          class="cal-grid__cell"
+          *ngFor="let dia of dias; let di = index"
+          [class.cal-grid__cell--clickable]="esDocente && !celdaEstaOcupada(di, hi)"
+          (click)="onCeldaClick(di, hi)"
+          [title]="esDocente && !celdaEstaOcupada(di, hi) ? 'Solicitar reserva aquí' : ''">
+
+          <div
+            *ngFor="let res of getReservasDeCelda(di, hi); let ri = index"
+            class="cal-block"
+            [class.cal-block--selected]="reservaSeleccionada?.id === res.id"
+            [class.cal-block--ajena]="esDocente && !res.esPropia"
+            [style.border-left-color]="res.esPropia ? getColorLab(res.laboratorio) : '#3a3a3a'"
+            [style.background]="res.esPropia ? getColorLab(res.laboratorio) + '18' : '#252525'"
+            [style.height.px]="getAlturaBloque(res.duracion)"
+            [style.z-index]="ri + 1"
+            (click)="$event.stopPropagation(); seleccionar(res)">
+            <span class="cal-block__titulo"
+                  [style.color]="res.esPropia ? getColorLab(res.laboratorio) : '#888'">
+              {{ res.esPropia ? res.titulo : 'OCUPADO' }}
+            </span>
+            <span class="cal-block__lab"     *ngIf="res.esPropia">{{ res.laboratorio }}</span>
+            <span class="cal-block__docente"  *ngIf="res.esPropia">{{ res.docente }}</span>
+            <span class="cal-block__estado"   *ngIf="res.esPropia"
+                  [ngClass]="getBadgeEstado(res.estado)">{{ res.estado }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Leyenda de laboratorios — debajo del grid -->
+  <div class="cal-legend-bar" *ngIf="!cargandoDatos && !errorCarga && laboratorios.length > 0">
+    <span class="cal-legend-bar__label">Laboratorios:</span>
+    <div class="cal-legend">
+      <div class="cal-legend__item" *ngFor="let lab of laboratorios">
+        <span class="cal-legend__dot" [style.background]="getColorLab(lab)" [style.color]="getColorLab(lab)"></span>
+        <span class="cal-legend__name">{{ lab }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hint docente — debajo de la leyenda -->
+  <p class="cal-hint" *ngIf="esDocente && !cargandoDatos">
+    💡 Toca una celda vacía para crear una reserva en esa fecha y hora.
+  </p>
+
+  <!-- Panel detalle -->
+  <div class="cal-detail"
+       *ngIf="reservaSeleccionada"
+       [style.border-color]="getColorLab(reservaSeleccionada.laboratorio)"
+       [style.box-shadow]="'0 0 30px ' + getColorLab(reservaSeleccionada.laboratorio) + '40'">
+    <span class="cal-detail__badge"
+          [style.color]="getColorLab(reservaSeleccionada.laboratorio)">DETALLE RESERVA</span>
+    <p class="cal-detail__titulo">{{ reservaSeleccionada.titulo }}</p>
+    <p class="cal-detail__meta">{{ reservaSeleccionada.laboratorio }}</p>
+    <p class="cal-detail__meta">{{ reservaSeleccionada.docente }}</p>
+    <p class="cal-detail__horario"
+       [style.color]="getColorLab(reservaSeleccionada.laboratorio)">
+      {{ dias[reservaSeleccionada.dia] }}
+      · {{ reservaSeleccionada.horaInicioStr }}
+      – {{ reservaSeleccionada.horaFinStr }}
+    </p>
+    <span class="cal-detail__estado" [ngClass]="getBadgeEstado(reservaSeleccionada.estado)">
+      {{ reservaSeleccionada.estado }}
+    </span>
+    <button class="cal-detail__close"
+            [style.border-color]="getColorLab(reservaSeleccionada.laboratorio)"
+            [style.color]="getColorLab(reservaSeleccionada.laboratorio)"
+            (click)="cerrarDetalle()">CERRAR</button>
+  </div>
+
+</div>
+
+<!-- ══ MODAL CONFIRMAR NUEVA RESERVA ════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="mostrarModalNuevaReserva">
+  <div class="modal modal-reserva-confirm" (click)="$event.stopPropagation()">
+    <div class="modal-header modal-header-cal">
+      <div class="modal-header-cal__icon">📅</div>
+      <div style="flex:1">
+        <h2>Nueva Solicitud</h2>
+        <p class="modal-header-cal__sub">¿Deseas solicitar esta reserva?</p>
+      </div>
+      <button class="btn-close" (click)="cerrarModalNuevaReserva()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="cal-confirm-info">
+        <div class="cal-confirm-row">
+          <span class="cal-confirm-label">📆 Fecha</span>
+          <span class="cal-confirm-value">{{ modalConfirmData.fechaLabel }}</span>
+        </div>
+        <div class="cal-confirm-row">
+          <span class="cal-confirm-label">🕐 Hora inicio</span>
+          <span class="cal-confirm-value">{{ modalConfirmData.horaInicio }}</span>
+        </div>
+        <div class="cal-confirm-row">
+          <span class="cal-confirm-label">🕑 Hora fin</span>
+          <span class="cal-confirm-value">{{ modalConfirmData.horaFin }}</span>
+        </div>
+      </div>
+      <p class="cal-confirm-desc">
+        Se abrirá el módulo de <strong>Solicitudes de Reserva</strong>
+        con la fecha y hora preseleccionadas.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModalNuevaReserva()">Cancelar</button>
+      <button class="btn-guardar btn-confirm-reserva" (click)="confirmarNuevaReserva()">
+         Sí, Solicitar
+      </button>
+    </div>
+  </div>
+</div>
