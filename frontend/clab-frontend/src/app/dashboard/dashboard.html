@@ -45,7 +45,7 @@
     }
     @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Coordinador' || rol === 'Decano') {
       <div class="drawer-item" (click)="navegar('reservar', 'Cargando Reservas...')">
-        <div class="di-icon ic-4"><img src="/calendario.png" alt="Reservas"></div>
+        <div class="di-icon ic-4"><img src="/reservacalendario.png" alt="Reservas"></div>
         <div class="di-text"><div class="di-name">Reservas</div><div class="di-desc">Disponibilidad</div></div>
       </div>
     }
@@ -281,7 +281,7 @@
       @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano' || rol === 'Encargado de Laboratorio')
       {
         <div class="menu-item" (click)="navegar('reservar', 'Cargando Reservas...')">
-          <img src="/calendario.png" alt="Calendario" class="menu-icon">
+          <img src="/reservacalendario.png" alt="Calendario" class="menu-icon">
           <div class="text">
             <strong>Reservas</strong>
             <p>Gestión de reservas y disponibilidad</p>
@@ -289,7 +289,7 @@
         </div>
       }
 
-      <!-- Módulo: Solicitudes de Reserva -->
+      <!-- Módulo 5: Solicitudes de Reserva -->
       @if(rol === 'Docente' || rol === 'Coordinador' || rol === 'Decano' || rol === 'Administradorr' || rol === 'Encargado de Laboratorio')
       {
         <div class="menu-item" (click)="navegar('solicitudes-reserva', 'Cargando Solicitudes...')">
@@ -300,6 +300,19 @@
           </div>
         </div>
       }
+
+      <!-- Módulo 6: Calendario de Reservas -->
+      @if(rol === 'Docente' )
+      {
+        <div class="menu-item" (click)="navegar('calendario', 'Cargando Calendario...')">
+          <img src="/calendario.png" alt="Calendario" class="menu-icon">
+          <div class="text">
+            <strong>Calendario de Reservas</strong>
+            <p>Vista semanal de ocupación de laboratorios</p>
+          </div>
+        </div>
+       }
+
       <!-- Módulo 5: Académico -->
       @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Coordinador')
       {
