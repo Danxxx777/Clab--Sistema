@@ -114,5 +114,5 @@ public interface ReservaRepository extends JpaRepository<Reserva, Integer> {
     // ReservaRepository.java — AGREGAR
     @Query(value = "SELECT * FROM reservas.fn_datos_notificacion_reserva(:idReserva)",
             nativeQuery = true)
-    Object[] obtenerDatosNotificacion(Integer idReserva);
+    List<Object[]> obtenerDatosNotificacion(Integer idReserva);
 }
