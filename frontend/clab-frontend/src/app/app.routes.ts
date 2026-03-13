@@ -58,5 +58,6 @@ export const routes: Routes = [
   { path: 'auditoria',      component: AuditoriaComponent,      canActivate: [authGuard] },
   { path: 'roles',          component: RolesComponent,          canActivate: [authGuard] },
   { path: 'perfil', component: PerfilComponent, canActivate: [authGuard] },
+  { path: 'calendario', loadComponent: () => import('./calendario/calendario').then(m => m.CalendarioComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: 'login' }
 ];

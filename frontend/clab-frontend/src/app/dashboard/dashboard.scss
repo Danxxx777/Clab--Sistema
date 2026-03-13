@@ -1311,3 +1311,25 @@ img {
   display: block;
   width: 100%;
 }
+.cal-section {
+  margin-top: 36px;
+  border-top: 1px solid #2a2a2a;
+  padding-top: 20px;
+
+  &-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: #4a4a4a;
+    letter-spacing: 2.5px;
+    margin-bottom: 16px;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -8px; left: 0;
+      width: 40px; height: 1px;
+      background: #39ff14;
+    }
+  }
+}
