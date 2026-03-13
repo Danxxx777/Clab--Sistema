@@ -103,341 +103,196 @@
 </div>
 
 <div class="page-title-section">
-    <div style="display:flex; align-items:center; gap:14px;">
-      <button class="btn-hamburger" [class.active]="drawerAbierto" (click)="toggleDrawer()">
-        <div class="ham-line"></div>
-        <div class="ham-line"></div>
-        <div class="ham-line"></div>
-      </button>
-      <h1>Gestión Académica</h1>
+  <div style="display:flex; align-items:center; gap:14px;">
+    <button class="btn-hamburger" [class.active]="drawerAbierto" (click)="toggleDrawer()">
+      <div class="ham-line"></div>
+      <div class="ham-line"></div>
+      <div class="ham-line"></div>
+    </button>
+    <h1>Gestión Académica</h1>
+  </div>
+  <button class="btn-volver" (click)="goToDashboard()">← Volver</button>
+</div>
+
+<!-- TABS -->
+<div class="tabs-container">
+  <div class="tabs">
+    <button class="tab" [class.active]="tabActiva === 0" (click)="cambiarTab(0)">Períodos</button>
+    <button class="tab" [class.active]="tabActiva === 1" (click)="cambiarTab(1)">Carreras</button>
+    <button class="tab" [class.active]="tabActiva === 2" (click)="cambiarTab(2)">Asignaturas</button>
+    <button class="tab" [class.active]="tabActiva === 3" (click)="cambiarTab(3)">Facultades</button>
+    <button class="tab" [class.active]="tabActiva === 4" (click)="cambiarTab(4)">Horarios</button>
+  </div>
+</div>
+
+<div class="content-wrapper">
+
+  <!-- TAB: PERÍODOS -->
+  <div class="tab-content" *ngIf="tabActiva === 0">
+    <div class="toolbar">
+      <div class="search-container">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" [(ngModel)]="busquedaPeriodos" (input)="filtrarPeriodos()" placeholder="Buscar períodos...">
+      </div>
+      <button class="btn-agregar" (click)="agregarNuevo(0)">+ Agregar Período</button>
     </div>
-    <button class="btn-volver" (click)="goToDashboard()">← Volver</button>
+    <div class="table-container">
+      <table class="data-table">
+        <thead><tr><th>NOMBRE</th><th>FECHA INICIO</th><th>FECHA FIN</th><th>FECHA CREACIÓN</th><th>ESTADO</th><th>ACCIONES</th></tr></thead>
+        <tbody>
+        <tr *ngFor="let periodo of periodosFiltrado; let i = index">
+          <td>{{ periodo.nombrePeriodo }}</td>
+          <td>{{ periodo.fechaInicio }}</td>
+          <td>{{ periodo.fechaFin }}</td>
+          <td>{{ periodo.fechaCreacion }}</td>
+          <td><span class="badge" [class.badge-activo]="periodo.estado === 'ACTIVO'" [class.badge-inactivo]="periodo.estado === 'INACTIVO'">{{ periodo.estado }}</span></td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn-action btn-editar" (click)="editar(periodo, i, 'periodo')">Editar</button>
+              <button class="btn-action" [class.btn-activar]="periodo.estado !== 'ACTIVO'" [class.btn-desactivar]="periodo.estado === 'ACTIVO'" (click)="toggleEstado(periodo, 'periodo')">{{ periodo.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}</button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="periodosFiltrado.length === 0"><td colspan="7" class="empty-message">No se encontraron períodos</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
-  <!-- TABS -->
-  <div class="tabs-container">
-    <div class="tabs">
-      <button class="tab" [class.active]="tabActiva === 0" (click)="cambiarTab(0)">Períodos</button>
-      <button class="tab" [class.active]="tabActiva === 1" (click)="cambiarTab(1)">Carreras</button>
-      <button class="tab" [class.active]="tabActiva === 2" (click)="cambiarTab(2)">Asignaturas</button>
-      <button class="tab" [class.active]="tabActiva === 3" (click)="cambiarTab(3)">Facultades</button>
-      <button class="tab" [class.active]="tabActiva === 4" (click)="cambiarTab(4)">Horarios</button>
+  <!-- TAB: CARRERAS -->
+  <div class="tab-content" *ngIf="tabActiva === 1">
+    <div class="toolbar">
+      <div class="search-container">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" [(ngModel)]="busquedaCarreras" (input)="filtrarCarreras()" placeholder="Buscar carreras...">
+      </div>
+      <button class="btn-agregar" (click)="agregarNuevo(1)">+ Agregar Carrera</button>
+    </div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead><tr><th>NOMBRE</th><th>FACULTAD</th><th>COORDINADOR</th><th>ESTADO</th><th>ACCIONES</th></tr></thead>
+        <tbody>
+        <tr *ngFor="let carrera of carrerasFiltradas; let i = index">
+          <td><strong>{{ carrera.nombreCarrera }}</strong></td>
+          <td>{{ carrera.nombreFacultad }}</td>
+          <td>{{ carrera.nombreCoordinador }}</td>
+          <td><span class="badge" [class.badge-activo]="carrera.estado === 'ACTIVA'" [class.badge-inactivo]="carrera.estado === 'INACTIVA'">{{ carrera.estado }}</span></td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn-action btn-editar" (click)="editar(carrera, i, 'carrera')">Editar</button>
+              <button class="btn-action" [class.btn-activar]="carrera.estado !== 'ACTIVA'" [class.btn-desactivar]="carrera.estado === 'ACTIVA'" (click)="toggleEstado(carrera, 'carrera')">{{ carrera.estado === 'ACTIVA' ? 'Desactivar' : 'Activar' }}</button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="carrerasFiltradas.length === 0"><td colspan="5" class="empty-message">No se encontraron carreras</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
-  <div class="content-wrapper">
-
-    <!-- TAB: PERÍODOS -->
-    <div class="tab-content" *ngIf="tabActiva === 0">
-      <div class="toolbar">
-        <div class="search-container">
-          <span class="search-icon">🔍</span>
-          <input
-            type="text"
-            class="search-input"
-            [(ngModel)]="busquedaPeriodos"
-            (input)="filtrarPeriodos()"
-            placeholder="Buscar períodos...">
-        </div>
-        <button class="btn-agregar" (click)="agregarNuevo(0)">+ Agregar Período</button>
+  <!-- TAB: ASIGNATURAS -->
+  <div class="tab-content" *ngIf="tabActiva === 2">
+    <div class="toolbar">
+      <div class="search-container">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" [(ngModel)]="busquedaAsignaturas" (input)="filtrarAsignaturas()" placeholder="Buscar asignaturas...">
       </div>
-
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-          <tr>
-            <th>NOMBRE</th>
-            <th>FECHA INICIO</th>
-            <th>FECHA FIN</th>
-            <th>FECHA CREACIÓN</th>
-            <th>ESTADO</th>
-            <th>ACCIONES</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr *ngFor="let periodo of periodosFiltrado; let i = index">
-            <td>{{ periodo.nombrePeriodo }}</td>
-            <td>{{ periodo.fechaInicio }}</td>
-            <td>{{ periodo.fechaFin }}</td>
-            <td>{{ periodo.fechaCreacion }}</td>
-            <td>
-                <span class="badge"
-                      [class.badge-activo]="periodo.estado === 'ACTIVO'"
-                      [class.badge-inactivo]="periodo.estado === 'INACTIVO'">
-                  {{ periodo.estado }}
-                </span>
-            </td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn-action btn-editar" (click)="editar(periodo, i, 'periodo')">Editar</button>
-                <button class="btn-action"
-                        [class.btn-activar]="periodo.estado !== 'ACTIVO'"
-                        [class.btn-desactivar]="periodo.estado === 'ACTIVO'"
-                        (click)="toggleEstado(periodo, 'periodo')">
-                  {{ periodo.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}
-                </button>
-              </div>
-            </td>
-          </tr>
-          <tr *ngIf="periodosFiltrado.length === 0">
-            <td colspan="7" class="empty-message">No se encontraron períodos</td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
+      <button class="btn-agregar" (click)="agregarNuevo(2)">+ Agregar Asignatura</button>
     </div>
-
-    <!-- TAB: CARRERAS -->
-    <div class="tab-content" *ngIf="tabActiva === 1">
-      <div class="toolbar">
-        <div class="search-container">
-          <span class="search-icon">🔍</span>
-          <input
-            type="text"
-            class="search-input"
-            [(ngModel)]="busquedaCarreras"
-            (input)="filtrarCarreras()"
-            placeholder="Buscar carreras...">
-        </div>
-        <button class="btn-agregar" (click)="agregarNuevo(1)">+ Agregar Carrera</button>
-      </div>
-
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-          <tr>
-            <th>NOMBRE</th>
-            <th>FACULTAD</th>
-            <th>COORDINADOR</th>
-            <th>ESTADO</th>
-            <th>ACCIONES</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr *ngFor="let carrera of carrerasFiltradas; let i = index">
-            <td><strong>{{ carrera.nombreCarrera }}</strong></td>
-            <td>{{ carrera.nombreFacultad }}</td>
-            <td>{{ carrera.nombreCoordinador }}</td>
-            <td>
-          <span class="badge"
-                [class.badge-activo]="carrera.estado === 'ACTIVA'"
-                [class.badge-inactivo]="carrera.estado === 'INACTIVA'">
-            {{ carrera.estado }}
-          </span>
-            </td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn-action btn-editar" (click)="editar(carrera, i, 'carrera')">Editar</button>
-                <button class="btn-action"
-                        [class.btn-activar]="carrera.estado !== 'ACTIVA'"
-                        [class.btn-desactivar]="carrera.estado === 'ACTIVA'"
-                        (click)="toggleEstado(carrera, 'carrera')">
-                  {{ carrera.estado === 'ACTIVA' ? 'Desactivar' : 'Activar' }}
-                </button>
-              </div>
-            </td>
-          </tr>
-          <tr *ngIf="carrerasFiltradas.length === 0">
-            <td colspan="5" class="empty-message">No se encontraron carreras</td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead><tr><th>NOMBRE</th><th>CARRERA</th><th>NIVEL</th><th>HORAS</th><th>LABORATORIO</th><th>ESTADO</th><th>ACCIONES</th></tr></thead>
+        <tbody>
+        <tr *ngFor="let asignatura of asignaturasFiltradas; let i = index">
+          <td><strong>{{ asignatura.nombre }}</strong></td>
+          <td>{{ asignatura.nombreCarrera }}</td>
+          <td>Nivel {{ asignatura.nivel }}</td>
+          <td>{{ asignatura.horasSemanales }} hrs/sem</td>
+          <td><span [ngClass]="asignatura.requiereLaboratorio ? 'lab-si' : 'lab-no'">{{ asignatura.requiereLaboratorio ? '🔬 Sí' : '📘 No' }}</span></td>
+          <td><span class="badge" [class.badge-activo]="asignatura.estado === 'ACTIVA'" [class.badge-inactivo]="asignatura.estado === 'INACTIVA'">{{ asignatura.estado }}</span></td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn-action btn-editar" (click)="editar(asignatura, i, 'asignatura')">Editar</button>
+              <button class="btn-action" [class.btn-activar]="asignatura.estado !== 'ACTIVA'" [class.btn-desactivar]="asignatura.estado === 'ACTIVA'" (click)="toggleEstado(asignatura, 'asignatura')">{{ asignatura.estado === 'ACTIVA' ? 'Desactivar' : 'Activar' }}</button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="asignaturasFiltradas.length === 0"><td colspan="7" class="empty-message">No se encontraron asignaturas</td></tr>
+        </tbody>
+      </table>
     </div>
-
-    <!-- TAB: ASIGNATURAS -->
-    <div class="tab-content" *ngIf="tabActiva === 2">
-      <div class="toolbar">
-        <div class="search-container">
-          <span class="search-icon">🔍</span>
-          <input
-            type="text"
-            class="search-input"
-            [(ngModel)]="busquedaAsignaturas"
-            (input)="filtrarAsignaturas()"
-            placeholder="Buscar asignaturas...">
-        </div>
-        <button class="btn-agregar" (click)="agregarNuevo(2)">+ Agregar Asignatura</button>
-      </div>
-
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-          <tr>
-            <th>NOMBRE</th>
-            <th>CARRERA</th>
-            <th>NIVEL</th>
-            <th>HORAS</th>
-            <th>LABORATORIO</th>
-            <th>ESTADO</th>
-            <th>ACCIONES</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr *ngFor="let asignatura of asignaturasFiltradas; let i = index">
-            <td><strong>{{ asignatura.nombre }}</strong></td>
-            <td>{{ asignatura.nombreCarrera }}</td>
-            <td>Nivel {{ asignatura.nivel }}</td>
-            <td>{{ asignatura.horasSemanales }} hrs/sem</td>
-            <td>
-      <span [ngClass]="asignatura.requiereLaboratorio ? 'lab-si' : 'lab-no'">
-        {{ asignatura.requiereLaboratorio ? '🔬 Sí' : '📘 No' }}
-      </span>
-            </td>
-            <td>
-      <span class="badge"
-            [class.badge-activo]="asignatura.estado === 'ACTIVA'"
-            [class.badge-inactivo]="asignatura.estado === 'INACTIVA'">
-        {{ asignatura.estado }}
-      </span>
-            </td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn-action btn-editar" (click)="editar(asignatura, i, 'asignatura')">Editar</button>
-                <button class="btn-action"
-                        [class.btn-activar]="asignatura.estado !== 'ACTIVA'"
-                        [class.btn-desactivar]="asignatura.estado === 'ACTIVA'"
-                        (click)="toggleEstado(asignatura, 'asignatura')">
-                  {{ asignatura.estado === 'ACTIVA' ? 'Desactivar' : 'Activar' }}
-                </button>
-              </div>
-            </td>
-          </tr>
-          <tr *ngIf="asignaturasFiltradas.length === 0">
-            <td colspan="7" class="empty-message">No se encontraron asignaturas</td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- TAB: FACULTADES -->
-    <div class="tab-content" *ngIf="tabActiva === 3">
-      <div class="toolbar">
-        <div class="search-container">
-          <span class="search-icon">🔍</span>
-          <input
-            type="text"
-            class="search-input"
-            [(ngModel)]="busquedaFacultades"
-            (input)="filtrarFacultades()"
-            placeholder="Buscar facultades...">
-        </div>
-        <button class="btn-agregar" (click)="agregarNuevo(3)">+ Agregar Facultad</button>
-      </div>
-
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-          <tr>
-            <th>NOMBRE</th>
-            <th>DECANO</th>
-            <th>FECHA CREACIÓN</th>
-            <th>ESTADO</th>
-            <th>ACCIONES</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr *ngFor="let facultad of facultadesFiltradas; let i = index">
-            <td><strong>{{ facultad.nombre }}</strong></td>
-            <td>{{ facultad.nombreDecano }}</td>
-            <td>{{ facultad.fechaCreacion }}</td>
-            <td>
-                <span class="badge"
-                      [class.badge-activo]="facultad.estado === 'ACTIVO'"
-                      [class.badge-inactivo]="facultad.estado === 'INACTIVO'">
-                  {{ facultad.estado }}
-                </span>
-            </td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn-action btn-editar" (click)="editar(facultad, i, 'facultad')">Editar</button>
-                <button class="btn-action"
-                        [class.btn-activar]="facultad.estado !== 'ACTIVO'"
-                        [class.btn-desactivar]="facultad.estado === 'ACTIVO'"
-                        (click)="toggleEstado(facultad, 'facultad')">
-                  {{ facultad.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}
-                </button>
-              </div>
-            </td>
-          </tr>
-          <tr *ngIf="facultadesFiltradas.length === 0">
-            <td colspan="5" class="empty-message">No se encontraron facultades</td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- TAB: HORARIOS -->
-    <div class="tab-content" *ngIf="tabActiva === 4">
-      <div class="toolbar">
-        <div class="search-container">
-          <span class="search-icon">🔍</span>
-          <input
-            type="text"
-            class="search-input"
-            [(ngModel)]="busquedaHorarios"
-            (input)="filtrarHorarios()"
-            placeholder="Buscar horarios...">
-        </div>
-        <button class="btn-agregar" (click)="agregarNuevo(4)">+ Agregar Horario</button>
-      </div>
-
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-          <tr>
-            <th>PERÍODO</th>
-            <th>ASIGNATURA</th>
-            <th>DOCENTE</th>
-            <th>DÍA</th>
-            <th>HORARIO</th>
-            <th>ESTUDIANTES</th>
-            <th>ESTADO</th>
-            <th>ACCIONES</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr *ngFor="let horario of horariosFiltrados; let i = index">
-            <td><strong>{{ horario.nombrePeriodo }}</strong></td>
-            <td>{{ horario.nombreAsignatura }}</td>
-            <td>{{ horario.nombreDocente }}</td>
-            <td>{{ horario.diaSemana }}</td>
-            <td>{{ horario.horaInicio }} - {{ horario.horaFin }}</td>
-            <td>{{ horario.numeroEstudiantes }} estudiantes</td>
-            <td>
-      <span class="badge"
-            [class.badge-activo]="horario.estado === 'ACTIVO'"
-            [class.badge-inactivo]="horario.estado === 'INACTIVO'">
-        {{ horario.estado }}
-      </span>
-            </td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn-action btn-editar" (click)="editar(horario, i, 'horario')">Editar</button>
-                <button class="btn-action"
-                        [class.btn-activar]="horario.estado !== 'ACTIVO'"
-                        [class.btn-desactivar]="horario.estado === 'ACTIVO'"
-                        (click)="toggleEstado(horario, 'horario')">
-                  {{ horario.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}
-                </button>
-              </div>
-            </td>
-          </tr>
-          <tr *ngIf="horariosFiltrados.length === 0">
-            <td colspan="8" class="empty-message">No se encontraron horarios</td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
   </div>
+
+  <!-- TAB: FACULTADES -->
+  <div class="tab-content" *ngIf="tabActiva === 3">
+    <div class="toolbar">
+      <div class="search-container">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" [(ngModel)]="busquedaFacultades" (input)="filtrarFacultades()" placeholder="Buscar facultades...">
+      </div>
+      <button class="btn-agregar" (click)="agregarNuevo(3)">+ Agregar Facultad</button>
+    </div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead><tr><th>NOMBRE</th><th>DECANO</th><th>FECHA CREACIÓN</th><th>ESTADO</th><th>ACCIONES</th></tr></thead>
+        <tbody>
+        <tr *ngFor="let facultad of facultadesFiltradas; let i = index">
+          <td><strong>{{ facultad.nombre }}</strong></td>
+          <td>{{ facultad.nombreDecano }}</td>
+          <td>{{ facultad.fechaCreacion }}</td>
+          <td><span class="badge" [class.badge-activo]="facultad.estado === 'ACTIVO'" [class.badge-inactivo]="facultad.estado === 'INACTIVO'">{{ facultad.estado }}</span></td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn-action btn-editar" (click)="editar(facultad, i, 'facultad')">Editar</button>
+              <button class="btn-action" [class.btn-activar]="facultad.estado !== 'ACTIVO'" [class.btn-desactivar]="facultad.estado === 'ACTIVO'" (click)="toggleEstado(facultad, 'facultad')">{{ facultad.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}</button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="facultadesFiltradas.length === 0"><td colspan="5" class="empty-message">No se encontraron facultades</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB: HORARIOS -->
+  <div class="tab-content" *ngIf="tabActiva === 4">
+    <div class="toolbar">
+      <div class="search-container">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" [(ngModel)]="busquedaHorarios" (input)="filtrarHorarios()" placeholder="Buscar horarios...">
+      </div>
+      <button class="btn-agregar" (click)="agregarNuevo(4)">+ Agregar Horario</button>
+    </div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead><tr><th>PERÍODO</th><th>ASIGNATURA</th><th>DOCENTE</th><th>DÍA</th><th>HORARIO</th><th>ESTUDIANTES</th><th>ESTADO</th><th>ACCIONES</th></tr></thead>
+        <tbody>
+        <tr *ngFor="let horario of horariosFiltrados; let i = index">
+          <td><strong>{{ horario.nombrePeriodo }}</strong></td>
+          <td>{{ horario.nombreAsignatura }}</td>
+          <td>{{ horario.nombreDocente }}</td>
+          <td>{{ horario.diaSemana }}</td>
+          <td>{{ horario.horaInicio }} - {{ horario.horaFin }}</td>
+          <td>{{ horario.numeroEstudiantes }} estudiantes</td>
+          <td><span class="badge" [class.badge-activo]="horario.estado === 'ACTIVO'" [class.badge-inactivo]="horario.estado === 'INACTIVO'">{{ horario.estado }}</span></td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn-action btn-editar" (click)="editar(horario, i, 'horario')">Editar</button>
+              <button class="btn-action" [class.btn-activar]="horario.estado !== 'ACTIVO'" [class.btn-desactivar]="horario.estado === 'ACTIVO'" (click)="toggleEstado(horario, 'horario')">{{ horario.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}</button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="horariosFiltrados.length === 0"><td colspan="8" class="empty-message">No se encontraron horarios</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
 
 
 <!-- MODAL AGREGAR / EDITAR -->
-<div class="modal-overlay" *ngIf="mostrarModal" >
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarTimePickerSiAfuera($event)">
   <div class="modal" (click)="$event.stopPropagation()">
 
     <div class="modal-header">
@@ -480,7 +335,6 @@
         </div>
       </div>
 
-
       <!-- FORM: CARRERA -->
       <div *ngIf="tipoEdicion === 'carrera'">
         <div class="form-row">
@@ -515,7 +369,6 @@
           </div>
         </div>
       </div>
-
 
       <!-- FORM: ASIGNATURA -->
       <div *ngIf="tipoEdicion === 'asignatura'">
@@ -596,9 +449,8 @@
         </div>
       </div>
 
-
       <!-- FORM: HORARIO -->
-      <div *ngIf="tipoEdicion === 'horario'">
+      <div *ngIf="tipoEdicion === 'horario'" (click)="cerrarTimePickerSiAfuera($event)">
         <div class="form-row">
           <div class="form-group">
             <label>Período Académico <span class="required">*</span></label>
@@ -636,22 +488,58 @@
             </select>
           </div>
         </div>
+
+        <!-- TIME PICKERS: HORA INICIO + HORA FIN -->
         <div class="form-row">
+
+          <!-- HORA INICIO -->
           <div class="form-group">
             <label>Hora de Inicio <span class="required">*</span></label>
-            <select class="form-control" [(ngModel)]="formularioHorario.horaInicio">
-              <option value="">Seleccione hora</option>
-              <option *ngFor="let hora of horas" [value]="hora">{{ hora }}</option>
-            </select>
+            <div class="time-picker-wrap" (click)="$event.stopPropagation()">
+              <div class="time-display"
+                   [class.active]="timePickerAbierto === 'inicio'"
+                   (click)="toggleTimePicker('inicio', $event)">
+                <span>{{ formularioHorario.horaInicio || '--:--' }}</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </div>
+              <div class="time-picker-dropdown" *ngIf="timePickerAbierto === 'inicio'">
+                <div class="tp-option"
+                     *ngFor="let h of horas"
+                     [class.tp-selected]="formularioHorario.horaInicio === h"
+                     (click)="selectHora('inicio', h)">
+                  {{ h }}
+                </div>
+              </div>
+            </div>
           </div>
+
+          <!-- HORA FIN -->
           <div class="form-group">
             <label>Hora de Fin <span class="required">*</span></label>
-            <select class="form-control" [(ngModel)]="formularioHorario.horaFin">
-              <option value="">Seleccione hora</option>
-              <option *ngFor="let hora of horas" [value]="hora">{{ hora }}</option>
-            </select>
+            <div class="time-picker-wrap" (click)="$event.stopPropagation()">
+              <div class="time-display"
+                   [class.active]="timePickerAbierto === 'fin'"
+                   (click)="toggleTimePicker('fin', $event)">
+                <span>{{ formularioHorario.horaFin || '--:--' }}</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </div>
+              <div class="time-picker-dropdown" *ngIf="timePickerAbierto === 'fin'">
+                <div class="tp-option"
+                     *ngFor="let h of horas"
+                     [class.tp-selected]="formularioHorario.horaFin === h"
+                     (click)="selectHora('fin', h)">
+                  {{ h }}
+                </div>
+              </div>
+            </div>
           </div>
+
         </div>
+
         <div class="form-row">
           <div class="form-group">
             <label>Número de Estudiantes <span class="required">*</span></label>
@@ -666,6 +554,7 @@
           </div>
         </div>
       </div>
+
       <p class="config-msg-error" *ngIf="errorModal">{{ errorModal }}</p>
 
     </div>
@@ -676,29 +565,24 @@
   </div>
 </div>
 
-<!-- ─── MODAL CONFIRMACIÓN ELIMINAR ──────────────────────────────────────────── -->
-<!-- Agregar esto ANTES del cierre del último </div> del archivo academico.html -->
-
+<!-- MODAL CONFIRMACIÓN ELIMINAR -->
 <div class="modal-overlay" *ngIf="mostrarModalConfirm" (click)="cancelarConfirm()">
   <div class="modal modal-confirm" (click)="$event.stopPropagation()">
-
     <div class="modal-header">
       <h2>Confirmar Eliminación</h2>
       <button class="btn-close" (click)="cancelarConfirm()">×</button>
     </div>
-
     <div class="modal-body">
       <p [innerHTML]="confirmMensaje"></p>
       <p class="warning-text">Esta acción no se puede deshacer.</p>
     </div>
-
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cancelarConfirm()">Cancelar</button>
       <button class="btn-eliminar-confirm" (click)="confirmarEliminar()">Sí, Eliminar</button>
     </div>
-
   </div>
 </div>
+
 <div class="toast" *ngIf="mostrarToast"
      [class.toast-success]="toastTipo === 'success'"
      [class.toast-error]="toastTipo === 'error'">
