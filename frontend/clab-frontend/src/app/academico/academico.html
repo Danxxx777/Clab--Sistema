@@ -176,6 +176,7 @@
                         (click)="toggleEstado(periodo, 'periodo')">
                   {{ periodo.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}
                 </button>
+                <button class="btn-action btn-eliminar" (click)="eliminar(periodo, 'periodo')">Eliminar</button>
               </div>
             </td>
           </tr>
@@ -234,6 +235,7 @@
                         (click)="toggleEstado(carrera, 'carrera')">
                   {{ carrera.estado === 'ACTIVA' ? 'Desactivar' : 'Activar' }}
                 </button>
+                <button class="btn-action btn-eliminar" (click)="eliminar(carrera, 'carrera')">Eliminar</button>
               </div>
             </td>
           </tr>
@@ -300,6 +302,7 @@
                         (click)="toggleEstado(asignatura, 'asignatura')">
                   {{ asignatura.estado === 'ACTIVA' ? 'Desactivar' : 'Activar' }}
                 </button>
+                <button class="btn-action btn-eliminar" (click)="eliminar(asignatura, 'asignatura')">Eliminar</button>
               </div>
             </td>
           </tr>
@@ -358,6 +361,7 @@
                         (click)="toggleEstado(facultad, 'facultad')">
                   {{ facultad.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}
                 </button>
+                <button class="btn-action btn-eliminar" (click)="eliminar(facultad, 'facultad')">Eliminar</button>
               </div>
             </td>
           </tr>
@@ -422,6 +426,7 @@
                         (click)="toggleEstado(horario, 'horario')">
                   {{ horario.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}
                 </button>
+                <button class="btn-action btn-eliminar" (click)="eliminar(horario, 'horario')">Eliminar</button>
               </div>
             </td>
           </tr>

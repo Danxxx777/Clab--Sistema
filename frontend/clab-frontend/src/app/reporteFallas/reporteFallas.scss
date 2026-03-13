@@ -505,7 +505,7 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
 
     &:focus { outline: none; border-color: $neon-border; box-shadow: 0 0 0 3px $neon-glow; background: #0d0d0d; }
     &::placeholder { color: $muted2; }
-    &:disabled { background: $card-bg; cursor: not-allowed; color: $muted; opacity: 0.6; }
+    &:disabled { background: $card-bg; cursor: not-allowed; color: $text; opacity: 1; }
   }
 
   select.form-control {

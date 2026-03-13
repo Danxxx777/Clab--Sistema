@@ -141,59 +141,76 @@ export class AcademicoComponent implements OnInit {
 
   filtrarPeriodos(): void {
     const b = this.busquedaPeriodos.toLowerCase();
-    this.periodosFiltrado = this.periodos.filter(p =>
-      p.nombrePeriodo.toLowerCase().includes(b) || p.estado.toLowerCase().includes(b));
+    this.periodosFiltrado = this.periodos
+      .filter(p => p.estado !== 'ELIMINADO')
+      .filter(p => p.nombrePeriodo.toLowerCase().includes(b) || p.estado.toLowerCase().includes(b));
   }
+
   filtrarCarreras(): void {
     const b = this.busquedaCarreras.toLowerCase();
-    this.carrerasFiltradas = this.carreras.filter(c =>
-      c.nombreCarrera.toLowerCase().includes(b) ||
-      (c.nombreFacultad && c.nombreFacultad.toLowerCase().includes(b)) ||
-      c.estado.toLowerCase().includes(b));
+    this.carrerasFiltradas = this.carreras
+      .filter(c => c.estado !== 'ELIMINADA')
+      .filter(c => c.nombreCarrera.toLowerCase().includes(b) ||
+        (c.nombreFacultad && c.nombreFacultad.toLowerCase().includes(b)) ||
+        c.estado.toLowerCase().includes(b));
   }
+
   filtrarAsignaturas(): void {
     const b = this.busquedaAsignaturas.toLowerCase();
-    this.asignaturasFiltradas = this.asignaturas.filter(a =>
-      a.nombre.toLowerCase().includes(b) ||
-      (a.nombreCarrera && a.nombreCarrera.toLowerCase().includes(b)) ||
-      a.estado.toLowerCase().includes(b));
+    this.asignaturasFiltradas = this.asignaturas
+      .filter(a => a.estado !== 'ELIMINADA')
+      .filter(a => a.nombre.toLowerCase().includes(b) ||
+        (a.nombreCarrera && a.nombreCarrera.toLowerCase().includes(b)) ||
+        a.estado.toLowerCase().includes(b));
   }
+
   filtrarFacultades(): void {
     const b = this.busquedaFacultades.toLowerCase();
-    this.facultadesFiltradas = this.facultades.filter(f =>
-      f.nombre.toLowerCase().includes(b) ||
-      (f.nombreDecano && f.nombreDecano.toLowerCase().includes(b)) ||
-      f.estado.toLowerCase().includes(b));
+    this.facultadesFiltradas = this.facultades
+      .filter(f => f.estado !== 'ELIMINADO')
+      .filter(f => f.nombre.toLowerCase().includes(b) ||
+        (f.nombreDecano && f.nombreDecano.toLowerCase().includes(b)) ||
+        f.estado.toLowerCase().includes(b));
   }
+
   filtrarHorarios(): void {
     const b = this.busquedaHorarios.toLowerCase();
-    this.horariosFiltrados = this.horarios.filter(h =>
-      h.nombrePeriodo.toLowerCase().includes(b) ||
-      h.nombreAsignatura.toLowerCase().includes(b) ||
-      h.nombreDocente.toLowerCase().includes(b) ||
-      h.diaSemana.toLowerCase().includes(b));
+    this.horariosFiltrados = this.horarios
+      .filter(h => h.estado !== 'ELIMINADO')
+      .filter(h => h.nombrePeriodo.toLowerCase().includes(b) ||
+        h.nombreAsignatura.toLowerCase().includes(b) ||
+        h.nombreDocente.toLowerCase().includes(b) ||
+        h.diaSemana.toLowerCase().includes(b));
   }
 
   cargarPeriodos(): void {
     this.periodo.listar().subscribe({
       next: (data) => {
-        this.periodos = data.sort((a, b) => {
-          if (a.estado === 'ACTIVO' && b.estado !== 'ACTIVO') return -1;
-          if (a.estado !== 'ACTIVO' && b.estado === 'ACTIVO') return 1;
-          return (b.idPeriodo ?? 0) - (a.idPeriodo ?? 0);
-        });
+        this.periodos = data
+          .filter(p => p.estado !== 'ELIMINADO')
+          .sort((a, b) => {
+            if (a.estado === 'ACTIVO' && b.estado !== 'ACTIVO') return -1;
+            if (a.estado !== 'ACTIVO' && b.estado === 'ACTIVO') return 1;
+            return (b.idPeriodo ?? 0) - (a.idPeriodo ?? 0);
+          });
         this.periodosFiltrado = [...this.periodos];
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Error al cargar períodos', err)
     });
   }
+
   cargarFacultades(): void {
     this.facultadService.listar().subscribe({
-      next: (data) => { this.facultades = data; this.facultadesFiltradas = [...data]; this.cdr.detectChanges(); },
+      next: (data) => {
+        this.facultades = data.filter(f => f.estado !== 'ELIMINADO');
+        this.facultadesFiltradas = [...this.facultades];
+        this.cdr.detectChanges();
+      },
       error: (err) => console.error('Error al cargar facultades', err)
     });
   }
+
   cargarDecanos(): void {
     this.facultadService.listarDecanos().subscribe({
       next: (data) => { this.decanos = data; this.cdr.detectChanges(); },
@@ -202,7 +219,11 @@ export class AcademicoComponent implements OnInit {
   }
   cargarCarreras(): void {
     this.carreraService.listar().subscribe({
-      next: (data) => { this.carreras = data; this.carrerasFiltradas = [...data]; this.cdr.detectChanges(); },
+      next: (data) => {
+        this.carreras = data.filter(c => c.estado !== 'ELIMINADA');
+        this.carrerasFiltradas = [...this.carreras];
+        this.cdr.detectChanges();
+      },
       error: (err) => console.error('Error al cargar carreras', err)
     });
   }
@@ -214,16 +235,26 @@ export class AcademicoComponent implements OnInit {
   }
   cargarAsignaturas(): void {
     this.asignaturaService.listar().subscribe({
-      next: (data) => { this.asignaturas = data; this.asignaturasFiltradas = [...data]; this.cdr.detectChanges(); },
+      next: (data) => {
+        this.asignaturas = data.filter(a => a.estado !== 'ELIMINADA');
+        this.asignaturasFiltradas = [...this.asignaturas];
+        this.cdr.detectChanges();
+      },
       error: (err) => console.error('Error al cargar asignaturas', err)
     });
   }
+
   cargarHorarios(): void {
     this.horarioService.listar().subscribe({
-      next: (data) => { this.horarios = data; this.horariosFiltrados = [...data]; this.cdr.detectChanges(); },
+      next: (data) => {
+        this.horarios = data.filter(h => h.estado !== 'ELIMINADO');
+        this.horariosFiltrados = [...this.horarios];
+        this.cdr.detectChanges();
+      },
       error: (err) => console.error('Error al cargar horarios', err)
     });
   }
+
   cargarDocentes(): void {
     this.horarioService.listarDocentes().subscribe({
       next: (data) => { this.docentes = data; this.cdr.detectChanges(); },
@@ -269,7 +300,7 @@ export class AcademicoComponent implements OnInit {
     this.mostrarModal = true;
   }
 
-  eliminar(item: any, index: number, tipo: string) {
+  eliminar(item: any, tipo: string): void {
     let nombre = '';
     switch(tipo) {
       case 'periodo':    nombre = item.nombrePeriodo; break;
@@ -281,39 +312,51 @@ export class AcademicoComponent implements OnInit {
 
     this.abrirConfirm(nombre, tipo, () => {
       switch(tipo) {
-        case 'periodo':
-          this.periodo.eliminar(item.idPeriodo).subscribe({
+        case 'periodo': {
+          const p: Periodo = { ...item, estado: 'ELIMINADO' };
+          this.periodo.editar(item.idPeriodo, p).subscribe({
             next: () => { this.cargarPeriodos(); this.mostrarNotificacion('✅ Período eliminado correctamente'); },
             error: () => this.mostrarNotificacion('❌ Error al eliminar período', 'error')
           });
           break;
-        case 'carrera':
-          this.carreraService.eliminar(item.idCarrera).subscribe({
+        }
+        case 'carrera': {
+          const payload: CarreraDTO = { nombre: item.nombreCarrera, idFacultad: item.idFacultad, idCoordinador: item.idCoordinador, estado: 'ELIMINADA' };
+          this.carreraService.editar(item.idCarrera, payload).subscribe({
             next: () => { this.cargarCarreras(); this.mostrarNotificacion('✅ Carrera eliminada correctamente'); },
             error: () => this.mostrarNotificacion('❌ Error al eliminar carrera', 'error')
           });
           break;
-        case 'asignatura':
-          this.asignaturaService.eliminar(item.idAsignatura).subscribe({
+        }
+        case 'asignatura': {
+          const payload: AsignaturaDTO = { nombre: item.nombre, idCarrera: item.idCarrera, nivel: item.nivel, horasSemanales: item.horasSemanales, requiereLaboratorio: item.requiereLaboratorio, estado: 'ELIMINADA' };
+          this.asignaturaService.editar(item.idAsignatura, payload).subscribe({
             next: () => { this.cargarAsignaturas(); this.mostrarNotificacion('✅ Asignatura eliminada correctamente'); },
             error: () => this.mostrarNotificacion('❌ Error al eliminar asignatura', 'error')
           });
           break;
-        case 'facultad':
-          this.facultadService.eliminar(item.idFacultad).subscribe({
+        }
+        case 'facultad': {
+          const payload: FacultadDTO = { nombre: item.nombre, descripcion: item.descripcion || '', idDecano: item.idDecano, estado: 'ELIMINADO' };
+          this.facultadService.editar(item.idFacultad, payload).subscribe({
             next: () => { this.cargarFacultades(); this.mostrarNotificacion('✅ Facultad eliminada correctamente'); },
             error: () => this.mostrarNotificacion('❌ Error al eliminar facultad', 'error')
           });
           break;
-        case 'horario':
-          this.horarioService.eliminar(item.idHorario).subscribe({
+        }
+        case 'horario': {
+          const payload: HorarioDTO = { idPeriodo: item.idPeriodo, idAsignatura: item.idAsignatura, idDocente: item.idDocente, diaSemana: item.diaSemana, horaInicio: item.horaInicio, horaFin: item.horaFin, numeroEstudiantes: item.numeroEstudiantes, estado: 'ELIMINADO' };
+          this.horarioService.editar(item.idHorario, payload).subscribe({
             next: () => { this.cargarHorarios(); this.mostrarNotificacion('✅ Horario eliminado correctamente'); },
             error: () => this.mostrarNotificacion('❌ Error al eliminar horario', 'error')
           });
           break;
+        }
       }
     });
   }
+
+
 
   toggleEstado(item: any, tipo: string): void {
     switch (tipo) {
