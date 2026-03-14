@@ -43,7 +43,7 @@
         <div class="di-text"><div class="di-name">Equipos</div><div class="di-desc">Inventario y ubicaciones</div></div>
       </div>
     }
-    @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Coordinador' || rol === 'Decano') {
+    @if(rol === 'Administradorr'  || rol === 'Coordinador' || rol === 'Decano') {
       <div class="drawer-item" (click)="navegar('reservar', 'Cargando Reservas...')">
         <div class="di-icon ic-4"><img src="/reservacalendario.png" alt="Reservas"></div>
         <div class="di-text"><div class="di-name">Reservas</div><div class="di-desc">Disponibilidad</div></div>
@@ -103,7 +103,6 @@
       </div>
     }
   </div>
-
 </div>
 
 <!-- NAVBAR -->
@@ -120,7 +119,6 @@
         <span class="logo-text">CLAB</span>
       </div>
     </div>
-    <!-- REEMPLAZA el bloque .navbar-right en dashboard.html por este -->
 
     <div class="navbar-right">
 
