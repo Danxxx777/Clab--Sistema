@@ -88,9 +88,12 @@
           <div class="di-text"><div class="di-name">Config. Correo</div><div class="di-desc">SMTP y remitente</div></div>
         </div>
       }
-    </div>
-    <div class="drawer-footer">
-      <button class="btn-logout-drawer" (click)="logout()">🚪 Cerrar sesión</button>
+      @if(rol === 'Administradorr') {
+        <div class="drawer-item" (click)="navegar('backups', 'Cargando Backups...')">
+          <div class="di-icon ic-12"><img src="/backup.png" alt="Backups"></div>
+          <div class="di-text"><div class="di-name">Backups</div><div class="di-desc">Respaldos de BD</div></div>
+        </div>
+      }
     </div>
   </div>
 
@@ -318,9 +321,13 @@
 
       <div class="form-row" *ngIf="modoModal === 'crear'">
         <div class="form-group full-width">
-          <label>Contraseña <span class="required">*</span></label>
-          <input type="password" class="form-control" [(ngModel)]="usuarioActual.contrasenia" name="contrasenia"
-                 maxlength="100">
+          <div class="contrasenia-auto-info">
+            <span class="info-icon">🔐</span>
+            <div>
+              <strong>Contraseña generada automáticamente</strong>
+              <p>Se enviará al correo del usuario junto con su nombre de acceso.</p>
+            </div>
+          </div>
         </div>
       </div>
 

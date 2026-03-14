@@ -281,11 +281,11 @@ export class UsuariosComponent implements OnInit {
       }
     }
 
-    // Validar contraseña mínima al crear
+    /* Validar contraseña mínima al crear
     if (esCrear && !this.usuarioActual.contrasenia?.trim()) { this.errorModal = 'La contraseña es obligatoria.'; return; }
     if (esCrear && this.usuarioActual.contrasenia!.trim().length < 8) {
       this.errorModal = 'La contraseña debe tener al menos 8 caracteres.'; return;
-    }
+    }*/
 
     // Validar roles
     if (!this.usuarioActual.idsRoles?.length) { this.errorModal = 'Selecciona al menos un rol.'; return; }
@@ -307,11 +307,10 @@ export class UsuariosComponent implements OnInit {
       apellidos:  this.usuarioActual.apellidos.trim(),
       email:      this.usuarioActual.email.trim(),
       telefono:   this.usuarioActual.telefono?.trim() ?? '',
-      contrasenia: this.usuarioActual.contrasenia ?? '',
+      // contrasenia: this.usuarioActual.contrasenia ?? '',  ← ELIMINA ESTA LÍNEA
       usuario:    usuarioGenerado,
       idsRoles:   this.usuarioActual.idsRoles ?? []
     };
-
     this.guardandoUsuario = true;
 
     if (esCrear) {
