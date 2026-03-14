@@ -3,7 +3,7 @@ package com.clab.clabbackend.services;
 import com.clab.clabbackend.dto.LaboratorioDTO;
 import com.clab.clabbackend.entities.Laboratorio;
 import com.clab.clabbackend.entities.Sede;
-import com.clab.clabbackend.repository.EncargadoLaboratorioRepository;
+
 import com.clab.clabbackend.repository.LaboratorioRepository;
 import com.clab.clabbackend.repository.SedeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,7 @@ import jakarta.persistence.EntityManager;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 @Service
 public class LaboratorioService {
@@ -23,8 +23,6 @@ public class LaboratorioService {
     @Autowired
     private SedeRepository sedeRepository;
 
-    @Autowired
-    private EncargadoLaboratorioRepository encargadoLaboratorioRepository;
 
     @Autowired
     private EntityManager entityManager;
@@ -80,18 +78,10 @@ public class LaboratorioService {
             dto.setIdSede(lab.getSede() != null ? lab.getSede().getIdSede() : null);
             dto.setNombreSede(lab.getSede() != null ? lab.getSede().getNombre() : null);
 
-            encargadoLaboratorioRepository.findEncargadoVigente(lab.getCodLaboratorio())
-                    .ifPresent(enc -> {
-                        if (enc.getUsuario() != null) {
-                            String nombre = ((enc.getUsuario().getNombres() != null ? enc.getUsuario().getNombres() : "") +
-                                    " " +
-                                    (enc.getUsuario().getApellidos() != null ? enc.getUsuario().getApellidos() : "")).trim();
-                            dto.setEncargadoNombre(nombre);
-                        }
-                    });
+
 
             return dto;
-        }).collect(Collectors.toList());
+        }).toList();
     }
 
     // ─── CREAR ───────────────────────────────────────────────────────────────
