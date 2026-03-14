@@ -50,6 +50,4 @@ public interface EncargadoLaboratorioRepository extends JpaRepository<EncargadoL
     @Query(value = "CALL laboratorios.sp_eliminar_encargado(:idEncargado)", nativeQuery = true)
     void eliminarEncargado(@Param("idEncargado") Integer idEncargadoLaboratorio);
 
-    @Query("SELECT e FROM EncargadoLaboratorio e WHERE e.laboratorio.codLaboratorio = :codLab AND e.vigente = true")
-    java.util.Optional<EncargadoLaboratorio> findEncargadoVigente(@Param("codLab") Integer codLaboratorio);
 }

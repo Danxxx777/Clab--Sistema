@@ -147,7 +147,6 @@ export class LaboratoriosComponent implements OnInit {
       estado_lab: lab.estadoLab || lab.estado_lab || 'Disponible',
       id_sede: lab.sede?.idSede || lab.idSede || lab.id_sede || 0,
       nombre_sede: lab.sede?.nombre || lab.nombreSede || lab.nombre_sede || '',
-      encargado_nombre: lab.encargadoNombre || lab.encargado_nombre || '',
       foto: lab.foto || ''
     };
   }
@@ -174,7 +173,7 @@ export class LaboratoriosComponent implements OnInit {
       cod_laboratorio: 0, nombre: '', ubicacion: '',
       capacidad_estudiantes: 0, numero_equipos: 0, descripcion: '',
       estado_lab: 'Disponible', id_sede: 0, nombre_sede: '',
-      encargado_nombre: '', foto: ''
+      foto: ''
     };
   }
 
@@ -220,8 +219,7 @@ export class LaboratoriosComponent implements OnInit {
       (lab.cod_laboratorio || 0).toString().includes(b) ||
       (lab.nombre || '').toLowerCase().includes(b) ||
       (lab.ubicacion || '').toLowerCase().includes(b) ||
-      (lab.nombre_sede || '').toLowerCase().includes(b) ||
-      (lab.encargado_nombre || '').toLowerCase().includes(b)
+      (lab.nombre_sede || '').toLowerCase().includes(b)
     );
   }
 
