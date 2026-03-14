@@ -108,7 +108,7 @@ export interface ReporteUsuarioItem {
   identidad:      string;
   nombreCompleto: string;
   email:          string;
-  rol:            string;
+  usuario:        string;
   estado:         string;
 }
 
@@ -139,7 +139,10 @@ export interface ReporteAcademicoItem {
 
 export interface ReporteBloqueosItem {
   laboratorio: string;
+  tipo:        string;
   motivo:      string;
+  fechaInicio: string;
+  fechaFin:    string;
   fecha:       string;
   duracion:    string;
   estado:      string;
