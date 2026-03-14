@@ -102,6 +102,12 @@
         <div class="di-text"><div class="di-name">Auditoría</div><div class="di-desc">Trazabilidad</div></div>
       </div>
     }
+    @if(rol === 'Administradorr') {
+      <div class="drawer-item active" (click)="navegar('backups', 'Cargando Backups...')">
+        <div class="di-icon"><img src="/backup.png" alt="Backups"></div>
+        <div class="di-text"><div class="di-name">Backups</div><div class="di-desc">Respaldos de BD</div></div>
+      </div>
+    }
   </div>
 </div>
 
@@ -416,6 +422,16 @@
           <div class="text">
             <strong>Configuración de Correo</strong>
             <p>Gestionar remitente y credenciales SMTP</p>
+          </div>
+        </div>
+      }
+
+      @if(rol === 'Administradorr') {
+        <div class="menu-item" (click)="navegar('backups', 'Cargando Backups...')">
+          <img src="/backup.png" alt="Backups" class="menu-icon">
+          <div class="text">
+            <strong>Backups</strong>
+            <p>Gestión y programación de respaldos de base de datos</p>
           </div>
         </div>
       }
