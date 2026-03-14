@@ -1,421 +1,373 @@
 import { Injectable } from '@angular/core';
-import { StatModulo, DatoGrafica, ModuloConfig, ExportOptions } from '../interfaces/Reportar.model';
+import { ExportOptions } from '../interfaces/Reportar.model';
 
-// Paleta de colores profesional para el PDF (tema claro)
 const C = {
-  primary:    [15,  23,  42]   as [number,number,number],  // slate-900
-  accent:     [22,  163, 74]   as [number,number,number],  // green-600
-  accentLight:[220, 252, 231]  as [number,number,number],  // green-100
-  blue:       [37,  99,  235]  as [number,number,number],  // blue-600
-  blueLight:  [219, 234, 254]  as [number,number,number],  // blue-100
-  orange:     [234, 88,  12]   as [number,number,number],  // orange-600
-  orangeLight:[255, 237, 213]  as [number,number,number],  // orange-100
-  red:        [220, 38,  38]   as [number,number,number],  // red-600
-  redLight:   [254, 226, 226]  as [number,number,number],  // red-100
-  purple:     [147, 51,  234]  as [number,number,number],  // purple-600
-  purpleLight:[243, 232, 255]  as [number,number,number],  // purple-100
-  cyan:       [8,   145, 178]  as [number,number,number],  // cyan-600
-  cyanLight:  [207, 250, 254]  as [number,number,number],  // cyan-100
-  yellow:     [161, 98,  7]    as [number,number,number],  // yellow-700
-  yellowLight:[254, 249, 195]  as [number,number,number],  // yellow-100
-  white:      [255, 255, 255]  as [number,number,number],
-  gray50:     [249, 250, 251]  as [number,number,number],
-  gray100:    [243, 244, 246]  as [number,number,number],
-  gray200:    [229, 231, 235]  as [number,number,number],
-  gray400:    [156, 163, 175]  as [number,number,number],
-  gray500:    [107, 114, 128]  as [number,number,number],
-  gray300:    [209, 213, 219]  as [number,number,number],
-  gray700:    [55,  65,  81]   as [number,number,number],
-  gray900:    [17,  24,  39]   as [number,number,number],
+  black:   [17,  24,  39]  as [number,number,number],
+  white:   [255, 255, 255] as [number,number,number],
+  bg:      [250, 250, 250] as [number,number,number],
+  chipBg:  [244, 244, 244] as [number,number,number],
+  gray100: [238, 238, 238] as [number,number,number],
+  gray200: [224, 224, 224] as [number,number,number],
+  gray300: [208, 208, 208] as [number,number,number],
+  gray400: [170, 170, 170] as [number,number,number],
+  gray500: [136, 136, 136] as [number,number,number],
+  gray700: [85,  85,  85]  as [number,number,number],
+  badgeBg: [240, 240, 240] as [number,number,number],
 };
 
-// Color según módulo
-const moduloColor: Record<string, [number,number,number]> = {
-  neon:     C.accent,
-  verde:    C.accent,
-  rojo:     C.red,
-  azul:     C.blue,
-  naranja:  C.orange,
-  cyan:     C.cyan,
-  amarillo: C.yellow,
-  morado:   C.purple,
-};
-const moduloColorLight: Record<string, [number,number,number]> = {
-  neon:     C.accentLight,
-  verde:    C.accentLight,
-  rojo:     C.redLight,
-  azul:     C.blueLight,
-  naranja:  C.orangeLight,
-  cyan:     C.cyanLight,
-  amarillo: C.yellowLight,
-  morado:   C.purpleLight,
-};
+const fmtHorario = (v: string) =>
+  (v || '').split(' - ').map(p => p.replace(/^(\d{2}:\d{2}):\d{2}$/, '$1')).join(' - ');
 
 @Injectable({ providedIn: 'root' })
 export class ExportPdfService {
 
   async exportar(opts: ExportOptions): Promise<void> {
-    // Carga dinámica de jsPDF para no aumentar el bundle inicial
     const { jsPDF } = await import('jspdf');
 
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const PW = 210, PH = 297, ML = 14, MR = 14, CW = PW - ML - MR;
+    const FOOTER_H    = 8;
+    const SAFE_BOTTOM = PH - FOOTER_H - 4;
+    let Y = 0;
 
-    const PW  = 210;   // page width
-    const PH  = 297;   // page height
-    const ML  = 14;    // margin left
-    const MR  = 14;    // margin right
-    const CW  = PW - ML - MR;  // content width
-    let   Y   = 0;     // cursor Y
-
-    const color  = moduloColor[opts.modulo.color]      ?? C.accent;
-    const colorL = moduloColorLight[opts.modulo.color] ?? C.accentLight;
-
-    // ── Helpers ──────────────────────────────────────────────────────────────
-
-    const setFont = (style: 'normal'|'bold', size: number, rgb: [number,number,number]) => {
+    // ── Helpers ────────────────────────────────────────────────────────────────
+    const setFont = (style: 'normal' | 'bold', size: number, rgb: [number,number,number]) => {
       doc.setFont('helvetica', style);
       doc.setFontSize(size);
       doc.setTextColor(rgb[0], rgb[1], rgb[2]);
     };
 
-    const rect = (x: number, y: number, w: number, h: number, rgb: [number,number,number], r = 0) => {
+    const fill = (x: number, y: number, w: number, h: number, rgb: [number,number,number]) => {
       doc.setFillColor(rgb[0], rgb[1], rgb[2]);
-      if (r > 0) doc.roundedRect(x, y, w, h, r, r, 'F');
-      else       doc.rect(x, y, w, h, 'F');
+      doc.rect(x, y, w, h, 'F');
     };
 
-    const line = (x1: number, y1: number, x2: number, y2: number, rgb: [number,number,number], lw = 0.3) => {
+    const fillR = (x: number, y: number, w: number, h: number, r: number, rgb: [number,number,number]) => {
+      if (w <= 0 || h <= 0) return;
+      // radio no puede ser mayor que la mitad del lado menor
+      const safeR = Math.min(r, w / 2, h / 2);
+      doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+      (doc as any).roundedRect(x, y, w, h, safeR, safeR, 'F');
+    };
+
+    const borderR = (x: number, y: number, w: number, h: number, r: number, rgb: [number,number,number], lw = 0.3) => {
+      const safeR = Math.min(r, w / 2, h / 2);
       doc.setDrawColor(rgb[0], rgb[1], rgb[2]);
       doc.setLineWidth(lw);
-      doc.line(x1, y1, x2, y2);
+      (doc as any).roundedRect(x, y, w, h, safeR, safeR, 'S');
     };
 
-    const text = (t: string, x: number, y: number, opts2?: any) => {
-      doc.text(t, x, y, opts2);
+    const fillBorderR = (x: number, y: number, w: number, h: number, r: number, fillRgb: [number,number,number], borderRgb: [number,number,number], lw = 0.3) => {
+      const safeR = Math.min(r, w / 2, h / 2);
+      doc.setFillColor(fillRgb[0], fillRgb[1], fillRgb[2]);
+      doc.setDrawColor(borderRgb[0], borderRgb[1], borderRgb[2]);
+      doc.setLineWidth(lw);
+      (doc as any).roundedRect(x, y, w, h, safeR, safeR, 'FD');
+    };
+
+    const hline = (x1: number, y: number, x2: number, rgb: [number,number,number], lw = 0.3) => {
+      doc.setDrawColor(rgb[0], rgb[1], rgb[2]);
+      doc.setLineWidth(lw);
+      doc.line(x1, y, x2, y);
+    };
+
+    const cell = (t: string, x: number, ry: number, rh: number, o?: any) =>
+      doc.text(String(t), x, ry + rh / 2, { baseline: 'middle', ...o });
+
+    const op = (v: number) => doc.setGState(new (doc as any).GState({ opacity: v }));
+
+
+    const drawBar = (x: number, y: number, maxW: number, trackH: number, ratio: number, r: number) => {
+      // Track completo gris
+      fillR(x, y, maxW, trackH, r, C.gray200);
+      // Barra negra: ratio entre 0 y 1, ancho máximo = maxW - radio*2 para no salirse
+      const bW = Math.min(Math.max(ratio, 0), 1) * maxW;
+      if (bW > 0) {
+        // Si la barra es casi completa, usamos maxW exacto para que cierre bien
+        const finalW = bW >= maxW - 0.5 ? maxW : bW;
+        fillR(x, y, finalW, trackH, r, C.black);
+      }
     };
 
     const checkPage = (needed: number) => {
-      if (Y + needed > PH - 14) {
-        doc.addPage();
-        Y = 14;
-        drawFooter();
-      }
-    };
-
-    const wrapText = (str: string, maxW: number, fontSize: number): string[] => {
-      doc.setFontSize(fontSize);
-      return doc.splitTextToSize(str, maxW);
+      if (Y + needed > SAFE_BOTTOM) { doc.addPage(); Y = 14; }
     };
 
     const drawFooter = () => {
-      const pg = doc.getCurrentPageInfo().pageNumber;
-      const total = (doc as any).internal.getNumberOfPages?.() ?? pg;
-      rect(0, PH - 10, PW, 10, C.gray50);
-      line(0, PH - 10, PW, PH - 10, C.gray200);
-      setFont('normal', 7, C.gray400);
-      text('CLAB — Sistema de Laboratorios', ML, PH - 4);
-      text(`Generado: ${new Date().toLocaleString('es-EC')}`, PW/2, PH - 4, { align: 'center' });
-      text(`Página ${pg}`, PW - MR, PH - 4, { align: 'right' });
+      const total = (doc as any).internal.getNumberOfPages();
+      for (let p = 1; p <= total; p++) {
+        doc.setPage(p);
+        fill(0, PH - FOOTER_H, PW, FOOTER_H, C.black);
+        setFont('normal', 6, C.gray400);
+        op(0.5);
+        cell('CLAB — Sistema de Laboratorios · UTEQ', ML, PH - FOOTER_H, FOOTER_H);
+        cell(
+          `Generado: ${new Date().toLocaleDateString('es-EC')} · Pág. ${p} / ${total}`,
+          PW - MR, PH - FOOTER_H, FOOTER_H, { align: 'right' }
+        );
+        op(1);
+      }
     };
 
-    // ── PORTADA / HEADER ─────────────────────────────────────────────────────
 
-    // Banda superior con color del módulo
-    rect(0, 0, PW, 42, color);
+    const HEADER_H = 52;
+    fill(0, 0, PW, HEADER_H, C.black);
 
-    // Decoración geométrica
-    doc.setFillColor(255, 255, 255);
-    doc.setGState(new (doc as any).GState({ opacity: 0.05 }));
-    doc.circle(PW - 20, -10, 40, 'F');
-    doc.circle(PW - 5,  30,  25, 'F');
-    doc.setGState(new (doc as any).GState({ opacity: 1 }));
+    setFont('bold', 24, C.white);
+    doc.text('CLAB', ML, 16);
 
-    // Logo / Brand
-    setFont('bold', 22, C.white);
-    text('CLAB', ML, 17);
+    setFont('normal', 7, C.white);
+    op(0.35);
+    doc.text('SISTEMA DE LABORATORIOS  ·  UTEQ', ML, 22.5);
+    op(1);
 
-    setFont('normal', 8, C.white);
-    doc.setTextColor(255, 255, 255);
-    doc.setGState(new (doc as any).GState({ opacity: 0.75 }));
-    text('SISTEMA DE LABORATORIOS', ML, 23);
-    doc.setGState(new (doc as any).GState({ opacity: 1 }));
+    setFont('normal', 7, C.white);
+    op(0.35);
+    doc.text(new Date().toLocaleDateString('es-EC', { year:'numeric', month:'long', day:'numeric' }), PW - MR, 16, { align:'right' });
+    doc.text(new Date().toLocaleTimeString('es-EC', { hour:'2-digit', minute:'2-digit' }), PW - MR, 22.5, { align:'right' });
+    op(1);
 
-    // Título del reporte
+    op(0.1);
+    hline(ML, 28, PW - MR, C.white, 0.3);
+    op(1);
+
+    setFont('normal', 7, C.white);
+    op(0.35);
+    doc.text('REPORTE', ML, 35);
+    op(1);
+
     setFont('bold', 16, C.white);
-    text(`Reporte: ${opts.modulo.titulo}`, ML, 35);
+    doc.text(opts.modulo.titulo, ML, 46);
 
-    // Chips de meta info
-    Y = 50;
-    const chips: string[] = [];
+
+    Y = HEADER_H;
+    const CHIP_BAND_H = 14;
+
+    fill(0, Y, PW, CHIP_BAND_H, C.chipBg);
+    hline(0, Y + CHIP_BAND_H, PW, C.gray200, 0.4);
+
+    const chips: { label: string; val: string }[] = [];
     if (opts.filtros.fechaInicio && opts.filtros.fechaFin)
-      chips.push(`📅 ${opts.filtros.fechaInicio}  →  ${opts.filtros.fechaFin}`);
-    if (opts.nombreLaboratorio)
-      chips.push(`🏫 ${opts.nombreLaboratorio}`);
-    if (opts.filtros.estado)
-      chips.push(`Estado: ${opts.filtros.estado}`);
-    chips.push(`👤 ${opts.usuarioLogueado}`);
+      chips.push({ label: 'Periodo', val: `${opts.filtros.fechaInicio} - ${opts.filtros.fechaFin}` });
+    chips.push({ label: 'Laboratorio', val: opts.nombreLaboratorio || 'Todos' });
+    if (opts.filtros.estado) chips.push({ label: 'Estado', val: opts.filtros.estado });
+    chips.push({ label: 'Usuario', val: opts.usuarioLogueado });
 
-    let chipX = ML;
+    const CHIP_H    = 7;
+    const chipItemY = Y + (CHIP_BAND_H - CHIP_H) / 2;
+    let   chipX     = ML;
+
     chips.forEach(chip => {
-      const tw = doc.getTextWidth(chip) + 8;
-      rect(chipX, Y, tw, 7, colorL, 3);
-      setFont('normal', 7, color);
-      text(chip, chipX + 4, Y + 5);
-      chipX += tw + 4;
-      if (chipX > PW - MR - 20) { chipX = ML; Y += 10; }
+      const labelTxt = `${chip.label}: `;
+      setFont('normal', 6.5, C.gray500);
+      const lw = doc.getTextWidth(labelTxt);
+      setFont('bold', 6.5, C.black);
+      const vw = doc.getTextWidth(chip.val);
+      const tw = lw + vw + 10;
+      if (chipX + tw > PW - MR) chipX = ML;
+
+      fillBorderR(chipX, chipItemY, tw, CHIP_H, 1.5, C.white, C.gray200, 0.3);
+      setFont('normal', 6.5, C.gray500);
+      cell(labelTxt, chipX + 4, chipItemY, CHIP_H);
+      setFont('bold', 6.5, C.black);
+      cell(chip.val, chipX + 4 + lw, chipItemY, CHIP_H);
+      chipX += tw + 5;
     });
 
-    Y += 14;
+    Y = Y + CHIP_BAND_H + 10;
 
-    // Línea divisoria decorativa
-    line(ML, Y, PW - MR, Y, C.gray200, 0.4);
-    Y += 6;
 
-    drawFooter();
-
-    // ── ESTADÍSTICAS ─────────────────────────────────────────────────────────
     if (opts.statsModulo.length > 0) {
-      checkPage(32);
+      checkPage(40);
 
-      // Título sección
-      setFont('bold', 9, C.gray500);
-      text('ESTADÍSTICAS GENERALES', ML, Y);
+      setFont('bold', 7, C.gray400);
+      doc.text('RESUMEN DEL PERÍODO', ML, Y);
       Y += 5;
 
-      const statW   = (CW - (opts.statsModulo.length - 1) * 4) / Math.min(opts.statsModulo.length, 4);
-      const statH   = 20;
-      let   statX   = ML;
-      let   rowBase = Y;
+      const count = Math.min(opts.statsModulo.length, 4);
+      const GAP   = 6;
+      const statW = (CW - (count - 1) * GAP) / count;
+      const statH = 20;
+      let   sx    = ML;
 
       opts.statsModulo.forEach((s, i) => {
-        if (i > 0 && i % 4 === 0) {
-          rowBase += statH + 4;
-          statX    = ML;
-          checkPage(statH + 4);
-        }
-
-        // Card fondo
-        rect(statX, rowBase, statW, statH, C.gray50, 3);
-        doc.setDrawColor(C.gray200[0], C.gray200[1], C.gray200[2]);
-        doc.setLineWidth(0.3);
-        doc.roundedRect(statX, rowBase, statW, statH, 3, 3, 'S');
-
-        // Barra color izquierda
-        rect(statX, rowBase, 3, statH, color, 0);
-
-        // Valor
-        setFont('bold', 14, C.gray900);
-        text(String(s.valor), statX + 7, rowBase + 12);
-
-        // Label
-        setFont('normal', 6.5, C.gray500);
-        const labelLines = wrapText(s.label.toUpperCase(), statW - 10, 6.5);
-        labelLines.forEach((ln, li) => text(ln, statX + 7, rowBase + 17 + li * 3.5));
-
-        statX += statW + 4;
+        if (i >= 4) return;
+        fillR(sx, Y, statW, statH, 2, C.black);
+        const labelStr = (s.label.length > 20 ? s.label.substring(0, 19) + '…' : s.label).toUpperCase();
+        setFont('normal', 5.5, C.white);
+        op(0.4);
+        doc.text(labelStr, sx + 6, Y + 5);
+        op(1);
+        setFont('bold', 20, C.white);
+        doc.text(String(s.valor), sx + 6, Y + 15);
+        sx += statW + GAP;
       });
 
-      Y = rowBase + statH + 8;
+      Y += statH + 10;
     }
 
-    // ── GRÁFICAS ─────────────────────────────────────────────────────────────
-
+    // ── GRÁFICAS ───────────────────────────────────────────────────────────────
     if (opts.datosGrafica.length > 0 || opts.datosDistribucion.length > 0) {
-      checkPage(80);
 
-      setFont('bold', 9, C.gray500);
-      text('VISUALIZACIÓN DE DATOS', ML, Y);
+      const CHART_HEAD_H = 10;
+      const ROW_H        = 15;
+      const CHART_PAD_T  = 4;
+      const CHART_PAD_B  = 6;
+      const BAR_H        = 2.5;  // altura del track
+      const BAR_R        = 1;    // radio de las esquinas de la barra
+      const maxRows      = Math.max(opts.datosGrafica.length, opts.datosDistribucion.length);
+      checkPage(12 + CHART_HEAD_H + CHART_PAD_T + maxRows * ROW_H + CHART_PAD_B);
+
+      setFont('bold', 7, C.gray400);
+      doc.text('VISUALIZACIÓN DE DATOS', ML, Y);
       Y += 5;
 
-      const halfW = (CW - 6) / 2;
+      const halfW  = (CW - 5) / 2;
+      const gY     = Y;
+      const R_CARD = 2;
+      const PAD_H  = 7;  // padding horizontal interno de la tarjeta
 
-      // ── Gráfica 1: Barras horizontales ────────────────────────────────────
+      // ── Gráfica 1 ────────────────────────────────────────────────────────────
       if (opts.datosGrafica.length > 0) {
-        const g1H = 10 + opts.datosGrafica.length * 11 + 6;
-        rect(ML, Y, halfW, g1H, C.white, 3);
-        doc.setDrawColor(C.gray200[0], C.gray200[1], C.gray200[2]);
-        doc.roundedRect(ML, Y, halfW, g1H, 3, 3, 'S');
+        const g1H = CHART_HEAD_H + CHART_PAD_T + opts.datosGrafica.length * ROW_H + CHART_PAD_B;
 
-        setFont('bold', 7.5, C.gray700);
-        text(opts.tituloGrafica1.toUpperCase(), ML + 5, Y + 7);
+        fillBorderR(ML, gY, halfW, g1H, R_CARD, C.bg, C.gray200, 0.3);
+        fillR(ML, gY, halfW, CHART_HEAD_H + R_CARD, R_CARD, C.black);
+        fill(ML, gY + CHART_HEAD_H, halfW, R_CARD, C.black);
 
-        let bY = Y + 12;
-        const maxVal = Math.max(...opts.datosGrafica.map(d => d.valor), 1);
+        setFont('bold', 6, C.white);
+        op(0.7);
+        cell(opts.tituloGrafica1.toUpperCase(), ML + halfW / 2, gY + 2, CHART_HEAD_H - 2, { align: 'center' });
+        op(1);
+
+        // ✅ maxVal del grupo para escalar relativamente
+        const maxVal = Math.max(...opts.datosGrafica.map(d => Number(d.valor) || 0), 1);
+        // ✅ ancho del track = espacio disponible dentro de la tarjeta
+        const bMaxW  = halfW - PAD_H * 2;
+        const barX   = ML + PAD_H;
+        let   bY     = gY + CHART_HEAD_H + CHART_PAD_T;
 
         opts.datosGrafica.forEach(item => {
-          const labelW  = 32;
-          const barMaxW = halfW - labelW - 22;
-          const barW    = (item.pct / 100) * barMaxW;
-          const valX    = ML + 5 + labelW + barMaxW + 4;
+          const ratio = Number(item.valor) / maxVal; // 0..1
 
-          setFont('normal', 6.5, C.gray500);
-          // truncate label
-          const lbl = item.label.length > 14 ? item.label.substring(0,13)+'…' : item.label;
-          text(lbl, ML + 5 + labelW, bY + 3.5, { align: 'right' });
+          setFont('normal', 6.5, C.gray700);
+          doc.text(String(item.label), barX, bY + 3.5);
+          setFont('bold', 6.5, C.black);
+          doc.text(String(item.valor), ML + halfW - PAD_H, bY + 3.5, { align: 'right' });
 
-          // track
-          rect(ML + 5 + labelW + 2, bY + 1, barMaxW, 5, C.gray100, 1);
-          // fill
-          if (barW > 0) rect(ML + 5 + labelW + 2, bY + 1, barW, 5, color, 1);
+          // ✅ barra contenida dentro del track
+          drawBar(barX, bY + 7, bMaxW, BAR_H, ratio, BAR_R);
 
-          setFont('bold', 6, C.gray700);
-          text(String(item.valor), valX, bY + 4.5);
-
-          bY += 11;
+          bY += ROW_H;
         });
       }
 
-      // ── Gráfica 2: Distribución (barras horizontales con %) ───────────────
+      // ── Gráfica 2 ────────────────────────────────────────────────────────────
       if (opts.datosDistribucion.length > 0) {
-        const colores: [number,number,number][] = [color, C.blue, C.orange, C.red, C.purple, C.cyan, [245,158,11], [16,185,129]];
-        const g2X = ML + halfW + 6;
-        const g2H = 10 + opts.datosDistribucion.length * 13 + 6;
+        const g2X = ML + halfW + 5;
+        const g2H = CHART_HEAD_H + CHART_PAD_T + opts.datosDistribucion.length * ROW_H + CHART_PAD_B;
 
-        rect(g2X, Y, halfW, g2H, C.white, 3);
-        doc.setDrawColor(C.gray200[0], C.gray200[1], C.gray200[2]);
-        doc.roundedRect(g2X, Y, halfW, g2H, 3, 3, 'S');
+        fillBorderR(g2X, gY, halfW, g2H, R_CARD, C.bg, C.gray200, 0.3);
+        fillR(g2X, gY, halfW, CHART_HEAD_H + R_CARD, R_CARD, C.black);
+        fill(g2X, gY + CHART_HEAD_H, halfW, R_CARD, C.black);
 
-        setFont('bold', 7.5, C.gray700);
-        text(opts.tituloGrafica2.toUpperCase(), g2X + 5, Y + 7);
+        setFont('bold', 6, C.white);
+        op(0.7);
+        cell(opts.tituloGrafica2.toUpperCase(), g2X + halfW / 2, gY + 2, CHART_HEAD_H - 2, { align: 'center' });
+        op(1);
 
-        let dY = Y + 12;
-        opts.datosDistribucion.forEach((item, i) => {
-          const clr = colores[i % colores.length];
-          const barMaxW = halfW - 14;
-          const barW    = (item.pct / 100) * barMaxW;
+        const bMaxW2 = halfW - PAD_H * 2;
+        const barX2  = g2X + PAD_H;
+        let   dY     = gY + CHART_HEAD_H + CHART_PAD_T;
 
-          // dot
-          doc.setFillColor(clr[0], clr[1], clr[2]);
-          doc.circle(g2X + 5 + 2, dY + 2, 2, 'F');
+        opts.datosDistribucion.forEach(item => {
+          // ✅ pct ya es 0-100, ratio = pct/100
+          const ratio = Math.min(Number(item.pct) / 100, 1);
 
-          // label
-          setFont('bold', 6.5, C.gray700);
-          text(item.label, g2X + 11, dY + 3.5);
+          setFont('normal', 6.5, C.gray700);
+          doc.text(String(item.label), barX2, dY + 3.5);
+          setFont('bold', 6.5, C.black);
+          doc.text(`${item.pct}%`, g2X + halfW - PAD_H, dY + 3.5, { align: 'right' });
 
-          // pct badge
-          setFont('bold', 6.5, clr);
-          text(`${item.pct}%`, g2X + halfW - 5, dY + 3.5, { align: 'right' });
+          // ✅ barra contenida dentro del track
+          drawBar(barX2, dY + 7, bMaxW2, BAR_H, ratio, BAR_R);
 
-          // bar track
-          rect(g2X + 5, dY + 6, barMaxW, 4, C.gray100, 1);
-          if (barW > 0) rect(g2X + 5, dY + 6, barW, 4, clr, 1);
-
-          dY += 13;
+          dY += ROW_H;
         });
       }
 
-      Y += Math.max(
-        10 + opts.datosGrafica.length      * 11 + 8,
-        10 + opts.datosDistribucion.length * 13 + 8
-      );
+      Y = gY + Math.max(
+        CHART_HEAD_H + CHART_PAD_T + opts.datosGrafica.length * ROW_H + CHART_PAD_B,
+        CHART_HEAD_H + CHART_PAD_T + opts.datosDistribucion.length * ROW_H + CHART_PAD_B
+      ) + 10;
     }
 
-    // ── TABLA DE DETALLE ─────────────────────────────────────────────────────
+    // ── TABLA ──────────────────────────────────────────────────────────────────
     if (opts.datosReporte.length > 0 && opts.columnasTabla.length > 0) {
       checkPage(30);
 
-      setFont('bold', 9, C.gray500);
-      text('DETALLE DE REGISTROS', ML, Y);
-      setFont('normal', 7, C.gray400);
-      text(`${opts.datosReporte.length} registros`, PW - MR, Y, { align: 'right' });
+      setFont('bold', 7, C.gray400);
+      doc.text('DETALLE DE REGISTROS', ML, Y);
+      setFont('normal', 7, C.gray300);
+      doc.text(`${opts.datosReporte.length} registros`, PW - MR, Y, { align: 'right' });
       Y += 5;
 
-      const cols    = opts.columnasTabla;
-      const numCols = cols.length;
-      const colW    = CW / numCols;
-      const rowH    = 8;
-      const headH   = 9;
+      const cols   = opts.columnasTabla;
+      const colW   = CW / cols.length;
+      const HEAD_H = 9;
+      const ROW_H  = 8;
+      const R_TBL  = 2;
 
-      // Cabecera
-      rect(ML, Y, CW, headH, color, 2);
+      fillR(ML, Y, CW, HEAD_H + R_TBL, R_TBL, C.black);
+      fill(ML, Y + HEAD_H, CW, R_TBL, C.black);
+
       cols.forEach((col, i) => {
-        setFont('bold', 6.5, C.white);
-        text(col, ML + i * colW + colW / 2, Y + 6, { align: 'center' });
+        setFont('bold', 6, C.white);
+        op(0.7);
+        cell(col.toUpperCase(), ML + i * colW + colW / 2, Y, HEAD_H, { align: 'center' });
+        op(1);
       });
-      Y += headH;
+      Y += HEAD_H;
 
-      // Filas
+      const tableStartY = Y;
+
       opts.datosReporte.forEach((fila, fi) => {
-        checkPage(rowH + 2);
-
+        checkPage(ROW_H + 2);
         const vals = opts.filasTabla(fila);
 
-        // Fondo alternado
-        rect(ML, Y, CW, rowH, fi % 2 === 0 ? C.white : C.gray50, 0);
-
-        // Borde fila
-        doc.setDrawColor(C.gray200[0], C.gray200[1], C.gray200[2]);
-        doc.setLineWidth(0.2);
-        doc.line(ML, Y + rowH, ML + CW, Y + rowH);
+        fill(ML, Y, CW, ROW_H, fi % 2 === 0 ? C.bg : C.white);
+        hline(ML, Y + ROW_H, ML + CW, C.gray100, 0.2);
 
         vals.forEach((val, ci) => {
-          const isLast = ci === vals.length - 1;
-          const cellX  = ML + ci * colW;
-          const cellCX = cellX + colW / 2;
+          const isLast     = ci === vals.length - 1;
+          const cx         = ML + ci * colW + colW / 2;
+          const displayVal = fmtHorario(String(val ?? ''));
 
           if (isLast) {
-            // Badge de estado
-            const bw   = Math.min(colW - 4, 30);
-            const bx   = cellCX - bw / 2;
-            const brgb = this.badgeRgb(val);
-            rect(bx, Y + 1.5, bw, rowH - 3, brgb.bg, 2);
-            setFont('bold', 5.5, brgb.text);
-            text(val, cellCX, Y + rowH - 2.5, { align: 'center' });
+            const bw = Math.min(colW - 6, 28);
+            const bx = cx - bw / 2;
+            fillBorderR(bx, Y + 1.5, bw, ROW_H - 3, 1.5, C.badgeBg, C.gray200, 0.2);
+            setFont('bold', 5.5, C.black);
+            cell(displayVal.toUpperCase(), cx, Y + 1.5, ROW_H - 3, { align: 'center' });
           } else {
-            setFont(ci === 0 ? 'bold' : 'normal', 6.5, ci === 0 ? C.gray900 : C.gray700);
-            // Truncar texto largo
-            const maxW  = colW - 4;
-            const lines = doc.splitTextToSize(String(val), maxW);
-            text(lines[0], cellCX, Y + rowH - 2.5, { align: 'center' });
+            setFont(ci === 0 ? 'bold' : 'normal', 6.5, ci === 0 ? C.black : C.gray700);
+            const lines = doc.splitTextToSize(displayVal, colW - 4);
+            cell(lines[0], cx, Y, ROW_H, { align: 'center' });
           }
         });
 
-        Y += rowH;
+        Y += ROW_H;
       });
 
-      // Borde exterior tabla
-      doc.setDrawColor(...C.gray300);
-      doc.setLineWidth(0.4);
-      doc.rect(ML, Y - opts.datosReporte.length * rowH - headH, CW, opts.datosReporte.length * rowH + headH, 'S');
-
+      borderR(ML, tableStartY - HEAD_H, CW, opts.datosReporte.length * ROW_H + HEAD_H, R_TBL, C.gray200, 0.3);
       Y += 6;
     }
 
-    // ── NOTA AL PIE ──────────────────────────────────────────────────────────
-    checkPage(16);
-    rect(ML, Y, CW, 14, C.gray50, 3);
-    doc.setDrawColor(C.gray200[0], C.gray200[1], C.gray200[2]);
-    doc.roundedRect(ML, Y, CW, 14, 3, 3, 'S');
-    setFont('normal', 6.5, C.gray500);
-    text('Este reporte fue generado automáticamente por el Sistema CLAB.', ML + 5, Y + 5.5);
-    text('La información aquí contenida es de carácter confidencial y de uso exclusivo institucional.', ML + 5, Y + 10);
+    // ── FOOTER ─────────────────────────────────────────────────────────────────
+    drawFooter();
 
-    // Actualiza footer en todas las páginas
-    const totalPages = (doc as any).internal.getNumberOfPages();
-    for (let p = 1; p <= totalPages; p++) {
-      doc.setPage(p);
-      drawFooter();
-    }
-
-    // ── GUARDAR ──────────────────────────────────────────────────────────────
     const fecha    = new Date().toISOString().split('T')[0];
-    const filename = `CLAB_${opts.modulo.titulo.replace(/\s+/g,'_')}_${fecha}.pdf`;
+    const filename = `CLAB_${opts.modulo.titulo.replace(/\s+/g, '_')}_${fecha}.pdf`;
     doc.save(filename);
-  }
-
-  // ── Colores para badges ───────────────────────────────────────────────────
-  private badgeRgb(estado: string): { bg: [number,number,number]; text: [number,number,number] } {
-    const e = (estado || '').toUpperCase();
-    if (['COMPLETADA','OPERATIVO','ACTIVO','ACTIVA','APROBADA','LIBERADO','RESUELTO'].some(x => e.includes(x)))
-      return { bg: C.accentLight, text: C.accent };
-    if (['MANTENIMIENTO','PENDIENTE','EN PROCESO'].some(x => e.includes(x)))
-      return { bg: C.orangeLight, text: C.orange };
-    if (e.match(/^\d+%$/)) {
-      const v = parseFloat(e);
-      if (v >= 85) return { bg: C.accentLight, text: C.accent };
-      if (v >= 70) return { bg: C.orangeLight, text: C.orange };
-      return { bg: C.redLight, text: C.red };
-    }
-    return { bg: C.redLight, text: C.red };
   }
 }

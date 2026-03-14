@@ -2,22 +2,35 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import {Laboratorio, ModuloConfig, StatModulo, DatoGrafica } from '../interfaces/Reportar.model';
+import { Laboratorio, ModuloConfig, StatModulo, DatoGrafica } from '../interfaces/Reportar.model';
 import { ReportarService } from '../services/reportar.service';
-import { ReporteEquipoItem } from '../interfaces/Reportar.model';
+import { ExportPdfService } from '../services/export-pdf.service';
+import { ExportExcelService } from '../services/export-excel.service';
+import {
+  ReporteEquipoItem,
+  ReporteUsoItem,
+  ReporteFallaItem,
+  ReporteUsuarioItem,
+  ReporteReservaItem,
+  ReporteAsistenciaItem,
+  ReporteAcademicoItem,
+  ReporteBloqueosItem,
+} from '../interfaces/Reportar.model';
 
 @Component({
   selector: 'app-reportar',
   standalone: true,
-  imports: [CommonModule, FormsModule],  // ← estas dos
+  imports: [CommonModule, FormsModule],
   templateUrl: './reportar.html',
   styleUrls: ['./reportar.scss']
 })
-export class ReportarComponent implements OnInit{
+export class ReportarComponent implements OnInit {
   constructor(
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private reportarService: ReportarService
+    private reportarService: ReportarService,
+    private exportPdf: ExportPdfService,
+    private exportExcel: ExportExcelService,
   ) {}
 
   // ─── ESTADO GENERAL ────────────────────────────────────────────────────────
@@ -25,7 +38,7 @@ export class ReportarComponent implements OnInit{
   rol = '';
   drawerAbierto = false;
 
-  moduloActivo: number | null = null;  // índice del módulo abierto o null = pantalla inicio
+  moduloActivo: number | null = null;
   busquedaRealizada = false;
   mostrarEstadisticas = false;
   cargando = false;
@@ -41,24 +54,13 @@ export class ReportarComponent implements OnInit{
     { id: 'academico',  titulo: 'Académico',    desc: 'Períodos, carreras y asignaturas',       icono: '/academico.png',   color: 'amarillo', colorHex: '#f59e0b' },
     { id: 'bloqueos',   titulo: 'Bloqueos',     desc: 'Bloqueos y restricciones de acceso',     icono: '/bloqueos.png',    color: 'morado',   colorHex: '#a855f7' },
   ];
+
   // ─── RESUMEN GLOBAL ────────────────────────────────────────────────────────
-  resumenGlobal = {
-    reservas: 0,
-    asistencias: 0,
-    fallas: 0,
-    estudiantes: 0,
-    equipos: 0,
-    bloqueos: 0
-  };
+  resumenGlobal = { reservas: 0, asistencias: 0, fallas: 0, estudiantes: 0, equipos: 0, bloqueos: 0 };
 
   // ─── FILTROS ───────────────────────────────────────────────────────────────
   laboratorios: Laboratorio[] = [];
-  filtros = {
-    fechaInicio: '',
-    fechaFin: '',
-    laboratorio: '',
-    estado: ''
-  };
+  filtros = { fechaInicio: '', fechaFin: '', laboratorio: '', estado: '' };
 
   // ─── DATOS REPORTE ─────────────────────────────────────────────────────────
   datosReporte: any[] = [];
@@ -85,8 +87,8 @@ export class ReportarComponent implements OnInit{
         const parsed = JSON.parse(userData);
         this.usuarioLogueado = parsed.nombres
           ? `${parsed.nombres} ${parsed.apellidos}`
-          : parsed.email || 'Usuario';
-      } catch { this.usuarioLogueado = 'Usuario'; }
+          : parsed.email || userData;
+      } catch { this.usuarioLogueado = userData; }
     }
     this.inicializarFechas();
     this.cargarLaboratorios();
@@ -145,24 +147,25 @@ export class ReportarComponent implements OnInit{
           nombreLab:      l.nombreLab
         }));
       },
-      error: () => {
-        this.mostrarNotif('Error al cargar laboratorios', 'error');
-      }
+      error: () => this.mostrarNotif('Error al cargar laboratorios', 'error')
     });
   }
 
-
-
   cargarResumenGlobal(): void {
-    // TODO: conectar al endpoint real de resumen
-    this.resumenGlobal = {
-      reservas: 163,
-      asistencias: 1170,
-      fallas: 50,
-      estudiantes: 375,
-      equipos: 112,
-      bloqueos: 18
-    };
+    this.reportarService.getResumenGlobal().subscribe({
+      next: (data) => {
+        this.resumenGlobal = {
+          reservas:    data.reservas    ?? 0,
+          asistencias: data.asistencias ?? 0,
+          fallas:      data.fallas      ?? 0,
+          estudiantes: 0,
+          equipos:     data.equipos     ?? 0,
+          bloqueos:    data.bloqueos    ?? 0,
+        };
+        this.cdr.detectChanges();
+      },
+      error: () => console.warn('No se pudo cargar el resumen global')
+    });
   }
 
   // ─── FILTROS ───────────────────────────────────────────────────────────────
@@ -177,25 +180,15 @@ export class ReportarComponent implements OnInit{
     this.cargando = true;
 
     const id = this.modulos[this.moduloActivo!].id;
-
-    if (id === 'equipos') {
-      this.generarEquipos();          // ← llama directo, sin setTimeout
-    } else {
-      // Los demás módulos siguen con mock por ahora
-      setTimeout(() => {
-        this.cargando = false;
-        switch (id) {
-          case 'uso':        this.generarUso();       break;
-          case 'fallas':     this.generarFallas();     break;
-          case 'usuarios':   this.generarUsuarios();   break;
-          case 'reservas':   this.generarReservas();   break;
-          case 'asistencia': this.generarAsistencia(); break;
-          case 'academico':  this.generarAcademico();  break;
-          case 'bloqueos':   this.generarBloqueos();   break;
-        }
-        this.mostrarNotif('Reporte generado correctamente');
-        this.cdr.detectChanges();
-      }, 600);
+    switch (id) {
+      case 'uso':        this.generarUso();        break;
+      case 'equipos':    this.generarEquipos();    break;
+      case 'fallas':     this.generarFallas();     break;
+      case 'usuarios':   this.generarUsuarios();   break;
+      case 'reservas':   this.generarReservas();   break;
+      case 'asistencia': this.generarAsistencia(); break;
+      case 'academico':  this.generarAcademico();  break;
+      case 'bloqueos':   this.generarBloqueos();   break;
     }
   }
 
@@ -212,276 +205,231 @@ export class ReportarComponent implements OnInit{
     this.cdr.detectChanges();
   }
 
-  // ─── GENERADORES DE REPORTE ────────────────────────────────────────────────
+  // ─── HELPER FILTROS ────────────────────────────────────────────────────────
+  private get filtrosActuales() {
+    return {
+      laboratorio: this.filtros.laboratorio || undefined,
+      fechaInicio: this.filtros.fechaInicio || undefined,
+      fechaFin:    this.filtros.fechaFin    || undefined,
+      estado:      this.filtros.estado      || undefined,
+    };
+  }
+
+  private onError(err: any): void {
+    console.error(err);
+    this.cargando = false;
+    this.mostrarNotif('Error al cargar el reporte', 'error');
+    this.cdr.detectChanges();
+  }
+
+  private onSuccess(): void {
+    this.cargando = false;
+    this.mostrarEstadisticas = true;
+    this.mostrarNotif('Reporte generado correctamente');
+    this.cdr.detectChanges();
+  }
+
+  // ─── GENERADORES ───────────────────────────────────────────────────────────
 
   private generarUso(): void {
-    this.statsModulo = [
-      { icono: '📅', valor: 45,  label: 'Total Usos',   color: '#39ff14' },
-      { icono: '⏱️', valor: '90h', label: 'Horas Totales', color: '#3b82f6' },
-      { icono: '🏆', valor: 'Lab. Prog.', label: 'Más Usado', color: '#e67e22' },
-      { icono: '👥', valor: 520, label: 'Estudiantes', color: '#a855f7' },
-    ];
-    this.tituloGrafica1 = 'Usos por Laboratorio';
-    this.tituloGrafica2 = 'Distribución de Estados';
-    this.datosGrafica = [
-      { label: 'Lab. Prog.',  valor: 18, pct: 100 },
-      { label: 'Lab. Redes',  valor: 12, pct: 67  },
-      { label: 'Lab. BD',     valor: 8,  pct: 44  },
-      { label: 'Lab. IA',     valor: 5,  pct: 28  },
-      { label: 'Lab. SO',     valor: 2,  pct: 11  },
-    ];
-    this.datosDistribucion = [
-      { label: 'Completada', valor: 38, pct: 84 },
-      { label: 'Cancelada',  valor: 5,  pct: 11 },
-      { label: 'Pendiente',  valor: 2,  pct: 5  },
-    ];
-    this.columnasTabla = ['LABORATORIO', 'FECHA', 'HORARIO', 'N° ESTUDIANTES', 'ESTADO'];
-    this.datosReporte = [
-      { lab: 'Lab. Programación', fecha: '20/02/2026', horario: '08:00 - 10:00', est: 28, estado: 'COMPLETADA' },
-      { lab: 'Lab. Redes',        fecha: '21/02/2026', horario: '14:00 - 16:00', est: 22, estado: 'COMPLETADA' },
-      { lab: 'Lab. BD',           fecha: '22/02/2026', horario: '10:00 - 12:00', est: 30, estado: 'CANCELADA'  },
-    ];
-    this.mostrarEstadisticas = true;
+    this.reportarService.getReporteUso(this.filtrosActuales).subscribe({
+      next: (res) => {
+        this.statsModulo = [
+          { icono: '📅', valor: res.stats['totalReservas'] ?? 0, label: 'Total Reservas',  color: '#39ff14' },
+          { icono: '✅', valor: res.stats['aprobadas']    ?? 0, label: 'Aprobadas',        color: '#39ff14' },
+          { icono: '⏳', valor: res.stats['pendientes']   ?? 0, label: 'Pendientes',       color: '#e67e22' },
+          { icono: '❌', valor: res.stats['canceladas']   ?? 0, label: 'Canceladas',       color: '#e74c3c' },
+        ];
+        this.tituloGrafica1    = 'Reservas por Laboratorio';
+        this.tituloGrafica2    = 'Distribución por Estado';
+        this.datosGrafica      = res.grafica1;
+        this.datosDistribucion = res.grafica2;
+        this.columnasTabla     = ['LABORATORIO', 'FECHA', 'HORARIO', 'ESTUDIANTES','ESTADO'];
+        this.datosReporte      = res.datos.map((d: ReporteUsoItem) => ({
+          a: d.laboratorio, b: d.fecha, c: d.horario, d: d.numEstudiantes, estado: d.estado,
+        }));
+        this.onSuccess();
+      },
+      error: (err) => this.onError(err)
+    });
   }
 
   private generarEquipos(): void {
-    this.reportarService.getReporteEquipos({
-      laboratorio: this.filtros.laboratorio || undefined,
-      estado:      this.filtros.estado      || undefined
-    }).subscribe({
+    this.reportarService.getReporteEquipos(this.filtrosActuales).subscribe({
       next: (res) => {
-        this.cargando= false;
-        this.mostrarNotif('Reporte generado correctamente');
-        // ── Stats ──────────────────────────────────────────────
         this.statsModulo = [
-          { icono: '🖥️', valor: res.stats['totalEquipos'],  label: 'Total Equipos',    color: '#39ff14' },
-          { icono: '✅', valor: res.stats['operativos'],    label: 'Operativos',       color: '#39ff14' },
-          { icono: '🔧', valor: res.stats['mantenimiento'], label: 'En Mantenimiento', color: '#e67e22' },
-          { icono: '❌', valor: res.stats['fueraServicio'], label: 'Fuera de Servicio',color: '#e74c3c' },
+          { icono: '🖥️', valor: res.stats['totalEquipos'],  label: 'Total Equipos',     color: '#39ff14' },
+          { icono: '✅',  valor: res.stats['operativos'],    label: 'Operativos',        color: '#39ff14' },
+          { icono: '🔧',  valor: res.stats['mantenimiento'], label: 'En Mantenimiento',  color: '#e67e22' },
+          { icono: '❌',  valor: res.stats['fueraServicio'], label: 'Fuera de Servicio', color: '#e74c3c' },
         ];
-
-        // ── Gráficas ───────────────────────────────────────────
         this.tituloGrafica1    = 'Equipos por Laboratorio';
         this.tituloGrafica2    = 'Estado de Equipos';
         this.datosGrafica      = res.grafica1;
         this.datosDistribucion = res.grafica2;
-
-        // ── Tabla ──────────────────────────────────────────────
-        this.columnasTabla = ['SERIE', 'NOMBRE', 'TIPO', 'LABORATORIO', 'ESTADO'];
-        this.datosReporte  = res.datos.map((d: ReporteEquipoItem) => ({
-          a: d.serie,
-          b: d.nombre,
-          c: d.tipo,
-          d: d.laboratorio,
-          estado: d.estado
+        this.columnasTabla     = ['SERIE', 'NOMBRE', 'TIPO', 'LABORATORIO', 'ESTADO'];
+        this.datosReporte      = res.datos.map((d: ReporteEquipoItem) => ({
+          a: d.serie, b: d.nombre, c: d.tipo, d: d.laboratorio, estado: d.estado,
         }));
-
-        this.mostrarEstadisticas = true;
-        this.cdr.detectChanges();
+        this.onSuccess();
       },
-      error: (err) => {
-        console.error('Error cargando reporte equipos', err);
-        this.mostrarNotif('Error al cargar el reporte de equipos', 'error');
-        this.cargando = false;
-        this.cdr.detectChanges();
-      }
+      error: (err) => this.onError(err)
     });
   }
 
   private generarFallas(): void {
-    this.statsModulo = [
-      { icono: '⚠️', valor: 50, label: 'Total Fallas',  color: '#e67e22' },
-      { icono: '🔴', valor: 17, label: 'Pendientes',    color: '#e74c3c' },
-      { icono: '🔧', valor: 8,  label: 'En Proceso',    color: '#e67e22' },
-      { icono: '✅', valor: 25, label: 'Resueltas',     color: '#39ff14' },
-    ];
-    this.tituloGrafica1 = 'Fallas por Laboratorio';
-    this.tituloGrafica2 = 'Estado de Fallas';
-    this.datosGrafica = [
-      { label: 'Lab. Prog.',  valor: 18, pct: 100 },
-      { label: 'Lab. Redes',  valor: 14, pct: 78  },
-      { label: 'Lab. BD',     valor: 9,  pct: 50  },
-      { label: 'Lab. IA',     valor: 6,  pct: 33  },
-      { label: 'Lab. SO',     valor: 3,  pct: 17  },
-    ];
-    this.datosDistribucion = [
-      { label: 'Resuelto',   valor: 25, pct: 50 },
-      { label: 'Pendiente',  valor: 17, pct: 34 },
-      { label: 'En proceso', valor: 8,  pct: 16 },
-    ];
-    this.columnasTabla = ['FECHA', 'LABORATORIO', 'EQUIPO', 'DESCRIPCIÓN', 'ESTADO'];
-    this.datosReporte = [
-      { a: '20/02/2026', b: 'Lab. Prog.',  c: 'PC Dell PC-001', d: 'No enciende pantalla',      estado: 'PENDIENTE'  },
-      { a: '21/02/2026', b: 'Lab. Redes',  c: 'Switch SW-005',  d: 'Intermitencias en red',     estado: 'EN PROCESO' },
-      { a: '22/02/2026', b: 'Lab. BD',     c: 'Servidor HP',    d: 'Disco duro lento',          estado: 'RESUELTO'   },
-    ];
-    this.mostrarEstadisticas = true;
+    this.reportarService.getReporteFallas(this.filtrosActuales).subscribe({
+      next: (res) => {
+        this.statsModulo = [
+          { icono: '⚠️', valor: res.stats['totalFallas']      ?? 0, label: 'Total Fallas',      color: '#e74c3c' },
+          { icono: '🏫', valor: res.stats['laboratorios']     ?? 0, label: 'Laboratorios',      color: '#e67e22' },
+          { icono: '💻', valor: res.stats['equiposAfectados'] ?? 0, label: 'Equipos Afectados', color: '#3b82f6' },
+        ];
+        this.tituloGrafica1    = 'Fallas por Laboratorio';
+        this.tituloGrafica2    = 'Top Equipos con Fallas';
+        this.datosGrafica      = res.grafica1;
+        this.datosDistribucion = res.grafica2;
+        this.columnasTabla     = ['FECHA', 'LABORATORIO', 'EQUIPO', 'DESCRIPCIÓN', 'REPORTADO POR'];
+        this.datosReporte      = res.datos.map((d: ReporteFallaItem) => ({
+          a: d.fecha, b: d.laboratorio, c: d.equipo, d: d.descripcion, estado: d.estado,
+        }));
+        this.onSuccess();
+      },
+      error: (err) => this.onError(err)
+    });
   }
 
   private generarUsuarios(): void {
-    this.statsModulo = [
-      { icono: '👥', valor: 15, label: 'Total Usuarios', color: '#39ff14' },
-      { icono: '✅', valor: 15, label: 'Activos',        color: '#39ff14' },
-      { icono: '🚫', valor: 0,  label: 'Inactivos',      color: '#e74c3c' },
-      { icono: '🔑', valor: 6,  label: 'Roles',          color: '#3b82f6' },
-    ];
-    this.tituloGrafica1 = 'Usuarios por Rol';
-    this.tituloGrafica2 = 'Estado de Usuarios';
-    this.datosGrafica = [
-      { label: 'Docente',      valor: 6, pct: 100 },
-      { label: 'Encargado',    valor: 4, pct: 67  },
-      { label: 'Admin',        valor: 2, pct: 33  },
-      { label: 'Coordinador',  valor: 2, pct: 33  },
-      { label: 'Decano',       valor: 1, pct: 17  },
-    ];
-    this.datosDistribucion = [
-      { label: 'Activo',   valor: 15, pct: 100 },
-      { label: 'Inactivo', valor: 0,  pct: 0   },
-    ];
-    this.columnasTabla = ['IDENTIDAD', 'NOMBRE COMPLETO', 'EMAIL', 'ROL', 'ESTADO'];
-    this.datosReporte = [
-      { a: '0923456789', b: 'Juan Pérez González',   c: 'juan.perez@uteq.edu.ec',   d: 'Docente',   estado: 'ACTIVO' },
-      { a: '0987654321', b: 'María García López',    c: 'maria.garcia@uteq.edu.ec',  d: 'Encargado', estado: 'ACTIVO' },
-      { a: '0912345678', b: 'Carlos Torres Mora',    c: 'carlos.torres@uteq.edu.ec', d: 'Docente',   estado: 'ACTIVO' },
-    ];
-    this.mostrarEstadisticas = true;
+    this.reportarService.getReporteUsuarios(this.filtrosActuales).subscribe({
+      next: (res) => {
+        this.statsModulo = [
+          { icono: '👥', valor: res.stats['totalUsuarios'] ?? 0, label: 'Total Usuarios', color: '#3b82f6' },
+          { icono: '✅', valor: res.stats['activos']       ?? 0, label: 'Activos',        color: '#39ff14' },
+          { icono: '🚫', valor: res.stats['inactivos']     ?? 0, label: 'Inactivos',      color: '#e74c3c' },
+        ];
+        this.tituloGrafica1    = 'Usuarios por Estado';
+        this.tituloGrafica2    = 'Distribución';
+        this.datosGrafica      = res.grafica1;
+        this.datosDistribucion = res.grafica2;
+        this.columnasTabla     = ['IDENTIDAD', 'NOMBRE COMPLETO', 'EMAIL', 'USUARIO', 'ESTADO'];
+        this.datosReporte      = res.datos.map((d: ReporteUsuarioItem) => ({
+          a: d.identidad, b: d.nombreCompleto, c: d.email, d: d.usuario, estado: d.estado,
+        }));
+        this.onSuccess();
+      },
+      error: (err) => this.onError(err)
+    });
   }
 
   private generarReservas(): void {
-    this.statsModulo = [
-      { icono: '📋', valor: 163, label: 'Total Reservas',  color: '#39ff14' },
-      { icono: '✅', valor: 141, label: 'Aprobadas',       color: '#39ff14' },
-      { icono: '⏳', valor: 12,  label: 'Pendientes',      color: '#e67e22' },
-      { icono: '❌', valor: 10,  label: 'Canceladas',      color: '#e74c3c' },
-    ];
-    this.tituloGrafica1 = 'Reservas por Laboratorio';
-    this.tituloGrafica2 = 'Estados de Reservas';
-    this.datosGrafica = [
-      { label: 'Lab. Prog.',  valor: 45, pct: 100 },
-      { label: 'Lab. IA',     valor: 38, pct: 84  },
-      { label: 'Lab. Redes',  valor: 32, pct: 71  },
-      { label: 'Lab. BD',     valor: 28, pct: 62  },
-      { label: 'Lab. SO',     valor: 20, pct: 44  },
-    ];
-    this.datosDistribucion = [
-      { label: 'Aprobada',  valor: 141, pct: 87 },
-      { label: 'Pendiente', valor: 12,  pct: 7  },
-      { label: 'Cancelada', valor: 10,  pct: 6  },
-    ];
-    this.columnasTabla = ['FECHA', 'LABORATORIO', 'HORARIO', 'TIPO', 'MOTIVO', 'ESTADO'];
-    this.datosReporte = [
-      { a: '25/02/2026', b: 'Lab. Prog.', c: '08:00-10:00', d: 'Clase',  e: 'Estructuras de datos', estado: 'APROBADA'  },
-      { a: '26/02/2026', b: 'Lab. Redes', c: '14:00-16:00', d: '—',      e: 'Taller routers',       estado: 'PENDIENTE' },
-      { a: '27/02/2026', b: 'Lab. Prog.', c: '10:00-12:00', d: 'Examen', e: 'Evaluación final',     estado: 'CANCELADA' },
-    ];
-    this.mostrarEstadisticas = true;
+    this.reportarService.getReporteReservas(this.filtrosActuales).subscribe({
+      next: (res) => {
+        this.statsModulo = [
+          { icono: '📋', valor: res.stats['total']      ?? 0, label: 'Total Reservas', color: '#e67e22' },
+          { icono: '✅', valor: res.stats['aprobadas']  ?? 0, label: 'Aprobadas',      color: '#39ff14' },
+          { icono: '⏳', valor: res.stats['pendientes'] ?? 0, label: 'Pendientes',     color: '#e67e22' },
+          { icono: '❌', valor: res.stats['canceladas'] ?? 0, label: 'Canceladas',     color: '#e74c3c' },
+        ];
+        this.tituloGrafica1    = 'Reservas por Laboratorio';
+        this.tituloGrafica2    = 'Estados de Reservas';
+        this.datosGrafica      = res.grafica1;
+        this.datosDistribucion = res.grafica2;
+        this.columnasTabla = ['FECHA', 'LABORATORIO', 'HORARIO', 'TIPO', 'MOTIVO', 'ESTADO'];
+        this.datosReporte = res.datos.map((item: ReporteReservaItem) => ({
+          a: item.fecha,
+          b: item.laboratorio,
+          c: item.horario,
+          d: item.tipo,
+          e: item.motivo,
+          estado: item.estado,
+        }));
+        this.onSuccess();
+      },
+      error: (err) => this.onError(err)
+    });
   }
 
   private generarAsistencia(): void {
-    this.statsModulo = [
-      { icono: '👥', valor: '1,170', label: 'Total Registros', color: '#39ff14' },
-      { icono: '📈', valor: '88%',   label: 'Tasa Promedio',   color: '#06b6d4' },
-      { icono: '🏅', valor: 'Lab. IA', label: 'Mayor Asist.',  color: '#e67e22' },
-      { icono: '📉', valor: 'Lab. BD', label: 'Menor Asist.',  color: '#e74c3c' },
-    ];
-    this.tituloGrafica1 = '% Asistencia por Laboratorio';
-    this.tituloGrafica2 = 'Asistencia Mensual';
-    this.datosGrafica = [
-      { label: 'Lab. IA',    valor: 94, pct: 100 },
-      { label: 'Lab. Prog.', valor: 92, pct: 98  },
-      { label: 'Lab. Redes', valor: 87, pct: 93  },
-      { label: 'Lab. SO',    valor: 81, pct: 86  },
-      { label: 'Lab. BD',    valor: 78, pct: 83  },
-    ];
-    this.datosDistribucion = [
-      { label: 'Asistió',     valor: 1170, pct: 88 },
-      { label: 'No asistió',  valor: 160,  pct: 12 },
-    ];
-    this.columnasTabla = ['DOCENTE', 'LABORATORIO', 'FECHA', 'ASISTIERON', 'ESTADO'];
-    this.datosReporte = [
-      { a: 'María Torres', b: 'Lab. Prog.', c: '07/03/2026', d: '28/30', estado: '93%'  },
-      { a: 'Carlos Vega',  b: 'Lab. Redes', c: '07/03/2026', d: '24/28', estado: '86%'  },
-      { a: 'Luis Ponce',   b: 'Lab. IA',    c: '06/03/2026', d: '30/30', estado: '100%' },
-    ];
-    this.mostrarEstadisticas = true;
+    this.reportarService.getReporteAsistencia(this.filtrosActuales).subscribe({
+      next: (res) => {
+        this.statsModulo = [
+          { icono: '👥', valor: res.stats['totalAsistencias'] ?? 0, label: 'Total Registros', color: '#06b6d4' },
+          { icono: '🏫', valor: res.stats['laboratorios']     ?? 0, label: 'Laboratorios',    color: '#39ff14' },
+          { icono: '👨‍🏫', valor: res.stats['docentes']        ?? 0, label: 'Docentes',        color: '#e67e22' },
+        ];
+        this.tituloGrafica1    = 'Asistencias por Laboratorio';
+        this.tituloGrafica2    = 'Asistencias por Docente';
+        this.datosGrafica      = res.grafica1;
+        this.datosDistribucion = res.grafica2;
+        this.columnasTabla     = ['FECHA', 'LABORATORIO', 'DOCENTE', 'HORA APERTURA', 'OBSERVACIONES'];
+        this.datosReporte      = res.datos.map((d: ReporteAsistenciaItem) => ({
+          a: d.fecha, b: d.laboratorio, c: d.docente, d: d.asistieron, estado: d.porcentaje,
+        }));
+        this.onSuccess();
+      },
+      error: (err) => this.onError(err)
+    });
   }
 
   private generarAcademico(): void {
-    this.statsModulo = [
-      { icono: '📖', valor: 3,  label: 'Períodos',    color: '#f59e0b' },
-      { icono: '🏫', valor: 5,  label: 'Carreras',    color: '#39ff14' },
-      { icono: '📋', valor: 42, label: 'Asignaturas', color: '#3b82f6' },
-      { icono: '🗓️', valor: 128, label: 'Horarios',   color: '#a855f7' },
-    ];
-    this.tituloGrafica1 = 'Asignaturas por Carrera';
-    this.tituloGrafica2 = 'Distribución de Carreras';
-    this.datosGrafica = [
-      { label: 'Sistemas',  valor: 15, pct: 100 },
-      { label: 'Civil',     valor: 10, pct: 67  },
-      { label: 'Eléctrica', valor: 8,  pct: 53  },
-      { label: 'Mecánica',  valor: 6,  pct: 40  },
-      { label: 'Otras',     valor: 3,  pct: 20  },
-    ];
-    this.datosDistribucion = [
-      { label: 'Sistemas',  valor: 120, pct: 32 },
-      { label: 'Civil',     valor: 85,  pct: 23 },
-      { label: 'Eléctrica', valor: 70,  pct: 19 },
-      { label: 'Mecánica',  valor: 60,  pct: 16 },
-      { label: 'Otras',     valor: 40,  pct: 10 },
-    ];
-    this.columnasTabla = ['ASIGNATURA', 'CARRERA', 'DOCENTE', 'LABORATORIO', 'ESTADO'];
-    this.datosReporte = [
-      { a: 'Redes I',    b: 'Sistemas',  c: 'María Torres', d: 'Lab. Redes', estado: 'ACTIVA'   },
-      { a: 'BD I',       b: 'Sistemas',  c: 'Ana Mendoza',  d: 'Lab. BD',    estado: 'ACTIVA'   },
-      { a: 'AutoCAD',    b: 'Civil',     c: 'Pedro Ríos',   d: 'Lab. Prog.', estado: 'ACTIVA'   },
-      { a: 'Circuitos',  b: 'Eléctrica', c: 'Luis Ponce',   d: 'Lab. SO',    estado: 'INACTIVA' },
-    ];
-    this.mostrarEstadisticas = true;
+    this.reportarService.getReporteAcademico(this.filtrosActuales).subscribe({
+      next: (res) => {
+        this.statsModulo = [
+          { icono: '📖', valor: res.stats['totalClases']   ?? 0, label: 'Total Clases',  color: '#f59e0b' },
+          { icono: '🏫', valor: res.stats['laboratorios']  ?? 0, label: 'Laboratorios',  color: '#39ff14' },
+          { icono: '👨‍🏫', valor: res.stats['docentes']     ?? 0, label: 'Docentes',      color: '#3b82f6' },
+        ];
+        this.tituloGrafica1    = 'Clases por Laboratorio';
+        this.tituloGrafica2    = 'Clases por Docente';
+        this.datosGrafica      = res.grafica1;
+        this.datosDistribucion = res.grafica2;
+        this.columnasTabla     = ['ASIGNATURA', 'CARRERA', 'DOCENTE', 'LABORATORIO', 'ESTADO'];
+        this.datosReporte      = res.datos.map((d: ReporteAcademicoItem) => ({
+          a: d.asignatura, b: d.carrera, c: d.docente, d: d.laboratorio, estado: d.estado,
+        }));
+        this.onSuccess();
+      },
+      error: (err) => this.onError(err)
+    });
   }
 
   private generarBloqueos(): void {
-    this.statsModulo = [
-      { icono: '🚫', valor: 18,   label: 'Total Bloqueos',  color: '#a855f7' },
-      { icono: '🔒', valor: 5,    label: 'Activos',         color: '#e74c3c' },
-      { icono: '🔓', valor: 13,   label: 'Liberados',       color: '#39ff14' },
-      { icono: '⏳', valor: '2.4h', label: 'Duración Prom.', color: '#3b82f6' },
-    ];
-    this.tituloGrafica1 = 'Bloqueos por Laboratorio';
-    this.tituloGrafica2 = 'Motivos de Bloqueo';
-    this.datosGrafica = [
-      { label: 'Lab. Prog.',  valor: 6, pct: 100 },
-      { label: 'Lab. Redes',  valor: 4, pct: 67  },
-      { label: 'Lab. BD',     valor: 3, pct: 50  },
-      { label: 'Lab. SO',     valor: 3, pct: 50  },
-      { label: 'Lab. IA',     valor: 2, pct: 33  },
-    ];
-    this.datosDistribucion = [
-      { label: 'Mantenimiento',   valor: 8, pct: 44 },
-      { label: 'Falla equipo',    valor: 5, pct: 28 },
-      { label: 'Evento especial', valor: 3, pct: 17 },
-      { label: 'Otros',           valor: 2, pct: 11 },
-    ];
-    this.columnasTabla = ['LABORATORIO', 'MOTIVO', 'FECHA', 'DURACIÓN', 'ESTADO'];
-    this.datosReporte = [
-      { a: 'Lab. Prog.',  b: 'Mantenimiento', c: '05/03/2026', d: '3h', estado: 'LIBERADO' },
-      { a: 'Lab. Redes',  b: 'Falla equipo',  c: '06/03/2026', d: '5h', estado: 'ACTIVO'   },
-      { a: 'Lab. BD',     b: 'Evento',        c: '07/03/2026', d: '2h', estado: 'ACTIVO'   },
-    ];
-    this.mostrarEstadisticas = true;
+    this.reportarService.getReporteBloqueos(this.filtrosActuales).subscribe({
+      next: (res) => {
+        this.statsModulo = [
+          { icono: '🔒', valor: res.stats['totalBloqueos'] ?? 0, label: 'Total Bloqueos', color: '#a855f7' },
+          { icono: '🔴', valor: res.stats['activos']       ?? 0, label: 'Activos',        color: '#e74c3c' },
+          { icono: '🏫', valor: res.stats['laboratorios']  ?? 0, label: 'Laboratorios',   color: '#3b82f6' },
+        ];
+        this.tituloGrafica1    = 'Bloqueos por Laboratorio';
+        this.tituloGrafica2    = 'Bloqueos por Tipo';
+        this.datosGrafica      = res.grafica1;
+        this.datosDistribucion = res.grafica2;
+        this.columnasTabla     = ['LABORATORIO', 'TIPO', 'MOTIVO', 'INICIO', 'FIN', 'ESTADO'];
+        this.datosReporte = res.datos.map((item: ReporteBloqueosItem) => ({
+          a: item.laboratorio,
+          b: item.tipo,
+          c: item.motivo,
+          d: item.fechaInicio,
+          e: item.fechaFin,
+          estado: item.estado,
+        }));
+        this.onSuccess();
+      },
+      error: (err) => this.onError(err)
+    });
   }
 
   // ─── TABLA HELPER ──────────────────────────────────────────────────────────
   filasTabla(fila: any): string[] {
-    // Devuelve valores en orden: a, b, c, d, e... y al final estado
     const vals: string[] = [];
-    const keys = ['a','b','c','d','e','f'];
+    const keys = ['a', 'b', 'c', 'd', 'e', 'f'];
     for (const k of keys) {
-      if (fila[k] !== undefined) vals.push(fila[k]);
+      if (k in fila) vals.push(fila[k] ?? '');  // ← k in fila en vez de !== undefined
     }
     vals.push(fila.estado ?? '');
     return vals;
   }
-
   getBadgeClass(estado: string): string {
     const e = (estado || '').toUpperCase();
     if (['COMPLETADA','OPERATIVO','ACTIVO','ACTIVA','APROBADA','LIBERADO','RESUELTO'].some(x => e.includes(x))) return 'badge-activo';
@@ -492,18 +440,71 @@ export class ReportarComponent implements OnInit{
 
   // ─── EXPORTAR ──────────────────────────────────────────────────────────────
   exportarPDF(): void {
-    this.mostrarNotif('Exportando a PDF...');
-    // TODO: conectar jsPDF o servicio backend
+    if (!this.mostrarEstadisticas || this.datosReporte.length === 0) {
+      this.mostrarNotif('Primero genera el reporte', 'error');
+      return;
+    }
+    const modulo    = this.modulos[this.moduloActivo!];
+    const labNombre = this.laboratorios.find(
+      l => String(l.codLaboratorio) === this.filtros.laboratorio
+    )?.nombreLab ?? 'Todos';
+
+    this.exportPdf.exportar({
+      modulo,
+      statsModulo:       this.statsModulo,
+      datosGrafica:      this.datosGrafica,
+      datosDistribucion: this.datosDistribucion,
+      tituloGrafica1:    this.tituloGrafica1,
+      tituloGrafica2:    this.tituloGrafica2,
+      columnasTabla:     this.columnasTabla,
+      datosReporte:      this.datosReporte,
+      filasTabla:        (fila) => this.filasTabla(fila),
+      filtros: {
+        laboratorio: this.filtros.laboratorio,
+        fechaInicio: this.filtros.fechaInicio,
+        fechaFin:    this.filtros.fechaFin,
+        estado:      this.filtros.estado,
+      },
+      nombreLaboratorio: labNombre,
+      usuarioLogueado:   this.usuarioLogueado,
+    }).then(() => this.mostrarNotif('PDF generado correctamente'));
   }
+
   exportarExcel(): void {
-    this.mostrarNotif('Exportando a Excel...');
-    // TODO: conectar exportación Excel
+    if (!this.mostrarEstadisticas || this.datosReporte.length === 0) {
+      this.mostrarNotif('Primero genera el reporte', 'error');
+      return;
+    }
+    const modulo    = this.modulos[this.moduloActivo!];
+    const labNombre = this.laboratorios.find(
+      l => String(l.codLaboratorio) === this.filtros.laboratorio
+    )?.nombreLab ?? 'Todos';
+
+    this.exportExcel.exportar({
+      modulo,
+      statsModulo:       this.statsModulo,
+      datosGrafica:      this.datosGrafica,
+      datosDistribucion: this.datosDistribucion,
+      tituloGrafica1:    this.tituloGrafica1,
+      tituloGrafica2:    this.tituloGrafica2,
+      columnasTabla:     this.columnasTabla,
+      datosReporte:      this.datosReporte,
+      filasTabla:        (fila) => this.filasTabla(fila),
+      filtros: {
+        laboratorio: this.filtros.laboratorio,
+        fechaInicio: this.filtros.fechaInicio,
+        fechaFin:    this.filtros.fechaFin,
+        estado:      this.filtros.estado,
+      },
+      nombreLaboratorio: labNombre,
+      usuarioLogueado:   this.usuarioLogueado,
+    }).then(() => this.mostrarNotif('Excel generado correctamente'));
   }
 
   // ─── TOAST ─────────────────────────────────────────────────────────────────
   mostrarNotif(mensaje: string, tipo: 'success' | 'error' = 'success'): void {
     this.toastMensaje = mensaje;
-    this.toastTipo = tipo;
+    this.toastTipo    = tipo;
     this.mostrarToast = true;
     this.cdr.detectChanges();
     setTimeout(() => { this.mostrarToast = false; this.cdr.detectChanges(); }, 3000);
