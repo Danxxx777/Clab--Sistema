@@ -88,9 +88,12 @@
           <div class="di-text"><div class="di-name">Config. Correo</div><div class="di-desc">SMTP y remitente</div></div>
         </div>
       }
-    </div>
-    <div class="drawer-footer">
-      <button class="btn-logout-drawer" (click)="logout()">🚪 Cerrar sesión</button>
+      @if(rol === 'Administradorr') {
+        <div class="drawer-item" (click)="navegar('backups')">
+          <div class="di-icon ic-12"><img src="/backup.png" alt="Backups"></div>
+          <div class="di-text"><div class="di-name">Backups</div><div class="di-desc">Respaldos de BD</div></div>
+        </div>
+      }
     </div>
   </div>
 

@@ -1,8 +1,9 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
+import {HttpClient} from '@angular/common/http';
 
 @Component({
   selector: 'app-login',
@@ -11,7 +12,7 @@ import { AuthService } from '../auth/auth.service';
   templateUrl: './login.html',
   styleUrls: ['./login.scss']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
 
   username = '';
   password = '';
@@ -20,6 +21,13 @@ export class LoginComponent {
   mostrarPassword = false;
   cargando = false;
   loadingText = 'Verificando credenciales...';
+
+  stats = {
+    labsActivos: 0,
+    reservasMes: 0,
+    usuariosActivos: 0,
+    equiposRegistrados: 0
+  };
 
   private loadingMessages = [
     'Verificando credenciales...',
@@ -31,7 +39,8 @@ export class LoginComponent {
   constructor(
     private router: Router,
     private auth: AuthService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private http: HttpClient
   ) {}
 
   togglePassword(): void {
@@ -62,6 +71,12 @@ export class LoginComponent {
 
     this.auth.login(this.username, this.password).subscribe({
       next: () => {
+        if (this.recordarme) {
+          localStorage.setItem('clab_usuario_recordado', this.username);
+        } else {
+          localStorage.removeItem('clab_usuario_recordado');
+        }
+
         clearInterval(msgInterval);
         this.loadingText = '¡Bienvenido!';
         this.cdr.detectChanges();
@@ -92,6 +107,30 @@ export class LoginComponent {
           this.triggerShake();
         }, 1200);
       }
+    });
+  }
+
+  ngOnInit(): void {
+    this.cargarEstadisticas();
+    this.cargarRecordado();
+  }
+
+  cargarRecordado(): void {
+    const usuarioGuardado = localStorage.getItem('clab_usuario_recordado');
+    if (usuarioGuardado) {
+      this.username = usuarioGuardado;
+      this.recordarme = true;
+      this.cdr.detectChanges();
+    }
+  }
+
+  cargarEstadisticas(): void {
+    this.http.get<any>('http://localhost:8080/estadisticas/login').subscribe({
+      next: (data) => {
+        this.stats = data;
+        this.cdr.detectChanges();
+      },
+      error: () => {} // silencioso, no afecta el login
     });
   }
 
