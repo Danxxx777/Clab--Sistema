@@ -8,7 +8,7 @@ export interface UsuarioRequest {
   apellidos: string;
   email: string;
   telefono?: string;
-  contrasenia: string;
+  contrasenia?: string;
   idsRoles: number[];
   usuario?: string;
 }
