@@ -55,6 +55,11 @@ export class LaboratoriosComponent implements OnInit {
   mostrarDetalleSede = false;
   sedeDetalle: Sede | null = null;
 
+  mostrarDetalleLab = false;
+  labDetalle: Laboratorio | null = null;
+  mostrarDetalleEncargado = false;
+  encargadoDetalle: EncargadoLaboratorio | null = null;
+
   constructor(
     private router: Router,
     private sedeService: SedeService,
@@ -289,12 +294,9 @@ export class LaboratoriosComponent implements OnInit {
     };
     if (this.modoEdicion && this.formularioLab.cod_laboratorio) {
       this.laboratorioService.editar(this.formularioLab.cod_laboratorio, labData).subscribe({
-        next: (labActualizado) => {
-          const m = this.mapLabActualizado(labActualizado);
-          this.laboratorios[this.indiceEdicion] = m;
-          this.laboratoriosFiltrados = [...this.laboratorios];
-          this.cdr.detectChanges();
+        next: () => {
           this.cerrarModal();
+          this.cargarLaboratorios();
           this.mostrarNotificacion('Laboratorio actualizado correctamente');
         },
         error: () => this.mostrarNotificacion('Error al editar el laboratorio', 'error')
@@ -459,10 +461,8 @@ export class LaboratoriosComponent implements OnInit {
     } else if (this.tipoModal === 'sede' && this.itemParaEliminar.idSede) {
       this.sedeService.eliminar(this.itemParaEliminar.idSede).subscribe({
         next: () => {
-          this.sedes.splice(this.indiceParaEliminar, 1);
-          this.filtrarSedes();
-          this.cdr.detectChanges();
           this.cerrarModalConfirmar();
+          this.cargarSedes();
           this.mostrarNotificacion('🗑️ Sede eliminada exitosamente');
         },
         error: () => this.mostrarNotificacion('❌ Error al eliminar la sede', 'error')
@@ -482,10 +482,26 @@ export class LaboratoriosComponent implements OnInit {
   }
 
   verDetalle(item: any): void {
-    if (this.tabActiva === 1) {
+    if (this.tabActiva === 0) {
+      this.labDetalle = item;
+      this.mostrarDetalleLab = true;
+    } else if (this.tabActiva === 1) {
       this.sedeDetalle = item;
       this.mostrarDetalleSede = true;
+    } else if (this.tabActiva === 2) {
+      this.encargadoDetalle = item;
+      this.mostrarDetalleEncargado = true;
     }
+  }
+
+  cerrarDetalleLab(): void {
+    this.mostrarDetalleLab = false;
+    this.labDetalle = null;
+  }
+
+  cerrarDetalleEncargado(): void {
+    this.mostrarDetalleEncargado = false;
+    this.encargadoDetalle = null;
   }
 
   cerrarDetalleSede(): void {
