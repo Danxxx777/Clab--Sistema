@@ -246,6 +246,22 @@ export class ReservarComponent implements OnInit {
     });
   }
 
+  filtroEstadoActivo = '';
+
+  filtrarPorEstado(estado: string): void {
+    if (this.filtroEstadoActivo === estado) {
+      this.filtroEstadoActivo = '';
+      this.reservasFiltradas = [...this.reservas];
+    } else {
+      this.filtroEstadoActivo = estado;
+      this.reservasFiltradas = estado === 'Total'
+        ? [...this.reservas]
+        : this.reservas.filter(r => r.estado === estado);
+    }
+    this.paginaActual = 1;
+    this.cdr.detectChanges();
+  }
+
   confirmarCancelacion(): void {
     if (!this.formularioCancelacion.motivo_cancelacion?.trim()) {
       this.mostrarNotificacion('El motivo de cancelación es obligatorio', 'error');
@@ -300,7 +316,7 @@ export class ReservarComponent implements OnInit {
       descripcion: this.formularioReserva.descripcion
     };
     if (this.modoEdicion && this.indexSeleccionado !== null) {
-      const id = this.reservas[this.indexSeleccionado].id_reserva;
+      const id = this.formularioReserva.id_reserva;
       this.reservaService.actualizar(id, dto).subscribe({
         next: () => { this.cargarReservas(); this.cerrarModal(); this.mostrarNotificacion('✅ Reserva actualizada correctamente'); },
         error: () => this.mostrarNotificacion('❌ Error al actualizar la reserva', 'error')
@@ -320,7 +336,8 @@ export class ReservarComponent implements OnInit {
 
   editarReserva(res: Reserva, index: number): void {
     this.modoEdicion = true; this.tipoModal = 'reserva';
-    this.mostrarModal = true; this.indexSeleccionado = index;
+    this.mostrarModal = true;
+    this.indexSeleccionado = this.reservas.findIndex(r => r.id_reserva === res.id_reserva);
     this.formularioReserva = { ...res };
   }
 
@@ -362,17 +379,19 @@ export class ReservarComponent implements OnInit {
       : this.reservaService.listar();
     obs.subscribe({
       next: (data) => {
-        this.reservas = data.map(r => ({
-          id_reserva: r.idReserva, cod_laboratorio: r.codLaboratorio,
-          nombre_laboratorio: r.nombreLaboratorio, fecha_reserva: r.fechaReserva,
-          fecha_solicitud: r.fechaSolicitud, hora_inicio: r.horaInicio, hora_fin: r.horaFin,
-          id_asignatura: r.idAsignatura, nombre_asignatura: r.nombreAsignatura || '-',
-          id_periodo: r.idPeriodo, nombre_periodo: r.nombrePeriodo,
-          numero_estudiantes: r.numeroEstudiantes, id_tipo_reserva: r.idTipoReserva,
-          nombre_tipo: r.nombreTipoReserva || '-', id_usuario: r.idUsuario,
-          estado: r.estado as 'Pendiente' | 'Aprobada' | 'Cancelada' | 'Completada' | 'Rechazada',
-          descripcion: r.descripcion || '', motivo: r.motivo
-        }));
+        this.reservas = data
+          .filter(r => r.estado !== 'Cancelada')
+          .map(r => ({
+            id_reserva: r.idReserva, cod_laboratorio: r.codLaboratorio,
+            nombre_laboratorio: r.nombreLaboratorio, fecha_reserva: r.fechaReserva,
+            fecha_solicitud: r.fechaSolicitud, hora_inicio: r.horaInicio, hora_fin: r.horaFin,
+            id_asignatura: r.idAsignatura, nombre_asignatura: r.nombreAsignatura || '-',
+            id_periodo: r.idPeriodo, nombre_periodo: r.nombrePeriodo,
+            numero_estudiantes: r.numeroEstudiantes, id_tipo_reserva: r.idTipoReserva,
+            nombre_tipo: r.nombreTipoReserva || '-', id_usuario: r.idUsuario,
+            estado: r.estado as 'Pendiente' | 'Aprobada' | 'Cancelada' | 'Completada' | 'Rechazada',
+            descripcion: r.descripcion || '', motivo: r.motivo
+          }));
         this.reservasFiltradas = [...this.reservas];
         this.cdr.detectChanges();
       },

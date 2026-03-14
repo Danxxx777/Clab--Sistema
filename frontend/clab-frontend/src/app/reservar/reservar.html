@@ -87,9 +87,6 @@
       </div>
     }
   </div>
-  <div class="drawer-footer">
-    <button class="btn-logout-drawer" (click)="logout()">🚪 Cerrar sesión</button>
-  </div>
 </div>
 
 <!-- ══ CONTENIDO PRINCIPAL ════════════════════════════════════════════════ -->
@@ -107,19 +104,27 @@
 
   <!-- STATS — solo visible en tabs Reservas y Tipos -->
   <div class="stats-bar" *ngIf="tabActiva === 1 || tabActiva === 2">
-    <div class="stat-card">
+    <div class="stat-card"
+         [class.stat-active]="filtroEstadoActivo === 'Total'"
+         (click)="filtrarPorEstado('Total')" style="cursor:pointer">
       <div class="stat-icon sc-blue">📋</div>
       <div class="stat-info"><span class="stat-num">{{ reservas.length }}</span><span class="stat-label">Total</span></div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card"
+         [class.stat-active]="filtroEstadoActivo === 'Pendiente'"
+         (click)="filtrarPorEstado('Pendiente')" style="cursor:pointer">
       <div class="stat-icon sc-amber">⏳</div>
       <div class="stat-info"><span class="stat-num">{{ totalPorEstado('Pendiente') }}</span><span class="stat-label">Pendientes</span></div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card"
+         [class.stat-active]="filtroEstadoActivo === 'Aprobada'"
+         (click)="filtrarPorEstado('Aprobada')" style="cursor:pointer">
       <div class="stat-icon sc-green">✅</div>
       <div class="stat-info"><span class="stat-num">{{ totalPorEstado('Aprobada') }}</span><span class="stat-label">Aprobadas</span></div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card"
+         [class.stat-active]="filtroEstadoActivo === 'Rechazada'"
+         (click)="filtrarPorEstado('Rechazada')" style="cursor:pointer">
       <div class="stat-icon sc-red">🚫</div>
       <div class="stat-info"><span class="stat-num">{{ totalPorEstado('Rechazada') }}</span><span class="stat-label">Rechazadas</span></div>
     </div>
@@ -327,7 +332,12 @@
             <td>
               <div class="action-buttons">
                 <button class="btn-action btn-ver" (click)="verDetalle(res)">Ver</button>
-                <button class="btn-action btn-editar" (click)="editarReserva(res, i)">Editar</button>
+                <button class="btn-action btn-editar"
+                        (click)="editarReserva(res, i)"
+                        [disabled]="res.estado !== 'Pendiente'"
+                        [title]="res.estado !== 'Pendiente' ? 'Solo se pueden editar reservas pendientes' : ''">
+                  Editar
+                </button>
                 <button class="btn-action btn-aprobar" *ngIf="res.estado === 'Pendiente'" (click)="aprobarReserva(res)">Aprobar</button>
                 <button class="btn-action btn-rechazar" *ngIf="res.estado === 'Pendiente'" (click)="rechazarReserva(res)">Rechazar</button>
                 <button class="btn-action btn-cancelar-res" *ngIf="res.estado === 'Aprobada'" (click)="abrirModalCancelar(res, i)">Cancelar</button>
