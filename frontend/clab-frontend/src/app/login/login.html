@@ -1,5 +1,21 @@
 <div class="login-page">
 
+  <!-- Partículas flotantes de fondo -->
+  <div class="particles">
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+  </div>
+
   <!-- OVERLAY DE CARGA -->
   <div class="loading-overlay" *ngIf="cargando">
     <div class="loading-content">
@@ -17,7 +33,13 @@
   </div>
 
   <div class="login-container" [class.blur-out]="cargando">
+
+    <!-- PANEL IZQUIERDO -->
     <div class="login-left">
+      <div class="scan-line"></div>
+      <div class="corner-tl"></div>
+      <div class="corner-br"></div>
+
       <div class="brand-content">
         <div class="logo">
           <h1>CLAB</h1>
@@ -29,13 +51,34 @@
         <p class="tagline">
           Administra reservas, equipos y reportes de manera eficiente y profesional
         </p>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-value">{{ stats.labsActivos }}</span>
+            <span class="stat-label">Labs activos</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ stats.reservasMes }}</span>
+            <span class="stat-label">Reservas este mes</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ stats.usuariosActivos }}</span>
+            <span class="stat-label">Usuarios registrados</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ stats.equiposRegistrados }}</span>
+            <span class="stat-label">Equipos registrados</span>
+          </div>
+        </div>
       </div>
     </div>
 
+    <!-- PANEL DERECHO -->
     <div class="login-right">
       <div class="login-form-container">
+
         <div class="form-header">
-          <h2>Bienvenido</h2>
+          <!-- typewriter: el h2 se anima via CSS -->
+          <h2 class="typewriter">Bienvenido</h2>
           <p>Ingresa tus credenciales para acceder al sistema</p>
         </div>
 
@@ -50,14 +93,18 @@
               <span class="label-icon">👤</span>
               Usuario
             </label>
-            <input
-              type="text"
-              id="username"
-              [(ngModel)]="username"
-              name="username"
-              placeholder="Ingresa tu usuario"
-              [disabled]="cargando"
-              required>
+            <div class="input-neon-wrap">
+              <input
+                type="text"
+                id="username"
+                [(ngModel)]="username"
+                name="username"
+                placeholder="Ingresa tu usuario"
+                [disabled]="cargando"
+                required
+              />
+              <span class="neon-line"></span>
+            </div>
           </div>
 
           <div class="form-group password-group">
@@ -65,16 +112,20 @@
               <img src="/candado.png" alt="Candado" class="label-icon-img"/>
               Contraseña
             </label>
-            <div class="password-container">
-              <input
-                [attr.type]="mostrarPassword ? 'text' : 'password'"
-                id="password"
-                [(ngModel)]="password"
-                name="password"
-                placeholder="Ingresa tu contraseña"
-                [disabled]="cargando"
-                required/>
-              <img src="/ojo.png" alt="Mostrar contraseña" class="eye-icon" (click)="togglePassword()"/>
+            <div class="input-neon-wrap">
+              <div class="password-container">
+                <input
+                  [attr.type]="mostrarPassword ? 'text' : 'password'"
+                  id="password"
+                  [(ngModel)]="password"
+                  name="password"
+                  placeholder="Ingresa tu contraseña"
+                  [disabled]="cargando"
+                  required
+                />
+                <img src="/ojo.png" alt="Mostrar contraseña" class="eye-icon" (click)="togglePassword()"/>
+              </div>
+              <span class="neon-line"></span>
             </div>
           </div>
 
@@ -89,7 +140,13 @@
             </a>
           </div>
 
-          <button type="button" class="btn-login" (click)="login()" [disabled]="cargando" [class.loading]="cargando">
+          <button
+            type="button"
+            class="btn-login"
+            (click)="login()"
+            [disabled]="cargando"
+            [class.loading]="cargando"
+          >
             <span class="btn-text" *ngIf="!cargando">Iniciar Sesión</span>
             <span class="btn-spinner" *ngIf="cargando">
               <span class="dot"></span>
@@ -102,6 +159,7 @@
         <div class="form-footer">
           <p>¿Necesitas ayuda? <a href="#">Contacta soporte técnico</a></p>
         </div>
+
       </div>
     </div>
   </div>
