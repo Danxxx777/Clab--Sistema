@@ -139,7 +139,7 @@
           <thead>
           <tr>
             <th>FOTO</th><th>CÓDIGO</th><th>NOMBRE</th><th>UBICACIÓN</th>
-            <th>SEDE</th><th>CAPACIDAD</th><th>EQUIPOS</th><th>ENCARGADO</th>
+            <th>SEDE</th><th>CAPACIDAD</th><th>EQUIPOS</th>
             <th>ESTADO</th><th>ACCIONES</th>
           </tr>
           </thead>
@@ -157,7 +157,6 @@
             <td>{{ lab.nombre_sede }}</td>
             <td>{{ lab.capacidad_estudiantes }} estudiantes</td>
             <td>{{ lab.numero_equipos }} equipos</td>
-            <td>{{ lab.encargado_nombre }}</td>
             <td>
                 <span class="badge" [ngClass]="getEstadoBadgeClass(lab.estado_lab ?? 'Disponible')">
                   {{ lab.estado_lab ?? 'Disponible' }}
@@ -172,7 +171,7 @@
             </td>
           </tr>
           <tr *ngIf="laboratoriosFiltrados.length === 0">
-            <td colspan="10" class="empty-message">No hay laboratorios registrados</td>
+            <td colspan="9" class="empty-message">No hay laboratorios registrados</td>
           </tr>
           </tbody>
         </table>
@@ -431,10 +430,6 @@
       <div class="campo-detalle">
         <label>EQUIPOS</label>
         <div class="valor-detalle">{{ labDetalle.numero_equipos }} equipos</div>
-      </div>
-      <div class="campo-detalle">
-        <label>ENCARGADO</label>
-        <div class="valor-detalle">{{ labDetalle.encargado_nombre || 'Sin encargado' }}</div>
       </div>
       <div class="campo-detalle">
         <label>ESTADO</label>
