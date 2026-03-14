@@ -400,6 +400,89 @@
   </div>
 </div>
 
+<!-- MODAL: DETALLE DE LABORATORIO -->
+<div class="modal-overlay" *ngIf="mostrarDetalleLab">
+  <div class="modal modal-detalle-sede" (click)="$event.stopPropagation()">
+    <div class="modal-header-detalle">
+      <h2>Detalles del Laboratorio</h2>
+      <button class="btn-close-detalle" (click)="cerrarDetalleLab()">×</button>
+    </div>
+    <div class="modal-body-detalle" *ngIf="labDetalle">
+      <div class="campo-detalle">
+        <label>CÓDIGO</label>
+        <div class="valor-detalle">{{ labDetalle.cod_laboratorio }}</div>
+      </div>
+      <div class="campo-detalle">
+        <label>NOMBRE</label>
+        <div class="valor-detalle">{{ labDetalle.nombre }}</div>
+      </div>
+      <div class="campo-detalle">
+        <label>UBICACIÓN</label>
+        <div class="valor-detalle">{{ labDetalle.ubicacion }}</div>
+      </div>
+      <div class="campo-detalle">
+        <label>SEDE</label>
+        <div class="valor-detalle">{{ labDetalle.nombre_sede }}</div>
+      </div>
+      <div class="campo-detalle">
+        <label>CAPACIDAD</label>
+        <div class="valor-detalle">{{ labDetalle.capacidad_estudiantes }} estudiantes</div>
+      </div>
+      <div class="campo-detalle">
+        <label>EQUIPOS</label>
+        <div class="valor-detalle">{{ labDetalle.numero_equipos }} equipos</div>
+      </div>
+      <div class="campo-detalle">
+        <label>ENCARGADO</label>
+        <div class="valor-detalle">{{ labDetalle.encargado_nombre || 'Sin encargado' }}</div>
+      </div>
+      <div class="campo-detalle">
+        <label>ESTADO</label>
+        <div class="valor-detalle">{{ labDetalle.estado_lab }}</div>
+      </div>
+    </div>
+    <div class="modal-footer-detalle">
+      <button class="btn-cerrar-detalle" (click)="cerrarDetalleLab()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DETALLE DE ENCARGADO -->
+<div class="modal-overlay" *ngIf="mostrarDetalleEncargado">
+  <div class="modal modal-detalle-sede" (click)="$event.stopPropagation()">
+    <div class="modal-header-detalle">
+      <h2>Detalles del Encargado</h2>
+      <button class="btn-close-detalle" (click)="cerrarDetalleEncargado()">×</button>
+    </div>
+    <div class="modal-body-detalle" *ngIf="encargadoDetalle">
+      <div class="campo-detalle">
+        <label>NOMBRE</label>
+        <div class="valor-detalle">{{ encargadoDetalle.nombres }}</div>
+      </div>
+      <div class="campo-detalle">
+        <label>EMAIL</label>
+        <div class="valor-detalle">{{ encargadoDetalle.email }}</div>
+      </div>
+      <div class="campo-detalle">
+        <label>TELÉFONO</label>
+        <div class="valor-detalle">{{ encargadoDetalle.telefono }}</div>
+      </div>
+      <div class="campo-detalle">
+        <label>LABORATORIO</label>
+        <div class="valor-detalle">{{ encargadoDetalle.nombreLab }}</div>
+      </div>
+      <div class="campo-detalle">
+        <label>ESTADO</label>
+        <div class="valor-detalle">{{ encargadoDetalle.vigente ? 'Activo' : 'Inactivo' }}</div>
+      </div>
+    </div>
+    <div class="modal-footer-detalle">
+      <button class="btn-cerrar-detalle" (click)="cerrarDetalleEncargado()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+
 <!-- MODAL: ENCARGADO -->
 <div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'encargado'" >
   <div class="modal" (click)="$event.stopPropagation()">
