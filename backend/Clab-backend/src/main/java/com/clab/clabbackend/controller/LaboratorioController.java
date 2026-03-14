@@ -52,7 +52,7 @@ public class LaboratorioController {
     }
     // Lista todos los laboratorios
     @GetMapping("/listar")
-    public List<Laboratorio> listarLaboratorios() {
+    public List<LaboratorioDTO> listarLaboratorios() {
         return laboratorioService.listar();
     }
 
