@@ -3,6 +3,7 @@ package com.clab.clabbackend.services;
 import com.clab.clabbackend.dto.LaboratorioDTO;
 import com.clab.clabbackend.entities.Laboratorio;
 import com.clab.clabbackend.entities.Sede;
+import com.clab.clabbackend.repository.EncargadoLaboratorioRepository;
 import com.clab.clabbackend.repository.LaboratorioRepository;
 import com.clab.clabbackend.repository.SedeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import jakarta.persistence.EntityManager;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class LaboratorioService {
@@ -22,6 +24,9 @@ public class LaboratorioService {
     private SedeRepository sedeRepository;
 
     @Autowired
+    private EncargadoLaboratorioRepository encargadoLaboratorioRepository;
+
+    @Autowired
     private EntityManager entityManager;
 
     private void registrarAuditoria(Integer actorId, String actorUsuario, String accion,
@@ -31,18 +36,17 @@ public class LaboratorioService {
                         "INSERT INTO usuarios.u_auditoria " +
                                 "(id_usuario, usuario, accion, modulo, tabla_afectada, id_registro_afectado, " +
                                 "descripcion, ip, resultado, fecha_hora, datos_anteriores, datos_nuevos) " +
-                                "VALUES (:actorId, :actorUsuario, :accion, 'LABORATORIOS', 'laboratorio', :idRegistro, " +
-                                ":descripcion, :ip, :resultado, NOW(), :datosAntes, :datosDespues)"
+                                "VALUES (?1, ?2, ?3, 'LABORATORIOS', 'laboratorio', ?4, ?5, ?6, ?7, NOW(), ?8, ?9)"
                 )
-                .setParameter("actorId",      actorId)
-                .setParameter("actorUsuario", actorUsuario)
-                .setParameter("accion",       accion)
-                .setParameter("idRegistro",   idRegistro)
-                .setParameter("descripcion",  descripcion)
-                .setParameter("ip",           ip)
-                .setParameter("resultado",    resultado)
-                .setParameter("datosAntes",   datosAntes)
-                .setParameter("datosDespues", datosDespues)
+                .setParameter(1, actorId)
+                .setParameter(2, actorUsuario)
+                .setParameter(3, accion)
+                .setParameter(4, idRegistro)
+                .setParameter(5, descripcion)
+                .setParameter(6, ip)
+                .setParameter(7, resultado)
+                .setParameter(8, datosAntes)
+                .setParameter(9, datosDespues)
                 .executeUpdate();
     }
 
@@ -52,14 +56,42 @@ public class LaboratorioService {
                         "\"capacidad_estudiantes\":%d,\"numero_equipos\":%d," +
                         "\"descripcion\":\"%s\",\"estado\":\"%s\",\"sede_id\":%d}",
                 lab.getCodLaboratorio(),
-                lab.getNombreLab()       != null ? lab.getNombreLab()       : "",
-                lab.getUbicacion()       != null ? lab.getUbicacion()       : "",
+                lab.getNombreLab()            != null ? lab.getNombreLab()            : "",
+                lab.getUbicacion()            != null ? lab.getUbicacion()            : "",
                 lab.getCapacidadEstudiantes() != null ? lab.getCapacidadEstudiantes() : 0,
-                lab.getNumeroEquipos()   != null ? lab.getNumeroEquipos()   : 0,
-                lab.getDescripcion()     != null ? lab.getDescripcion()     : "",
-                lab.getEstadoLab()       != null ? lab.getEstadoLab()       : "",
-                lab.getSede()            != null ? lab.getSede().getIdSede() : 0
+                lab.getNumeroEquipos()        != null ? lab.getNumeroEquipos()        : 0,
+                lab.getDescripcion()          != null ? lab.getDescripcion()          : "",
+                lab.getEstadoLab()            != null ? lab.getEstadoLab()            : "",
+                lab.getSede()                 != null ? lab.getSede().getIdSede()     : 0
         );
+    }
+
+    // ─── LISTAR ──────────────────────────────────────────────────────────────
+    public List<LaboratorioDTO> listar() {
+        return laboratorioRepository.findAll().stream().map(lab -> {
+            LaboratorioDTO dto = new LaboratorioDTO();
+            dto.setCodLaboratorio(lab.getCodLaboratorio());
+            dto.setNombreLab(lab.getNombreLab());
+            dto.setUbicacion(lab.getUbicacion());
+            dto.setCapacidadEstudiantes(lab.getCapacidadEstudiantes());
+            dto.setNumeroEquipos(lab.getNumeroEquipos());
+            dto.setDescripcion(lab.getDescripcion());
+            dto.setEstadoLab(lab.getEstadoLab());
+            dto.setIdSede(lab.getSede() != null ? lab.getSede().getIdSede() : null);
+            dto.setNombreSede(lab.getSede() != null ? lab.getSede().getNombre() : null);
+
+            encargadoLaboratorioRepository.findEncargadoVigente(lab.getCodLaboratorio())
+                    .ifPresent(enc -> {
+                        if (enc.getUsuario() != null) {
+                            String nombre = ((enc.getUsuario().getNombres() != null ? enc.getUsuario().getNombres() : "") +
+                                    " " +
+                                    (enc.getUsuario().getApellidos() != null ? enc.getUsuario().getApellidos() : "")).trim();
+                            dto.setEncargadoNombre(nombre);
+                        }
+                    });
+
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     // ─── CREAR ───────────────────────────────────────────────────────────────
@@ -90,10 +122,6 @@ public class LaboratorioService {
                     ip, "FALLIDO", null, null, null);
             throw e;
         }
-    }
-
-    public List<Laboratorio> listar() {
-        return laboratorioRepository.findAll();
     }
 
     // ─── ACTUALIZAR ──────────────────────────────────────────────────────────
@@ -128,16 +156,15 @@ public class LaboratorioService {
             throw e;
         }
     }
+
     private Integer generarNuevoCodigo() {
         List<Laboratorio> laboratorios = laboratorioRepository.findAll();
-
-        if (laboratorios.isEmpty()) {
-            return 1;
-        }
-        Integer maxCodigo = laboratorios.stream().map(Laboratorio::getCodLaboratorio).max(Integer::compareTo).orElse(0);
-        return maxCodigo + 1;
+        if (laboratorios.isEmpty()) return 1;
+        return laboratorios.stream()
+                .map(Laboratorio::getCodLaboratorio)
+                .max(Integer::compareTo)
+                .orElse(0) + 1;
     }
-
 
     // ─── ELIMINAR ────────────────────────────────────────────────────────────
     @Transactional
