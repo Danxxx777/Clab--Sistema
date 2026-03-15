@@ -1,17 +1,19 @@
 import { Injectable } from '@angular/core';
 import { ExportOptions } from '../interfaces/Reportar.model';
 
+// ─── Paleta CLAB — fondo blanco, acentos negro + neón ─────────────────────────
 const C = {
-  black:   [17,  24,  39]  as [number,number,number],
+  black:   [17,  17,  17]  as [number,number,number],   // #111111
+  neon:    [57,  255, 20]  as [number,number,number],   // #39ff14
   white:   [255, 255, 255] as [number,number,number],
-  bg:      [250, 250, 250] as [number,number,number],
-  chipBg:  [244, 244, 244] as [number,number,number],
+  bg:      [250, 250, 250] as [number,number,number],   // fondo tarjetas
+  chipBg:  [245, 245, 245] as [number,number,number],
   gray100: [238, 238, 238] as [number,number,number],
   gray200: [224, 224, 224] as [number,number,number],
-  gray300: [208, 208, 208] as [number,number,number],
-  gray400: [170, 170, 170] as [number,number,number],
-  gray500: [136, 136, 136] as [number,number,number],
-  gray700: [85,  85,  85]  as [number,number,number],
+  gray300: [200, 200, 200] as [number,number,number],
+  gray400: [160, 160, 160] as [number,number,number],
+  gray500: [120, 120, 120] as [number,number,number],
+  gray700: [70,  70,  70]  as [number,number,number],
   badgeBg: [240, 240, 240] as [number,number,number],
 };
 
@@ -44,7 +46,6 @@ export class ExportPdfService {
 
     const fillR = (x: number, y: number, w: number, h: number, r: number, rgb: [number,number,number]) => {
       if (w <= 0 || h <= 0) return;
-      // radio no puede ser mayor que la mitad del lado menor
       const safeR = Math.min(r, w / 2, h / 2);
       doc.setFillColor(rgb[0], rgb[1], rgb[2]);
       (doc as any).roundedRect(x, y, w, h, safeR, safeR, 'F');
@@ -57,7 +58,8 @@ export class ExportPdfService {
       (doc as any).roundedRect(x, y, w, h, safeR, safeR, 'S');
     };
 
-    const fillBorderR = (x: number, y: number, w: number, h: number, r: number, fillRgb: [number,number,number], borderRgb: [number,number,number], lw = 0.3) => {
+    const fillBorderR = (x: number, y: number, w: number, h: number, r: number,
+                         fillRgb: [number,number,number], borderRgb: [number,number,number], lw = 0.3) => {
       const safeR = Math.min(r, w / 2, h / 2);
       doc.setFillColor(fillRgb[0], fillRgb[1], fillRgb[2]);
       doc.setDrawColor(borderRgb[0], borderRgb[1], borderRgb[2]);
@@ -71,19 +73,21 @@ export class ExportPdfService {
       doc.line(x1, y, x2, y);
     };
 
+    const vline = (x: number, y1: number, y2: number, rgb: [number,number,number], lw = 0.3) => {
+      doc.setDrawColor(rgb[0], rgb[1], rgb[2]);
+      doc.setLineWidth(lw);
+      doc.line(x, y1, x, y2);
+    };
+
     const cell = (t: string, x: number, ry: number, rh: number, o?: any) =>
       doc.text(String(t), x, ry + rh / 2, { baseline: 'middle', ...o });
 
     const op = (v: number) => doc.setGState(new (doc as any).GState({ opacity: v }));
 
-
     const drawBar = (x: number, y: number, maxW: number, trackH: number, ratio: number, r: number) => {
-      // Track completo gris
-      fillR(x, y, maxW, trackH, r, C.gray200);
-      // Barra negra: ratio entre 0 y 1, ancho máximo = maxW - radio*2 para no salirse
+      fillR(x, y, maxW, trackH, r, C.gray100);
       const bW = Math.min(Math.max(ratio, 0), 1) * maxW;
       if (bW > 0) {
-        // Si la barra es casi completa, usamos maxW exacto para que cierre bien
         const finalW = bW >= maxW - 0.5 ? maxW : bW;
         fillR(x, y, finalW, trackH, r, C.black);
       }
@@ -98,8 +102,10 @@ export class ExportPdfService {
       for (let p = 1; p <= total; p++) {
         doc.setPage(p);
         fill(0, PH - FOOTER_H, PW, FOOTER_H, C.black);
+        // Línea neón sobre el footer
+        hline(0, PH - FOOTER_H, PW, C.neon, 0.5);
         setFont('normal', 6, C.gray400);
-        op(0.5);
+        op(0.6);
         cell('CLAB — Sistema de Laboratorios · UTEQ', ML, PH - FOOTER_H, FOOTER_H);
         cell(
           `Generado: ${new Date().toLocaleDateString('es-EC')} · Pág. ${p} / ${total}`,
@@ -109,39 +115,59 @@ export class ExportPdfService {
       }
     };
 
-
-    const HEADER_H = 52;
+    // ── HEADER ─────────────────────────────────────────────────────────────────
+    const HEADER_H = 54;
     fill(0, 0, PW, HEADER_H, C.black);
 
-    setFont('bold', 24, C.white);
-    doc.text('CLAB', ML, 16);
+    // Línea neón inferior del header
+    hline(0, HEADER_H, PW, C.neon, 0.8);
+
+    // ── Logo UTEQ ──────────────────────────────────────────────────────────────
+    try {
+      const resp = await fetch('/LogoUTEQ.png');
+      const blob = await resp.blob();
+      const b64: string = await new Promise(res => {
+        const r = new FileReader();
+        r.onloadend = () => res((r.result as string).split(',')[1]);
+        r.readAsDataURL(blob);
+      });
+      doc.addImage(b64, 'PNG', ML, 6, 22, 22);
+    } catch {}
+
+    // Brand CLAB
+    setFont('bold', 22, C.neon);
+    doc.text('CLAB', ML + 26, 15);
 
     setFont('normal', 7, C.white);
-    op(0.35);
-    doc.text('SISTEMA DE LABORATORIOS  ·  UTEQ', ML, 22.5);
+    op(0.4);
+    doc.text('SISTEMA DE LABORATORIOS  ·  UTEQ', ML + 26, 21);
     op(1);
 
+    // Fecha arriba derecha
     setFont('normal', 7, C.white);
     op(0.35);
-    doc.text(new Date().toLocaleDateString('es-EC', { year:'numeric', month:'long', day:'numeric' }), PW - MR, 16, { align:'right' });
-    doc.text(new Date().toLocaleTimeString('es-EC', { hour:'2-digit', minute:'2-digit' }), PW - MR, 22.5, { align:'right' });
+    doc.text(new Date().toLocaleDateString('es-EC', { year:'numeric', month:'long', day:'numeric' }), PW - MR, 16, { align: 'right' });
+    doc.text(new Date().toLocaleTimeString('es-EC', { hour:'2-digit', minute:'2-digit' }), PW - MR, 22.5, { align: 'right' });
     op(1);
 
+    // Separador sutil
     op(0.1);
-    hline(ML, 28, PW - MR, C.white, 0.3);
+    hline(ML, 31, PW - MR, C.white, 0.3);
     op(1);
 
+    // Sub-label REPORTE
     setFont('normal', 7, C.white);
-    op(0.35);
+    op(0.4);
     doc.text('REPORTE', ML, 35);
     op(1);
 
+    // Título del reporte
     setFont('bold', 16, C.white);
-    doc.text(opts.modulo.titulo, ML, 46);
+    doc.text(opts.modulo.titulo, ML, 47);
 
-
+    // ── CHIPS ──────────────────────────────────────────────────────────────────
     Y = HEADER_H;
-    const CHIP_BAND_H = 14;
+    const CHIP_BAND_H = 13;
 
     fill(0, Y, PW, CHIP_BAND_H, C.chipBg);
     hline(0, Y + CHIP_BAND_H, PW, C.gray200, 0.4);
@@ -176,30 +202,40 @@ export class ExportPdfService {
 
     Y = Y + CHIP_BAND_H + 10;
 
-
+    // ── STATS ──────────────────────────────────────────────────────────────────
     if (opts.statsModulo.length > 0) {
-      checkPage(40);
+      checkPage(42);
 
       setFont('bold', 7, C.gray400);
       doc.text('RESUMEN DEL PERÍODO', ML, Y);
-      Y += 5;
+      Y += 6;
 
       const count = Math.min(opts.statsModulo.length, 4);
       const GAP   = 6;
       const statW = (CW - (count - 1) * GAP) / count;
-      const statH = 20;
+      const statH = 22;
       let   sx    = ML;
 
       opts.statsModulo.forEach((s, i) => {
         if (i >= 4) return;
-        fillR(sx, Y, statW, statH, 2, C.black);
-        const labelStr = (s.label.length > 20 ? s.label.substring(0, 19) + '…' : s.label).toUpperCase();
-        setFont('normal', 5.5, C.white);
-        op(0.4);
-        doc.text(labelStr, sx + 6, Y + 5);
-        op(1);
-        setFont('bold', 20, C.white);
-        doc.text(String(s.valor), sx + 6, Y + 15);
+
+        // Tarjeta fondo claro con borde
+        fillBorderR(sx, Y, statW, statH, 2, C.bg, C.gray200, 0.3);
+
+        // Línea neón superior de cada tarjeta
+        fillR(sx, Y, statW, 2, 1, C.neon);
+
+        // Label arriba izquierda
+        setFont('normal', 5.5, C.gray500);
+        doc.text(
+          (s.label.length > 20 ? s.label.substring(0, 19) + '…' : s.label).toUpperCase(),
+          sx + 6, Y + 8
+        );
+
+        // Número centrado en negro
+        setFont('bold', 18, C.black);
+        doc.text(String(s.valor), sx + statW / 2, Y + 18, { align: 'center' });
+
         sx += statW + GAP;
       });
 
@@ -208,13 +244,12 @@ export class ExportPdfService {
 
     // ── GRÁFICAS ───────────────────────────────────────────────────────────────
     if (opts.datosGrafica.length > 0 || opts.datosDistribucion.length > 0) {
-
       const CHART_HEAD_H = 10;
       const ROW_H        = 15;
       const CHART_PAD_T  = 4;
       const CHART_PAD_B  = 6;
-      const BAR_H        = 2.5;  // altura del track
-      const BAR_R        = 1;    // radio de las esquinas de la barra
+      const BAR_H        = 2.5;
+      const BAR_R        = 1;
       const maxRows      = Math.max(opts.datosGrafica.length, opts.datosDistribucion.length);
       checkPage(12 + CHART_HEAD_H + CHART_PAD_T + maxRows * ROW_H + CHART_PAD_B);
 
@@ -225,54 +260,53 @@ export class ExportPdfService {
       const halfW  = (CW - 5) / 2;
       const gY     = Y;
       const R_CARD = 2;
-      const PAD_H  = 7;  // padding horizontal interno de la tarjeta
+      const PAD_H  = 7;
 
-      // ── Gráfica 1 ────────────────────────────────────────────────────────────
+      // Gráfica 1
       if (opts.datosGrafica.length > 0) {
         const g1H = CHART_HEAD_H + CHART_PAD_T + opts.datosGrafica.length * ROW_H + CHART_PAD_B;
 
         fillBorderR(ML, gY, halfW, g1H, R_CARD, C.bg, C.gray200, 0.3);
+
+        // Cabecera negra con línea neón inferior
         fillR(ML, gY, halfW, CHART_HEAD_H + R_CARD, R_CARD, C.black);
         fill(ML, gY + CHART_HEAD_H, halfW, R_CARD, C.black);
+        // hline(ML, gY + CHART_HEAD_H, ML + halfW, C.neon, 0.5);
 
         setFont('bold', 6, C.white);
-        op(0.7);
+        op(0.8);
         cell(opts.tituloGrafica1.toUpperCase(), ML + halfW / 2, gY + 2, CHART_HEAD_H - 2, { align: 'center' });
         op(1);
 
-        // ✅ maxVal del grupo para escalar relativamente
         const maxVal = Math.max(...opts.datosGrafica.map(d => Number(d.valor) || 0), 1);
-        // ✅ ancho del track = espacio disponible dentro de la tarjeta
         const bMaxW  = halfW - PAD_H * 2;
         const barX   = ML + PAD_H;
         let   bY     = gY + CHART_HEAD_H + CHART_PAD_T;
 
         opts.datosGrafica.forEach(item => {
-          const ratio = Number(item.valor) / maxVal; // 0..1
-
+          const ratio = Number(item.valor) / maxVal;
           setFont('normal', 6.5, C.gray700);
           doc.text(String(item.label), barX, bY + 3.5);
           setFont('bold', 6.5, C.black);
           doc.text(String(item.valor), ML + halfW - PAD_H, bY + 3.5, { align: 'right' });
-
-          // ✅ barra contenida dentro del track
           drawBar(barX, bY + 7, bMaxW, BAR_H, ratio, BAR_R);
-
           bY += ROW_H;
         });
       }
 
-      // ── Gráfica 2 ────────────────────────────────────────────────────────────
+      // Gráfica 2
       if (opts.datosDistribucion.length > 0) {
         const g2X = ML + halfW + 5;
         const g2H = CHART_HEAD_H + CHART_PAD_T + opts.datosDistribucion.length * ROW_H + CHART_PAD_B;
 
         fillBorderR(g2X, gY, halfW, g2H, R_CARD, C.bg, C.gray200, 0.3);
+
         fillR(g2X, gY, halfW, CHART_HEAD_H + R_CARD, R_CARD, C.black);
         fill(g2X, gY + CHART_HEAD_H, halfW, R_CARD, C.black);
+        // hline(g2X, gY + CHART_HEAD_H, g2X + halfW, C.neon, 0.5);
 
         setFont('bold', 6, C.white);
-        op(0.7);
+        op(0.8);
         cell(opts.tituloGrafica2.toUpperCase(), g2X + halfW / 2, gY + 2, CHART_HEAD_H - 2, { align: 'center' });
         op(1);
 
@@ -281,17 +315,12 @@ export class ExportPdfService {
         let   dY     = gY + CHART_HEAD_H + CHART_PAD_T;
 
         opts.datosDistribucion.forEach(item => {
-          // ✅ pct ya es 0-100, ratio = pct/100
           const ratio = Math.min(Number(item.pct) / 100, 1);
-
           setFont('normal', 6.5, C.gray700);
           doc.text(String(item.label), barX2, dY + 3.5);
           setFont('bold', 6.5, C.black);
           doc.text(`${item.pct}%`, g2X + halfW - PAD_H, dY + 3.5, { align: 'right' });
-
-          // ✅ barra contenida dentro del track
           drawBar(barX2, dY + 7, bMaxW2, BAR_H, ratio, BAR_R);
-
           dY += ROW_H;
         });
       }
@@ -318,13 +347,20 @@ export class ExportPdfService {
       const ROW_H  = 8;
       const R_TBL  = 2;
 
+      // Cabecera negra con línea neón inferior
       fillR(ML, Y, CW, HEAD_H + R_TBL, R_TBL, C.black);
       fill(ML, Y + HEAD_H, CW, R_TBL, C.black);
+      hline(ML, Y + HEAD_H, ML + CW, C.neon, 0.5);
 
       cols.forEach((col, i) => {
         setFont('bold', 6, C.white);
-        op(0.7);
+        op(0.8);
         cell(col.toUpperCase(), ML + i * colW + colW / 2, Y, HEAD_H, { align: 'center' });
+        // Separador vertical entre columnas
+        if (i > 0) {
+          op(0.15);
+          vline(ML + i * colW, Y, Y + HEAD_H, C.white, 0.2);
+        }
         op(1);
       });
       Y += HEAD_H;

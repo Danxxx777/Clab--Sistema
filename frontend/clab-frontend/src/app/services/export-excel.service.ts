@@ -1,27 +1,20 @@
 import { Injectable } from '@angular/core';
-import { StatModulo, DatoGrafica, ModuloConfig, ExportOptions } from '../interfaces/Reportar.model';
+import { ExportOptions } from '../interfaces/Reportar.model';
 
-// ─── Paleta de colores ARGB para xlsx ────────────────────────────────────────
-const COLORS: Record<string, string> = {
-  // Módulos → color primario
-  neon:     'FF16A34A',
-  verde:    'FF16A34A',
-  rojo:     'FFDC2626',
-  azul:     'FF2563EB',
-  naranja:  'FFEA580C',
-  cyan:     'FF0891B2',
-  amarillo: 'FFD97706',
-  morado:   'FF7C3AED',
-  // Grises y blancos
-  gray900:  'FF111827',
-  gray700:  'FF374151',
-  gray500:  'FF6B7280',
-  gray400:  'FF9CA3AF',
-  gray200:  'FFE5E7EB',
-  gray100:  'FFF3F4F6',
-  gray50:   'FFF9FAFB',
+const C = {
+  black:    'FF111111',
+  black2:   'FF1A1A1A',
+  black3:   'FF2A2A2A',
+  neon:     'FF39FF14',
+  neonDark: 'FF2ACC10',
   white:    'FFFFFFFF',
-  // Estado
+  gray50:   'FFF9FAFB',
+  gray100:  'FFF3F4F6',
+  gray200:  'FFE5E7EB',
+  gray400:  'FF9CA3AF',
+  gray500:  'FF6B7280',
+  gray700:  'FF374151',
+  gray900:  'FF111827',
   greenBg:  'FFD1FAE5',
   greenFg:  'FF065F46',
   orangeBg: 'FFFFEDD5',
@@ -30,324 +23,462 @@ const COLORS: Record<string, string> = {
   redFg:    'FF991B1B',
 };
 
+const W = 8;
+
 @Injectable({ providedIn: 'root' })
 export class ExportExcelService {
 
   async exportar(opts: ExportOptions): Promise<void> {
-    // Carga dinámica de SheetJS
-    const XLSX = await import('xlsx');
+    const ExcelJS = (await import('exceljs')).default ?? await import('exceljs');
+    const wb      = new ExcelJS.Workbook();
 
-    const wb = XLSX.utils.book_new();
-    const modColor = COLORS[opts.modulo.color] ?? COLORS['azul'];
+    let logoId: number | null = null;
+    try {
+      const resp = await fetch('/LogoUTEQ.png');
+      if (resp.ok) logoId = wb.addImage({ buffer: await resp.arrayBuffer(), extension: 'png' });
+    } catch { }
 
-    // ════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
     // HOJA 1 — RESUMEN
-    // ════════════════════════════════════════════════════════════════════════
-    {
-      const ws: any = {};
-      const merges: any[] = [];
-      let row = 0;
+    // ═══════════════════════════════════════════════════════
+    const ws = wb.addWorksheet('Resumen');
 
-      // ── Bloque título ────────────────────────────────────────────────────
-      const headerStyle = {
-        font:      { bold: true, sz: 18, color: { argb: COLORS['white'] }, name: 'Calibri' },
-        fill:      { patternType: 'solid', fgColor: { argb: modColor } },
-        alignment: { vertical: 'center', horizontal: 'left', indent: 1 },
-      };
-      this.setCell(ws, row, 0, `CLAB — Reporte: ${opts.modulo.titulo}`, headerStyle);
-      merges.push({ s: { r: row, c: 0 }, e: { r: row, c: 5 } });
-      row++;
+    // Columnas: 4 pares de columnas iguales para stats simétricas
+    // Las primeras 2 columnas son más anchas (etiqueta + valor del meta)
+    ws.columns = [
+      { width: 26 }, { width: 22 }, { width: 16 }, { width: 16 },
+      { width: 14 }, { width: 14 }, { width: 14 }, { width: 14 },
+    ];
 
-      // Sub-título descripción
-      const subStyle = {
-        font:      { italic: true, sz: 10, color: { argb: COLORS['gray500'] }, name: 'Calibri' },
-        fill:      { patternType: 'solid', fgColor: { argb: modColor } },
-        alignment: { vertical: 'center', horizontal: 'left', indent: 1 },
-      };
-      this.setCell(ws, row, 0, opts.modulo.desc, subStyle);
-      merges.push({ s: { r: row, c: 0 }, e: { r: row, c: 5 } });
-      row++;
+    let R = 1;
 
-      // Fila vacía
-      row++;
+    // ── CLAB header ───────────────────────────────────────────────────────
+    this.rowFill(ws, R, W, C.black);
+    ws.getRow(R).height = 40;
+    const cClab = ws.getCell(R, 1);
+    cClab.value     = 'CLAB';
+    cClab.font      = { bold: true, size: 22, color: { argb: C.neon }, name: 'Calibri' };
+    cClab.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+    ws.mergeCells(R, 1, R, W);
+    R++;
 
-      // ── Bloque meta-info ─────────────────────────────────────────────────
-      const metaLabel = { font: { bold: true, sz: 9, color: { argb: COLORS['gray500'] }, name: 'Calibri' }, fill: { patternType: 'solid', fgColor: { argb: COLORS['gray100'] } } };
-      const metaVal   = { font: { sz: 9, color: { argb: COLORS['gray900'] }, name: 'Calibri' },             fill: { patternType: 'solid', fgColor: { argb: COLORS['white'] }   } };
+    // ── Subtítulo ─────────────────────────────────────────────────────────
+    this.rowFill(ws, R, W, C.black);
+    ws.getRow(R).height = 16;
+    const cSub = ws.getCell(R, 1);
+    cSub.value     = 'SISTEMA DE LABORATORIOS  ·  UTEQ';
+    cSub.font      = { size: 9, color: { argb: C.gray500 }, name: 'Calibri' };
+    cSub.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+    ws.mergeCells(R, 1, R, W);
+    R++;
 
-      const meta = [
-        ['Módulo',        opts.modulo.titulo],
-        ['Descripción',   opts.modulo.desc],
-        ['Laboratorio',   opts.nombreLaboratorio || 'Todos'],
-        ['Período',       opts.filtros.fechaInicio && opts.filtros.fechaFin
-          ? `${opts.filtros.fechaInicio} → ${opts.filtros.fechaFin}`
-          : '—'],
-        ['Estado',        opts.filtros.estado || 'Todos'],
-        ['Generado por',  opts.usuarioLogueado],
-        ['Fecha/hora',    new Date().toLocaleString('es-EC')],
-      ];
-
-      meta.forEach(([label, val]) => {
-        this.setCell(ws, row, 0, label, metaLabel);
-        this.setCell(ws, row, 1, val,   metaVal);
-        merges.push({ s: { r: row, c: 1 }, e: { r: row, c: 5 } });
-        row++;
+    // Logo: ocupa exactamente las 2 filas negras (row 0 y row 1), ancho 1.5 columnas
+    if (logoId !== null) {
+      ws.addImage(logoId, {
+        tl: { col: W - 1, row: 0 } as any,
+        br: { col: W,     row: 2 } as any,
+        editAs: 'absolute',
       });
-
-      row++;
-
-      // ── Estadísticas ─────────────────────────────────────────────────────
-      if (opts.statsModulo.length > 0) {
-        const sectionStyle = {
-          font: { bold: true, sz: 11, color: { argb: COLORS['white'] }, name: 'Calibri' },
-          fill: { patternType: 'solid', fgColor: { argb: modColor } },
-          alignment: { vertical: 'center', indent: 1 },
-        };
-        this.setCell(ws, row, 0, 'ESTADÍSTICAS GENERALES', sectionStyle);
-        merges.push({ s: { r: row, c: 0 }, e: { r: row, c: 5 } });
-        row++;
-
-        // Cabeceras de stats
-        const statHeadStyle = {
-          font:      { bold: true, sz: 8, color: { argb: modColor }, name: 'Calibri' },
-          fill:      { patternType: 'solid', fgColor: { argb: COLORS['gray100'] } },
-          alignment: { horizontal: 'center', vertical: 'center' },
-          border:    this.thinBorder(),
-        };
-        const statValStyle = {
-          font:      { bold: true, sz: 14, color: { argb: COLORS['gray900'] }, name: 'Calibri' },
-          fill:      { patternType: 'solid', fgColor: { argb: COLORS['white'] } },
-          alignment: { horizontal: 'center', vertical: 'center' },
-          border:    this.thinBorder(),
-        };
-
-        opts.statsModulo.forEach((s, i) => {
-          this.setCell(ws, row,     i, s.label.toUpperCase(), statHeadStyle);
-          this.setCell(ws, row + 1, i, s.valor,               statValStyle);
-        });
-        row += 3;
-      }
-
-      // ── Gráfica 1: tabla ─────────────────────────────────────────────────
-      if (opts.datosGrafica.length > 0) {
-        this.writeSubTable(
-          ws, merges, row,
-          opts.tituloGrafica1.toUpperCase(),
-          ['CATEGORÍA', 'CANTIDAD', '% RELATIVO'],
-          opts.datosGrafica.map(d => [d.label, d.valor, `${d.pct}%`]),
-          modColor
-        );
-        row += opts.datosGrafica.length + 4;
-      }
-
-      // ── Gráfica 2: distribución ───────────────────────────────────────────
-      if (opts.datosDistribucion.length > 0) {
-        this.writeSubTable(
-          ws, merges, row,
-          opts.tituloGrafica2.toUpperCase(),
-          ['CATEGORÍA', 'CANTIDAD', '% DISTRIBUCIÓN'],
-          opts.datosDistribucion.map(d => [d.label, d.valor, `${d.pct}%`]),
-          modColor
-        );
-        row += opts.datosDistribucion.length + 4;
-      }
-
-      ws['!merges'] = merges;
-      ws['!cols']   = [
-        { wch: 22 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 18 },
-      ];
-
-      XLSX.utils.book_append_sheet(wb, ws, 'Resumen');
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    // HOJA 2 — DETALLE
-    // ════════════════════════════════════════════════════════════════════════
-    if (opts.datosReporte.length > 0 && opts.columnasTabla.length > 0) {
-      const ws2: any = {};
-      const merges2: any[] = [];
-      let row2 = 0;
+    // ── Línea neón ────────────────────────────────────────────────────────
+    this.rowFill(ws, R, W, C.neon);
+    ws.getRow(R).height = 4;
+    R++;
 
-      // Header banda
-      const hStyle = {
-        font:      { bold: true, sz: 14, color: { argb: COLORS['white'] }, name: 'Calibri' },
-        fill:      { patternType: 'solid', fgColor: { argb: modColor } },
-        alignment: { vertical: 'center', horizontal: 'left', indent: 1 },
-      };
-      this.setCell(ws2, row2, 0, `Detalle — ${opts.modulo.titulo}`, hStyle);
-      merges2.push({ s: { r: row2, c: 0 }, e: { r: row2, c: opts.columnasTabla.length - 1 } });
-      row2++;
+    // ── Título reporte ────────────────────────────────────────────────────
+    this.rowFill(ws, R, W, C.black2);
+    ws.getRow(R).height = 26;
+    const cTit = ws.getCell(R, 1);
+    cTit.value     = `Reporte: ${opts.modulo.titulo}`;
+    cTit.font      = { bold: true, size: 14, color: { argb: C.white }, name: 'Calibri' };
+    cTit.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+    ws.mergeCells(R, 1, R, W);
+    R++;
 
-      const subH = {
-        font:      { italic: true, sz: 9, color: { argb: COLORS['white'] }, name: 'Calibri' },
-        fill:      { patternType: 'solid', fgColor: { argb: modColor } },
-        alignment: { vertical: 'center', horizontal: 'left', indent: 1 },
-      };
-      this.setCell(ws2, row2, 0, `${opts.datosReporte.length} registros — Generado: ${new Date().toLocaleString('es-EC')}`, subH);
-      merges2.push({ s: { r: row2, c: 0 }, e: { r: row2, c: opts.columnasTabla.length - 1 } });
-      row2 += 2;
+    // ── Descripción ───────────────────────────────────────────────────────
+    this.rowFill(ws, R, W, C.black2);
+    ws.getRow(R).height = 16;
+    const cDesc = ws.getCell(R, 1);
+    cDesc.value     = opts.modulo.desc;
+    cDesc.font      = { italic: true, size: 9, color: { argb: C.gray400 }, name: 'Calibri' };
+    cDesc.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+    ws.mergeCells(R, 1, R, W);
+    R++;
 
-      // Cabecera tabla
-      const colHeadStyle = {
-        font:      { bold: true, sz: 9, color: { argb: COLORS['white'] }, name: 'Calibri' },
-        fill:      { patternType: 'solid', fgColor: { argb: modColor } },
-        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
-        border:    this.thinBorder(),
-      };
-      opts.columnasTabla.forEach((col, ci) => {
-        this.setCell(ws2, row2, ci, col, colHeadStyle);
+    // ── Separador ─────────────────────────────────────────────────────────
+    this.rowFill(ws, R, W, C.black3);
+    ws.getRow(R).height = 4;
+    R++;
+
+    // ── Espacio ───────────────────────────────────────────────────────────
+    this.rowFill(ws, R, W, C.white);
+    ws.getRow(R).height = 8;
+    R++;
+
+    // ── Info del reporte ──────────────────────────────────────────────────
+    this.sectionHeader(ws, R, W, 'INFORMACIÓN DEL REPORTE', C.neon, C.neonDark, C.black);
+    R++;
+
+    const metaItems: [string, string][] = [
+      ['Laboratorio',  opts.nombreLaboratorio || 'Todos'],
+      ['Período',      opts.filtros.fechaInicio && opts.filtros.fechaFin
+        ? `${opts.filtros.fechaInicio}  →  ${opts.filtros.fechaFin}` : 'Sin filtro'],
+      ['Estado',       opts.filtros.estado || 'Todos'],
+      ['Generado por', opts.usuarioLogueado],
+      ['Fecha',        new Date().toLocaleString('es-EC')],
+    ];
+
+    metaItems.forEach(([lbl, val]) => {
+      ws.getRow(R).height = 16;
+      for (let i = 1; i <= W; i++) {
+        ws.getCell(R, i).fill   = this.fill(i === 1 ? C.gray100 : C.white);
+        ws.getCell(R, i).border = this.border(C.gray200);
+      }
+      const cL = ws.getCell(R, 1);
+      cL.value     = lbl;
+      cL.font      = { bold: true, size: 9, color: { argb: C.gray500 }, name: 'Calibri' };
+      cL.alignment = { vertical: 'middle', indent: 1 };
+      const cV = ws.getCell(R, 2);
+      cV.value     = val;
+      cV.font      = { size: 9, color: { argb: C.gray900 }, name: 'Calibri' };
+      cV.alignment = { vertical: 'middle', indent: 1 };
+      ws.mergeCells(R, 2, R, W);
+      R++;
+    });
+
+    // ── Espacio ───────────────────────────────────────────────────────────
+    this.rowFill(ws, R, W, C.white);
+    ws.getRow(R).height = 8;
+    R++;
+
+    // ── Stats: CLAVE — columnas de ancho IGUAL sin merge, todo definido explícitamente ──
+    if (opts.statsModulo.length > 0) {
+      this.sectionHeader(ws, R, W, 'RESUMEN DEL PERÍODO', C.black, C.black3, C.neon);
+      R++;
+
+      const n = opts.statsModulo.length;
+
+      // Recalcular columnas para que las stats sean simétricas
+      // Dividir W columnas en n grupos exactamente iguales ajustando anchos
+      this.setStatColumns(ws, n, W);
+
+      // Fila de labels: CADA celda individual tiene su propio estilo (sin merge)
+      ws.getRow(R).height = 14;
+      for (let col = 1; col <= W; col++) {
+        const cc    = ws.getCell(R, col);
+        cc.fill     = this.fill(C.black2);
+        cc.border   = this.border(C.black3);
+        // Determinar a qué stat pertenece esta columna
+        const stat  = this.colToStat(col, n, W);
+        const isFirst = this.isFirstColOfStat(col, n, W);
+        if (isFirst) {
+          cc.value     = opts.statsModulo[stat].label.toUpperCase();
+          cc.font      = { bold: true, size: 7, color: { argb: C.gray400 }, name: 'Calibri' };
+          cc.alignment = { horizontal: 'center', vertical: 'middle' };
+        }
+      }
+      // Merge cada grupo de columnas de la stat
+      this.mergeStatGroups(ws, R, n, W);
+      R++;
+
+      // Fila de valores: igual
+      ws.getRow(R).height = 36;
+      for (let col = 1; col <= W; col++) {
+        const cc   = ws.getCell(R, col);
+        cc.fill    = this.fill(C.black2);
+        cc.border  = this.border(C.black3);
+        const stat = this.colToStat(col, n, W);
+        const isFirst = this.isFirstColOfStat(col, n, W);
+        if (isFirst) {
+          cc.value     = opts.statsModulo[stat].valor;
+          cc.font      = { bold: true, size: 24, color: { argb: C.white }, name: 'Calibri' };
+          cc.alignment = { horizontal: 'center', vertical: 'middle' };
+        }
+      }
+      this.mergeStatGroups(ws, R, n, W);
+      R++;
+
+      this.rowFill(ws, R, W, C.white);
+      ws.getRow(R).height = 8;
+      R++;
+    }
+
+    // ── Espacio ───────────────────────────────────────────────────────────
+    this.rowFill(ws, R, W, C.white);
+    ws.getRow(R).height = 8;
+    R++;
+
+    // ── Tabla gráfica 1 ───────────────────────────────────────────────────
+    if (opts.datosGrafica.length > 0) {
+      this.sectionHeader(ws, R, W, opts.tituloGrafica1.toUpperCase(), C.black, C.black3, C.white);
+      R++;
+      this.tableHead(ws, R, W, ['CATEGORÍA', 'CANTIDAD', '% RELATIVO']);
+      R++;
+      opts.datosGrafica.forEach((d, ri) => {
+        this.tableRow(ws, R, W, [d.label, d.valor, `${d.pct}%`], ri % 2 === 0);
+        R++;
       });
-      row2++;
+      this.rowFill(ws, R, W, C.white);
+      ws.getRow(R).height = 8;
+      R++;
+    }
+
+    // ── Tabla gráfica 2 ───────────────────────────────────────────────────
+    if (opts.datosDistribucion.length > 0) {
+      this.sectionHeader(ws, R, W, opts.tituloGrafica2.toUpperCase(), C.black, C.black3, C.white);
+      R++;
+      this.tableHead(ws, R, W, ['CATEGORÍA', 'CANTIDAD', '% DISTRIBUCIÓN']);
+      R++;
+      opts.datosDistribucion.forEach((d, ri) => {
+        this.tableRow(ws, R, W, [d.label, d.valor, `${d.pct}%`], ri % 2 === 0);
+        R++;
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // HOJA 2 — DETALLE
+    // ═══════════════════════════════════════════════════════
+    if (opts.datosReporte.length > 0 && opts.columnasTabla.length > 0) {
+      const ws2  = wb.addWorksheet('Detalle');
+      const cols = opts.columnasTabla;
+      const DW   = W;
+      let R2 = 1;
+
+      ws2.columns = cols.map((col, i) => ({
+        width: Math.max(col.length, ...opts.datosReporte.map(f => String(opts.filasTabla(f)[i] ?? '').length), 10) + 3,
+      }));
+
+      // Header
+      this.rowFill(ws2, R2, DW, C.black);
+      ws2.getRow(R2).height = 30;
+      const ch = ws2.getCell(R2, 1);
+      ch.value     = `CLAB — ${opts.modulo.titulo.toUpperCase()}`;
+      ch.font      = { bold: true, size: 14, color: { argb: C.neon }, name: 'Calibri' };
+      ch.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+      ws2.mergeCells(R2, 1, R2, DW);
+      R2++;
+
+      this.rowFill(ws2, R2, DW, C.black2);
+      ws2.getRow(R2).height = 14;
+      const cs = ws2.getCell(R2, 1);
+      cs.value     = `${opts.datosReporte.length} registros  ·  ${new Date().toLocaleString('es-EC')}  ·  ${opts.usuarioLogueado}`;
+      cs.font      = { size: 8, color: { argb: C.gray400 }, name: 'Calibri' };
+      cs.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+      ws2.mergeCells(R2, 1, R2, DW);
+      R2++;
+
+      this.rowFill(ws2, R2, DW, C.neon);
+      ws2.getRow(R2).height = 4;
+      R2++;
+
+      this.rowFill(ws2, R2, DW, C.white);
+      ws2.getRow(R2).height = 8;
+      R2++;
+
+      // Cabecera columnas
+      ws2.getRow(R2).height = 18;
+      for (let i = 1; i <= DW; i++) {
+        ws2.getCell(R2, i).fill   = this.fill(C.black);
+        ws2.getCell(R2, i).border = this.border(C.black3);
+      }
+      cols.forEach((col, ci) => {
+        const cell     = ws2.getCell(R2, ci + 1);
+        cell.value     = col.toUpperCase();
+        cell.font      = { bold: true, size: 9, color: { argb: C.white }, name: 'Calibri' };
+        cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+      });
+      // Fusionar última columna de datos hasta DW
+      if (DW > cols.length) ws2.mergeCells(R2, cols.length, R2, DW);
+      R2++;
 
       // Filas de datos
-      const evenStyle = {
-        font:   { sz: 9, color: { argb: COLORS['gray700'] }, name: 'Calibri' },
-        fill:   { patternType: 'solid', fgColor: { argb: COLORS['white'] } },
-        border: this.thinBorder(),
-        alignment: { vertical: 'center', wrapText: false },
-      };
-      const oddStyle = {
-        ...evenStyle,
-        fill: { patternType: 'solid', fgColor: { argb: COLORS['gray50'] } },
-      };
-      const firstColStyle = (isEven: boolean) => ({
-        ...( isEven ? evenStyle : oddStyle ),
-        font: { bold: true, sz: 9, color: { argb: COLORS['gray900'] }, name: 'Calibri' },
-      });
-
       opts.datosReporte.forEach((fila, fi) => {
-        const vals   = opts.filasTabla(fila);
-        const isEven = fi % 2 === 0;
+        const vals = opts.filasTabla(fila);
+        const even = fi % 2 === 0;
+        const bg   = even ? C.white : C.gray50;
+        ws2.getRow(R2).height = 15;
+
+        for (let i = 1; i <= DW; i++) {
+          ws2.getCell(R2, i).fill   = this.fill(bg);
+          ws2.getCell(R2, i).border = this.border(C.gray200);
+        }
 
         vals.forEach((val, ci) => {
           const isLast = ci === vals.length - 1;
-
+          const cell   = ws2.getCell(R2, ci + 1);
           if (isLast) {
-            // Celda de estado con estilo condicional
-            const bs  = this.badgeStyle(String(val));
-            const est = {
-              font:      { bold: true, sz: 8, color: { argb: bs.text }, name: 'Calibri' },
-              fill:      { patternType: 'solid', fgColor: { argb: bs.bg } },
-              alignment: { horizontal: 'center', vertical: 'center' },
-              border:    this.thinBorder(),
-            };
-            this.setCell(ws2, row2, ci, String(val).toUpperCase(), est);
-          } else if (ci === 0) {
-            this.setCell(ws2, row2, ci, val, firstColStyle(isEven));
+            const bs        = this.badgeStyle(String(val));
+            const startCol  = ci + 1; // 1-based
+            cell.value      = String(val).toUpperCase();
+            cell.font       = { bold: true, size: 8, color: { argb: bs.text }, name: 'Calibri' };
+            cell.alignment  = { horizontal: 'center', vertical: 'middle' };
+            // Rellenar desde la columna del badge hasta DW
+            for (let j = startCol; j <= DW; j++) {
+              ws2.getCell(R2, j).fill   = this.fill(bs.bg);
+              ws2.getCell(R2, j).border = this.border(C.gray200);
+            }
+            if (DW > startCol) ws2.mergeCells(R2, startCol, R2, DW);
           } else {
-            this.setCell(ws2, row2, ci, val, isEven ? evenStyle : oddStyle);
+            cell.value     = val;
+            cell.font      = { bold: ci === 0, size: 9, color: { argb: C.gray700 }, name: 'Calibri' };
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
           }
         });
-        row2++;
+        R2++;
       });
-
-      // Auto-ancho columnas (aprox.)
-      ws2['!cols'] = opts.columnasTabla.map((_, i) => ({
-        wch: Math.max(
-          opts.columnasTabla[i].length,
-          ...opts.datosReporte.map(f => String(opts.filasTabla(f)[i] ?? '').length),
-          12
-        ) + 2
-      }));
-      ws2['!rows']   = [{ hpt: 24 }, { hpt: 16 }];
-      ws2['!merges'] = merges2;
-
-      XLSX.utils.book_append_sheet(wb, ws2, 'Detalle');
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    // GUARDAR
-    // ════════════════════════════════════════════════════════════════════════
-    const fecha    = new Date().toISOString().split('T')[0];
-    const filename = `CLAB_${opts.modulo.titulo.replace(/\s+/g,'_')}_${fecha}.xlsx`;
-    XLSX.writeFile(wb, filename);
+    // ═══════════════════════════════════════════════════════
+    // Descargar
+    // ═══════════════════════════════════════════════════════
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob   = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url    = URL.createObjectURL(blob);
+    const a      = document.createElement('a');
+    a.href       = url;
+    a.download   = `CLAB_${opts.modulo.titulo.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
+  // ── Stats: helpers de distribución simétrica ────────────────────────────
 
-  private setCell(ws: any, row: number, col: number, value: any, style?: any): void {
-    const addr = this.cellAddr(row, col);
-    ws[addr]   = { v: value, t: typeof value === 'number' ? 'n' : 's', s: style };
-    // Extiende el rango
-    if (!ws['!ref']) {
-      ws['!ref'] = `${addr}:${addr}`;
-    } else {
-      const cur  = ws['!ref'].split(':');
-      const minC = this.addrToRC(cur[0]);
-      const maxC = this.addrToRC(cur[1] || cur[0]);
-      ws['!ref'] = `${this.rcToAddr(Math.min(minC.r, row), Math.min(minC.c, col))}:${this.rcToAddr(Math.max(maxC.r, row), Math.max(maxC.c, col))}`;
+  // Ajusta el ancho de las columnas para que las N stats queden exactamente iguales
+  private setStatColumns(ws: any, n: number, w: number): void {
+    const totalW = [26, 22, 16, 16, 14, 14, 14, 14].slice(0, w).reduce((a, b) => a + b, 0);
+    const statW  = totalW / n;
+    const colsPerStat = w / n; // puede ser decimal
+
+    // Reconstruir anchos para que cada stat ocupe la misma cantidad de píxeles
+    if (Number.isInteger(colsPerStat)) {
+      // Caso exacto: 4 stats en 8 cols → 2 cols por stat con ancho igual
+      const colW = statW / colsPerStat;
+      for (let i = 1; i <= w; i++)
+        ws.getColumn(i).width = colW;
+    }
+    // Si no es entero, dejamos los anchos originales y simplemente mergeamos
+  }
+
+  // Dado un número de columna (1-based), retorna a qué stat (0-based) pertenece
+  private colToStat(col: number, n: number, w: number): number {
+    const cps = Math.floor(w / n);
+    const extra = w % n;
+    let cur = 1;
+    for (let i = 0; i < n; i++) {
+      const width = cps + (i < extra ? 1 : 0);
+      if (col >= cur && col < cur + width) return i;
+      cur += width;
+    }
+    return n - 1;
+  }
+
+  // Retorna true si `col` es la primera columna de su stat
+  private isFirstColOfStat(col: number, n: number, w: number): boolean {
+    const cps   = Math.floor(w / n);
+    const extra = w % n;
+    let cur = 1;
+    for (let i = 0; i < n; i++) {
+      if (cur === col) return true;
+      cur += cps + (i < extra ? 1 : 0);
+    }
+    return false;
+  }
+
+  // Mergea cada grupo de columnas de cada stat en la fila dada
+  private mergeStatGroups(ws: any, row: number, n: number, w: number): void {
+    const cps   = Math.floor(w / n);
+    const extra = w % n;
+    let cur = 1;
+    for (let i = 0; i < n; i++) {
+      const width = cps + (i < extra ? 1 : 0);
+      if (width > 1) ws.mergeCells(row, cur, row, cur + width - 1);
+      cur += width;
     }
   }
 
-  private writeSubTable(
-    ws: any, merges: any[], startRow: number,
-    title: string, headers: string[], rows: any[][],
-    accentColor: string
+  // ── Layout helpers ─────────────────────────────────────────────────────
+
+  // Rellena todas las celdas de la fila con un color
+  private rowFill(ws: any, row: number, cols: number, argb: string): void {
+    for (let i = 1; i <= cols; i++)
+      ws.getCell(row, i).fill = this.fill(argb);
+  }
+
+  // Cabecera de sección: rellena todo, pone texto en col 1, mergea
+  private sectionHeader(
+    ws: any, row: number, span: number, title: string,
+    bgArgb: string, borderArgb: string, fontArgb: string
   ): void {
-    const sStyle = {
-      font:      { bold: true, sz: 10, color: { argb: COLORS['white'] }, name: 'Calibri' },
-      fill:      { patternType: 'solid', fgColor: { argb: accentColor } },
-      alignment: { vertical: 'center', indent: 1 },
-      border:    this.thinBorder(),
-    };
-    this.setCell(ws, startRow, 0, title, sStyle);
-    merges.push({ s: { r: startRow, c: 0 }, e: { r: startRow, c: headers.length - 1 } });
-
-    const hStyle = {
-      font:      { bold: true, sz: 8, color: { argb: accentColor }, name: 'Calibri' },
-      fill:      { patternType: 'solid', fgColor: { argb: COLORS['gray100'] } },
-      alignment: { horizontal: 'center' },
-      border:    this.thinBorder(),
-    };
-    headers.forEach((h, i) => this.setCell(ws, startRow + 1, i, h, hStyle));
-
-    const dStyle = {
-      font:   { sz: 9, color: { argb: COLORS['gray700'] }, name: 'Calibri' },
-      fill:   { patternType: 'solid', fgColor: { argb: COLORS['white'] } },
-      border: this.thinBorder(),
-      alignment: { vertical: 'center' },
-    };
-    rows.forEach((row, ri) => {
-      row.forEach((val, ci) => {
-        const style = ri % 2 === 0 ? dStyle : { ...dStyle, fill: { patternType: 'solid', fgColor: { argb: COLORS['gray50'] } } };
-        this.setCell(ws, startRow + 2 + ri, ci, val, style);
-      });
-    });
+    ws.getRow(row).height = 18;
+    for (let i = 1; i <= span; i++) {
+      ws.getCell(row, i).fill   = this.fill(bgArgb);
+      ws.getCell(row, i).border = this.border(borderArgb);
+    }
+    const cell     = ws.getCell(row, 1);
+    cell.value     = title;
+    cell.font      = { bold: true, size: 9, color: { argb: fontArgb }, name: 'Calibri' };
+    cell.alignment = { vertical: 'middle', indent: 1 };
+    ws.mergeCells(row, 1, row, span);
   }
 
-  private thinBorder() {
-    const s = { style: 'thin', color: { argb: COLORS['gray200'] } };
+  // Cabecera de tabla: 3 cols de datos, la última fusionada hasta totalCols
+  private tableHead(ws: any, row: number, totalCols: number, headers: string[]): void {
+    ws.getRow(row).height = 16;
+    for (let i = 1; i <= totalCols; i++) {
+      ws.getCell(row, i).fill   = this.fill(C.neon);
+      ws.getCell(row, i).border = this.border(C.neonDark);
+    }
+    headers.forEach((h, i) => {
+      const cell     = ws.getCell(row, i + 1);
+      cell.value     = h;
+      cell.font      = { bold: true, size: 8, color: { argb: C.black }, name: 'Calibri' };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    });
+    const last = headers.length;
+    if (totalCols > last) ws.mergeCells(row, last, row, totalCols);
+  }
+
+  // Fila de datos: 3 cols, la última fusionada hasta totalCols
+  private tableRow(ws: any, row: number, totalCols: number, cells: any[], even: boolean): void {
+    const bg = even ? C.white : C.gray50;
+    ws.getRow(row).height = 15;
+    for (let i = 1; i <= totalCols; i++) {
+      ws.getCell(row, i).fill   = this.fill(bg);
+      ws.getCell(row, i).border = this.border(C.gray200);
+    }
+    cells.forEach((val, i) => {
+      const cell = ws.getCell(row, i + 1);
+      cell.value = val;
+      cell.font  = { bold: i === 0, size: 9, color: { argb: C.gray700 }, name: 'Calibri' };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    });
+    const last = cells.length;
+    if (totalCols > last) ws.mergeCells(row, last, row, totalCols);
+    ws.getCell(row, last).alignment = { horizontal: 'center', vertical: 'middle' };
+  }
+
+  // ── Helpers base ────────────────────────────────────────────────────────
+  private fill(argb: string) {
+    return { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb }, bgColor: { argb: 'FFFFFFFF' } };
+  }
+
+  private border(argb: string) {
+    const s = { style: 'thin' as const, color: { argb } };
     return { top: s, bottom: s, left: s, right: s };
   }
 
   private badgeStyle(estado: string): { bg: string; text: string } {
     const e = (estado || '').toUpperCase();
     if (['COMPLETADA','OPERATIVO','ACTIVO','ACTIVA','APROBADA','LIBERADO','RESUELTO'].some(x => e.includes(x)))
-      return { bg: COLORS['greenBg'],  text: COLORS['greenFg']  };
+      return { bg: C.greenBg, text: C.greenFg };
     if (['MANTENIMIENTO','PENDIENTE','EN PROCESO'].some(x => e.includes(x)))
-      return { bg: COLORS['orangeBg'], text: COLORS['orangeFg'] };
+      return { bg: C.orangeBg, text: C.orangeFg };
     if (e.match(/^\d+%$/)) {
       const v = parseFloat(e);
-      if (v >= 85) return { bg: COLORS['greenBg'],  text: COLORS['greenFg']  };
-      if (v >= 70) return { bg: COLORS['orangeBg'], text: COLORS['orangeFg'] };
+      if (v >= 85) return { bg: C.greenBg,  text: C.greenFg  };
+      if (v >= 70) return { bg: C.orangeBg, text: C.orangeFg };
     }
-    return { bg: COLORS['redBg'],    text: COLORS['redFg']    };
+    return { bg: C.redBg, text: C.redFg };
   }
-
-  private cellAddr(row: number, col: number): string {
-    let col26 = '';
-    let c = col;
-    do { col26 = String.fromCharCode(65 + (c % 26)) + col26; c = Math.floor(c / 26) - 1; } while (c >= 0);
-    return `${col26}${row + 1}`;
-  }
-
-  private addrToRC(addr: string): { r: number; c: number } {
-    const m = addr.match(/^([A-Z]+)(\d+)$/);
-    if (!m) return { r: 0, c: 0 };
-    let c = 0;
-    for (const ch of m[1]) c = c * 26 + ch.charCodeAt(0) - 64;
-    return { r: parseInt(m[2], 10) - 1, c: c - 1 };
-  }
-
-  private rcToAddr(r: number, c: number): string { return this.cellAddr(r, c); }
 }
