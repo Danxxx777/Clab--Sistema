@@ -27,5 +27,6 @@ public class ReporteFallasDTO {
         private String equipo;
         private String descripcion;
         private String reportadoPor;
+        private String idUsuarioStr;
     }
 }
