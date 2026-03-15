@@ -15,6 +15,8 @@ $muted2:      #4a4a4a;
 $red:         #e74c3c;
 $red-dim:     rgba(231, 76, 60, 0.12);
 $amber:       #f59e0b;
+$amber-dim:   rgba(245, 158, 11, 0.12);
+$amber-border:rgba(245, 158, 11, 0.30);
 $blue:        #3b82f6;
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -94,9 +96,46 @@ html, body { overflow: hidden; height: 100%; background: $bg; }
   display: flex;
   align-items: center;
   gap: 12px;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 
   &:hover { transform: translateY(-2px); border-color: $border-h; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+
+  // MEJORA 3: Estados de alerta
+  &.stat-warn {
+    border-color: $amber-border;
+    background: linear-gradient(135deg, $card-bg, rgba(245,158,11,0.05));
+    animation: warnPulse 3s ease-in-out infinite;
+  }
+  &.stat-danger {
+    border-color: rgba(231,76,60,0.4);
+    background: linear-gradient(135deg, $card-bg, rgba(231,76,60,0.07));
+    animation: dangerPulse 2s ease-in-out infinite;
+  }
+}
+
+// MEJORA 3: Badge de alerta flotante sobre stat card
+.stat-alert-badge {
+  position: absolute;
+  top: 8px; right: 10px;
+  font-size: 13px;
+  animation: bounceBadge 1.5s ease-in-out infinite;
+
+  &.stat-alert-danger { animation-duration: 0.8s; }
+}
+
+@keyframes warnPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+  50%       { box-shadow: 0 0 12px 2px rgba(245,158,11,0.15); }
+}
+@keyframes dangerPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(231,76,60,0); }
+  50%       { box-shadow: 0 0 14px 3px rgba(231,76,60,0.2); }
+}
+@keyframes bounceBadge {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-3px); }
 }
 
 .stat-icon {
@@ -110,6 +149,7 @@ html, body { overflow: hidden; height: 100%; background: $bg; }
   &.sc-green  { background: $neon-dim;              border-color: $neon-border; }
   &.sc-red    { background: $red-dim;               border-color: rgba(231,76,60,0.2); }
   &.sc-purple { background: rgba(139,92,246,0.1);  border-color: rgba(139,92,246,0.2); }
+  &.sc-amber  { background: $amber-dim;             border-color: $amber-border; }
 }
 
 .stat-info {
@@ -124,6 +164,11 @@ html, body { overflow: hidden; height: 100%; background: $bg; }
     font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;
   }
 }
+
+// MEJORA 3: Clases de color para stat-num
+.text-neon   { color: $neon !important; }
+.text-amber  { color: $amber !important; }
+.text-red    { color: #ff6b6b !important; }
 
 // ── CONTENT WRAPPER ─────────────────────────────────────────────────────────
 .content-wrapper {
@@ -242,6 +287,18 @@ html, body { overflow: hidden; height: 100%; background: $bg; }
     text-transform: uppercase;
     letter-spacing: 0.8px;
     font-family: 'Space Mono', monospace;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .label-hint {
+    font-size: 9px;
+    color: $muted2;
+    text-transform: none;
+    letter-spacing: 0;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 400;
   }
 
   .form-control {
@@ -274,6 +331,66 @@ html, body { overflow: hidden; height: 100%; background: $bg; }
     background-size: 11px;
     padding-right: 32px;
   }
+}
+
+// MEJORA 2: Retención ────────────────────────────────────────────────────────
+.retencion-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.retencion-input {
+  width: 100%;
+}
+
+.retencion-hint {
+  font-size: 10px;
+  color: $muted2;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+// MEJORA 1: Próximo backup banner ─────────────────────────────────────────────
+.proximo-backup-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 13px;
+  background: linear-gradient(135deg, rgba(57,255,20,0.05), rgba(57,255,20,0.02));
+  border: 1px solid $neon-border;
+  border-left: 3px solid $neon;
+  border-radius: 8px;
+  animation: fadeInSlide 0.3s ease;
+
+  .pb-icon { font-size: 16px; flex-shrink: 0; }
+
+  .pb-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .pb-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: $muted;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .pb-valor {
+    font-size: 12px;
+    font-weight: 700;
+    color: $neon;
+    font-family: 'Space Mono', monospace;
+  }
+}
+
+@keyframes fadeInSlide {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 // ── DESTINO CHECKS ──────────────────────────────────────────────────────────
@@ -478,6 +595,20 @@ html, body { overflow: hidden; height: 100%; background: $bg; }
       transition: background 0.15s;
       &:hover { background: $neon-glow; }
       &:last-child { border-bottom: none; }
+
+      // MEJORA 5: Fila con estado fallido
+      &.row-fallido {
+        border-left: 2px solid rgba(231,76,60,0.4);
+        background: rgba(231,76,60,0.03);
+        &:hover { background: rgba(231,76,60,0.07); }
+      }
+
+      // MEJORA 5: Fila de error expandida
+      &.error-row {
+        background: rgba(231,76,60,0.04) !important;
+        border-left: 2px solid rgba(231,76,60,0.4);
+        &:hover { background: rgba(231,76,60,0.07) !important; }
+      }
     }
 
     td {
@@ -496,6 +627,67 @@ html, body { overflow: hidden; height: 100%; background: $bg; }
       }
     }
   }
+}
+
+// MEJORA 5: Panel de detalle de error ────────────────────────────────────────
+.error-detail-panel {
+  background: rgba(231,76,60,0.06);
+  border: 1px solid rgba(231,76,60,0.25);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin: 4px 0;
+  animation: fadeInSlide 0.2s ease;
+}
+
+.error-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+
+  .error-detail-icon { font-size: 14px; }
+
+  .error-detail-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: #ff6b6b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    flex: 1;
+  }
+
+  .btn-close-error {
+    background: transparent;
+    border: 1px solid rgba(231,76,60,0.3);
+    border-radius: 5px;
+    width: 22px; height: 22px;
+    color: $muted;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+
+    &:hover { border-color: rgba(231,76,60,0.6); color: #ff6b6b; }
+  }
+}
+
+.error-detail-msg {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: #ff9999;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.6;
+  max-height: 120px;
+  overflow-y: auto;
+  padding: 8px 10px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 6px;
+  border: 1px solid rgba(231,76,60,0.15);
+
+  &::-webkit-scrollbar { width: 3px; }
+  &::-webkit-scrollbar-thumb { background: rgba(231,76,60,0.3); border-radius: 3px; }
 }
 
 // ── BADGES ──────────────────────────────────────────────────────────────────
@@ -548,7 +740,7 @@ html, body { overflow: hidden; height: 100%; background: $bg; }
 
 // ── ACTION BUTTONS ───────────────────────────────────────────────────────────
 .action-buttons {
-  display: flex; gap: 6px;
+  display: flex; gap: 6px; flex-wrap: wrap;
 
   .btn-action {
     padding: 5px 12px;
@@ -566,7 +758,269 @@ html, body { overflow: hidden; height: 100%; background: $bg; }
       &:hover:not(:disabled) { background: $neon-dim; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(57,255,20,0.15); }
       &:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
     }
+
+    // MEJORA 5: Botón ver error
+    &.btn-error-detail {
+      color: #ff6b6b;
+      border-color: rgba(231,76,60,0.3);
+      background: $red-dim;
+      &:hover { background: rgba(231,76,60,0.2); transform: translateY(-2px); }
+    }
   }
+}
+
+// ── MODALIDAD SELECTOR ───────────────────────────────────────────────────────
+.modalidad-selector {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.modalidad-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 7px 10px;
+  border: 1px solid $border;
+  border-radius: 8px;
+  background: $bg;
+  color: $muted;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Space Grotesk', sans-serif;
+  text-align: center;
+
+  &:hover { border-color: $border-h; color: $text; }
+
+  &.selected {
+    background: $neon-dim;
+    border-color: $neon-border;
+    color: $neon;
+    box-shadow: 0 0 8px rgba(57,255,20,0.15);
+  }
+}
+
+.modalidad-desc {
+  font-size: 10px;
+  color: $muted;
+  font-style: italic;
+  margin-top: 2px;
+  display: block;
+}
+
+// ── MODALIDAD BADGE (en la tabla) ─────────────────────────────────────────────
+.modalidad-badge {
+  font-size: 10px;
+  font-family: 'Space Grotesk', sans-serif;
+  text-transform: none;
+  letter-spacing: 0;
+
+  &.completo {
+    background: rgba(59,130,246,0.1);
+    color: #60a5fa;
+    border: 1px solid rgba(59,130,246,0.2);
+  }
+  &.diferencial {
+    background: rgba(245,158,11,0.1);
+    color: $amber;
+    border: 1px solid $amber-border;
+  }
+  &.incremental {
+    background: rgba(139,92,246,0.1);
+    color: #a78bfa;
+    border: 1px solid rgba(139,92,246,0.2);
+  }
+}
+
+// ── DÍAS SEMANA GRID ─────────────────────────────────────────────────────────
+.dias-semana-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.dia-check {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border: 1px solid $border;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  color: $muted;
+  transition: all 0.2s;
+  background: $bg;
+  font-family: 'Space Mono', monospace;
+
+  input[type="checkbox"] {
+    display: none; // Ocultamos el checkbox nativo, el estilo del label hace el trabajo
+  }
+
+  &:has(input:checked) {
+    background: $neon-dim;
+    border-color: $neon-border;
+    color: $neon;
+  }
+
+  &:hover { border-color: $border-h; color: $text; }
+}
+
+// ── DÍAS MES CHIPS ────────────────────────────────────────────────────────────
+.dias-mes-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.chip-dia {
+  width: 28px;
+  height: 28px;
+  border: 1px solid $border;
+  border-radius: 6px;
+  background: $bg;
+  color: $muted;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  font-family: 'Space Mono', monospace;
+
+  &:hover { border-color: $border-h; color: $text; }
+
+  &.selected {
+    background: $neon-dim;
+    border-color: $neon-border;
+    color: $neon;
+    box-shadow: 0 0 6px rgba(57,255,20,0.15);
+  }
+}
+
+// ── HORAS LISTA ───────────────────────────────────────────────────────────────
+.horas-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+  min-height: 32px;
+}
+
+.hora-tag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: $neon-dim;
+  border: 1px solid $neon-border;
+  border-radius: 20px;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: $neon;
+
+  .btn-remove-hora {
+    background: transparent;
+    border: none;
+    color: $neon;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+
+    &:hover:not(:disabled) { opacity: 1; }
+    &:disabled { opacity: 0.2; cursor: not-allowed; }
+  }
+}
+
+.hora-add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.hora-input {
+  flex: 1;
+}
+
+.btn-add-hora {
+  padding: 8px 14px;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 8px;
+  color: $neon;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Space Mono', monospace;
+  white-space: nowrap;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: $neon-border;
+    background: $neon-glow;
+  }
+}
+
+// MEJORA 4: Paginación ────────────────────────────────────────────────────────
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 0 2px;
+  flex-shrink: 0;
+}
+
+.btn-pag {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid $border;
+  border-radius: 7px;
+  background: $surface;
+  color: $muted;
+  font-size: 12px;
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    border-color: $neon-border;
+    color: $neon;
+    background: $neon-glow;
+  }
+
+  &:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  &.active {
+    background: $neon-dim;
+    border-color: $neon-border;
+    color: $neon;
+    box-shadow: 0 0 8px rgba(57,255,20,0.2);
+  }
+}
+
+.pag-dots {
+  color: $muted;
+  font-size: 14px;
+  padding: 0 2px;
+  line-height: 30px;
+}
+
+.pag-info {
+  font-size: 11px;
+  color: $muted;
+  font-family: 'Space Mono', monospace;
+  margin-left: 8px;
+  white-space: nowrap;
 }
 
 // ── BTN DOTS ─────────────────────────────────────────────────────────────────
@@ -640,18 +1094,12 @@ html, body { overflow: hidden; height: 100%; background: $bg; }
 .role-dot { width: 5px; height: 5px; background: $neon; border-radius: 50%; box-shadow: 0 0 6px $neon; animation: pulse 2s ease-in-out infinite; }
 .drawer-section-title { padding: 14px 20px 6px; font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700; color: $muted2; letter-spacing: 2px; text-transform: uppercase; }
 .drawer-modules {
-  flex: 1;
-  overflow-y: auto;
-  padding: 4px 10px 16px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-
+  flex: 1; overflow-y: auto; padding: 4px 10px 16px;
+  scrollbar-width: none; -ms-overflow-style: none;
   &::-webkit-scrollbar { display: none; }
 }
 .drawer-item { display: flex; align-items: center; gap: 11px; padding: 10px 11px; border-radius: 8px; cursor: pointer; transition: all 0.2s; margin-bottom: 2px; border: 1px solid transparent; &:hover, &.active { background: $neon-glow; border-color: $neon-border; .di-name { color: $neon; } } }
 .di-icon { width: 34px; height: 34px; border-radius: 8px; background: $card-bg; border: 1px solid $border; display: flex; align-items: center; justify-content: center; flex-shrink: 0; img { width: 18px; height: 18px; object-fit: contain; } .drawer-item:hover & { border-color: $neon-border; background: $neon-dim; } }
-
-
 .di-text { .di-name { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.75); transition: color 0.2s; } .di-desc { font-size: 10px; color: $muted; margin-top: 1px; } }
 .drawer-footer { padding: 14px 20px; border-top: 1px solid $border; }
 .btn-logout-drawer { width: 100%; padding: 10px 14px; background: $red-dim !important; border: 1px solid rgba(231,76,60,0.3) !important; border-radius: 8px; color: #ff6b6b !important; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; font-family: 'Space Grotesk', sans-serif; &:hover { background: rgba(231,76,60,0.22) !important; transform: translateY(-1px) !important; } }
@@ -667,4 +1115,5 @@ html, body { overflow: hidden; height: 100%; background: $bg; }
 @media (max-width: 900px) {
   .backup-layout { grid-template-columns: 1fr; }
   .stats-bar { grid-template-columns: 1fr 1fr; }
+  .pagination-bar { flex-wrap: wrap; }
 }
