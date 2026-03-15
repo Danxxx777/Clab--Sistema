@@ -1,9 +1,11 @@
 {
   "dependencies": {
     "@stomp/stompjs": "^7.3.0",
+    "exceljs": "^4.4.0",
     "jspdf": "^4.2.0",
     "sockjs-client": "^1.6.1",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "xlsx-js-style": "^1.2.0"
   },
   "devDependencies": {
     "@types/sockjs-client": "^1.5.4"

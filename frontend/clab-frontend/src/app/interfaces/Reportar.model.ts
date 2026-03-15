@@ -58,6 +58,7 @@ export interface FiltrosReporte {
   fechaInicio?: string;   // YYYY-MM-DD
   fechaFin?:    string;   // YYYY-MM-DD
   estado?:      string;
+  idUsuario?:   string | number;
 }
 
 // ─── INTERFACES DE RESPUESTA BACKEND ─────────────────────────────────────────

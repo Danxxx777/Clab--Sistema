@@ -37,9 +37,10 @@ public class ReportesController {
             @RequestParam(required = false) Integer laboratorio,
             @RequestParam(required = false) String  fechaInicio,
             @RequestParam(required = false) String  fechaFin,
-            @RequestParam(required = false) String  estado
+            @RequestParam(required = false) String  estado,
+            @RequestParam(required = false) Integer idUsuario   // ← agrega
     ) {
-        return ResponseEntity.ok(reportesService.getReporteUso(laboratorio, fechaInicio, fechaFin, estado));
+        return ResponseEntity.ok(reportesService.getReporteUso(laboratorio, fechaInicio, fechaFin, estado, idUsuario));
     }
 
     // ── Fallas ────────────────────────────────────────────────────────────────
@@ -48,9 +49,10 @@ public class ReportesController {
     public ResponseEntity<ReporteFallasDTO> getReporteFallas(
             @RequestParam(required = false) Integer laboratorio,
             @RequestParam(required = false) String  fechaInicio,
-            @RequestParam(required = false) String  fechaFin
+            @RequestParam(required = false) String  fechaFin,
+            @RequestParam(required = false) Integer idUsuario   // ← agrega
     ) {
-        return ResponseEntity.ok(reportesService.getReporteFallas(laboratorio, fechaInicio, fechaFin));
+        return ResponseEntity.ok(reportesService.getReporteFallas(laboratorio, fechaInicio, fechaFin, idUsuario));
     }
 
     // ── Reservas ──────────────────────────────────────────────────────────────
@@ -60,9 +62,10 @@ public class ReportesController {
             @RequestParam(required = false) Integer laboratorio,
             @RequestParam(required = false) String  fechaInicio,
             @RequestParam(required = false) String  fechaFin,
-            @RequestParam(required = false) String  estado
+            @RequestParam(required = false) String  estado,
+            @RequestParam(required = false) Integer idUsuario   // ← agrega
     ) {
-        return ResponseEntity.ok(reportesService.getReporteReservas(laboratorio, fechaInicio, fechaFin, estado));
+        return ResponseEntity.ok(reportesService.getReporteReservas(laboratorio, fechaInicio, fechaFin, estado, idUsuario));
     }
 
     // ── Asistencia ────────────────────────────────────────────────────────────
@@ -71,9 +74,10 @@ public class ReportesController {
     public ResponseEntity<ReporteAsistenciaDTO> getReporteAsistencia(
             @RequestParam(required = false) Integer laboratorio,
             @RequestParam(required = false) String  fechaInicio,
-            @RequestParam(required = false) String  fechaFin
+            @RequestParam(required = false) String  fechaFin,
+            @RequestParam(required = false) Integer idUsuario  // ← agrega
     ) {
-        return ResponseEntity.ok(reportesService.getReporteAsistencia(laboratorio, fechaInicio, fechaFin));
+        return ResponseEntity.ok(reportesService.getReporteAsistencia(laboratorio, fechaInicio, fechaFin, idUsuario));
     }
 
     // ── Usuarios ──────────────────────────────────────────────────────────────
@@ -92,9 +96,10 @@ public class ReportesController {
             @RequestParam(required = false) Integer laboratorio,
             @RequestParam(required = false) String  fechaInicio,
             @RequestParam(required = false) String  fechaFin,
-            @RequestParam(required = false) String  estado
+            @RequestParam(required = false) String  estado,
+            @RequestParam(required = false) Integer idUsuario  // ← agrega
     ) {
-        return ResponseEntity.ok(reportesService.getReporteBloqueos(laboratorio, fechaInicio, fechaFin, estado));
+        return ResponseEntity.ok(reportesService.getReporteBloqueos(laboratorio, fechaInicio, fechaFin, estado, idUsuario));
     }
 
     // ── Académico ─────────────────────────────────────────────────────────────
@@ -103,8 +108,9 @@ public class ReportesController {
     public ResponseEntity<ReporteAcademicoDTO> getReporteAcademico(
             @RequestParam(required = false) Integer laboratorio,
             @RequestParam(required = false) String  fechaInicio,
-            @RequestParam(required = false) String  fechaFin
+            @RequestParam(required = false) String  fechaFin,
+            @RequestParam(required = false) Integer idUsuario  // ← agrega
     ) {
-        return ResponseEntity.ok(reportesService.getReporteAcademico(laboratorio, fechaInicio, fechaFin));
+        return ResponseEntity.ok(reportesService.getReporteAcademico(laboratorio, fechaInicio, fechaFin, idUsuario));
     }
 }
