@@ -16,13 +16,18 @@ public interface BackupRegistroRepository extends JpaRepository<BackupRegistro, 
 
     long countByEstado(BackupRegistro.EstadoBackup estado);
 
-    List<BackupRegistro> findByFechaBefore(LocalDateTime fechaLimite);
+    @Query("""
+        SELECT b FROM BackupRegistro b
+        ORDER BY b.fecha ASC
+        LIMIT :cantidad
+        """)
+    List<BackupRegistro> findOldestToDelete(@Param("cantidad") int cantidad);
 
     @Query("""
         SELECT b FROM BackupRegistro b
-        WHERE b.fecha < :fechaLimite
-        AND b.rutaLocal IS NOT NULL
+        WHERE b.rutaLocal IS NOT NULL
         ORDER BY b.fecha ASC
+        LIMIT :cantidad
         """)
-    List<BackupRegistro> findExpiredWithLocalFile(@Param("fechaLimite") LocalDateTime fechaLimite);
+    List<BackupRegistro> findOldestWithLocalFileToDelete(@Param("cantidad") int cantidad);
 }

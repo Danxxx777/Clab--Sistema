@@ -14,6 +14,7 @@ import java.util.List;
 @Builder
 public class BackupConfigDTO {
 
+
     private String frecuencia;
     private List<String> horas;
     private List<String> diasSemana;
@@ -21,7 +22,7 @@ public class BackupConfigDTO {
     private boolean guardarLocal;
     private boolean guardarDrive;
     private boolean activo;
-    private int diasRetencion;
+    private int retencion;
     private String rutaLocalBackup;
     private String modalidadDefault;
 
@@ -37,7 +38,7 @@ public class BackupConfigDTO {
                 .guardarLocal(entity.isGuardarLocal())
                 .guardarDrive(entity.isGuardarDrive())
                 .activo(entity.isActivo())
-                .diasRetencion(entity.getDiasRetencion())
+                .retencion(entity.getRetencion())
                 .rutaLocalBackup(entity.getRutaLocalBackup())
                 .modalidadDefault(entity.getModalidadDefault() != null
                         ? entity.getModalidadDefault().name()
@@ -69,7 +70,7 @@ public class BackupConfigDTO {
         entity.setGuardarLocal(guardarLocal);
         entity.setGuardarDrive(guardarDrive);
         entity.setActivo(activo);
-        entity.setDiasRetencion(diasRetencion > 0 ? diasRetencion : 30);
+        entity.setRetencion(retencion > 0 ? retencion : 10);
         try {
             entity.setModalidadDefault(com.clab.clabbackend.entities.BackupRegistro.ModalidadBackup
                     .valueOf(modalidadDefault != null ? modalidadDefault : "COMPLETO"));
