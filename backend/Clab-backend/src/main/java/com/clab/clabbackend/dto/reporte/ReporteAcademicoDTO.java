@@ -21,6 +21,7 @@ public class ReporteAcademicoDTO {
 
     @Getter @Setter @NoArgsConstructor
     public static class AcademicoItem {
+        private String idUsuarioStr;
         private String asignatura;
         private String carrera;
         private String docente;

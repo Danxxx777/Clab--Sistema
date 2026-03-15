@@ -21,6 +21,7 @@ public class ReporteBloqueosDTO {
 
     @Getter @Setter @NoArgsConstructor
     public static class BloqueoItem {
+        private String idUsuarioStr;
         private String laboratorio;
         private String tipo;
         private String motivo;

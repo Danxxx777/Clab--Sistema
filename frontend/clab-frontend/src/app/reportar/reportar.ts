@@ -60,7 +60,8 @@ export class ReportarComponent implements OnInit {
 
   // ─── FILTROS ───────────────────────────────────────────────────────────────
   laboratorios: Laboratorio[] = [];
-  filtros = { fechaInicio: '', fechaFin: '', laboratorio: '', estado: '' };
+  usuarios: { idUsuario: number; nombreCompleto: string }[] = [];
+  filtros = { fechaInicio: '', fechaFin: '', laboratorio: '', estado: '', idUsuario: '' };
 
   // ─── DATOS REPORTE ─────────────────────────────────────────────────────────
   datosReporte: any[] = [];
@@ -93,6 +94,7 @@ export class ReportarComponent implements OnInit {
     this.inicializarFechas();
     this.cargarLaboratorios();
     this.cargarResumenGlobal();
+    this.cargarUsuarios();
   }
 
   // ─── DRAWER ────────────────────────────────────────────────────────────────
@@ -151,6 +153,18 @@ export class ReportarComponent implements OnInit {
     });
   }
 
+  cargarUsuarios(): void {
+    this.reportarService.getReporteUsuarios({}).subscribe({
+      next: (res) => {
+        this.usuarios = res.datos.map((u: any) => ({
+          idUsuario:      u.idUsuario ?? 0,
+          nombreCompleto: u.nombreCompleto
+        }));
+      },
+      error: () => {}
+    });
+  }
+
   cargarResumenGlobal(): void {
     this.reportarService.getResumenGlobal().subscribe({
       next: (data) => {
@@ -196,6 +210,7 @@ export class ReportarComponent implements OnInit {
     this.inicializarFechas();
     this.filtros.laboratorio = '';
     this.filtros.estado = '';
+    this.filtros.idUsuario = '';
     this.datosReporte = [];
     this.statsModulo = [];
     this.datosGrafica = [];
@@ -212,6 +227,7 @@ export class ReportarComponent implements OnInit {
       fechaInicio: this.filtros.fechaInicio || undefined,
       fechaFin:    this.filtros.fechaFin    || undefined,
       estado:      this.filtros.estado      || undefined,
+      idUsuario:   this.filtros.idUsuario ? Number(this.filtros.idUsuario) : undefined, // ← agrega
     };
   }
 

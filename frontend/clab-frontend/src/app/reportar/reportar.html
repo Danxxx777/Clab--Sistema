@@ -205,6 +205,17 @@
             </select>
           </div>
         }
+        @if(moduloActivo === 0 || moduloActivo === 2 || moduloActivo === 4 || moduloActivo === 5 || moduloActivo === 6 || moduloActivo === 7) {
+          <div class="filtro-grupo">
+            <label>Usuario</label>
+            <select class="f-select" [(ngModel)]="filtros.idUsuario">
+              <option value="">Todos</option>
+              @for(u of usuarios; track u.idUsuario) {
+                <option [value]="u.idUsuario">{{ u.nombreCompleto }}</option>
+              }
+            </select>
+          </div>
+        }
         @if(moduloActivo === 0 || moduloActivo === 2 || moduloActivo === 4) {
           <div class="filtro-grupo">
             <label>Fecha Inicio</label>
