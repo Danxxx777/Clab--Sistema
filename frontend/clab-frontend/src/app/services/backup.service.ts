@@ -3,6 +3,8 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
+// Interfaces (deben coincidir exactamente con los DTOs de Spring)
+
 
 export interface BackupConfig {
   frecuencia:      'DIARIO' | 'SEMANAL' | 'MENSUAL';
@@ -13,7 +15,7 @@ export interface BackupConfig {
   guardarLocal:    boolean;
   guardarDrive:    boolean;
   activo:          boolean;
-  diasRetencion:   number;
+  retencion:       number;
   rutaLocalBackup: string;
 }
 
@@ -31,18 +33,25 @@ export interface BackupRegistro {
   error?:    string;
 }
 
+
 export interface BackupRespuesta {
   exito:    boolean;
   mensaje:  string;
   detalle?: string;
 }
+
+
+
 @Injectable({
   providedIn: 'root'
 })
 export class BackupService {
 
+
   private readonly baseUrl = 'http://localhost:8080/backup';
+
   constructor(private http: HttpClient) {}
+
 
   // CONFIGURACIÓN
   obtenerConfiguracion(): Observable<BackupConfig> {
@@ -64,12 +73,14 @@ export class BackupService {
       .pipe(catchError(this.manejarError));
   }
 
+
   // HISTORIAL
   obtenerHistorial(): Observable<BackupRegistro[]> {
     return this.http
       .get<BackupRegistro[]>(`${this.baseUrl}/historial`)
       .pipe(catchError(this.manejarError));
   }
+
 
   // DESCARGA
   descargarBackup(id: number): Observable<Blob> {
@@ -78,16 +89,22 @@ export class BackupService {
       .pipe(catchError(this.manejarError));
   }
 
+
   // MANEJO DE ERRORES
   private manejarError(error: HttpErrorResponse): Observable<never> {
     let mensajeError = 'Ocurrió un error inesperado';
+
     if (error.error instanceof ErrorEvent) {
+      // Error de red o del cliente (sin conexión, timeout, etc.)
       mensajeError = `Error de conexión: ${error.error.message}`;
     } else {
+      // El backend respondió con un código de error (400, 500, etc.)
+      // Intentamos extraer el mensaje del body de la respuesta
       mensajeError = error.error?.mensaje
         || error.error?.message
         || `Error ${error.status}: ${error.statusText}`;
     }
+
     console.error('BackupService error:', mensajeError, error);
     return throwError(() => new Error(mensajeError));
   }
