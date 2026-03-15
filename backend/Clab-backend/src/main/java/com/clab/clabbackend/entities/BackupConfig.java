@@ -18,6 +18,7 @@ public class BackupConfig {
     private Long id = 1L;
 
     @Enumerated(EnumType.STRING)
+
     @Column(nullable = false, length = 20)
     private Frecuencia frecuencia;
 
@@ -40,7 +41,7 @@ public class BackupConfig {
     private boolean activo = false;
 
     @Column(nullable = false)
-    private int diasRetencion = 30;
+    private int retencion = 10;
 
     @Column(length = 500, nullable = false)
     private String rutaLocalBackup = "C:/backups";
@@ -49,12 +50,12 @@ public class BackupConfig {
     @Column(nullable = false, length = 20)
     private BackupRegistro.ModalidadBackup modalidadDefault = BackupRegistro.ModalidadBackup.COMPLETO;
 
-    //Enum interno
+    // Enum interno
     public enum Frecuencia {
         DIARIO, SEMANAL, MENSUAL
     }
 
-    // Helpers para convertir String ↔ List en el servicio
+    //Helpers para convertir String ↔ List en el servicio
     public java.util.List<String> getHorasList() {
         if (horas == null || horas.isBlank()) return java.util.List.of("02:00");
         return java.util.Arrays.asList(horas.split(","));

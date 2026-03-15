@@ -28,10 +28,10 @@ import javax.sql.DataSource;
 @RequiredArgsConstructor
 public class BackupService {
 
-
+    // Repositorios
     private final BackupRegistroRepository registroRepository;
-    private final BackupConfigRepository  configRepository;
-    private final DataSource dataSource;
+    private final BackupConfigRepository   configRepository;
+    private final DataSource               dataSource;
 
     // Configuración desde application.properties
     @Value("${backup.ruta-local:/backups}")
@@ -59,9 +59,7 @@ public class BackupService {
     private static final DateTimeFormatter FORMATO_FECHA =
             DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
 
-
     // SECCIÓN 1: CONFIGURACIÓN
-
     public BackupConfigDTO obtenerConfiguracion() {
         return configRepository.findById(1L)
                 .map(BackupConfigDTO::fromEntity)
@@ -74,7 +72,7 @@ public class BackupService {
                             .guardarLocal(true)
                             .guardarDrive(false)
                             .activo(false)
-                            .diasRetencion(30)
+                            .retencion(10)
                             .build();
                 });
     }
@@ -99,6 +97,7 @@ public class BackupService {
         }
     }
 
+
     // SECCIÓN 2: HISTORIAL
 
     public List<BackupRegistroDTO> obtenerHistorial() {
@@ -112,23 +111,34 @@ public class BackupService {
     @Transactional
     public void aplicarRetencion() {
         configRepository.findById(1L).ifPresent(config -> {
-            int dias = config.getDiasRetencion();
-            LocalDateTime fechaLimite = LocalDateTime.now().minusDays(dias);
+            int retencion = config.getRetencion();
+            long total    = registroRepository.count();
 
-            log.info("Aplicando retención: borrando backups anteriores a {} ({} días)",
-                    fechaLimite, dias);
-            // Paso 1: borrar archivos del disco
-            List<BackupRegistro> expiradosConArchivo =
-                    registroRepository.findExpiredWithLocalFile(fechaLimite);
-            for (BackupRegistro backup : expiradosConArchivo) {
+            // Si no se supera el límite, no hay nada que borrar
+            if (total <= retencion) {
+                log.info("Retención: {} backups en BD, límite es {}. Nada que borrar.",
+                        total, retencion);
+                return;
+            }
+
+            // Cuántos hay que eliminar
+            int cantidadABorrar = (int)(total - retencion);
+            log.info("Retención: {} backups en BD, límite es {}. Borrando los {} más antiguos.",
+                    total, retencion, cantidadABorrar);
+
+            // Paso 1: borrar archivos del disco (solo los que tienen archivo local)
+            List<BackupRegistro> conArchivo =
+                    registroRepository.findOldestWithLocalFileToDelete(cantidadABorrar);
+            for (BackupRegistro backup : conArchivo) {
                 borrarArchivoDisco(backup.getRutaLocal());
             }
+
             // Paso 2: borrar registros de la BD
-            List<BackupRegistro> todosExpirados =
-                    registroRepository.findByFechaBefore(fechaLimite);
-            if (!todosExpirados.isEmpty()) {
-                registroRepository.deleteAll(todosExpirados);
-                log.info("Retención aplicada: {} backups eliminados", todosExpirados.size());
+            List<BackupRegistro> aEliminar =
+                    registroRepository.findOldestToDelete(cantidadABorrar);
+            if (!aEliminar.isEmpty()) {
+                registroRepository.deleteAll(aEliminar);
+                log.info("Retención aplicada: {} backups eliminados.", cantidadABorrar);
             }
         });
     }
@@ -146,6 +156,7 @@ public class BackupService {
             log.error("No se pudo borrar el archivo {}: {}", ruta, e.getMessage());
         }
     }
+
 
     // SECCIÓN 4: EJECUCIÓN DEL BACKUP (pg_dump)
     public BackupRespuestaDTO ejecutarBackupManual(BackupRegistro.ModalidadBackup modalidad) {
@@ -209,19 +220,7 @@ public class BackupService {
                     tablasAIncluir == null ? "TODAS" : tablasAIncluir.size());
 
             // Paso 3: Construir el comando pg_dump
-            /**
-             * pg_dump es la herramienta oficial de PostgreSQL para hacer backups.
-             * Genera un archivo .sql con todos los CREATE TABLE e INSERT necesarios
-             * para recrear la base de datos completa.
-             *
-             * Parámetros que usamos:
-             *   -h → host (localhost)
-             *   -p → puerto (5432)
-             *   -U → usuario de PostgreSQL
-             *   -d → nombre de la base de datos
-             *   -F p → formato "plain" (SQL legible, no binario)
-             *   -f → archivo de salida
-             */
+
             // Construir comando base
             java.util.List<String> comando = new java.util.ArrayList<>(java.util.Arrays.asList(
                     pgDumpPath,
@@ -257,13 +256,15 @@ public class BackupService {
             }
 
             ProcessBuilder pb = new ProcessBuilder(comando);
+
             // Paso 3: Pasar la contraseña por variable de entorno
+
             pb.environment().put("PGPASSWORD", dbPassword);
 
             // Redirigir errores al mismo stream para capturarlos
             pb.redirectErrorStream(true);
 
-            //  Paso 4: Ejecutar y esperar
+            // Paso 4: Ejecutar y esperar
             log.info("Ejecutando pg_dump → {}", rutaArchivo);
             Process proceso = pb.start();
 
@@ -338,6 +339,7 @@ public class BackupService {
         if (modalidad == BackupRegistro.ModalidadBackup.COMPLETO) {
             return null; // null = sin filtros = dump completo
         }
+
         // Buscar la fecha de referencia según el tipo
         LocalDateTime fechaReferencia = obtenerFechaReferencia(modalidad);
 

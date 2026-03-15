@@ -341,17 +341,17 @@
 
           <!-- RETENCIÓN POR DÍAS -->
           <div class="form-group">
-            <label>Retención <span class="label-hint">(días a conservar)</span></label>
+            <label>Retención <span class="label-hint">(cantidad a conservar)</span></label>
             <div class="retencion-row">
               <input
                 type="number"
                 class="form-control retencion-input"
-                [(ngModel)]="config.diasRetencion"
+                [(ngModel)]="config.retencion"
                 min="1"
                 max="365"
                 placeholder="Ej: 30"
               />
-              <span class="retencion-hint">Backups más antiguos de este número de días se eliminarán solos</span>
+              <span class="retencion-hint">Cuando se supere este número, los más antiguos se eliminarán solos</span>
             </div>
           </div>
 

@@ -21,12 +21,12 @@ export class BackupComponent implements OnInit {
     private cdr:           ChangeDetectorRef
   ) {}
 
-  // Estado general
+  //Estado general
   usuarioLogueado = '';
   rol             = '';
   drawerAbierto   = false;
 
-  //Toast
+  // Toast
   mostrarNotificacion  = false;
   notificacionTitulo   = '';
   notificacionMensaje  = '';
@@ -44,7 +44,7 @@ export class BackupComponent implements OnInit {
   mensajeManual = '';
   errorManual   = false;
 
-  //Configuración
+  // Configuración
   guardandoConfig = false;
   mensajeConfig   = '';
   errorConfig     = false;
@@ -57,7 +57,7 @@ export class BackupComponent implements OnInit {
     guardarLocal:     true,
     guardarDrive:     false,
     activo:           false,
-    diasRetencion:    30,
+    retencion:       10,
     rutaLocalBackup:  'C:/backups',
     modalidadDefault: 'COMPLETO'
   };
@@ -81,7 +81,7 @@ export class BackupComponent implements OnInit {
   historialPaginado: BackupRegistro[] = [];
   paginasVisibles:   number[]         = [];
 
-  //Error expandido
+  // Error expandido
   errorExpandido: number | null = null;
 
   // Lifecycle
@@ -104,7 +104,7 @@ export class BackupComponent implements OnInit {
     this.cargarHistorial();
   }
 
-  //Navegación
+  // Navegación
   volver():              void { this.router.navigate(['/dashboard']); }
   navegar(ruta: string): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
   logout():              void { sessionStorage.clear(); this.router.navigate(['/login']); }
@@ -115,7 +115,8 @@ export class BackupComponent implements OnInit {
   cargarConfiguracion(): void {
     this.backupService.obtenerConfiguracion().subscribe({
       next: (data) => {
-
+        // Garantizar que los arrays nunca sean null
+        // (el backend puede devolver null si nunca se configuraron)
         this.config = {
           ...data,
           horas:           data.horas       || ['02:00'],
@@ -186,6 +187,7 @@ export class BackupComponent implements OnInit {
       }
     });
   }
+
   // Cargar historial
   cargarHistorial(): void {
     this.backupService.obtenerHistorial().subscribe({
@@ -199,7 +201,7 @@ export class BackupComponent implements OnInit {
     });
   }
 
-  //Stats
+  // Stats
   calcularStats(): void {
     this.totalBackups    = this.historial.length;
     this.backupsExitosos = this.historial.filter(b => b.estado === 'EXITOSO').length;
@@ -281,7 +283,7 @@ export class BackupComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  //Próximo backup
+  // Próximo backup
   actualizarProximoBackup(): void {
     if (!this.config.activo || !this.config.horas?.length) {
       this.proximoBackupTexto = '';
@@ -359,7 +361,7 @@ export class BackupComponent implements OnInit {
     });
   }
 
-  // opciones para los selectores múltiples
+  // Opciones para los selectores múltiples
   diasSemanaOpciones = [
     { valor: 'MONDAY',    label: 'Lun' },
     { valor: 'TUESDAY',   label: 'Mar' },
@@ -374,7 +376,7 @@ export class BackupComponent implements OnInit {
 
   nuevaHora = '08:00'; // Valor del input de nueva hora
 
-  // Toggles para días y horas múltiples
+  //Toggles para días y horas múltiples
   toggleDiaSemana(dia: string): void {
     const idx = this.config.diasSemana.indexOf(dia);
     if (idx === -1) {
@@ -414,7 +416,7 @@ export class BackupComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  // Toast
+  //Toast
   mostrarAlerta(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'confirmar'): void {
     this.notificacionTitulo  = titulo;
     this.notificacionMensaje = mensaje;
