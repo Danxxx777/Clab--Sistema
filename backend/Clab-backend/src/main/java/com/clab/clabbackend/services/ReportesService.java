@@ -98,9 +98,10 @@ public class ReportesService {
     // REPORTE USO DE LABORATORIOS
     // ─────────────────────────────────────────────────────────────────────────
 
-    public ReporteUsoDTO getReporteUso(Integer laboratorio, String fechaInicio, String fechaFin, String estado) {
-        // Usamos fn_listar_reservas() que ya existe
-        List<Object[]> rows = reservaRepository.listarReservas();
+    public ReporteUsoDTO getReporteUso(Integer laboratorio, String fechaInicio, String fechaFin, String estado, Integer idUsuario) {
+        List<Object[]> rows = idUsuario != null
+                ? reservaRepository.listarReservasPorUsuario(idUsuario)
+                : reservaRepository.listarReservas();
 
         List<UsoItem> datos = rows.stream()
                 .map(r -> {
@@ -147,7 +148,7 @@ public class ReportesService {
     // REPORTE FALLAS
     // ─────────────────────────────────────────────────────────────────────────
 
-    public ReporteFallasDTO getReporteFallas(Integer laboratorio, String fechaInicio, String fechaFin) {
+    public ReporteFallasDTO getReporteFallas(Integer laboratorio, String fechaInicio, String fechaFin, Integer idUsuario) {
         List<Object[]> rows = reporteFallasRepository.listarReportes();
 
         // columnas de fn_listar_reportes():
@@ -161,10 +162,12 @@ public class ReportesService {
                     item.setLaboratorio( str(r[4]));  // nombre_lab
                     item.setEquipo(      str(r[6]));  // nombre_equipo
                     item.setReportadoPor(str(r[10]));
+                    item.setIdUsuarioStr(str(r[9]));
                     return item;
                 })
                 .filter(i -> laboratorio == null || i.getLaboratorio() != null)
                 .filter(i -> estaEnRango(i.getFecha(), fechaInicio, fechaFin))
+                .filter(i -> idUsuario == null || String.valueOf(idUsuario).equals(i.getIdUsuarioStr()))
                 .collect(Collectors.toList());
 
         long total = datos.size();
@@ -189,8 +192,10 @@ public class ReportesService {
     // REPORTE RESERVAS
     // ─────────────────────────────────────────────────────────────────────────
 
-    public ReporteReservasDTO getReporteReservas(Integer laboratorio, String fechaInicio, String fechaFin, String estado) {
-        List<Object[]> rows = reservaRepository.listarReservas();
+    public ReporteReservasDTO getReporteReservas(Integer laboratorio, String fechaInicio, String fechaFin, String estado, Integer idUsuario) {
+        List<Object[]> rows = idUsuario != null
+                ? reservaRepository.listarReservasPorUsuario(idUsuario)
+                : reservaRepository.listarReservas();
 
         List<ReservaItem> datos = rows.stream()
                 .map(r -> {
@@ -233,7 +238,7 @@ public class ReportesService {
     // REPORTE ASISTENCIA
     // ─────────────────────────────────────────────────────────────────────────
 
-    public ReporteAsistenciaDTO getReporteAsistencia(Integer laboratorio, String fechaInicio, String fechaFin) {
+    public ReporteAsistenciaDTO getReporteAsistencia(Integer laboratorio, String fechaInicio, String fechaFin, Integer idUsuario) {
         // Usamos listarReservasHoy() — trae las reservas con asistencia registrada
         List<Object[]> rows = asistenciaUsuarioRepository.listarReservasHoy();
 
@@ -243,14 +248,16 @@ public class ReportesService {
         List<AsistenciaItem> datos = rows.stream()
                 .map(r -> {
                     AsistenciaItem item = new AsistenciaItem();
-                    item.setFecha(        str(r[3]));
-                    item.setLaboratorio(  str(r[1]));
-                    item.setDocente(      str(r[2]));
-                    item.setHoraApertura( str(r[4]));
+                    item.setIdUsuarioStr(str(r[3]));  // id_usuario ← correcto
+                    item.setFecha(        str(r[0])); // no hay fecha, pon id_reserva o déjalo vacío
+                    item.setLaboratorio(  str(r[1])); // nombre_laboratorio
+                    item.setDocente(      str(r[2])); // nombre_usuario
+                    item.setHoraApertura( str(r[4])); // hora_inicio
                     item.setObservaciones("");
                     return item;
                 })
                 .filter(i -> estaEnRango(i.getFecha(), fechaInicio, fechaFin))
+                .filter(i -> idUsuario == null || String.valueOf(idUsuario).equals(i.getIdUsuarioStr()))
                 .collect(Collectors.toList());
 
         long total = datos.size();
@@ -281,11 +288,13 @@ public class ReportesService {
                 .filter(u -> estado == null || estado.isBlank() || estado.equalsIgnoreCase(u.getEstado()))
                 .map(u -> {
                     UsuarioItem item = new UsuarioItem();
+                    item.setIdUsuario(      u.getIdUsuario());
                     item.setIdentidad(      u.getIdentidad());
                     item.setNombreCompleto( u.getNombres() + " " + u.getApellidos());
                     item.setEmail(          u.getEmail());
                     item.setUsuario(        u.getUsuario());
                     item.setEstado(         u.getEstado());
+
                     return item;
                 })
                 .collect(Collectors.toList());
@@ -312,7 +321,7 @@ public class ReportesService {
     // REPORTE BLOQUEOS
     // ─────────────────────────────────────────────────────────────────────────
 
-    public ReporteBloqueosDTO getReporteBloqueos(Integer laboratorio, String fechaInicio, String fechaFin, String estado) {
+    public ReporteBloqueosDTO getReporteBloqueos(Integer laboratorio, String fechaInicio, String fechaFin, String estado, Integer idUsuario) {
         List<Object[]> rows = bloqueoLabRepository.listar();
 
         // columnas de fn_listar_bloqueos():
@@ -321,7 +330,8 @@ public class ReportesService {
         List<BloqueoItem> datos = rows.stream()
                 .map(r -> {
                     BloqueoItem item = new BloqueoItem();
-                    item.setLaboratorio( str(r[2]));  // nombre_laboratorio
+                    item.setLaboratorio( str(r[2]));
+                    item.setIdUsuarioStr(str(r[3]));
                     item.setTipo(        str(r[6]));  // nombre_tipo_bloqueo
                     item.setMotivo(      str(r[7]));  // motivo
                     item.setFechaInicio( str(r[8]));  // fecha_inicio
@@ -330,6 +340,7 @@ public class ReportesService {
                     return item;
                 })
                 .filter(i -> estado == null || estado.isBlank() || estado.equalsIgnoreCase(i.getEstado()))
+                .filter(i -> idUsuario == null || String.valueOf(idUsuario).equals(i.getIdUsuarioStr()))
                 .collect(Collectors.toList());
 
         long total  = datos.size();
@@ -354,7 +365,8 @@ public class ReportesService {
     // REPORTE ACADÉMICO
     // ─────────────────────────────────────────────────────────────────────────
 
-    public ReporteAcademicoDTO getReporteAcademico(Integer laboratorio, String fechaInicio, String fechaFin) {
+    public ReporteAcademicoDTO getReporteAcademico(Integer laboratorio, String fechaInicio, String fechaFin, Integer idUsuario) {
+
         List<Object[]> rows = reservaRepository.listarReservas();
 
         // Filtramos solo las que tienen tipo académico (tipoReserva con asignatura)
@@ -363,6 +375,7 @@ public class ReportesService {
                     AcademicoItem item = new AcademicoItem();
                     // [0] id_reserva, [1] laboratorio, [2] usuario/docente, [3] fecha_reserva,
                     // [4] hora_inicio, [5] hora_fin, [6] motivo, [7] num_est, [8] estado, [9] tipo_reserva
+                    item.setIdUsuarioStr(str(r[3]));
                     item.setAsignatura(  str(r[9]));   // nombre_asignatura
                     item.setCarrera(str(r[6]));
                     item.setDocente(     str(r[4]));   // nombre_usuario
@@ -372,6 +385,7 @@ public class ReportesService {
                     return item;
                 })
                 .filter(i -> estaEnRango(i.getFecha(), fechaInicio, fechaFin))
+                .filter(i -> idUsuario == null || String.valueOf(idUsuario).equals(i.getIdUsuarioStr()))
                 .collect(Collectors.toList());
 
         long total = datos.size();

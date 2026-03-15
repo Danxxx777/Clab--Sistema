@@ -21,6 +21,7 @@ public class ReporteAsistenciaDTO {
 
     @Getter @Setter @NoArgsConstructor
     public static class AsistenciaItem {
+        private String idUsuarioStr;
         private String fecha;
         private String laboratorio;
         private String docente;

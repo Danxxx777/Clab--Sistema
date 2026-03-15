@@ -71,6 +71,7 @@ export class ReportarService {
     if (filtros.fechaInicio) params = params.set('fechaInicio', filtros.fechaInicio);
     if (filtros.fechaFin)    params = params.set('fechaFin',    filtros.fechaFin);
     if (filtros.estado)      params = params.set('estado',      filtros.estado);
+    if (filtros.idUsuario)   params = params.set('idUsuario',   String(filtros.idUsuario));
     return params;
   }
 }

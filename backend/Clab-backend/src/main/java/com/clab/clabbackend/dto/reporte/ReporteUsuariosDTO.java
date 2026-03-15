@@ -21,6 +21,7 @@ public class ReporteUsuariosDTO {
 
     @Getter @Setter @NoArgsConstructor
     public static class UsuarioItem {
+        private Integer idUsuario;
         private String identidad;
         private String nombreCompleto;
         private String email;
