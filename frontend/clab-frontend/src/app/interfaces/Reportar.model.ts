@@ -102,6 +102,7 @@ export interface ReporteFallaItem {
   laboratorio: string;
   equipo:      string;
   descripcion: string;
+  reportadoPor: string;
   estado:      string;
 }
 

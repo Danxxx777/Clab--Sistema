@@ -305,9 +305,14 @@ export class ReportarComponent implements OnInit {
         this.tituloGrafica2    = 'Top Equipos con Fallas';
         this.datosGrafica      = res.grafica1;
         this.datosDistribucion = res.grafica2;
-        this.columnasTabla     = ['FECHA', 'LABORATORIO', 'EQUIPO', 'DESCRIPCIÓN', 'REPORTADO POR'];
-        this.datosReporte      = res.datos.map((d: ReporteFallaItem) => ({
-          a: d.fecha, b: d.laboratorio, c: d.equipo, d: d.descripcion, estado: d.estado,
+        this.columnasTabla = ['FECHA', 'LABORATORIO', 'EQUIPO', 'DESCRIPCIÓN', 'REPORTADO POR'];
+        this.datosReporte  = res.datos.map((d: ReporteFallaItem) => ({
+          a: d.fecha,
+          b: d.laboratorio,
+          c: d.equipo,
+          d: d.descripcion,
+          e: d.reportadoPor,
+          estado: '',
         }));
         this.onSuccess();
       },
@@ -441,9 +446,12 @@ export class ReportarComponent implements OnInit {
     const vals: string[] = [];
     const keys = ['a', 'b', 'c', 'd', 'e', 'f'];
     for (const k of keys) {
-      if (k in fila) vals.push(fila[k] ?? '');  // ← k in fila en vez de !== undefined
+      if (k in fila) vals.push(fila[k] ?? '');
     }
-    vals.push(fila.estado ?? '');
+    // ← solo agrega estado si no está vacío
+    if (fila.estado !== undefined && fila.estado !== '') {
+      vals.push(fila.estado);
+    }
     return vals;
   }
   getBadgeClass(estado: string): string {
