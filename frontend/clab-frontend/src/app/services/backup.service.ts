@@ -21,18 +21,19 @@ export interface BackupConfig {
 
 
 export interface BackupRegistro {
-  id:           number;
-  fecha:        string;
-  modalidad:    'COMPLETO' | 'DIFERENCIAL' | 'INCREMENTAL';
+  id:              number;
+  fecha:           string;
+  modalidad:       'COMPLETO' | 'DIFERENCIAL' | 'INCREMENTAL';
   tablasIncluidas?: number;
-  tipo:      'MANUAL' | 'AUTOMATICO';
-  estado:    'EXITOSO' | 'FALLIDO';
-  tamano?:   string;
-  rutaLocal?: string;
-  rutaDrive?: string;
-  error?:    string;
+  tipo:            'MANUAL' | 'AUTOMATICO';
+  estado:          'EXITOSO' | 'FALLIDO';
+  tamano?:         string;
+  rutaLocal?:      string;
+  rutaDrive?:      string;
+  driveFileId?:    string;
+  formato: string;
+  error?:          string;
 }
-
 
 export interface BackupRespuesta {
   exito:    boolean;
@@ -67,12 +68,15 @@ export class BackupService {
   }
 
   // BACKUP MANUAL
-  ejecutarBackupManual(modalidad: 'COMPLETO' | 'DIFERENCIAL' | 'INCREMENTAL' = 'COMPLETO'): Observable<BackupRespuesta> {
+  ejecutarBackupManual(
+    modalidad: 'COMPLETO' | 'DIFERENCIAL' | 'INCREMENTAL' = 'COMPLETO',
+    formato: string = 'SQL'
+  ): Observable<BackupRespuesta> {
     return this.http
-      .post<BackupRespuesta>(`${this.baseUrl}/ejecutar?modalidad=${modalidad}`, {})
+      .post<BackupRespuesta>(
+        `${this.baseUrl}/ejecutar?modalidad=${modalidad}&formato=${formato}`, {})
       .pipe(catchError(this.manejarError));
   }
-
 
   // HISTORIAL
   obtenerHistorial(): Observable<BackupRegistro[]> {
@@ -86,6 +90,21 @@ export class BackupService {
   descargarBackup(id: number): Observable<Blob> {
     return this.http
       .get(`${this.baseUrl}/descargar/${id}`, { responseType: 'blob' })
+      .pipe(catchError(this.manejarError));
+  }
+
+// RESTAURACIÓN
+  restaurarDesdeHistorial(id: number): Observable<BackupRespuesta> {
+    return this.http
+      .post<BackupRespuesta>(`${this.baseUrl}/restaurar/${id}`, {})
+      .pipe(catchError(this.manejarError));
+  }
+
+  restaurarDesdeArchivo(archivo: File): Observable<BackupRespuesta> {
+    const formData = new FormData();
+    formData.append('archivo', archivo);
+    return this.http
+      .post<BackupRespuesta>(`${this.baseUrl}/restaurar/archivo`, formData)
       .pipe(catchError(this.manejarError));
   }
 

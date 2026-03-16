@@ -16,15 +16,20 @@ export class BackupComponent implements OnInit {
   Math = Math;
 
   constructor(
-    private router:        Router,
+    private router: Router,
     private backupService: BackupService,
-    private cdr:           ChangeDetectorRef
-  ) {}
+    private cdr: ChangeDetectorRef
+  ) {
+  }
+
+  // Tab activo
+  tabActivo: 'backups' | 'restauracion' = 'backups';
 
   //Estado general
   usuarioLogueado = '';
-  rol             = '';
-  drawerAbierto   = false;
+  rol = '';
+  drawerAbierto = false;
+  mostrarModalConfirmacion = false;
 
   // Toast
   mostrarNotificacion  = false;
@@ -32,22 +37,28 @@ export class BackupComponent implements OnInit {
   notificacionMensaje  = '';
   notificacionTipo: 'exito' | 'error' | 'confirmar' = 'exito';
 
+
   // Stats
   totalBackups     = 0;
   backupsExitosos  = 0;
   backupsFallidos  = 0;
   ultimoBackup     = '';
   estadoUltimoBackup: 'ok' | 'warn' | 'danger' = 'ok';
+  paginaRestauracion = 1;
+  itemsRestauracion  = 8;
 
   // Backup manual
   ejecutando    = false;
   mensajeManual = '';
   errorManual   = false;
+  formatoManual: 'SQL' | 'CUSTOM' = 'SQL';
 
   // Configuración
   guardandoConfig = false;
   mensajeConfig   = '';
   errorConfig     = false;
+  pendienteConfirmacion: BackupRegistro | null = null;
+  pendienteConfirmacionArchivo = false;
 
   config: BackupConfig = {
     frecuencia:       'DIARIO',
@@ -57,7 +68,7 @@ export class BackupComponent implements OnInit {
     guardarLocal:     true,
     guardarDrive:     false,
     activo:           false,
-    retencion:       10,
+    retencion:        10,
     rutaLocalBackup:  'C:/backups',
     modalidadDefault: 'COMPLETO'
   };
@@ -83,6 +94,15 @@ export class BackupComponent implements OnInit {
 
   // Error expandido
   errorExpandido: number | null = null;
+
+  get historialExitososLocales(): BackupRegistro[] {
+    return this.historial.filter(b => b.estado === 'EXITOSO' && b.rutaLocal);
+  }
+
+  // Restauración
+  restaurandoId:        number | null = null;
+  archivoRestauracion:  File | null = null;
+  nombreArchivoSelecto  = '';
 
   // Lifecycle
   ngOnInit(): void {
@@ -110,6 +130,12 @@ export class BackupComponent implements OnInit {
   logout():              void { sessionStorage.clear(); this.router.navigate(['/login']); }
   toggleDrawer():        void { this.drawerAbierto = !this.drawerAbierto; }
   cerrarDrawer():        void { this.drawerAbierto = false; }
+
+  // Cambiar tab
+  cambiarTab(tab: 'backups' | 'restauracion'): void {
+    this.tabActivo = tab;
+    this.cdr.detectChanges();
+  }
 
   // Cargar configuración
   cargarConfiguracion(): void {
@@ -168,7 +194,7 @@ export class BackupComponent implements OnInit {
     this.ejecutando    = true;
     this.cdr.detectChanges();
 
-    this.backupService.ejecutarBackupManual(this.modalidadManual).subscribe({
+    this.backupService.ejecutarBackupManual(this.modalidadManual, this.formatoManual).subscribe({
       next: (respuesta) => {
         this.ejecutando    = false;
         this.mensajeManual = respuesta.mensaje;
@@ -341,7 +367,20 @@ export class BackupComponent implements OnInit {
     }
     this.cdr.detectChanges();
   }
+  get historialRestauracionPaginado(): BackupRegistro[] {
+    const inicio = (this.paginaRestauracion - 1) * this.itemsRestauracion;
+    return this.historialExitososLocales.slice(inicio, inicio + this.itemsRestauracion);
+  }
 
+  get totalPaginasRestauracion(): number {
+    return Math.ceil(this.historialExitososLocales.length / this.itemsRestauracion);
+  }
+
+  irPaginaRestauracion(pagina: number): void {
+    if (pagina < 1 || pagina > this.totalPaginasRestauracion) return;
+    this.paginaRestauracion = pagina;
+    this.cdr.detectChanges();
+  }
   // Descargar backup
   descargarBackup(b: BackupRegistro): void {
     if (!b.rutaLocal) return;
@@ -359,6 +398,79 @@ export class BackupComponent implements OnInit {
         this.mostrarAlerta('Error', 'No se pudo descargar el archivo de backup.', 'error');
       }
     });
+  }
+
+  // RESTAURACIÓN DESDE HISTORIAL
+  restaurarDesdeHistorial(b: BackupRegistro): void {
+    if (!b.rutaLocal) return;
+    this.restaurandoId = b.id;
+    this.cdr.detectChanges();
+
+    this.backupService.restaurarDesdeHistorial(b.id).subscribe({
+      next: (respuesta) => {
+        this.restaurandoId = null;
+        this.mostrarAlerta(
+          respuesta.exito ? 'Restauración completada' : 'Error en restauración',
+          respuesta.detalle || respuesta.mensaje,
+          respuesta.exito ? 'exito' : 'error'
+        );
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.restaurandoId = null;
+        this.mostrarAlerta('Error', err.message || 'No se pudo restaurar.', 'error');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // RESTAURACIÓN DESDE ARCHIVO
+  onArchivoSeleccionado(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.archivoRestauracion = input.files[0];
+      this.nombreArchivoSelecto = input.files[0].name;
+      this.cdr.detectChanges();
+    }
+  }
+
+  restaurarDesdeArchivo(): void {
+    if (!this.archivoRestauracion) return;
+    const esCustom = this.archivoRestauracion.name.endsWith('.backup');
+    if (esCustom) {
+      this.mostrarModalConfirmacion = true;
+      this.pendienteConfirmacionArchivo = true;
+      return;
+    }
+    this.ejecutarRestauracionArchivo();
+  }
+  confirmarRestauracion(b: BackupRegistro): void {
+    const esCustom = b.rutaLocal?.endsWith('.backup');
+    if (esCustom) {
+      this.mostrarModalConfirmacion = true;
+      this.pendienteConfirmacion = b;
+    } else {
+      this.restaurarDesdeHistorial(b);
+    }
+  }
+
+  confirmarAccion(): void {
+    this.mostrarModalConfirmacion = false;
+    if (this.pendienteConfirmacion) {
+      const b = this.pendienteConfirmacion;
+      this.pendienteConfirmacion = null;
+      this.restaurarDesdeHistorial(b);
+    } else if (this.pendienteConfirmacionArchivo) {
+      this.pendienteConfirmacionArchivo = false;
+      this.ejecutarRestauracionArchivo();
+    }
+  }
+
+  cancelarAccion(): void {
+    this.mostrarModalConfirmacion = false;
+    this.pendienteConfirmacion = null;
+    this.pendienteConfirmacionArchivo = false;
+    this.cdr.detectChanges();
   }
 
   // Opciones para los selectores múltiples
@@ -435,5 +547,29 @@ export class BackupComponent implements OnInit {
   cerrarNotificacion(): void {
     this.mostrarNotificacion = false;
     this.cdr.detectChanges();
+  }
+  private ejecutarRestauracionArchivo(): void {
+    if (!this.archivoRestauracion) return;
+    this.restaurandoId = -1;
+    this.cdr.detectChanges();
+
+    this.backupService.restaurarDesdeArchivo(this.archivoRestauracion).subscribe({
+      next: (respuesta) => {
+        this.restaurandoId        = null;
+        this.archivoRestauracion  = null;
+        this.nombreArchivoSelecto = '';
+        this.mostrarAlerta(
+          respuesta.exito ? 'Restauración completada' : 'Error en restauración',
+          respuesta.detalle || respuesta.mensaje,
+          respuesta.exito ? 'exito' : 'error'
+        );
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.restaurandoId = null;
+        this.mostrarAlerta('Error', err.message || 'No se pudo restaurar.', 'error');
+        this.cdr.detectChanges();
+      }
+    });
   }
 }
