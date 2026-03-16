@@ -32,6 +32,7 @@ public class BackupService {
     private final BackupRegistroRepository registroRepository;
     private final BackupConfigRepository   configRepository;
     private final DataSource               dataSource;
+    private final GoogleDriveService       googleDriveService;
 
     // Configuración desde application.properties
     @Value("${backup.ruta-local:/backups}")
@@ -54,6 +55,12 @@ public class BackupService {
 
     @Value("${backup.pgdump.path:pg_dump}")
     private String pgDumpPath;
+
+    @Value("${backup.psql.path:psql}")
+    private String psqlPath;
+
+    @Value("${backup.pgrestore.path:pg_restore}")
+    private String pgRestorePath;
 
     // Formateador para los nombres de archivo: backup_2024-01-15_02-00-00.sql
     private static final DateTimeFormatter FORMATO_FECHA =
@@ -97,9 +104,7 @@ public class BackupService {
         }
     }
 
-
     // SECCIÓN 2: HISTORIAL
-
     public List<BackupRegistroDTO> obtenerHistorial() {
         return registroRepository.findAllByOrderByFechaDesc()
                 .stream()
@@ -157,11 +162,12 @@ public class BackupService {
         }
     }
 
-
     // SECCIÓN 4: EJECUCIÓN DEL BACKUP (pg_dump)
-    public BackupRespuestaDTO ejecutarBackupManual(BackupRegistro.ModalidadBackup modalidad) {
-        log.info("Iniciando backup MANUAL — modalidad: {}", modalidad);
-        BackupRegistro registro = ejecutarBackup(BackupRegistro.TipoBackup.MANUAL, modalidad);
+    public BackupRespuestaDTO ejecutarBackupManual(
+            BackupRegistro.ModalidadBackup modalidad, String formato) {
+        log.info("Iniciando backup MANUAL — modalidad: {}, formato: {}", modalidad, formato);
+        BackupRegistro registro = ejecutarBackup(
+                BackupRegistro.TipoBackup.MANUAL, modalidad, formato);
 
         if (registro.getEstado() == BackupRegistro.EstadoBackup.EXITOSO) {
             return BackupRespuestaDTO.ok(
@@ -183,13 +189,19 @@ public class BackupService {
         BackupRegistro.ModalidadBackup modalidad = configRepository.findById(1L)
                 .map(BackupConfig::getModalidadDefault)
                 .orElse(BackupRegistro.ModalidadBackup.COMPLETO);
+        // El backup automático siempre usa formato SQL por compatibilidad
         log.info("Iniciando backup AUTOMÁTICO — modalidad: {}", modalidad);
-        ejecutarBackup(BackupRegistro.TipoBackup.AUTOMATICO, modalidad);
+        ejecutarBackup(BackupRegistro.TipoBackup.AUTOMATICO, modalidad, "SQL");
     }
 
     @Transactional
     public BackupRegistro ejecutarBackup(BackupRegistro.TipoBackup tipo,
-                                         BackupRegistro.ModalidadBackup modalidad) {
+                                         BackupRegistro.ModalidadBackup modalidad,
+                                         String formato) {
+        // Determinar si es formato custom o plain
+        boolean esCustom = "CUSTOM".equalsIgnoreCase(formato);
+        String extension = esCustom ? ".backup" : ".sql";
+
         // Leer la ruta desde la BD (configurable por el admin desde la UI)
         String rutaEfectiva = configRepository.findById(1L)
                 .map(BackupConfig::getRutaLocalBackup)
@@ -197,8 +209,8 @@ public class BackupService {
                 .orElse(rutaLocal);
 
         LocalDateTime ahora        = LocalDateTime.now();
-        String        prefijo       = modalidad.name().toLowerCase(); // "completo", "diferencial"...
-        String        nombreArchivo = "backup_" + prefijo + "_" + ahora.format(FORMATO_FECHA) + ".sql";
+        String        prefijo       = modalidad.name().toLowerCase();
+        String        nombreArchivo = "backup_" + prefijo + "_" + ahora.format(FORMATO_FECHA) + extension;
         String        rutaArchivo   = rutaEfectiva + File.separator + nombreArchivo;
 
         BackupRegistro registro = BackupRegistro.builder()
@@ -220,17 +232,35 @@ public class BackupService {
                     tablasAIncluir == null ? "TODAS" : tablasAIncluir.size());
 
             // Paso 3: Construir el comando pg_dump
-
-            // Construir comando base
             java.util.List<String> comando = new java.util.ArrayList<>(java.util.Arrays.asList(
                     pgDumpPath,
                     "-h", dbHost,
                     "-p", dbPort,
                     "-U", dbUsuario,
-                    "-d", dbNombre,
-                    "-F", "p",
-                    "-f", rutaArchivo
+                    "-d", dbNombre
             ));
+
+            // Formato y opciones según tipo
+            if (esCustom) {
+                // Formato custom: binario, incluye estructura completa, restaurable desde 0
+                comando.add("-F");
+                comando.add("c");
+            } else {
+                // Formato plain: SQL legible, con INSERTs
+                comando.add("-F");
+                comando.add("p");
+                comando.add("--inserts");
+                comando.add("--on-conflict-do-nothing");
+            }
+
+            // Excluir siempre las tablas de sistema de backup
+            comando.add("--exclude-table");
+            comando.add("configuracion.backup_registro");
+            comando.add("--exclude-table");
+            comando.add("configuracion.backup_config");
+
+            comando.add("-f");
+            comando.add(rutaArchivo);
 
             // Para DIFERENCIAL e INCREMENTAL: agregar -t por cada tabla detectada
             // Si tablasAIncluir es null = COMPLETO = no se agregan filtros
@@ -244,6 +274,10 @@ public class BackupService {
                     registro.setEstado(BackupRegistro.EstadoBackup.EXITOSO);
                     registro.setTamano(calcularTamanoArchivo(rutaArchivo));
                     registro.setRutaLocal(rutaArchivo);
+
+                    // Subir a Drive si está habilitado en la config
+                    subirADriveSiCorresponde(registro, Paths.get(rutaArchivo), nombreArchivo);
+
                     BackupRegistro guardado = registroRepository.save(registro);
                     aplicarRetencion();
                     return guardado;
@@ -257,8 +291,7 @@ public class BackupService {
 
             ProcessBuilder pb = new ProcessBuilder(comando);
 
-            // Paso 3: Pasar la contraseña por variable de entorno
-
+            // Pasar la contraseña por variable de entorno
             pb.environment().put("PGPASSWORD", dbPassword);
 
             // Redirigir errores al mismo stream para capturarlos
@@ -281,6 +314,10 @@ public class BackupService {
                 registro.setTamano(tamano);
                 registro.setRutaLocal(rutaArchivo);
                 log.info("Backup exitoso: {} ({})", nombreArchivo, tamano);
+
+                // Subir a Drive si está habilitado en la config
+                subirADriveSiCorresponde(registro, Paths.get(rutaArchivo), nombreArchivo);
+
             } else {
                 registro.setError("pg_dump terminó con código " + codigoSalida
                         + (salidaProceso.isBlank() ? "" : ": " + salidaProceso));
@@ -288,7 +325,6 @@ public class BackupService {
             }
 
         } catch (IOException e) {
-
             String error = "No se pudo ejecutar pg_dump. " +
                     "¿Está PostgreSQL instalado y en el PATH? Error: " + e.getMessage();
             registro.setError(error);
@@ -307,6 +343,25 @@ public class BackupService {
         aplicarRetencion();
 
         return guardado;
+    }
+
+    // Sube el archivo a Google Drive si guardarDrive=true en la config.
+    // Si Drive falla, solo se loguea — no interrumpe el backup principal.
+    private void subirADriveSiCorresponde(BackupRegistro registro, Path rutaPath, String nombreArchivo) {
+        try {
+            boolean guardarDrive = configRepository.findById(1L)
+                    .map(BackupConfig::isGuardarDrive)
+                    .orElse(false);
+
+            if (guardarDrive) {
+                log.info("Subiendo backup a Google Drive: {}", nombreArchivo);
+                String driveId = googleDriveService.subirArchivo(rutaPath, nombreArchivo);
+                registro.setDriveFileId(driveId);
+                log.info("Backup subido a Drive con ID: {}", driveId);
+            }
+        } catch (Exception e) {
+            log.error("No se pudo subir el backup a Google Drive: {}", e.getMessage());
+        }
     }
 
     private void crearCarpetaSiNoExiste(String ruta) throws IOException {
@@ -332,7 +387,6 @@ public class BackupService {
             return "desconocido";
         }
     }
-
 
     // SECCIÓN 5: DETECCIÓN DE CAMBIOS (DIFERENCIAL / INCREMENTAL)
     private List<String> obtenerTablasParaModalidad(BackupRegistro.ModalidadBackup modalidad) {
@@ -420,5 +474,158 @@ public class BackupService {
                 .map(b -> Paths.get(b.getRutaLocal()))
                 .filter(Files::exists)
                 .orElse(null);
+    }
+
+    // SECCIÓN 7: RESTAURACIÓN
+    public BackupRespuestaDTO restaurarBackup(Long id) {
+        return registroRepository.findById(id)
+                .map(registro -> {
+                    if (registro.getRutaLocal() == null) {
+                        return BackupRespuestaDTO.error(
+                                "Sin archivo local",
+                                "Este backup no tiene archivo local disponible para restaurar"
+                        );
+                    }
+                    return ejecutarRestauracion(Paths.get(registro.getRutaLocal()));
+                })
+                .orElse(BackupRespuestaDTO.error("No encontrado", "No existe un backup con ese ID"));
+    }
+
+    public BackupRespuestaDTO restaurarDesdeArchivo(
+            org.springframework.web.multipart.MultipartFile archivo) {
+        try {
+            // Guardar el archivo subido en una carpeta temporal
+            Path temp = Files.createTempFile("restore_", "_" + archivo.getOriginalFilename());
+            archivo.transferTo(temp.toFile());
+            BackupRespuestaDTO resultado = ejecutarRestauracion(temp);
+            // Borrar el temporal después
+            Files.deleteIfExists(temp);
+            return resultado;
+        } catch (IOException e) {
+            log.error("Error al guardar archivo temporal para restauración: {}", e.getMessage());
+            return BackupRespuestaDTO.error("Error al procesar archivo", e.getMessage());
+        }
+    }
+
+    private BackupRespuestaDTO ejecutarRestauracion(Path rutaArchivo) {
+        try {
+            log.info("Iniciando restauración desde: {}", rutaArchivo);
+
+            // Detectar formato por extensión
+            boolean esCustom = rutaArchivo.toString().endsWith(".backup");
+
+            // Guardar registros actuales de backup antes de restaurar
+            List<BackupRegistro> registrosActuales = new java.util.ArrayList<>();
+            try (java.sql.Connection conn = dataSource.getConnection();
+                 java.sql.Statement stmt = conn.createStatement()) {
+
+                // Guardar registros en memoria antes de truncar
+                try (java.sql.ResultSet rs = stmt.executeQuery(
+                        "SELECT * FROM configuracion.backup_registro ORDER BY id")) {
+                    while (rs.next()) {
+                        registrosActuales.add(BackupRegistro.builder()
+                                .id(rs.getLong("id"))
+                                .fecha(rs.getTimestamp("fecha").toLocalDateTime())
+                                .tipo(BackupRegistro.TipoBackup.valueOf(rs.getString("tipo")))
+                                .modalidad(BackupRegistro.ModalidadBackup.valueOf(rs.getString("modalidad")))
+                                .estado(BackupRegistro.EstadoBackup.valueOf(rs.getString("estado")))
+                                .tamano(rs.getString("tamano"))
+                                .rutaLocal(rs.getString("ruta_local"))
+                                .driveFileId(rs.getString("drive_file_id"))
+                                .error(rs.getString("error"))
+                                .build());
+                    }
+                }
+
+                // Limpiar tablas del sistema para evitar conflictos de PK
+                stmt.execute("TRUNCATE configuracion.backup_registro RESTART IDENTITY CASCADE");
+                stmt.execute("TRUNCATE configuracion.backup_config RESTART IDENTITY CASCADE");
+                log.info("Tablas de sistema limpiadas antes de restaurar ({} registros guardados)",
+                        registrosActuales.size());
+            } catch (Exception e) {
+                log.warn("No se pudo limpiar tablas de sistema: {}", e.getMessage());
+            }
+
+            // Construir comando según formato
+            java.util.List<String> comando;
+            if (esCustom) {
+                comando = new java.util.ArrayList<>(java.util.Arrays.asList(
+                        pgRestorePath,
+                        "-h", dbHost,
+                        "-p", dbPort,
+                        "-U", dbUsuario,
+                        "-d", dbNombre,
+                        "--clean",
+                        "--if-exists",
+                        "--no-owner",
+                        "--no-privileges",
+                        "--disable-triggers",
+                        "-v",
+                        rutaArchivo.toString()
+                ));
+            }else {
+                // psql para formato plain SQL
+                comando = new java.util.ArrayList<>(java.util.Arrays.asList(
+                        psqlPath,
+                        "-h", dbHost,
+                        "-p", dbPort,
+                        "-U", dbUsuario,
+                        "-d", dbNombre,
+                        "-f", rutaArchivo.toString()
+                ));
+            }
+
+            ProcessBuilder pb = new ProcessBuilder(comando);
+            pb.environment().put("PGPASSWORD", dbPassword);
+            pb.redirectErrorStream(true);
+
+            Process proceso = pb.start();
+            String salida = new String(proceso.getInputStream().readAllBytes());
+            int codigo = proceso.waitFor();
+
+            if (codigo == 0 || codigo == 1) {
+                log.info("Restauración exitosa desde: {}", rutaArchivo);
+
+                // Restaurar registros de backup después del restore
+                if (!registrosActuales.isEmpty()) {
+                    try {
+                        registroRepository.saveAll(registrosActuales);
+                        log.info("Registros de backup reinsertados: {}", registrosActuales.size());
+                    } catch (Exception e) {
+                        log.warn("No se pudieron reinsertar registros de backup: {}", e.getMessage());
+                    }
+                }
+
+                return BackupRespuestaDTO.ok(
+                        "Restauración completada",
+                        "La base de datos fue restaurada correctamente"
+                );
+            } else {
+                log.error("Restauración terminó con código {}: {}", codigo, salida);
+
+                // Aunque falló el restore, reinsertar los registros de backup
+                if (!registrosActuales.isEmpty()) {
+                    try {
+                        registroRepository.saveAll(registrosActuales);
+                    } catch (Exception e) {
+                        log.warn("No se pudieron reinsertar registros de backup tras fallo: {}", e.getMessage());
+                    }
+                }
+
+                return BackupRespuestaDTO.error(
+                        "Error en la restauración",
+                        "Terminó con código " + codigo + (salida.isBlank() ? "" : ": " + salida)
+                );
+            }
+        } catch (IOException e) {
+            log.error("No se pudo ejecutar la restauración: {}", e.getMessage());
+            return BackupRespuestaDTO.error(
+                    "No se pudo ejecutar la restauración",
+                    "¿Está PostgreSQL en el PATH? " + e.getMessage()
+            );
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return BackupRespuestaDTO.error("Restauración interrumpida", e.getMessage());
+        }
     }
 }

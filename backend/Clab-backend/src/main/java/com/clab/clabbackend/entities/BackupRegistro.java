@@ -40,16 +40,30 @@ public class BackupRegistro {
     @Column(length = 200)
     private String rutaDrive;
 
+    @Column(length = 200)
+    private String driveFileId;
+
     @Column(columnDefinition = "TEXT")
     private String error;
 
     @Column(length = 150)
     private String ejecutadoPor;
 
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default
     private ModalidadBackup modalidad = ModalidadBackup.COMPLETO;
+
+    public enum FormatoBackup {
+        SQL, CUSTOM
+    }
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    @Builder.Default
+    private FormatoBackup formato = FormatoBackup.SQL;
+
 
     @Column
     private Integer tablasIncluidas;
