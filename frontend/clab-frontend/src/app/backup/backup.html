@@ -110,439 +110,383 @@
     <button class="btn-volver" (click)="volver()">← Volver</button>
   </div>
 
-  <!-- STATS -->
-  <div class="stats-bar">
-    <div class="stat-card">
-      <div class="stat-icon sc-green">💾</div>
-      <div class="stat-info">
-        <span class="stat-num">{{ totalBackups }}</span>
-        <span class="stat-label">Total backups</span>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon sc-blue">✅</div>
-      <div class="stat-info">
-        <span class="stat-num">{{ backupsExitosos }}</span>
-        <span class="stat-label">Exitosos</span>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon sc-red">❌</div>
-      <div class="stat-info">
-        <span class="stat-num">{{ backupsFallidos }}</span>
-        <span class="stat-label">Fallidos</span>
-      </div>
-    </div>
-
-    <!-- MEJORA 3: Stat de último backup con alerta de color -->
-    <div class="stat-card" [class.stat-warn]="estadoUltimoBackup === 'warn'" [class.stat-danger]="estadoUltimoBackup === 'danger'">
-      <div class="stat-icon" [ngClass]="{
-        'sc-purple': estadoUltimoBackup === 'ok',
-        'sc-amber':  estadoUltimoBackup === 'warn',
-        'sc-red':    estadoUltimoBackup === 'danger'
-      }">🕒</div>
-      <div class="stat-info">
-        <span class="stat-num" [ngClass]="{
-          'text-neon':   estadoUltimoBackup === 'ok',
-          'text-amber':  estadoUltimoBackup === 'warn',
-          'text-red':    estadoUltimoBackup === 'danger'
-        }">{{ ultimoBackup || '—' }}</span>
-        <span class="stat-label">Último backup</span>
-      </div>
-      <div class="stat-alert-badge" *ngIf="estadoUltimoBackup === 'warn'">⚠️</div>
-      <div class="stat-alert-badge stat-alert-danger" *ngIf="estadoUltimoBackup === 'danger'">🔴</div>
-    </div>
+  <!-- TABS -->
+  <div class="tabs-bar">
+    <button class="tab-btn" [class.active]="tabActivo === 'backups'" (click)="cambiarTab('backups')">Backups</button>
+    <button class="tab-btn" [class.active]="tabActivo === 'restauracion'" (click)="cambiarTab('restauracion')">Restauracion</button>
   </div>
 
-  <div class="content-wrapper">
-    <div class="backup-layout">
+  <!-- TAB BACKUPS -->
+  <div *ngIf="tabActivo === 'backups'">
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-icon sc-green">💾</div>
+        <div class="stat-info"><span class="stat-num">{{ totalBackups }}</span><span class="stat-label">Total backups</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon sc-blue">✅</div>
+        <div class="stat-info"><span class="stat-num">{{ backupsExitosos }}</span><span class="stat-label">Exitosos</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon sc-red">❌</div>
+        <div class="stat-info"><span class="stat-num">{{ backupsFallidos }}</span><span class="stat-label">Fallidos</span></div>
+      </div>
+      <div class="stat-card" [class.stat-warn]="estadoUltimoBackup === 'warn'" [class.stat-danger]="estadoUltimoBackup === 'danger'">
+        <div class="stat-icon" [ngClass]="{'sc-purple': estadoUltimoBackup === 'ok', 'sc-amber': estadoUltimoBackup === 'warn', 'sc-red': estadoUltimoBackup === 'danger'}">🕒</div>
+        <div class="stat-info">
+          <span class="stat-num" [ngClass]="{'text-neon': estadoUltimoBackup === 'ok', 'text-amber': estadoUltimoBackup === 'warn', 'text-red': estadoUltimoBackup === 'danger'}">{{ ultimoBackup || '—' }}</span>
+          <span class="stat-label">Último backup</span>
+        </div>
+        <div class="stat-alert-badge" *ngIf="estadoUltimoBackup === 'warn'">⚠️</div>
+        <div class="stat-alert-badge stat-alert-danger" *ngIf="estadoUltimoBackup === 'danger'">🔴</div>
+      </div>
+    </div>
 
-      <!-- COLUMNA IZQUIERDA: Config + Backup manual -->
-      <div class="backup-sidebar">
+    <div class="content-wrapper">
+      <div class="backup-layout">
 
-        <!-- BACKUP MANUAL -->
-        <div class="backup-card">
-          <div class="backup-card-header">
-            <span class="backup-card-title">Backup manual</span>
-            <span class="backup-card-icon">💾</span>
-          </div>
-          <p class="backup-card-desc">
-            Genera un respaldo completo de la base de datos ahora mismo. Se guardará en el servidor y en Google Drive.
-          </p>
-          <!-- Selector de modalidad para backup manual -->
-          <div class="form-group">
-            <label>Tipo de backup</label>
-            <div class="modalidad-selector">
-              <button
-                class="modalidad-btn"
-                [class.selected]="modalidadManual === 'COMPLETO'"
-                (click)="modalidadManual = 'COMPLETO'"
-                type="button">
-                💾 Completo
-              </button>
-              <button
-                class="modalidad-btn"
-                [class.selected]="modalidadManual === 'DIFERENCIAL'"
-                (click)="modalidadManual = 'DIFERENCIAL'"
-                type="button">
-                📊 Diferencial
-              </button>
-              <button
-                class="modalidad-btn"
-                [class.selected]="modalidadManual === 'INCREMENTAL'"
-                (click)="modalidadManual = 'INCREMENTAL'"
-                type="button">
-                ⚡ Incremental
-              </button>
+        <div class="backup-sidebar">
+          <div class="backup-card">
+            <div class="backup-card-header">
+              <span class="backup-card-title">Backup manual</span>
+              <span class="backup-card-icon">💾</span>
             </div>
-            <span class="modalidad-desc" *ngIf="modalidadManual === 'COMPLETO'">Respalda toda la base de datos</span>
-            <span class="modalidad-desc" *ngIf="modalidadManual === 'DIFERENCIAL'">Solo cambios desde el último backup completo</span>
-            <span class="modalidad-desc" *ngIf="modalidadManual === 'INCREMENTAL'">Solo cambios desde el último backup</span>
+            <p class="backup-card-desc">Genera un respaldo de la base de datos ahora mismo.</p>
+            <div class="form-group">
+              <label>Tipo de backup</label>
+              <div class="modalidad-selector">
+                <button class="modalidad-btn" [class.selected]="modalidadManual === 'COMPLETO'" (click)="modalidadManual = 'COMPLETO'" type="button">💾 Completo</button>
+                <button class="modalidad-btn" [class.selected]="modalidadManual === 'DIFERENCIAL'" (click)="modalidadManual = 'DIFERENCIAL'" type="button">📊 Diferencial</button>
+                <button class="modalidad-btn" [class.selected]="modalidadManual === 'INCREMENTAL'" (click)="modalidadManual = 'INCREMENTAL'" type="button">⚡ Incremental</button>
+              </div>
+              <span class="modalidad-desc" *ngIf="modalidadManual === 'COMPLETO'">Respalda toda la base de datos</span>
+              <span class="modalidad-desc" *ngIf="modalidadManual === 'DIFERENCIAL'">Solo cambios desde el último backup completo</span>
+              <span class="modalidad-desc" *ngIf="modalidadManual === 'INCREMENTAL'">Solo cambios desde el último backup</span>
+            </div>
+            <div class="form-group">
+              <label>Formato del backup</label>
+              <div class="modalidad-selector">
+                <button class="modalidad-btn" [class.selected]="formatoManual === 'SQL'" (click)="formatoManual = 'SQL'" type="button">📄 SQL</button>
+                <button class="modalidad-btn" [class.selected]="formatoManual === 'CUSTOM'" (click)="formatoManual = 'CUSTOM'" type="button">📦 Custom</button>
+              </div>
+              <span class="modalidad-desc" *ngIf="formatoManual === 'SQL'">Archivo .sql legible, restauracion parcial</span>
+              <span class="modalidad-desc" *ngIf="formatoManual === 'CUSTOM'">Archivo .backup binario, restauracion completa desde 0</span>
+            </div>
+            <button class="btn-backup-manual" (click)="ejecutarBackupManual()" [disabled]="ejecutando">
+              <span *ngIf="!ejecutando">Ejecutar backup ahora</span>
+              <span *ngIf="ejecutando" class="btn-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+            </button>
+            <div class="backup-manual-status" *ngIf="mensajeManual" [class.error]="errorManual">{{ mensajeManual }}</div>
           </div>
 
-          <button
-            class="btn-backup-manual"
-            (click)="ejecutarBackupManual()"
-            [disabled]="ejecutando"
-          >
-            <span *ngIf="!ejecutando">Ejecutar backup ahora</span>
-            <span *ngIf="ejecutando" class="btn-dots">
-              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-            </span>
-          </button>
-          <div class="backup-manual-status" *ngIf="mensajeManual" [class.error]="errorManual">
-            {{ mensajeManual }}
+          <div class="backup-card">
+            <div class="backup-card-header">
+              <span class="backup-card-title">Programacion automatica</span>
+              <span class="backup-card-icon">⚙️</span>
+            </div>
+            <div class="form-group">
+              <label>Frecuencia</label>
+              <select class="form-control" [(ngModel)]="config.frecuencia" (change)="actualizarProximoBackup()">
+                <option value="DIARIO">Diario</option>
+                <option value="SEMANAL">Semanal</option>
+                <option value="MENSUAL">Mensual</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Tipo de backup automatico</label>
+              <div class="modalidad-selector">
+                <button class="modalidad-btn" [class.selected]="config.modalidadDefault === 'COMPLETO'" (click)="config.modalidadDefault = 'COMPLETO'" type="button">💾 Completo</button>
+                <button class="modalidad-btn" [class.selected]="config.modalidadDefault === 'DIFERENCIAL'" (click)="config.modalidadDefault = 'DIFERENCIAL'" type="button">📊 Diferencial</button>
+                <button class="modalidad-btn" [class.selected]="config.modalidadDefault === 'INCREMENTAL'" (click)="config.modalidadDefault = 'INCREMENTAL'" type="button">⚡ Incremental</button>
+              </div>
+            </div>
+            <div class="form-group" *ngIf="config.frecuencia === 'SEMANAL'">
+              <label>Dias de la semana <span class="label-hint">(selecciona uno o mas)</span></label>
+              <div class="dias-semana-grid">
+                <label class="dia-check" *ngFor="let d of diasSemanaOpciones">
+                  <input type="checkbox" [checked]="config.diasSemana.includes(d.valor)" (change)="toggleDiaSemana(d.valor)" />
+                  <span>{{ d.label }}</span>
+                </label>
+              </div>
+            </div>
+            <div class="form-group" *ngIf="config.frecuencia === 'MENSUAL'">
+              <label>Dias del mes <span class="label-hint">(selecciona uno o mas)</span></label>
+              <div class="dias-mes-grid">
+                <button *ngFor="let d of diasMesOpciones" class="chip-dia" [class.selected]="config.diasMes.includes(d)" (click)="toggleDiaMes(d)" type="button">{{ d }}</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Horas de ejecucion <span class="label-hint">(una o mas)</span></label>
+              <div class="horas-lista">
+                <div class="hora-tag" *ngFor="let h of config.horas; let i = index">
+                  <span>{{ h }}</span>
+                  <button class="btn-remove-hora" (click)="removerHora(i)" type="button" [disabled]="config.horas.length === 1">×</button>
+                </div>
+              </div>
+              <div class="hora-add-row">
+                <input type="time" class="form-control hora-input" [(ngModel)]="nuevaHora" />
+                <button class="btn-add-hora" (click)="agregarHora()" type="button">+ Agregar</button>
+              </div>
+            </div>
+            <div class="proximo-backup-banner" *ngIf="config.activo && proximoBackupTexto">
+              <span class="pb-icon">⏰</span>
+              <div class="pb-info">
+                <span class="pb-label">Proximo backup</span>
+                <span class="pb-valor">{{ proximoBackupTexto }}</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Destino</label>
+              <div class="destino-checks">
+                <label class="destino-check"><input type="checkbox" [(ngModel)]="config.guardarLocal" /><span>Servidor local</span></label>
+                <label class="destino-check"><input type="checkbox" [(ngModel)]="config.guardarDrive" /><span>Google Drive</span></label>
+              </div>
+            </div>
+            <div class="form-group" *ngIf="config.guardarLocal">
+              <label>Ruta de almacenamiento <span class="label-hint">(carpeta en el servidor)</span></label>
+              <input type="text" class="form-control" [(ngModel)]="config.rutaLocalBackup" placeholder="Ej: C:/backups o /backups" />
+              <span class="retencion-hint">La carpeta se crea automaticamente si no existe</span>
+            </div>
+            <div class="form-group">
+              <label>Retencion <span class="label-hint">(cantidad a conservar)</span></label>
+              <div class="retencion-row">
+                <input type="number" class="form-control retencion-input" [(ngModel)]="config.retencion" min="1" max="365" placeholder="Ej: 30" />
+                <span class="retencion-hint">Cuando se supere este numero, los mas antiguos se eliminaran solos</span>
+              </div>
+            </div>
+            <div class="config-estado-row">
+              <span class="config-estado-label">Estado del schedule</span>
+              <button class="btn-toggle-schedule" [class.activo]="config.activo" (click)="toggleSchedule()">{{ config.activo ? 'Activo' : 'Inactivo' }}</button>
+            </div>
+            <button class="btn-guardar-config" (click)="guardarConfiguracion()" [disabled]="guardandoConfig">
+              <span *ngIf="!guardandoConfig">Guardar configuracion</span>
+              <span *ngIf="guardandoConfig" class="btn-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+            </button>
+            <p class="config-msg-exito" *ngIf="mensajeConfig && !errorConfig">{{ mensajeConfig }}</p>
+            <p class="config-msg-error" *ngIf="mensajeConfig && errorConfig">{{ mensajeConfig }}</p>
           </div>
         </div>
 
-        <!-- CONFIGURACIÓN SCHEDULE -->
-        <div class="backup-card">
-          <div class="backup-card-header">
-            <span class="backup-card-title">Programación automática</span>
-            <span class="backup-card-icon">⚙️</span>
-          </div>
-
-          <!-- FRECUENCIA -->
-          <div class="form-group">
-            <label>Frecuencia</label>
-            <select class="form-control" [(ngModel)]="config.frecuencia" (change)="actualizarProximoBackup()">
-              <option value="DIARIO">Diario</option>
-              <option value="SEMANAL">Semanal</option>
-              <option value="MENSUAL">Mensual</option>
-            </select>
-          </div>
-
-          <!-- MODALIDAD POR DEFECTO para el scheduler -->
-          <div class="form-group">
-            <label>Tipo de backup automático</label>
-            <div class="modalidad-selector">
-              <button
-                class="modalidad-btn"
-                [class.selected]="config.modalidadDefault === 'COMPLETO'"
-                (click)="config.modalidadDefault = 'COMPLETO'"
-                type="button">
-                💾 Completo
-              </button>
-              <button
-                class="modalidad-btn"
-                [class.selected]="config.modalidadDefault === 'DIFERENCIAL'"
-                (click)="config.modalidadDefault = 'DIFERENCIAL'"
-                type="button">
-                📊 Diferencial
-              </button>
-              <button
-                class="modalidad-btn"
-                [class.selected]="config.modalidadDefault === 'INCREMENTAL'"
-                (click)="config.modalidadDefault = 'INCREMENTAL'"
-                type="button">
-                ⚡ Incremental
-              </button>
-            </div>
-          </div>
-
-          <!-- DÍAS DE LA SEMANA (múltiple) — solo para SEMANAL -->
-          <div class="form-group" *ngIf="config.frecuencia === 'SEMANAL'">
-            <label>Días de la semana <span class="label-hint">(selecciona uno o más)</span></label>
-            <div class="dias-semana-grid">
-              <label class="dia-check" *ngFor="let d of diasSemanaOpciones">
-                <input type="checkbox"
-                       [checked]="config.diasSemana.includes(d.valor)"
-                       (change)="toggleDiaSemana(d.valor)" />
-                <span>{{ d.label }}</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- DÍAS DEL MES (chips) — solo para MENSUAL -->
-          <div class="form-group" *ngIf="config.frecuencia === 'MENSUAL'">
-            <label>Días del mes <span class="label-hint">(selecciona uno o más)</span></label>
-            <div class="dias-mes-grid">
-              <button
-                *ngFor="let d of diasMesOpciones"
-                class="chip-dia"
-                [class.selected]="config.diasMes.includes(d)"
-                (click)="toggleDiaMes(d)"
-                type="button">
-                {{ d }}
-              </button>
-            </div>
-          </div>
-
-          <!-- HORAS (múltiple) -->
-          <div class="form-group">
-            <label>Horas de ejecución <span class="label-hint">(una o más)</span></label>
-            <div class="horas-lista">
-              <div class="hora-tag" *ngFor="let h of config.horas; let i = index">
-                <span>{{ h }}</span>
-                <button class="btn-remove-hora" (click)="removerHora(i)" type="button"
-                        [disabled]="config.horas.length === 1">×</button>
+        <div class="backup-historial">
+          <div class="historial-header">
+            <span class="backup-card-title">Historial de backups</span>
+            <div class="historial-filters">
+              <select class="filter-select-sm" [(ngModel)]="filtroTipo" (change)="filtrarHistorial()">
+                <option value="TODOS">Todos los tipos</option>
+                <option value="MANUAL">Manual</option>
+                <option value="AUTOMATICO">Automatico</option>
+              </select>
+              <select class="filter-select-sm" [(ngModel)]="filtroEstado" (change)="filtrarHistorial()">
+                <option value="TODOS">Todos los estados</option>
+                <option value="EXITOSO">Exitoso</option>
+                <option value="FALLIDO">Fallido</option>
+              </select>
+              <button class="btn-refresh" (click)="cargarHistorial()" title="Actualizar">↻</button>
+              <div class="pagination-bar" *ngIf="totalPaginas > 1">
+                <button class="btn-pag" (click)="irPagina(1)" [disabled]="paginaActual === 1">«</button>
+                <button class="btn-pag" (click)="irPagina(paginaActual - 1)" [disabled]="paginaActual === 1">‹</button>
+                <ng-container *ngFor="let p of paginasVisibles">
+                  <span *ngIf="p === -1" class="pag-dots">…</span>
+                  <button *ngIf="p !== -1" class="btn-pag" [class.active]="p === paginaActual" (click)="irPagina(p)">{{ p }}</button>
+                </ng-container>
+                <button class="btn-pag" (click)="irPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">›</button>
+                <button class="btn-pag" (click)="irPagina(totalPaginas)" [disabled]="paginaActual === totalPaginas">»</button>
+                <span class="pag-info">{{ (paginaActual - 1) * itemsPorPagina + 1 }}–{{ Math.min(paginaActual * itemsPorPagina, historialFiltrado.length) }} de {{ historialFiltrado.length }}</span>
               </div>
             </div>
-            <div class="hora-add-row">
-              <input type="time" class="form-control hora-input" [(ngModel)]="nuevaHora" />
-              <button class="btn-add-hora" (click)="agregarHora()" type="button">+ Agregar</button>
-            </div>
           </div>
-
-          <!-- MEJORA 1: Próximo backup programado -->
-          <div class="proximo-backup-banner" *ngIf="config.activo && proximoBackupTexto">
-            <span class="pb-icon">⏰</span>
-            <div class="pb-info">
-              <span class="pb-label">Próximo backup</span>
-              <span class="pb-valor">{{ proximoBackupTexto }}</span>
-            </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+              <tr>
+                <th>FECHA</th><th>TIPO</th><th>ESTADO</th><th>MODALIDAD</th><th>TAMAÑO</th><th>DESTINO</th><th>ACCIONES</th>
+              </tr>
+              </thead>
+              <tbody>
+              <ng-container *ngFor="let b of historialPaginado">
+                <tr [class.row-fallido]="b.estado === 'FALLIDO'">
+                  <td><strong>{{ b.fecha | date:'dd/MM/yyyy' }}</strong><small>{{ b.fecha | date:'HH:mm:ss' }}</small></td>
+                  <td><span class="badge tipo-badge" [class.manual]="b.tipo === 'MANUAL'" [class.auto]="b.tipo === 'AUTOMATICO'">{{ b.tipo === 'MANUAL' ? 'Manual' : 'Automatico' }}</span></td>
+                  <td><span class="badge" [class.activo]="b.estado === 'EXITOSO'" [class.inactivo]="b.estado === 'FALLIDO'">{{ b.estado === 'EXITOSO' ? 'Exitoso' : 'Fallido' }}</span></td>
+                  <td>
+                      <span class="badge modalidad-badge" [class.completo]="b.modalidad === 'COMPLETO'" [class.diferencial]="b.modalidad === 'DIFERENCIAL'" [class.incremental]="b.modalidad === 'INCREMENTAL'">
+                        {{ b.modalidad === 'COMPLETO' ? '💾 Completo' : b.modalidad === 'DIFERENCIAL' ? '📊 Diferencial' : '⚡ Incremental' }}
+                      </span>
+                    <small *ngIf="b.tablasIncluidas">{{ b.tablasIncluidas }} tablas</small>
+                  </td>
+                  <td>{{ b.tamano || '—' }}</td>
+                  <td>
+                    <div class="destino-icons">
+                      <span class="destino-icon activo" *ngIf="b.rutaLocal" title="Servidor local">💻</span>
+                      <span class="destino-icon activo" *ngIf="b.driveFileId" title="Google Drive">☁️</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="btn-action btn-ver" (click)="descargarBackup(b)" [disabled]="!b.rutaLocal">Descargar</button>
+                      <button *ngIf="b.estado === 'FALLIDO' && b.error" class="btn-action btn-error-detail" (click)="toggleError(b)">{{ errorExpandido === b.id ? 'Ocultar' : 'Ver error' }}</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="b.estado === 'FALLIDO' && b.error && errorExpandido === b.id" class="error-row">
+                  <td colspan="7">
+                    <div class="error-detail-panel">
+                      <div class="error-detail-header">
+                        <span class="error-detail-icon">🔍</span>
+                        <span class="error-detail-title">Detalle del error</span>
+                        <button class="btn-close-error" (click)="toggleError(b)">×</button>
+                      </div>
+                      <pre class="error-detail-msg">{{ b.error }}</pre>
+                    </div>
+                  </td>
+                </tr>
+              </ng-container>
+              <tr *ngIf="historialFiltrado.length === 0">
+                <td colspan="7" class="empty-message">No hay backups registrados</td>
+              </tr>
+              </tbody>
+            </table>
           </div>
-
-          <div class="form-group">
-            <label>Destino</label>
-            <div class="destino-checks">
-              <label class="destino-check">
-                <input type="checkbox" [(ngModel)]="config.guardarLocal" />
-                <span>Servidor local</span>
-              </label>
-              <label class="destino-check">
-                <input type="checkbox" [(ngModel)]="config.guardarDrive" />
-                <span>Google Drive</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- RUTA LOCAL CONFIGURABLE -->
-          <div class="form-group" *ngIf="config.guardarLocal">
-            <label>Ruta de almacenamiento <span class="label-hint">(carpeta en el servidor)</span></label>
-            <input
-              type="text"
-              class="form-control"
-              [(ngModel)]="config.rutaLocalBackup"
-              placeholder="Ej: C:/backups o /backups"
-            />
-            <span class="retencion-hint">La carpeta se crea automáticamente si no existe</span>
-          </div>
-
-          <!-- RETENCIÓN POR DÍAS -->
-          <div class="form-group">
-            <label>Retención <span class="label-hint">(cantidad a conservar)</span></label>
-            <div class="retencion-row">
-              <input
-                type="number"
-                class="form-control retencion-input"
-                [(ngModel)]="config.retencion"
-                min="1"
-                max="365"
-                placeholder="Ej: 30"
-              />
-              <span class="retencion-hint">Cuando se supere este número, los más antiguos se eliminarán solos</span>
-            </div>
-          </div>
-
-          <div class="config-estado-row">
-            <span class="config-estado-label">Estado del schedule</span>
-            <button
-              class="btn-toggle-schedule"
-              [class.activo]="config.activo"
-              (click)="toggleSchedule()"
-            >
-              {{ config.activo ? 'Activo' : 'Inactivo' }}
-            </button>
-          </div>
-
-          <button class="btn-guardar-config" (click)="guardarConfiguracion()" [disabled]="guardandoConfig">
-            <span *ngIf="!guardandoConfig">Guardar configuración</span>
-            <span *ngIf="guardandoConfig" class="btn-dots">
-              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-            </span>
-          </button>
-
-          <p class="config-msg-exito" *ngIf="mensajeConfig && !errorConfig">{{ mensajeConfig }}</p>
-          <p class="config-msg-error" *ngIf="mensajeConfig && errorConfig">{{ mensajeConfig }}</p>
         </div>
 
       </div>
+    </div>
+  </div>
+  <!-- FIN TAB BACKUPS -->
 
-      <!-- COLUMNA DERECHA: Historial -->
-      <div class="backup-historial">
-        <div class="historial-header">
-          <span class="backup-card-title">Historial de backups</span>
-          <div class="historial-filters">
-            <select class="filter-select-sm" [(ngModel)]="filtroTipo" (change)="filtrarHistorial()">
-              <option value="TODOS">Todos los tipos</option>
-              <option value="MANUAL">Manual</option>
-              <option value="AUTOMATICO">Automático</option>
-            </select>
-            <select class="filter-select-sm" [(ngModel)]="filtroEstado" (change)="filtrarHistorial()">
-              <option value="TODOS">Todos los estados</option>
-              <option value="EXITOSO">Exitoso</option>
-              <option value="FALLIDO">Fallido</option>
-            </select>
-            <button class="btn-refresh" (click)="cargarHistorial()" title="Actualizar">↻</button>
+  <!-- TAB RESTAURACION -->
+  <div *ngIf="tabActivo === 'restauracion'" class="restauracion-container">
+
+    <div class="restauracion-warning-banner">
+      <span class="rw-icon">⚠️</span>
+      <div class="rw-texto">
+        <strong>Zona de riesgo</strong>
+        <span>Restaurar un backup reemplaza todos los datos actuales. Los backups CUSTOM restauran estructura completa (SPs, triggers, funciones).</span>
+      </div>
+    </div>
+
+    <div class="restauracion-layout">
+
+      <div class="backup-card restauracion-upload-card">
+        <div class="backup-card-header">
+          <span class="backup-card-title">Restaurar desde archivo</span>
+          <span class="backup-card-icon">📂</span>
+        </div>
+        <p class="backup-card-desc">Sube un archivo .sql o .backup para restaurar manualmente.</p>
+        <div class="file-drop-zone" (click)="fileInput.click()" [class.file-drop-active]="nombreArchivoSelecto">
+          <input #fileInput type="file" accept=".sql,.backup" style="display:none" (change)="onArchivoSeleccionado($event)">
+          <div *ngIf="!nombreArchivoSelecto" class="file-drop-placeholder">
+            <div class="file-drop-icon">📁</div>
+            <span class="file-drop-text">Haz clic para seleccionar</span>
+            <span class="file-drop-hint">.sql o .backup</span>
+          </div>
+          <div *ngIf="nombreArchivoSelecto" class="file-drop-selected">
+            <span class="file-icon-selected">📄</span>
+            <span class="file-name-selected">{{ nombreArchivoSelecto }}</span>
+            <span class="file-badge" [class.badge-custom]="nombreArchivoSelecto.endsWith('.backup')" [class.badge-sql]="nombreArchivoSelecto.endsWith('.sql')">
+              {{ nombreArchivoSelecto.endsWith('.backup') ? 'CUSTOM' : 'SQL' }}
+            </span>
           </div>
         </div>
+        <button class="btn-restaurar-archivo"
+                [class.btn-restaurar-custom]="nombreArchivoSelecto?.endsWith('.backup')"
+                (click)="restaurarDesdeArchivo()"
+                [disabled]="!archivoRestauracion || restaurandoId === -1">
+          <span *ngIf="restaurandoId !== -1">{{ nombreArchivoSelecto?.endsWith('.backup') ? 'Restaurar completo' : 'Restaurar SQL' }}</span>
+          <span *ngIf="restaurandoId === -1" class="btn-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+        </button>
+      </div>
 
-        <div class="table-container">
+      <div class="backup-card restauracion-historial-card">
+        <div class="backup-card-header">
+          <span class="backup-card-title">Restaurar desde historial</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="pagination-bar" *ngIf="totalPaginasRestauracion > 1">
+              <button class="btn-pag" (click)="irPaginaRestauracion(1)" [disabled]="paginaRestauracion === 1">«</button>
+              <button class="btn-pag" (click)="irPaginaRestauracion(paginaRestauracion - 1)" [disabled]="paginaRestauracion === 1">‹</button>
+              <button *ngFor="let p of [].constructor(totalPaginasRestauracion); let i = index"
+                      class="btn-pag" [class.active]="i + 1 === paginaRestauracion"
+                      (click)="irPaginaRestauracion(i + 1)">{{ i + 1 }}</button>
+              <button class="btn-pag" (click)="irPaginaRestauracion(paginaRestauracion + 1)" [disabled]="paginaRestauracion === totalPaginasRestauracion">›</button>
+              <button class="btn-pag" (click)="irPaginaRestauracion(totalPaginasRestauracion)" [disabled]="paginaRestauracion === totalPaginasRestauracion">»</button>
+              <span class="pag-info">{{ (paginaRestauracion - 1) * itemsRestauracion + 1 }}–{{ Math.min(paginaRestauracion * itemsRestauracion, historialExitososLocales.length) }} de {{ historialExitososLocales.length }}</span>
+            </div>
+            <span class="backup-card-icon">🗄️</span>
+          </div>
+        </div>
+        <p class="backup-card-desc">Selecciona un backup exitoso para restaurar la base de datos a ese punto.</p>
+        <div class="table-container restauracion-table">
           <table class="data-table">
             <thead>
-            <tr>
-              <th>FECHA</th>
-              <th>TIPO</th>
-              <th>ESTADO</th>
-              <th>MODALIDAD</th>
-              <th>TAMAÑO</th>
-              <th>DESTINO</th>
-              <th>ACCIONES</th>
-            </tr>
+            <tr><th>FECHA</th><th>MODALIDAD</th><th>FORMATO</th><th>TAMAÑO</th><th>ACCION</th></tr>
             </thead>
             <tbody>
-            <ng-container *ngFor="let b of historialPaginado">
-              <!-- FILA PRINCIPAL -->
-              <tr [class.row-fallido]="b.estado === 'FALLIDO'">
-                <td>
-                  <strong>{{ b.fecha | date:'dd/MM/yyyy' }}</strong>
-                  <small>{{ b.fecha | date:'HH:mm:ss' }}</small>
-                </td>
-                <td>
-                  <span class="badge tipo-badge"
-                        [class.manual]="b.tipo === 'MANUAL'"
-                        [class.auto]="b.tipo === 'AUTOMATICO'">
-                    {{ b.tipo === 'MANUAL' ? 'Manual' : 'Automático' }}
+            <tr *ngFor="let b of historialRestauracionPaginado">
+              <td><strong>{{ b.fecha | date:'dd/MM/yyyy' }}</strong><small>{{ b.fecha | date:'HH:mm:ss' }}</small></td>
+              <td>
+                  <span class="badge modalidad-badge" [class.completo]="b.modalidad === 'COMPLETO'" [class.diferencial]="b.modalidad === 'DIFERENCIAL'" [class.incremental]="b.modalidad === 'INCREMENTAL'">
+                    {{ b.modalidad === 'COMPLETO' ? '💾 Completo' : b.modalidad === 'DIFERENCIAL' ? '📊 Diferencial' : '⚡ Incremental' }}
                   </span>
-                </td>
-                <td>
-                  <span class="badge"
-                        [class.activo]="b.estado === 'EXITOSO'"
-                        [class.inactivo]="b.estado === 'FALLIDO'">
-                    {{ b.estado === 'EXITOSO' ? 'Exitoso' : 'Fallido' }}
+              </td>
+              <td>
+                  <span class="formato-badge"
+                        [class.formato-custom]="b.formato === 'CUSTOM'"
+                        [class.formato-sql]="b.formato === 'SQL'">
+                    {{ b.formato || 'SQL' }}
                   </span>
-                </td>
-                <td>
-                  <span class="badge modalidad-badge"
-                        [class.completo]="b.modalidad === 'COMPLETO'"
-                        [class.diferencial]="b.modalidad === 'DIFERENCIAL'"
-                        [class.incremental]="b.modalidad === 'INCREMENTAL'">
-                    {{ b.modalidad === 'COMPLETO' ? '💾 Completo'
-                    : b.modalidad === 'DIFERENCIAL' ? '📊 Diferencial'
-                      : '⚡ Incremental' }}
-                  </span>
-                  <small *ngIf="b.tablasIncluidas">{{ b.tablasIncluidas }} tablas</small>
-                </td>
-                <td>{{ b.tamano || '—' }}</td>
-                <td>
-                  <div class="destino-icons">
-                    <span class="destino-icon" [class.activo]="b.rutaLocal" title="Servidor local">💻</span>
-                    <span class="destino-icon" [class.activo]="b.rutaDrive" title="Google Drive">☁️</span>
-                  </div>
-                </td>
-                <td>
-                  <div class="action-buttons">
-                    <button
-                      class="btn-action btn-ver"
-                      (click)="descargarBackup(b)"
-                      [disabled]="!b.rutaLocal"
-                      title="Descargar .sql"
-                    >
-                      Descargar
-                    </button>
-                    <!-- MEJORA 5: Ver detalle de error -->
-                    <button
-                      *ngIf="b.estado === 'FALLIDO' && b.error"
-                      class="btn-action btn-error-detail"
-                      (click)="toggleError(b)"
-                      title="Ver detalle del error"
-                    >
-                      {{ errorExpandido === b.id ? 'Ocultar' : 'Ver error' }}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-
-              <!-- FILA DE ERROR EXPANDIBLE (MEJORA 5) -->
-              <tr *ngIf="b.estado === 'FALLIDO' && b.error && errorExpandido === b.id"
-                  class="error-row">
-                <td colspan="7">
-                  <div class="error-detail-panel">
-                    <div class="error-detail-header">
-                      <span class="error-detail-icon">🔍</span>
-                      <span class="error-detail-title">Detalle del error</span>
-                      <button class="btn-close-error" (click)="toggleError(b)">×</button>
-                    </div>
-                    <pre class="error-detail-msg">{{ b.error }}</pre>
-                  </div>
-                </td>
-              </tr>
-            </ng-container>
-
-            <tr *ngIf="historialFiltrado.length === 0">
-              <td colspan="7" class="empty-message">No hay backups registrados</td>
+              </td>
+              <td>{{ b.tamano || '—' }}</td>
+              <td>
+                <button class="btn-action btn-restaurar" [class.btn-restaurar-custom]="b.rutaLocal?.includes('.backup')" (click)="confirmarRestauracion(b)" [disabled]="restaurandoId === b.id">
+                  <span *ngIf="restaurandoId !== b.id">Restaurar</span>
+                  <span *ngIf="restaurandoId === b.id" class="btn-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="historialExitososLocales.length === 0">
+              <td colspan="5" class="empty-message">No hay backups locales disponibles</td>
             </tr>
             </tbody>
           </table>
         </div>
-
-        <!-- MEJORA 4: Paginación -->
-        <div class="pagination-bar" *ngIf="totalPaginas > 1">
-          <button class="btn-pag" (click)="irPagina(1)" [disabled]="paginaActual === 1" title="Primera">«</button>
-          <button class="btn-pag" (click)="irPagina(paginaActual - 1)" [disabled]="paginaActual === 1">‹</button>
-
-          <ng-container *ngFor="let p of paginasVisibles">
-            <span *ngIf="p === -1" class="pag-dots">…</span>
-            <button *ngIf="p !== -1"
-                    class="btn-pag"
-                    [class.active]="p === paginaActual"
-                    (click)="irPagina(p)">
-              {{ p }}
-            </button>
-          </ng-container>
-
-          <button class="btn-pag" (click)="irPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">›</button>
-          <button class="btn-pag" (click)="irPagina(totalPaginas)" [disabled]="paginaActual === totalPaginas" title="Última">»</button>
-
-          <span class="pag-info">
-            {{ (paginaActual - 1) * itemsPorPagina + 1 }}–{{ Math.min(paginaActual * itemsPorPagina, historialFiltrado.length) }}
-            de {{ historialFiltrado.length }}
-          </span>
-        </div>
-
       </div>
 
     </div>
   </div>
-</div>
+  <!-- FIN TAB RESTAURACION -->
 
-<!-- TOAST -->
-<div class="toast-notif" *ngIf="mostrarNotificacion" [ngClass]="{
-  'toast-exito':     notificacionTipo === 'exito',
-  'toast-error':     notificacionTipo === 'error',
-  'toast-confirmar': notificacionTipo === 'confirmar'
-}">
-  <div class="toast-icon">
-    <span *ngIf="notificacionTipo === 'exito'">✅</span>
-    <span *ngIf="notificacionTipo === 'error'">❌</span>
-    <span *ngIf="notificacionTipo === 'confirmar'">⚠️</span>
+  <!-- MODAL CONFIRMACION -->
+  <div class="modal-overlay" *ngIf="mostrarModalConfirmacion" (click)="cancelarAccion()">
+    <div class="modal-confirm" (click)="$event.stopPropagation()">
+      <div class="modal-confirm-icon">⚠️</div>
+      <h3 class="modal-confirm-title">Confirmar restauracion</h3>
+      <p class="modal-confirm-msg">Este backup reemplazara <strong>TODA</strong> la base de datos.<br>Se borraran y recrearan todos los datos, SPs, triggers y funciones.</p>
+      <p class="modal-confirm-sub">¿Estas seguro de continuar?</p>
+      <div class="modal-confirm-actions">
+        <button class="btn-modal-cancel" (click)="cancelarAccion()">Cancelar</button>
+        <button class="btn-modal-confirm" (click)="confirmarAccion()">Si, restaurar</button>
+      </div>
+    </div>
   </div>
-  <div class="toast-body">
-    <strong>{{ notificacionTitulo }}</strong>
-    <p>{{ notificacionMensaje }}</p>
+
+  <!-- TOAST -->
+  <div class="toast-notif" *ngIf="mostrarNotificacion" [ngClass]="{'toast-exito': notificacionTipo === 'exito', 'toast-error': notificacionTipo === 'error', 'toast-confirmar': notificacionTipo === 'confirmar'}">
+    <div class="toast-icon">
+      <span *ngIf="notificacionTipo === 'exito'">✅</span>
+      <span *ngIf="notificacionTipo === 'error'">❌</span>
+      <span *ngIf="notificacionTipo === 'confirmar'">⚠️</span>
+    </div>
+    <div class="toast-body">
+      <strong>{{ notificacionTitulo }}</strong>
+      <p>{{ notificacionMensaje }}</p>
+    </div>
+    <div class="toast-actions">
+      <ng-container *ngIf="notificacionTipo === 'confirmar'">
+        <button class="toast-btn-confirm" (click)="confirmarAccion()">Confirmar</button>
+        <button class="toast-btn-cancel" (click)="cancelarAccion()">Cancelar</button>
+      </ng-container>
+      <button *ngIf="notificacionTipo !== 'confirmar'" class="toast-btn-close" (click)="cerrarNotificacion()">×</button>
+    </div>
   </div>
-  <div class="toast-actions">
-    <button *ngIf="notificacionTipo !== 'confirmar'" class="toast-btn-close" (click)="cerrarNotificacion()">×</button>
-  </div>
+
 </div>
