@@ -335,7 +335,7 @@
               @for(fila of datosReporte; track $index) {
                 <tr>
                   @for(val of filasTabla(fila); track $index; let last = $last) {
-                    @if(last) {
+                    @if(last && fila.estado !== undefined && fila.estado !== '') {
                       <td><span class="badge" [ngClass]="getBadgeClass(val)">{{ val }}</span></td>
                     } @else {
                       <td>{{ val }}</td>
