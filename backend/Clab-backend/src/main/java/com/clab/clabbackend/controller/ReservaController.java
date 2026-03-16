@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.clab.clabbackend.dto.ReservaRecurrenteDTO;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -115,6 +116,44 @@ public class ReservaController {
     @PutMapping("/rechazar/{id}")
     public ResponseEntity<Void> rechazar(@PathVariable Integer id, HttpServletRequest request) {
         reservaService.rechazar(id, obtenerIdUsuario(request), obtenerUsuario(request));
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/crear-recurrente")
+    public ResponseEntity<Void> crearRecurrente(
+            @RequestBody ReservaRecurrenteDTO dto,
+            HttpServletRequest request) {
+        reservaService.crearRecurrente(dto, obtenerIdUsuario(request), obtenerUsuario(request));
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/cancelar-grupo/{idGrupo}")
+    public ResponseEntity<Void> cancelarGrupo(
+            @PathVariable Integer idGrupo,
+            @RequestBody CancelacionDTO dto,
+            HttpServletRequest request) {
+        reservaService.cancelarGrupo(idGrupo, dto, obtenerIdUsuario(request), obtenerUsuario(request));
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/listar-grupos")
+    public ResponseEntity<List<Map<String, Object>>> listarGrupos() {
+        return ResponseEntity.ok(reservaService.listarGrupos());
+    }
+
+    @PutMapping("/aprobar-grupo/{idGrupo}")
+    public ResponseEntity<Void> aprobarGrupo(
+            @PathVariable Integer idGrupo,
+            HttpServletRequest request) {
+        reservaService.aprobarGrupo(idGrupo, obtenerIdUsuario(request), obtenerUsuario(request));
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/rechazar-grupo/{idGrupo}")
+    public ResponseEntity<Void> rechazarGrupo(
+            @PathVariable Integer idGrupo,
+            HttpServletRequest request) {
+        reservaService.rechazarGrupo(idGrupo, obtenerIdUsuario(request), obtenerUsuario(request));
         return ResponseEntity.ok().build();
     }
 }
