@@ -151,18 +151,27 @@ public class ReportesService {
     public ReporteFallasDTO getReporteFallas(Integer laboratorio, String fechaInicio, String fechaFin, Integer idUsuario) {
         List<Object[]> rows = reporteFallasRepository.listarReportes();
 
-        // columnas de fn_listar_reportes():
-        // [0] id_reporte, [1] equipo, [2] laboratorio, [3] usuario, [4] descripcion_falla, [5] fecha_reporte
+        // ← agrega esto: cargar todos los usuarios en un mapa id → nombre
+        Map<Integer, String> usuarioMap = usuarioRepository.findAll().stream()
+                .collect(Collectors.toMap(
+                        u -> u.getIdUsuario(),
+                        u -> u.getNombres() + " " + u.getApellidos()
+                ));
+
         List<FallaItem> datos = rows.stream()
                 .map(r -> {
                     FallaItem item = new FallaItem();
                     item.setIdReporte(   str(r[0]));
-                    item.setFecha(       str(r[1]));  // fecha_reporte
-                    item.setDescripcion( str(r[2]));  // descripcion_falla
-                    item.setLaboratorio( str(r[4]));  // nombre_lab
-                    item.setEquipo(      str(r[6]));  // nombre_equipo
-                    item.setReportadoPor(str(r[10]));
+                    item.setFecha(       str(r[1]));
+                    item.setDescripcion( str(r[2]));
+                    item.setLaboratorio( str(r[4]));
+                    item.setEquipo(      str(r[6]));
                     item.setIdUsuarioStr(str(r[9]));
+
+                    // ← busca el nombre en el mapa
+                    Integer uid = r[9] != null ? Integer.valueOf(str(r[9])) : null;
+                    item.setReportadoPor(uid != null ? usuarioMap.getOrDefault(uid, str(r[10])) : str(r[10]));
+
                     return item;
                 })
                 .filter(i -> laboratorio == null || i.getLaboratorio() != null)
