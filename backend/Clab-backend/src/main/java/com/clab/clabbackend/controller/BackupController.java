@@ -51,13 +51,14 @@ public class BackupController {
     }
 
     // POST /backup/ejecutar
+    // POST /backup/ejecutar
     @PostMapping("/ejecutar")
     public ResponseEntity<BackupRespuestaDTO> ejecutarBackupManual(
-            @RequestParam(defaultValue = "COMPLETO") String modalidad) {
+            @RequestParam(defaultValue = "COMPLETO") String modalidad,
+            @RequestParam(defaultValue = "SQL") String formato) {
 
-        log.info("POST /backup/ejecutar — modalidad: {}", modalidad);
+        log.info("POST /backup/ejecutar — modalidad: {}, formato: {}", modalidad, formato);
 
-        // Convertir String a enum de forma segura
         com.clab.clabbackend.entities.BackupRegistro.ModalidadBackup mod;
         try {
             mod = com.clab.clabbackend.entities.BackupRegistro.ModalidadBackup.valueOf(modalidad);
@@ -65,8 +66,7 @@ public class BackupController {
             mod = com.clab.clabbackend.entities.BackupRegistro.ModalidadBackup.COMPLETO;
         }
 
-        BackupRespuestaDTO respuesta = backupService.ejecutarBackupManual(mod);
-
+        BackupRespuestaDTO respuesta = backupService.ejecutarBackupManual(mod, formato);
         HttpStatus status = respuesta.isExito() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR;
         return ResponseEntity.status(status).body(respuesta);
     }
@@ -116,4 +116,23 @@ public class BackupController {
             return ResponseEntity.internalServerError().build();
         }
     }
+    // POST /backup/restaurar/{id} — restaurar desde historial local
+    @PostMapping("/restaurar/{id}")
+    public ResponseEntity<BackupRespuestaDTO> restaurarDesdeHistorial(@PathVariable Long id) {
+        log.info("POST /backup/restaurar/{}", id);
+        BackupRespuestaDTO respuesta = backupService.restaurarBackup(id);
+        HttpStatus status = respuesta.isExito() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR;
+        return ResponseEntity.status(status).body(respuesta);
+    }
+
+    // POST /backup/restaurar/archivo — restaurar subiendo un .sql
+    @PostMapping("/restaurar/archivo")
+    public ResponseEntity<BackupRespuestaDTO> restaurarDesdeArchivo(
+            @RequestParam("archivo") org.springframework.web.multipart.MultipartFile archivo) {
+        log.info("POST /backup/restaurar/archivo — nombre: {}", archivo.getOriginalFilename());
+        BackupRespuestaDTO respuesta = backupService.restaurarDesdeArchivo(archivo);
+        HttpStatus status = respuesta.isExito() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR;
+        return ResponseEntity.status(status).body(respuesta);
+    }
+
 }

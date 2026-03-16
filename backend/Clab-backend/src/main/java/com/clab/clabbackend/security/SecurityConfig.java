@@ -56,6 +56,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/reportes/**").permitAll()
                         .requestMatchers("/estadisticas/login").permitAll()
                         .requestMatchers("/backup/**").permitAll()
+                        .requestMatchers("/backup/restaurar/**").hasAnyAuthority("Administradorr")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
