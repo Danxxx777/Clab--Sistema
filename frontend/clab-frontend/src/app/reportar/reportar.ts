@@ -50,7 +50,7 @@ export class ReportarComponent implements OnInit {
     { id: 'fallas',     titulo: 'Fallas',       desc: 'Historial y seguimiento de fallas',      icono: '/fallas.png',      color: 'rojo',     colorHex: '#e74c3c' },
     { id: 'usuarios',   titulo: 'Usuarios',     desc: 'Actividad y roles del sistema',          icono: '/user.png',        color: 'azul',     colorHex: '#3b82f6' },
     { id: 'reservas',   titulo: 'Reservas',     desc: 'Historial de reservas de laboratorios',  icono: '/calendario.png',  color: 'naranja',  colorHex: '#e67e22' },
-    { id: 'asistencia', titulo: 'Asistencia',   desc: 'Control de asistencia por laboratorio',  icono: '/asistencia.png',  color: 'cyan',     colorHex: '#06b6d4' },
+    //{ id: 'asistencia', titulo: 'Asistencia',   desc: 'Control de asistencia por laboratorio',  icono: '/asistencia.png',  color: 'cyan',     colorHex: '#06b6d4' },
     { id: 'academico',  titulo: 'Académico',    desc: 'Períodos, carreras y asignaturas',       icono: '/academico.png',   color: 'amarillo', colorHex: '#f59e0b' },
     { id: 'bloqueos',   titulo: 'Bloqueos',     desc: 'Bloqueos y restricciones de acceso',     icono: '/bloqueos.png',    color: 'morado',   colorHex: '#a855f7' },
   ];
