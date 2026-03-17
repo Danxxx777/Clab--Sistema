@@ -10,7 +10,7 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.clab.clabbackend.dto.ReservaRecurrenteDTO;
 import java.sql.Date;
 import java.sql.Time;
 import java.time.LocalDate;
@@ -93,6 +93,7 @@ public class ReservaService {
             reserva.put("descripcion",         r[18]);
             reserva.put("fechaSolicitud",      r[19] != null ? ((Date) r[19]).toLocalDate() : null);
             reserva.put("fechaConfirmacion",   r[20] != null ? ((Date) r[20]).toLocalDate() : null);
+            reserva.put("idGrupoReserva",      r[21]);
             return reserva;
         }).collect(Collectors.toList());
     }
@@ -219,5 +220,81 @@ public class ReservaService {
         } catch (Exception e) {
             System.err.println("Error notificación rechazo: " + e.getMessage());
         }
+    }
+
+    // ─── CREAR RECURRENTE ────────────────────────────────────────────────────
+
+    @Transactional
+    public void crearRecurrente(ReservaRecurrenteDTO dto, Integer actorId, String actorUsuario) {
+        setActorContext(actorId, actorUsuario);
+        reservaRepository.crearRecurrente(
+                dto.getCodLaboratorio(),
+                dto.getIdUsuario(),
+                dto.getIdPeriodo(),
+                dto.getIdHorarioAcademico(),
+                dto.getIdAsignatura(),
+                dto.getIdTipoReserva(),
+                dto.getDiasSemana(),
+                dto.getHoraInicio(),
+                dto.getHoraFin(),
+                dto.getMotivo(),
+                dto.getNumeroEstudiantes(),
+                dto.getDescripcion()
+        );
+    }
+
+// ─── CANCELAR GRUPO ──────────────────────────────────────────────────────
+
+    @Transactional
+    public void cancelarGrupo(Integer idGrupo, CancelacionDTO dto, Integer actorId, String actorUsuario) {
+        setActorContext(actorId, actorUsuario);
+        reservaRepository.cancelarGrupo(
+                idGrupo,
+                dto.getIdUsuarioCancela(),
+                dto.getMotivoCancelacion()
+        );
+    }
+
+    public List<Map<String, Object>> listarGrupos() {
+        return reservaRepository.listarGruposReserva().stream().map(r -> {
+            Map<String, Object> grupo = new HashMap<>();
+            grupo.put("idGrupo",            r[0]);
+            grupo.put("codLaboratorio",     r[1]);
+            grupo.put("nombreLaboratorio",  r[2]);
+            grupo.put("idUsuario",          r[3]);
+            grupo.put("nombreUsuario",      r[4]);
+            grupo.put("idPeriodo",          r[5]);
+            grupo.put("nombrePeriodo",      r[6]);
+            grupo.put("diasSemana",         r[7]);
+            grupo.put("horaInicio",         r[8] != null ? ((Time) r[8]).toLocalTime() : null);
+            grupo.put("horaFin",            r[9] != null ? ((Time) r[9]).toLocalTime() : null);
+            grupo.put("idAsignatura",       r[10]);
+            grupo.put("nombreAsignatura",   r[11]);
+            grupo.put("idTipoReserva",      r[12]);
+            grupo.put("nombreTipoReserva",  r[13]);
+            grupo.put("motivo",             r[14]);
+            grupo.put("numeroEstudiantes",  r[15]);
+            grupo.put("descripcion",        r[16]);
+            grupo.put("estado",             r[17]);
+            grupo.put("totalReservas",      r[18]);
+            grupo.put("fechaCreacion",      r[19] != null ? ((Date) r[19]).toLocalDate() : null);
+            return grupo;
+        }).collect(Collectors.toList());
+    }
+
+    // ─── APROBAR GRUPO ───────────────────────────────────────────────────────
+
+    @Transactional
+    public void aprobarGrupo(Integer idGrupo, Integer actorId, String actorUsuario) {
+        setActorContext(actorId, actorUsuario);
+        reservaRepository.aprobarGrupo(idGrupo);
+    }
+
+// ─── RECHAZAR GRUPO ──────────────────────────────────────────────────────
+
+    @Transactional
+    public void rechazarGrupo(Integer idGrupo, Integer actorId, String actorUsuario) {
+        setActorContext(actorId, actorUsuario);
+        reservaRepository.rechazarGrupo(idGrupo);
     }
 }

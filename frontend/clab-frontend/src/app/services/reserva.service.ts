@@ -68,4 +68,24 @@ export class ReservaService {
   listarPorUsuario(idUsuario: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.API_URL}/usuario/${idUsuario}`);
   }
+
+  crearRecurrente(data: any): Observable<any> {
+    return this.http.post(`${this.API_URL}/crear-recurrente`, data);
+  }
+
+  cancelarGrupo(idGrupo: number, data: CancelacionDTO): Observable<any> {
+    return this.http.post(`${this.API_URL}/cancelar-grupo/${idGrupo}`, data);
+  }
+
+  listarGrupos(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/listar-grupos`);
+  }
+
+  aprobarGrupo(idGrupo: number): Observable<any> {
+    return this.http.put(`${this.API_URL}/aprobar-grupo/${idGrupo}`, {});
+  }
+
+  rechazarGrupo(idGrupo: number): Observable<any> {
+    return this.http.put(`${this.API_URL}/rechazar-grupo/${idGrupo}`, {});
+  }
 }

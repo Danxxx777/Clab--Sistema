@@ -115,4 +115,53 @@ public interface ReservaRepository extends JpaRepository<Reserva, Integer> {
     @Query(value = "SELECT * FROM reservas.fn_datos_notificacion_reserva(:idReserva)",
             nativeQuery = true)
     List<Object[]> obtenerDatosNotificacion(Integer idReserva);
+
+    // CREAR RECURRENTE
+    @Transactional
+    @Modifying
+    @Query(value = "CALL reservas.sp_crear_reserva_recurrente(" +
+            ":codLaboratorio, :idUsuario, :idPeriodo, :idHorarioAcademico, " +
+            ":idAsignatura, :idTipoReserva, :diasSemana, :horaInicio, " +
+            ":horaFin, :motivo, :numeroEstudiantes, :descripcion)",
+            nativeQuery = true)
+    void crearRecurrente(
+            @Param("codLaboratorio")     Integer codLaboratorio,
+            @Param("idUsuario")          Integer idUsuario,
+            @Param("idPeriodo")          Integer idPeriodo,
+            @Param("idHorarioAcademico") Integer idHorarioAcademico,
+            @Param("idAsignatura")       Integer idAsignatura,
+            @Param("idTipoReserva")      Integer idTipoReserva,
+            @Param("diasSemana")         String diasSemana,
+            @Param("horaInicio")         LocalTime horaInicio,
+            @Param("horaFin")            LocalTime horaFin,
+            @Param("motivo")             String motivo,
+            @Param("numeroEstudiantes")  Integer numeroEstudiantes,
+            @Param("descripcion")        String descripcion
+    );
+
+    // CANCELAR GRUPO
+    @Transactional
+    @Modifying
+    @Query(value = "CALL reservas.sp_cancelar_grupo_reserva(:idGrupo, :idUsuario, :motivo)",
+            nativeQuery = true)
+    void cancelarGrupo(
+            @Param("idGrupo")   Integer idGrupo,
+            @Param("idUsuario") Integer idUsuario,
+            @Param("motivo")    String motivo
+    );
+
+    @Query(value = "SELECT * FROM reservas.fn_listar_grupos_reserva()", nativeQuery = true)
+    List<Object[]> listarGruposReserva();
+
+    // APROBAR GRUPO
+    @Transactional
+    @Modifying
+    @Query(value = "CALL reservas.sp_aprobar_grupo_reserva(:idGrupo)", nativeQuery = true)
+    void aprobarGrupo(@Param("idGrupo") Integer idGrupo);
+
+    // RECHAZAR GRUPO
+    @Transactional
+    @Modifying
+    @Query(value = "CALL reservas.sp_rechazar_grupo_reserva(:idGrupo)", nativeQuery = true)
+    void rechazarGrupo(@Param("idGrupo") Integer idGrupo);
 }

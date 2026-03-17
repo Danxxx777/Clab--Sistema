@@ -302,7 +302,7 @@
                  (input)="filtrarReservas()" placeholder="Buscar reservas...">
         </div>
         <div class="toolbar-actions">
-          <div class="paginacion" *ngIf="reservasFiltradas.length > 0">
+          <div class="paginacion" *ngIf="reservasCombinadasFiltradas.length > 0">
             <button class="btn-pag" (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">‹</button>
             <button class="btn-pag" *ngFor="let p of paginas" [class.activa]="p === paginaActual" (click)="cambiarPagina(p)">{{ p }}</button>
             <button class="btn-pag" (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">›</button>
@@ -320,34 +320,92 @@
           </tr>
           </thead>
           <tbody>
-          <tr *ngFor="let res of reservasPaginadas; let i = index">
-            <td><strong>{{ res.nombre_laboratorio }}</strong></td>
-            <td>{{ res.fecha_reserva | date:'dd/MM/yyyy' }}</td>
-            <td>{{ res.hora_inicio }} - {{ res.hora_fin }}</td>
-            <td>{{ res.nombre_asignatura }}</td>
-            <td>{{ res.nombre_periodo }}</td>
-            <td>{{ res.numero_estudiantes }} estudiantes</td>
-            <td><span class="badge tipo-badge">{{ res.nombre_tipo }}</span></td>
-            <td><span class="badge" [ngClass]="getEstadoBadgeClass(res.estado)">{{ res.estado }}</span></td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn-action btn-ver" (click)="verDetalle(res)">Ver</button>
-                <button class="btn-action btn-editar"
-                        (click)="editarReserva(res, i)"
-                        [disabled]="res.estado !== 'Pendiente'"
-                        [title]="res.estado !== 'Pendiente' ? 'Solo se pueden editar reservas pendientes' : ''">
-                  Editar
-                </button>
-                <button class="btn-action btn-aprobar" *ngIf="res.estado === 'Pendiente'" (click)="aprobarReserva(res)">Aprobar</button>
-                <button class="btn-action btn-rechazar" *ngIf="res.estado === 'Pendiente'" (click)="rechazarReserva(res)">Rechazar</button>
-                <button class="btn-action btn-cancelar-res" *ngIf="res.estado === 'Aprobada'" (click)="abrirModalCancelar(res, i)">Cancelar</button>
-              </div>
-            </td>
+          <tr *ngFor="let item of reservasPaginadas">
+
+            <!-- FILA GRUPO RECURRENTE -->
+            <ng-container *ngIf="item.esGrupo">
+              <td><strong>{{ item.nombre_laboratorio }}</strong></td>
+              <td>
+                <span class="badge-recurrente">🔁 Todo el período</span>
+                <div class="grupo-periodo">{{ item.nombre_periodo }}</div>
+                <div class="grupo-dias">{{ item.diasSemana }}</div>
+              </td>
+              <td>{{ item.hora_inicio }} - {{ item.hora_fin }}</td>
+              <td>{{ item.nombre_asignatura }}</td>
+              <td>{{ item.nombre_periodo }}</td>
+              <td>{{ item.numero_estudiantes }} estudiantes</td>
+              <td><span class="badge tipo-badge">{{ item.nombre_tipo }}</span></td>
+              <td>
+        <span class="badge" [ngClass]="getEstadoBadgeClass(item.estado)">
+          {{ item.estado }}
+        </span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn-action btn-aprobar"
+                          *ngIf="item.estado === 'Pendiente'"
+                          (click)="aprobarGrupo(item)">
+                    Aprobar todo
+                  </button>
+                  <button class="btn-action btn-rechazar"
+                          *ngIf="item.estado === 'Pendiente'"
+                          (click)="rechazarGrupo(item)">
+                    Rechazar todo
+                  </button>
+                  <button class="btn-action btn-cancelar-res"
+                          *ngIf="item.estado === 'Pendiente' || item.estado === 'Aprobada'"
+                          (click)="abrirModalCancelarGrupo(item)">
+                    Cancelar todo
+                  </button>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- FILA RESERVA PUNTUAL -->
+            <ng-container *ngIf="!item.esGrupo">
+              <td><strong>{{ item.nombre_laboratorio }}</strong></td>
+              <td>{{ item.fecha_reserva | date:'dd/MM/yyyy' }}</td>
+              <td>{{ item.hora_inicio }} - {{ item.hora_fin }}</td>
+              <td>{{ item.nombre_asignatura }}</td>
+              <td>{{ item.nombre_periodo }}</td>
+              <td>{{ item.numero_estudiantes }} estudiantes</td>
+              <td><span class="badge tipo-badge">{{ item.nombre_tipo }}</span></td>
+              <td>
+        <span class="badge" [ngClass]="getEstadoBadgeClass(item.estado)">
+          {{ item.estado }}
+        </span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn-action btn-ver" (click)="verDetalle(item)">Ver</button>
+                  <button class="btn-action btn-editar"
+                          (click)="editarReserva(item, 0)"
+                          [disabled]="item.estado !== 'Pendiente'"
+                          [title]="item.estado !== 'Pendiente' ? 'Solo se pueden editar reservas pendientes' : ''">
+                    Editar
+                  </button>
+                  <button class="btn-action btn-aprobar"
+                          *ngIf="item.estado === 'Pendiente'"
+                          (click)="aprobarReserva(item)">Aprobar</button>
+                  <button class="btn-action btn-rechazar"
+                          *ngIf="item.estado === 'Pendiente'"
+                          (click)="rechazarReserva(item)">Rechazar</button>
+                  <button class="btn-action btn-cancelar-res"
+                          *ngIf="item.estado === 'Aprobada'"
+                          (click)="abrirModalCancelar(item, 0)">Cancelar</button>
+                </div>
+              </td>
+            </ng-container>
+
           </tr>
-          <tr *ngIf="reservasFiltradas.length === 0">
+
+          <tr *ngIf="reservasCombinadasFiltradas.length === 0">
             <td colspan="9" class="empty-message">No hay reservas registradas</td>
           </tr>
           </tbody>
+
+
+
         </table>
       </div>
     </div>
@@ -503,6 +561,25 @@
     </div>
     <div class="modal-body" (click)="cerrarTimePickerSiAfuera($event)">
 
+      <!-- Toggle puntual / recurrente -->
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>Modo de Reserva</label>
+          <div class="toggle-tipo">
+            <button class="btn-toggle"
+                    [class.btn-toggle--active]="!formularioReserva.esRecurrente"
+                    (click)="formularioReserva.esRecurrente = false">
+              📅 Fecha puntual
+            </button>
+            <button class="btn-toggle"
+                    [class.btn-toggle--active]="formularioReserva.esRecurrente"
+                    (click)="formularioReserva.esRecurrente = true">
+              🔁 Todo el período
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Fila 1: Laboratorio + Asignatura -->
       <div class="form-row">
         <div class="form-group">
@@ -542,11 +619,38 @@
       </div>
 
       <!-- Fila 3: Fecha (izq) + Hora inicio & Hora fin (der, mitad cada una) -->
+      <!-- Fila 3: Fecha o Días según modo -->
       <div class="form-row" style="margin-bottom:18px;">
-        <div class="form-group" style="margin:0;">
+
+        <!-- Si es PUNTUAL: mostrar fecha -->
+        <div class="form-group" style="margin:0;" *ngIf="!formularioReserva.esRecurrente">
           <label>Fecha de Reserva <span class="required">*</span></label>
           <input type="date" class="form-control" [(ngModel)]="formularioReserva.fecha_reserva">
         </div>
+
+        <!-- Si es RECURRENTE: mostrar selector de días -->
+        <div class="form-group full-width" style="margin:0;" *ngIf="formularioReserva.esRecurrente">
+          <label>Días de la semana <span class="required">*</span></label>
+          <div class="dias-selector">
+            <button *ngFor="let dia of [
+                        {label:'LUN', value:'LUNES'},
+                        {label:'MAR', value:'MARTES'},
+                        {label:'MIE', value:'MIÉRCOLES'},
+                        {label:'JUE', value:'JUEVES'},
+                        {label:'VIE', value:'VIERNES'},
+                        {label:'SAB', value:'SÁBADO'}
+                    ]"
+                    class="btn-dia"
+                    [class.btn-dia--active]="formularioReserva.diasSemana.includes(dia.value)"
+                    (click)="toggleDia(dia.value)">
+              {{ dia.label }}
+            </button>
+          </div>
+          <small class="form-hint">
+            Las reservas se generarán automáticamente desde el inicio hasta el fin del período seleccionado.
+          </small>
+        </div>
+
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px;">
           <div class="form-group" style="margin:0;">
             <label>Hora de Inicio <span class="required">*</span></label>
@@ -706,7 +810,9 @@
     </div>
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cerrarModalCancelar()">Volver</button>
-      <button class="btn-eliminar-confirm" (click)="confirmarCancelacion()">Confirmar Cancelación</button>
+      <button class="btn-eliminar-confirm" (click)="itemSeleccionado?.idGrupo ? confirmarCancelacionGrupo() : confirmarCancelacion()">
+        Confirmar Cancelación
+      </button>
     </div>
   </div>
 </div>
