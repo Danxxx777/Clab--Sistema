@@ -209,7 +209,6 @@
             <td>{{ u.fechaRegistro }}</td>
             <td>
               <div class="action-buttons">
-                <button class="btn-action btn-ver"     (click)="abrirModalUsuario('ver', u)">Ver</button>
                 <button class="btn-action btn-editar"  (click)="abrirModalUsuario('editar', u)">Editar</button>
                 <button class="btn-action"
                         [ngClass]="u.estado?.toUpperCase() === 'ACTIVO' ? 'btn-eliminar' : 'btn-activar'"
@@ -265,7 +264,9 @@
             </td>
             <td>{{ s.fechaSolicitud | date:'dd/MM/yyyy' }}</td>
             <td>
+            <td>
               <div class="action-buttons">
+                <button class="btn-action btn-ver" (click)="verDetalleSolicitud(s)">Ver</button>
                 <button class="btn-action btn-ver" (click)="abrirModalAprobar(s)">Aprobar</button>
                 <button class="btn-action btn-eliminar" (click)="rechazarSolicitud(s)">Rechazar</button>
               </div>
@@ -425,6 +426,7 @@
     </div>
   </div>
 </div>
+
 <!-- MODAL APROBAR SOLICITUD -->
 <div class="modal-overlay" *ngIf="mostrarModalAprobar">
   <div class="modal" (click)="$event.stopPropagation()">
@@ -434,16 +436,19 @@
     </div>
     <div class="modal-body">
       <p style="color:#aaa; font-size:13px; margin-bottom:16px;">
-        Asigna uno o más roles a <strong style="color:#f0f0f0">{{ solicitudActual?.nombres }} {{ solicitudActual?.apellidos }}</strong> para crear su cuenta.
+        El rol solicitado viene pre-seleccionado. Puedes agregar roles adicionales si deseas.
       </p>
       <div class="form-group full-width">
-        <label>Roles <span class="required">*</span></label>
+        <label>Roles</label>
         <div class="roles-bd-grid">
           <div class="rol-bd-card"
                *ngFor="let r of rolesActivos"
                [class.selected]="rolesParaAprobar.includes(r.id!)"
                (click)="toggleRolAprobar(r.id!)">
             <div class="rol-bd-name">{{ r.nombre }}</div>
+            <div *ngIf="r.id === solicitudActual?.idRolSolicitado">
+              <span class="tag-solicitado">★ Solicitado</span>
+            </div>
           </div>
         </div>
       </div>
@@ -452,6 +457,94 @@
       <div class="modal-footer-right">
         <button class="btn-cancelar" (click)="cerrarModalAprobar()">Cancelar</button>
         <button class="btn-guardar" (click)="confirmarAprobacion()">Aprobar y crear usuario</button>
+      </div>
+    </div>
+  </div>
+</div>  <!-- ← cierre correcto aquí -->
+
+<!-- MODAL DETALLE SOLICITUD -->
+<div class="modal-overlay" *ngIf="mostrarModalDetalle">
+  <div class="modal modal-detalle" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>📋 Detalle de Solicitud</h2>
+      <button class="btn-close" (click)="mostrarModalDetalle = false">×</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- BANNER SOLICITANTE -->
+      <div class="detalle-banner">
+        <div class="detalle-avatar">{{ solicitudDetalle?.nombres?.charAt(0) }}</div>
+        <div class="detalle-banner-info">
+          <div class="detalle-nombre">{{ solicitudDetalle?.nombres }} {{ solicitudDetalle?.apellidos }}</div>
+          <div class="detalle-email">{{ solicitudDetalle?.email }}</div>
+          <span class="detalle-estado-badge">PENDIENTE</span>
+        </div>
+        <div class="detalle-fecha-box">
+          <span class="detalle-fecha-label">Fecha</span>
+          <span class="detalle-fecha-valor">{{ solicitudDetalle?.fechaSolicitud | date:'dd/MM/yyyy' }}</span>
+          <span class="detalle-fecha-valor">{{ solicitudDetalle?.fechaSolicitud | date:'HH:mm' }}</span>
+        </div>
+      </div>
+
+      <!-- DATOS -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Identidad</label>
+          <div class="detail-value">{{ solicitudDetalle?.identidad }}</div>
+        </div>
+        <div class="form-group">
+          <label>Teléfono</label>
+          <div class="detail-value"> {{ solicitudDetalle?.telefono || '—' }}</div>
+        </div>
+      </div>
+
+      <!-- ROL SOLICITADO DESTACADO -->
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>Rol solicitado</label>
+          <div class="detalle-rol-card">
+            <span class="detalle-rol-icon"></span>
+            <div>
+              <div class="detalle-rol-nombre">{{ getRolNombre(solicitudDetalle?.idRolSolicitado) }}</div>
+              <div class="detalle-rol-sub">Rol que el usuario desea obtener</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- ROLES ADICIONALES OPCIONALES -->
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>Roles adicionales <span style="color:#6b6b6b; font-weight:400;">(opcional)</span></label>
+          <div class="roles-bd-grid">
+            <div class="rol-bd-card"
+                 *ngFor="let r of rolesActivos"
+                 [class.selected]="rolesParaAprobar.includes(r.id!)"
+                 [class.rol-principal]="r.id === solicitudDetalle?.idRolSolicitado"
+                 (click)="toggleRolAprobar(r.id!)">
+              <div class="rol-bd-name">{{ r.nombre }}</div>
+              <div *ngIf="r.id === solicitudDetalle?.idRolSolicitado">
+                <span class="tag-solicitado">★ Solicitado</span>
+              </div>
+            </div>
+          </div>
+          <small style="color:#6b6b6b;font-size:11px;margin-top:6px;display:block">
+            El rol solicitado ya viene seleccionado. Puedes agregar más si lo deseas.
+          </small>
+        </div>
+      </div>
+      <!-- MOTIVO -->
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>Motivo de solicitud</label>
+          <div class="detail-value motivo-full">{{ solicitudDetalle?.motivo }}</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <div class="modal-footer-right">
+        <button class="btn-cancelar" (click)="mostrarModalDetalle = false">Cerrar</button>
+        <button class="btn-guardar" (click)="aprobarDesdeDetalle()">✓ Aprobar solicitud</button>
       </div>
     </div>
   </div>

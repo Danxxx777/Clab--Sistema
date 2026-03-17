@@ -117,4 +117,9 @@ public class RolController {
         return ResponseEntity.ok(rolService.listarEsquemas());
     }
 
+
+    @GetMapping("/publicos")
+    public ResponseEntity<List<RolResponseDTO>> listarPublicos() {
+        return ResponseEntity.ok(rolService.listarActivos());
+    }
 }

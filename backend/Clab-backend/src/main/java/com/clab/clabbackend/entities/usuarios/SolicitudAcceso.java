@@ -46,4 +46,7 @@ public class SolicitudAcceso {
 
     @Column(name = "observacion_rechazo", columnDefinition = "TEXT")
     private String observacionRechazo;
+
+    @Column(name = "id_rol_solicitado")
+    private Integer idRolSolicitado;
 }
