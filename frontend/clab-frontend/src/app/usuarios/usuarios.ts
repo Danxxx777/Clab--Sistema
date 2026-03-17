@@ -62,7 +62,8 @@ export class UsuariosComponent implements OnInit {
   solicitudActual: any = null;
   mostrarModalAprobar = false;
   rolesParaAprobar: number[] = [];
-
+  mostrarModalDetalle = false;
+  solicitudDetalle: any = null;
 
   /* PAGINACIÓN */
   paginaActual = 1;
@@ -504,7 +505,7 @@ export class UsuariosComponent implements OnInit {
   }
   abrirModalAprobar(s: any): void {
     this.solicitudActual = s;
-    this.rolesParaAprobar = [];
+    this.rolesParaAprobar = s.idRolSolicitado ? [s.idRolSolicitado] : [];
     this.mostrarModalAprobar = true;
     this.cdr.detectChanges();
   }
@@ -523,10 +524,7 @@ export class UsuariosComponent implements OnInit {
   }
 
   confirmarAprobacion(): void {
-    if (!this.rolesParaAprobar.length) {
-      this.mostrarAlerta('Error', 'Selecciona al menos un rol.', 'error');
-      return;
-    }
+    // Ya no es obligatorio seleccionar — viene pre-seleccionado de la solicitud
     const idAdmin = Number(sessionStorage.getItem('idUsuario'));
     this.http.post<any>(`http://localhost:8080/api/solicitudes/aprobar/${this.solicitudActual.id}`,
       { roles: this.rolesParaAprobar }
@@ -557,5 +555,24 @@ export class UsuariosComponent implements OnInit {
     };
     this.mostrarAlerta('¿Rechazar solicitud?', `¿Deseas rechazar la solicitud de ${s.nombres} ${s.apellidos}?`, 'confirmar');
   }
-
+  verDetalleSolicitud(s: any): void {
+    this.solicitudDetalle = s;
+    this.rolesParaAprobar = s.idRolSolicitado ? [s.idRolSolicitado] : [];
+    this.mostrarModalDetalle = true;
+    this.cdr.detectChanges();
+  }
+  getRolNombre(idRol: number | null): string {
+    if (!idRol) return '—';
+    const rol = this.roles.find(r => r.id === idRol);
+    return rol ? rol.nombre : '—';
+  }
+  aprobarDesdeDetalle(): void {
+    // Si no hay roles seleccionados, usar el rol solicitado
+    if (this.rolesParaAprobar.length === 0 && this.solicitudDetalle?.idRolSolicitado) {
+      this.rolesParaAprobar = [this.solicitudDetalle.idRolSolicitado];
+    }
+    this.mostrarModalDetalle = false;
+    this.solicitudActual = this.solicitudDetalle;
+    this.confirmarAprobacion();
+  }
 }

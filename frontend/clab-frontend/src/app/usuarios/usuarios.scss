@@ -1159,3 +1159,83 @@ html, body {
   margin-left: 6px;
   min-width: 18px;
 }
+.tag-solicitado {
+  font-size: 10px;
+  font-family: 'Space Mono', monospace;
+  color: #39ff14;
+  opacity: 0.7;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+  display: block;
+}
+.detail-value {
+  padding: 10px 14px;
+  background: #0d0d0d;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #f0f0f0;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+
+  &.motivo-full {
+    align-items: flex-start;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    min-height: 80px;
+  }
+}
+.detalle-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #0d0d0d;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+
+  .detalle-avatar {
+    width: 48px; height: 48px;
+    background: rgba(57,255,20,0.1);
+    border: 1px solid rgba(57,255,20,0.25);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 700; color: #39ff14;
+    flex-shrink: 0;
+  }
+
+  .detalle-banner-info {
+    flex: 1;
+    .detalle-nombre { font-weight: 700; color: #f0f0f0; font-size: 15px; }
+    .detalle-email  { font-size: 12px; color: #6b6b6b; margin: 2px 0 6px; }
+  }
+
+  .detalle-estado-badge {
+    font-size: 10px; font-family: 'Space Mono', monospace;
+    background: rgba(255,193,7,0.1); border: 1px solid rgba(255,193,7,0.3);
+    color: #ffc107; padding: 3px 8px; border-radius: 20px; font-weight: 700;
+  }
+
+  .detalle-fecha-box {
+    text-align: right; flex-shrink: 0;
+    display: flex; flex-direction: column;
+    .detalle-fecha-label { font-size: 10px; color: #6b6b6b; font-family: 'Space Mono', monospace; text-transform: uppercase; }
+    .detalle-fecha-valor { font-size: 13px; color: #f0f0f0; font-weight: 600; }
+  }
+}
+
+.detalle-rol-card {
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(57,255,20,0.05);
+  border: 1px solid rgba(57,255,20,0.2);
+  border-radius: 10px; padding: 14px 16px;
+
+  .detalle-rol-icon { font-size: 24px; }
+  .detalle-rol-nombre { font-size: 15px; font-weight: 700; color: #39ff14; }
+  .detalle-rol-sub { font-size: 11px; color: #6b6b6b; margin-top: 2px; }
+}
+.rol-principal {
+  border-color: rgba(57,255,20,0.4) !important;
+}
