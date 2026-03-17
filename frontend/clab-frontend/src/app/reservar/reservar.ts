@@ -113,6 +113,10 @@ export class ReservarComponent implements OnInit {
   ];
   timePickerAbierto: string | null = null;
 
+  grupos: any[] = [];
+  reservasCombinadas: any[] = [];
+  reservasCombinadasFiltradas: any[] = [];
+
   cerrarTimePickerSiAfuera(event: Event) {
     const target = event.target as HTMLElement;
     if (!target.closest('.time-picker-wrap')) {
@@ -147,10 +151,10 @@ export class ReservarComponent implements OnInit {
 
   filtrarReservas(): void {
     const texto = this.busquedaReservas.toLowerCase();
-    this.reservasFiltradas = this.reservas.filter(r =>
-      r.nombre_laboratorio.toLowerCase().includes(texto) ||
-      r.nombre_asignatura.toLowerCase().includes(texto) ||
-      r.nombre_periodo.toLowerCase().includes(texto)
+    this.reservasCombinadasFiltradas = this.reservasCombinadas.filter(r =>
+      r.nombre_laboratorio?.toLowerCase().includes(texto) ||
+      r.nombre_asignatura?.toLowerCase().includes(texto) ||
+      r.nombre_periodo?.toLowerCase().includes(texto)
     );
     this.paginaActual = 1;
   }
@@ -222,10 +226,36 @@ export class ReservarComponent implements OnInit {
     }
     const horario = this.horariosAcademicos.find(h => h.id_horario_academico == idHorario);
     if (horario) {
-      this.formularioReserva.hora_inicio = horario.hora_inicio;
-      this.formularioReserva.hora_fin = horario.hora_fin;
+      this.formularioReserva.hora_inicio   = horario.hora_inicio;
+      this.formularioReserva.hora_fin      = horario.hora_fin;
       this.formularioReserva.id_asignatura = horario.id_asignatura;
+
+      // NUEVO: prerellenar día si es recurrente
+      if (this.formularioReserva.esRecurrente) {
+        const diaMapper: Record<string, string> = {
+          'LUNES':      'LUNES',
+          'MARTES':     'MARTES',
+          'MIÉRCOLES':  'MIÉRCOLES',
+          'JUEVES':     'JUEVES',
+          'VIERNES':    'VIERNES',
+          'SÁBADO':     'SÁBADO',
+          'DOMINGO':    'DOMINGO'
+        };
+        const dia = diaMapper[horario.dia_semana?.toUpperCase()];
+        if (dia) {
+          this.formularioReserva.diasSemana = [dia];
+        }
+      }
       this.cdr.detectChanges();
+    }
+  }
+
+  toggleDia(dia: string): void {
+    const idx = this.formularioReserva.diasSemana.indexOf(dia);
+    if (idx === -1) {
+      this.formularioReserva.diasSemana.push(dia);
+    } else {
+      this.formularioReserva.diasSemana.splice(idx, 1);
     }
   }
 
@@ -288,51 +318,135 @@ export class ReservarComponent implements OnInit {
       id_horario_academico: null, fecha_reserva: '', fecha_solicitud: '',
       hora_inicio: '', hora_fin: '', numero_estudiantes: 1,
       id_tipo_reserva: 0, id_usuario: this.idUsuario,
-      descripcion: '', motivo: '', estado: 'Aprobada'
+      descripcion: '', motivo: '', estado: 'Aprobada',
+      esRecurrente: false,
+      diasSemana: [] as string[]
     };
     this.formularioTipo = { nombre_tipo: '', descripcion: '', estado: 'Activo' };
   }
 
   // ══ CRUD RESERVAS ════════════════════════════════════════════════════════
   guardarReserva(): void {
-    if (!this.formularioReserva.cod_laboratorio ||
-      !this.formularioReserva.fecha_reserva ||
-      !this.formularioReserva.hora_inicio ||
-      !this.formularioReserva.hora_fin) {
-      this.mostrarNotificacion('Complete los campos obligatorios', 'error'); return;
-    }
-    const dto = {
-      codLaboratorio: this.formularioReserva.cod_laboratorio,
-      idUsuario: this.idUsuario,
-      idPeriodo: this.formularioReserva.id_periodo || 1,
-      idHorarioAcademico: this.formularioReserva.id_horario_academico || 1,
-      idAsignatura: this.formularioReserva.id_asignatura,
-      idTipoReserva: this.formularioReserva.id_tipo_reserva,
-      fechaReserva: this.formularioReserva.fecha_reserva,
-      horaInicio: this.formularioReserva.hora_inicio,
-      horaFin: this.formularioReserva.hora_fin,
-      motivo: this.formularioReserva.motivo,
-      numeroEstudiantes: this.formularioReserva.numero_estudiantes,
-      descripcion: this.formularioReserva.descripcion
-    };
-    if (this.modoEdicion && this.indexSeleccionado !== null) {
-      const id = this.formularioReserva.id_reserva;
-      this.reservaService.actualizar(id, dto).subscribe({
-        next: () => { this.cargarReservas(); this.cerrarModal(); this.mostrarNotificacion('✅ Reserva actualizada correctamente'); },
-        error: () => this.mostrarNotificacion('❌ Error al actualizar la reserva', 'error')
-      });
-    } else {
-      this.reservaService.crearAdmin(dto).subscribe({
+    if (this.formularioReserva.esRecurrente) {
+      // Validaciones recurrente
+      if (!this.formularioReserva.cod_laboratorio ||
+        !this.formularioReserva.id_periodo ||
+        !this.formularioReserva.diasSemana.length ||
+        !this.formularioReserva.hora_inicio ||
+        !this.formularioReserva.hora_fin) {
+        this.mostrarNotificacion('Complete todos los campos obligatorios', 'error');
+        return;
+      }
+      const dto = {
+        codLaboratorio:     this.formularioReserva.cod_laboratorio,
+        idUsuario:          this.idUsuario,
+        idPeriodo:          this.formularioReserva.id_periodo,
+        idHorarioAcademico: this.formularioReserva.id_horario_academico || null,
+        idAsignatura:       this.formularioReserva.id_asignatura || null,
+        idTipoReserva:      this.formularioReserva.id_tipo_reserva || null,
+        diasSemana:         this.formularioReserva.diasSemana.join(','),
+        horaInicio:         this.formularioReserva.hora_inicio,
+        horaFin:            this.formularioReserva.hora_fin,
+        motivo:             this.formularioReserva.motivo,
+        numeroEstudiantes:  this.formularioReserva.numero_estudiantes,
+        descripcion:        this.formularioReserva.descripcion
+      };
+      this.reservaService.crearRecurrente(dto).subscribe({
         next: () => {
           this.cargarReservas();
+          this.cargarGrupos();
           this.cerrarModal();
-          this.mostrarNotificacion('✅ Reserva creada exitosamente');
-          if (this.tabActiva === 0) { this.cal_cargarReservas(); }
+          this.mostrarNotificacion('✅ Reservas recurrentes creadas para todo el período');
+          if (this.tabActiva === 0) this.cal_cargarReservas();
         },
-        error: () => this.mostrarNotificacion('❌ Error al crear la reserva', 'error')
+        error: (err) => this.mostrarNotificacion(
+          '❌ ' + (err.error?.message || 'Error al crear reservas recurrentes'), 'error'
+        )
       });
+    } else {
+      // tu código actual de guardarReserva sin ningún cambio
+      if (!this.formularioReserva.cod_laboratorio ||
+        !this.formularioReserva.fecha_reserva ||
+        !this.formularioReserva.hora_inicio ||
+        !this.formularioReserva.hora_fin) {
+        this.mostrarNotificacion('Complete los campos obligatorios', 'error'); return;
+      }
+      const dto = {
+        codLaboratorio: this.formularioReserva.cod_laboratorio,
+        idUsuario: this.idUsuario,
+        idPeriodo: this.formularioReserva.id_periodo || 1,
+        idHorarioAcademico: this.formularioReserva.id_horario_academico || 1,
+        idAsignatura: this.formularioReserva.id_asignatura,
+        idTipoReserva: this.formularioReserva.id_tipo_reserva,
+        fechaReserva: this.formularioReserva.fecha_reserva,
+        horaInicio: this.formularioReserva.hora_inicio,
+        horaFin: this.formularioReserva.hora_fin,
+        motivo: this.formularioReserva.motivo,
+        numeroEstudiantes: this.formularioReserva.numero_estudiantes,
+        descripcion: this.formularioReserva.descripcion
+      };
+      if (this.modoEdicion && this.indexSeleccionado !== null) {
+        const id = this.formularioReserva.id_reserva;
+        this.reservaService.actualizar(id, dto).subscribe({
+          next: () => { this.cargarReservas(); this.cerrarModal(); this.mostrarNotificacion('✅ Reserva actualizada correctamente'); },
+          error: () => this.mostrarNotificacion('❌ Error al actualizar la reserva', 'error')
+        });
+      } else {
+        this.reservaService.crearAdmin(dto).subscribe({
+          next: () => {
+            this.cargarReservas();
+            this.cerrarModal();
+            this.mostrarNotificacion('✅ Reserva creada exitosamente');
+            if (this.tabActiva === 0) { this.cal_cargarReservas(); }
+          },
+          error: () => this.mostrarNotificacion('❌ Error al crear la reserva', 'error')
+        });
+      }
     }
   }
+
+  cargarGrupos(): void {
+    this.reservaService.listarGrupos().subscribe({
+      next: (data) => {
+        this.grupos = data.filter(g => g.estado !== 'Cancelada');
+        this.combinarReservas();
+        this.cdr.detectChanges();
+      },
+      error: () => this.mostrarNotificacion('Error al cargar grupos', 'error')
+    });
+  }
+
+  combinarReservas(): void {
+    const gruposFormateados = this.grupos.map(g => ({
+      ...g,
+      esGrupo: true,
+      nombre_laboratorio: g.nombreLaboratorio,
+      nombre_asignatura:  g.nombreAsignatura,
+      nombre_periodo:     g.nombrePeriodo,
+      nombre_tipo:        g.nombreTipoReserva,
+      hora_inicio:        g.horaInicio,
+      hora_fin:           g.horaFin,
+      estado:             g.estado,
+      numero_estudiantes: g.numeroEstudiantes,
+      fecha_orden:        g.fechaCreacion
+    }));
+
+    const reservasFormateadas = this.reservas.map(r => ({
+      ...r,
+      esGrupo: false,
+      fecha_orden: r.fecha_solicitud
+    }));
+
+    this.reservasCombinadas = [...gruposFormateados, ...reservasFormateadas]
+      .sort((a, b) => {
+        const fechaA = new Date(a.fecha_orden).getTime();
+        const fechaB = new Date(b.fecha_orden).getTime();
+        return fechaA - fechaB;  // ← más antiguo primero
+      });
+
+    this.reservasCombinadasFiltradas = [...this.reservasCombinadas];
+  }
+
 
   editarReserva(res: Reserva, index: number): void {
     this.modoEdicion = true; this.tipoModal = 'reserva';
@@ -380,7 +494,7 @@ export class ReservarComponent implements OnInit {
     obs.subscribe({
       next: (data) => {
         this.reservas = data
-          .filter(r => r.estado !== 'Cancelada')
+          .filter(r => r.estado !== 'Cancelada' && !r.idGrupoReserva)
           .map(r => ({
             id_reserva: r.idReserva, cod_laboratorio: r.codLaboratorio,
             nombre_laboratorio: r.nombreLaboratorio, fecha_reserva: r.fechaReserva,
@@ -393,6 +507,7 @@ export class ReservarComponent implements OnInit {
             descripcion: r.descripcion || '', motivo: r.motivo
           }));
         this.reservasFiltradas = [...this.reservas];
+        this.combinarReservas(); // ← nuevo
         this.cdr.detectChanges();
       },
       error: () => this.mostrarNotificacion('Error al cargar reservas', 'error')
@@ -449,6 +564,7 @@ export class ReservarComponent implements OnInit {
     this.cargarLaboratorios();
     this.cargarAsignaturas();
     this.cargarPeriodos();
+    this.cargarGrupos();
     this.reservasFiltradas = [...this.reservas];
 
     if (this.rol === 'Encargado_Lab' || this.rol === 'clab_encargado_lab' || this.rol === 'Encargado de Laboratorio') {
@@ -580,12 +696,18 @@ export class ReservarComponent implements OnInit {
   }
 
   // ══ PAGINACIÓN RESERVAS ══════════════════════════════════════════════════
-  get totalPaginas(): number { return Math.ceil(this.reservasFiltradas.length / this.itemsPorPagina); }
-  get reservasPaginadas(): Reserva[] {
-    const i = (this.paginaActual - 1) * this.itemsPorPagina;
-    return this.reservasFiltradas.slice(i, i + this.itemsPorPagina);
+  get totalPaginas(): number {
+    return Math.ceil(this.reservasCombinadasFiltradas.length / this.itemsPorPagina);
   }
-  get paginas(): number[] { return Array.from({ length: this.totalPaginas }, (_, i) => i + 1); }
+
+  get reservasPaginadas(): any[] {
+    const i = (this.paginaActual - 1) * this.itemsPorPagina;
+    return this.reservasCombinadasFiltradas.slice(i, i + this.itemsPorPagina);
+  }
+
+  get paginas(): number[] {
+    return Array.from({ length: this.totalPaginas }, (_, i) => i + 1);
+  }
   cambiarPagina(p: number): void {
     if (p >= 1 && p <= this.totalPaginas) { this.paginaActual = p; this.cdr.detectChanges(); }
   }
@@ -953,5 +1075,59 @@ export class ReservarComponent implements OnInit {
     this.cargarTodosLosHorarios();
     this.formularioReserva.fecha_reserva = fechaStr;
     this.cdr.detectChanges();
+  }
+
+  abrirModalCancelarGrupo(grupo: any): void {
+    this.itemSeleccionado = grupo;
+    this.formularioCancelacion = {
+      id_reserva: grupo.idGrupo,
+      id_usuario_cancela: this.idUsuario,
+      fecha_cancelacion: new Date().toISOString().split('T')[0],
+      motivo_cancelacion: ''
+    };
+    this.mostrarModalCancelar = true;
+  }
+
+  confirmarCancelacionGrupo(): void {
+    if (!this.formularioCancelacion.motivo_cancelacion?.trim()) {
+      this.mostrarNotificacion('El motivo de cancelación es obligatorio', 'error');
+      return;
+    }
+    const dto = {
+      idReserva: this.itemSeleccionado.idGrupo,
+      idUsuarioCancela: this.idUsuario,
+      motivoCancelacion: this.formularioCancelacion.motivo_cancelacion
+    };
+    this.reservaService.cancelarGrupo(this.itemSeleccionado.idGrupo, dto).subscribe({
+      next: () => {
+        this.cargarReservas();
+        this.cargarGrupos();
+        this.cerrarModalCancelar();
+        this.mostrarNotificacion('🗑️ Reservas recurrentes canceladas exitosamente');
+      },
+      error: () => this.mostrarNotificacion('❌ Error al cancelar el grupo', 'error')
+    });
+  }
+
+  aprobarGrupo(grupo: any): void {
+    this.reservaService.aprobarGrupo(grupo.idGrupo).subscribe({
+      next: () => {
+        this.cargarReservas();
+        this.cargarGrupos();
+        this.mostrarNotificacion('✅ Todas las reservas del grupo aprobadas');
+      },
+      error: () => this.mostrarNotificacion('❌ Error al aprobar el grupo', 'error')
+    });
+  }
+
+  rechazarGrupo(grupo: any): void {
+    this.reservaService.rechazarGrupo(grupo.idGrupo).subscribe({
+      next: () => {
+        this.cargarReservas();
+        this.cargarGrupos();
+        this.mostrarNotificacion('🚫 Todas las reservas del grupo rechazadas');
+      },
+      error: () => this.mostrarNotificacion('❌ Error al rechazar el grupo', 'error')
+    });
   }
 }
