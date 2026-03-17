@@ -81,7 +81,12 @@ export class LoginComponent implements OnInit {
         this.loadingText = '¡Bienvenido!';
         this.cdr.detectChanges();
         setTimeout(() => {
-          this.router.navigate(['/dashboard']);
+          const esPrimerLogin = sessionStorage.getItem('primerLogin') === 'true';
+          if (esPrimerLogin) {
+            this.router.navigate(['/cambiar-contrasenia']);
+          } else {
+            this.router.navigate(['/dashboard']);
+          }
         }, 1500);
       },
       error: (err) => {
