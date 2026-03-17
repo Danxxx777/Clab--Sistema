@@ -156,25 +156,27 @@ export class SolicitudesReservaComponent implements OnInit {
   cargarSolicitudes(): void {
     this.reservaService.listarPorUsuario(this.idUsuario).subscribe({
       next: (data: any[]) => {
-        this.solicitudes = data.map(r => ({
-          id: r.idReserva,
-          cod_laboratorio: r.codLaboratorio,
-          nombre_laboratorio: r.nombreLaboratorio,
-          id_asignatura: r.idAsignatura,
-          nombre_asignatura: r.nombreAsignatura || '-',
-          id_periodo: r.idPeriodo,
-          nombre_periodo: r.nombrePeriodo,
-          id_horario_academico: r.idHorarioAcademico,
-          id_tipo_reserva: r.idTipoReserva,
-          nombre_tipo: r.nombreTipoReserva || '-',
-          fecha: r.fechaReserva,
-          horaInicio: r.horaInicio,
-          horaFin: r.horaFin,
-          cantidadEstudiantes: r.numeroEstudiantes,
-          motivo: r.motivo,
-          descripcion: r.descripcion || '',
-          estado: r.estado
-        }));
+        this.solicitudes = data
+          .filter(r => !r.idGrupoReserva)
+          .map(r => ({
+            id: r.idReserva,
+            cod_laboratorio: r.codLaboratorio,
+            nombre_laboratorio: r.nombreLaboratorio,
+            id_asignatura: r.idAsignatura,
+            nombre_asignatura: r.nombreAsignatura || '-',
+            id_periodo: r.idPeriodo,
+            nombre_periodo: r.nombrePeriodo,
+            id_horario_academico: r.idHorarioAcademico,
+            id_tipo_reserva: r.idTipoReserva,
+            nombre_tipo: r.nombreTipoReserva || '-',
+            fecha: r.fechaReserva,
+            horaInicio: r.horaInicio,
+            horaFin: r.horaFin,
+            cantidadEstudiantes: r.numeroEstudiantes,
+            motivo: r.motivo,
+            descripcion: r.descripcion || '',
+            estado: r.estado
+          }));
         this.filtrar();
         this.cdr.detectChanges();
       },
