@@ -18,4 +18,5 @@ public class SolicitudAccesoDTO {
     private LocalDateTime fechaResolucion;
     private Integer idAdminResolvio;
     private String observacionRechazo;
+    private Integer idRolSolicitado;
 }

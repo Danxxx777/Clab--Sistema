@@ -293,4 +293,20 @@ public class RolService {
                         "ORDER BY schema_name"
         ).getResultList();
     }
+
+    @Transactional(readOnly = true)
+    public List<RolResponseDTO> listarActivos() {
+        return rolRepository.findByNombreRolNotLike("clab_%").stream()
+                .filter(r -> "ACTIVO".equals(r.getEstado()))
+                .filter(r -> !r.getNombreRol().equalsIgnoreCase("Administradorr")) // ← excluir admin
+                .map(rol -> new RolResponseDTO(
+                        rol.getIdRol(),
+                        rol.getNombreRol(),
+                        rol.getDescripcion(),
+                        rol.getFechaCreacion(),
+                        List.of(),
+                        "ACTIVO"
+                ))
+                .toList();
+    }
 }
