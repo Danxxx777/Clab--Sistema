@@ -138,19 +138,13 @@
         <table class="data-table">
           <thead>
           <tr>
-            <th>FOTO</th><th>CÓDIGO</th><th>NOMBRE</th><th>UBICACIÓN</th>
+            <th>CÓDIGO</th><th>NOMBRE</th><th>UBICACIÓN</th>
             <th>SEDE</th><th>CAPACIDAD</th><th>EQUIPOS</th>
             <th>ESTADO</th><th>ACCIONES</th>
           </tr>
           </thead>
           <tbody>
           <tr *ngFor="let lab of laboratoriosFiltrados; let i = index">
-            <td>
-              <div class="table-image">
-                <img *ngIf="lab.foto" [src]="lab.foto" alt="Laboratorio">
-                <span *ngIf="!lab.foto" class="no-image-placeholder">📷</span>
-              </div>
-            </td>
             <td>{{ lab.cod_laboratorio }}</td>
             <td>{{ lab.nombre }}</td>
             <td>{{ lab.ubicacion }}</td>
@@ -171,7 +165,7 @@
             </td>
           </tr>
           <tr *ngIf="laboratoriosFiltrados.length === 0">
-            <td colspan="9" class="empty-message">No hay laboratorios registrados</td>
+            <td colspan="8" class="empty-message">No hay laboratorios registrados</td>
           </tr>
           </tbody>
         </table>
@@ -516,7 +510,7 @@
       </div>
 
       <!-- VIGENTE -->
-      <div class="form-row">
+      <div class="form-row">F
         <div class="form-group full-width">
           <label>Vigente</label>
           <div class="checkbox-group">
