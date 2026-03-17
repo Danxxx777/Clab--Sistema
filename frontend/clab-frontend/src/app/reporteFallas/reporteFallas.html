@@ -10,20 +10,14 @@
     </div>
     <button class="btn-close-drawer" (click)="cerrarDrawer()">×</button>
   </div>
-
   <div class="drawer-user">
     <div class="drawer-avatar">{{ usuarioLogueado.charAt(0).toUpperCase() }}</div>
     <div class="drawer-user-info">
       <div class="dui-name">{{ usuarioLogueado }}</div>
-      <div class="role-badge">
-        <span class="role-dot"></span>
-        {{ rol }}
-      </div>
+      <div class="role-badge"><span class="role-dot"></span>{{ rol }}</div>
     </div>
   </div>
-
   <div class="drawer-section-title">Módulos</div>
-
   <div class="drawer-modules">
     @if(rol === 'Administradorr' || rol === 'Decano') {
       <div class="drawer-item" (click)="navegar('usuarios', '')">
@@ -96,15 +90,15 @@
       </div>
     }
     @if(rol === 'Administradorr') {
-      <div class="drawer-item" (click)="navegar('backups', 'Cargando Backups...')">
-        <div class="di-icon ic-12"><img src="/backup.png" alt="Backups"></div>
+      <div class="drawer-item" (click)="navegar('backups', '')">
+        <div class="di-icon"><img src="/backup.png" alt="Backups"></div>
         <div class="di-text"><div class="di-name">Backups</div><div class="di-desc">Respaldos de BD</div></div>
       </div>
     }
   </div>
 </div>
 
-
+<!-- PAGE TITLE -->
 <div class="page-title-section">
   <div style="display:flex; align-items:center; gap:14px;">
     <button class="btn-hamburger" [class.active]="drawerAbierto" (click)="toggleDrawer()">
@@ -119,183 +113,245 @@
 
 <div class="content-wrapper">
 
+  <!-- TABS BAR -->
+  <div class="tabs-bar">
+    <button class="tab-btn" [class.active]="tabActivo === 'equipos'" (click)="cambiarTab('equipos')">
+      <span class="tab-icon"></span>
+      Equipos
+      <span class="tab-badge" *ngIf="todosLosEquiposFiltrados.length > 0">{{ todosLosEquipos.length }}</span>
+    </button>
+    <button class="tab-btn" [class.active]="tabActivo === 'reportes'" (click)="cambiarTab('reportes')">
+      <span class="tab-icon"></span>
+      Reportes registrados
+      <span class="tab-badge alt" *ngIf="reportesFiltrados.length > 0">{{ reportesFiltrados.length }}</span>
+    </button>
+  </div>
 
-  <div class="toolbar">
+  <!-- ===== TAB: EQUIPOS ===== -->
+  <div *ngIf="tabActivo === 'equipos'">
 
-    <div class="filters-group">
-
-      <div class="search-container">
-        <span class="search-icon">🔍</span>
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Buscar por equipo, laboratorio o descripción"
-          (input)="onFiltroEquipoChange($event)">
+    <div class="toolbar">
+      <div class="filters-group">
+        <div class="search-container">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input"
+                 placeholder="Buscar por equipo, marca o modelo"
+                 [value]="filtroTextoEquipos"
+                 (input)="onFiltroTextoEquiposChange($event)">
+        </div>
+        <select class="select-filtro" (change)="onFiltroLabEquiposChange($event)">
+          <option value="">Todos los laboratorios</option>
+          <option *ngFor="let lab of laboratorios" [value]="lab.codLaboratorio">{{ lab.nombreLab }}</option>
+        </select>
       </div>
-
-
-      <select class="select-filtro"
-              (change)="onFiltroLaboratorioChange($event)">
-        <option value="">Todos los laboratorios</option>
-        <option *ngFor="let lab of laboratorios"
-                [value]="lab.codLaboratorio">
-          {{ lab.nombreLab }}
-        </option>
-      </select>
-
-      <select class="select-filtro"
-              (change)="onFiltroEquipoChange($event)">
-        <option value="">Todos los equipos</option>
-        <option *ngFor="let equipo of equiposFiltrados"
-                [value]="equipo.idEquipo">
-          {{ equipo.nombreEquipo }}
-        </option>
-      </select>
+      <button class="btn-agregar" (click)="abrirModal()">+ Nuevo Reporte</button>
     </div>
 
-    <button class="btn-agregar" (click)="abrirModal()">
-      + Nuevo Reporte
-    </button>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+        <tr>
+          <th>LABORATORIO</th>
+          <th>EQUIPO</th>
+          <th>MARCA</th>
+          <th>MODELO</th>
+          <th>ACCIONES</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let equipo of equiposPaginados">
+          <td><span class="lab-tag">{{ equipo.nombreLab }}</span></td>
+          <td><strong>{{ equipo.nombreEquipo }}</strong></td>
+          <td>{{ equipo.marca }}</td>
+          <td>{{ equipo.modelo }}</td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn-action btn-reportar-tabla" (click)="abrirModalReportarEquipo(equipo)">Reportar</button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="todosLosEquiposFiltrados.length === 0">
+          <td colspan="5" class="empty-message">No hay equipos disponibles para reportar</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINACIÓN EQUIPOS -->
+    <div class="paginacion" *ngIf="todosLosEquiposFiltrados.length > 0">
+      <button class="btn-pag" (click)="paginaEquipos = paginaEquipos - 1" [disabled]="paginaEquipos === 1">‹</button>
+      <button class="btn-pag"
+              *ngFor="let p of getPaginasEquipos()"
+              [class.activa]="p === paginaEquipos"
+              (click)="paginaEquipos = p">{{ p }}</button>
+      <button class="btn-pag" (click)="paginaEquipos = paginaEquipos + 1" [disabled]="paginaEquipos === totalPaginasEquipos">›</button>
+      <span class="pag-info">{{ paginaEquipos }} / {{ totalPaginasEquipos }}</span>
+    </div>
+
+    <!-- INFO EQUIPOS OCULTOS
+    <div class="info-bar" *ngIf="equiposReportados > 0">
+      <span class="info-icon">ℹ️</span>
+      <span>
+        <strong>{{ equiposReportados }}</strong>
+        {{ equiposReportados === 1 ? 'equipo oculto' : 'equipos ocultos' }} —
+        ya {{ equiposReportados === 1 ? 'tiene' : 'tienen' }} un reporte activo.
+      </span>
+    </div>-->
 
   </div>
 
+  <!-- ===== TAB: REPORTES ===== -->
+  <div *ngIf="tabActivo === 'reportes'">
 
-  <div class="table-container">
-    <table class="data-table">
-      <thead>
-      <tr>
-        <th>FECHA</th>
-        <th>LABORATORIO</th>
-        <th>EQUIPO</th>
-        <th>DESCRIPCIÓN</th>
-        <th>USUARIO</th>
-        <th>ACCIONES</th>
-      </tr>
-      </thead>
+    <div class="toolbar">
+      <div class="filters-group">
+        <div class="search-container">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input"
+                 placeholder="Buscar por equipo, laboratorio o descripción"
+                 (input)="onFiltroTextoReportesChange($event)">
+        </div>
+        <select class="select-filtro" (change)="onFiltroLabReportesChange($event)">
+          <option value="">Todos los laboratorios</option>
+          <option *ngFor="let lab of laboratorios" [value]="lab.codLaboratorio">{{ lab.nombreLab }}</option>
+        </select>
+      </div>
+    </div>
 
-      <tbody>
-      <tr *ngFor="let reporte of reportesFiltrados">
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+        <tr>
+          <th>FECHA</th>
+          <th>LABORATORIO</th>
+          <th>EQUIPO</th>
+          <th>DESCRIPCIÓN</th>
+          <th>USUARIO</th>
+          <th>ACCIONES</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let reporte of reportesPaginados">
+          <td>{{ formatearFecha(reporte.fechaReporte) }}</td>
+          <td>{{ reporte.laboratorio.nombreLab }}</td>
+          <td>
+            <strong>{{ reporte.equipo.nombreEquipo }}</strong><br>
+            <small>{{ reporte.equipo.marca }} - {{ reporte.equipo.modelo }}</small>
+          </td>
+          <td class="descripcion-cell">{{ reporte.descripcionFalla }}</td>
+          <td><small>{{ reporte.usuario.email }}</small></td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn-action btn-ver" (click)="verDetalle(reporte)">Ver</button>
+              <button class="btn-action btn-eliminar"
+                      *ngIf="rol === 'Administradorr' || rol === 'Decano'"
+                      (click)="confirmarEliminar(reporte.idReporte)">Eliminar</button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="reportesFiltrados.length === 0">
+          <td colspan="6" class="empty-message">No hay reportes registrados</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
 
-        <td>{{ formatearFecha(reporte.fechaReporte) }}</td>
+    <!-- PAGINACIÓN REPORTES -->
+    <div class="paginacion" *ngIf="reportesFiltrados.length > 0">
+      <button class="btn-pag" (click)="paginaReportes = paginaReportes - 1" [disabled]="paginaReportes === 1">‹</button>
+      <button class="btn-pag"
+              *ngFor="let p of getPaginasReportes()"
+              [class.activa]="p === paginaReportes"
+              (click)="paginaReportes = p">{{ p }}</button>
+      <button class="btn-pag" (click)="paginaReportes = paginaReportes + 1" [disabled]="paginaReportes === totalPaginasReportes">›</button>
+      <span class="pag-info">{{ paginaReportes }} / {{ totalPaginasReportes }}</span>
+    </div>
 
-        <td>{{ reporte.laboratorio.nombreLab }}</td>
-
-        <td>
-          <strong>{{ reporte.equipo.nombreEquipo }}</strong><br>
-          <small>{{ reporte.equipo.marca }} - {{ reporte.equipo.modelo }}</small>
-        </td>
-
-        <td class="descripcion-cell">
-          {{ reporte.descripcionFalla }}
-        </td>
-
-        <td>
-
-          <small>{{ reporte.usuario.email }}</small>
-        </td>
-
-        <td>
-          <div class="action-buttons">
-            <button class="btn-action btn-ver" (click)="verDetalle(reporte)">Ver</button>
-            <button class="btn-action btn-eliminar" (click)="confirmarEliminar(reporte.idReporte)">Eliminar</button>
-          </div>
-        </td>
-      </tr>
-
-      <tr *ngIf="reportesFiltrados.length === 0">
-        <td colspan="7" class="empty-message">
-          No hay reportes registrados
-        </td>
-      </tr>
-      </tbody>
-    </table>
   </div>
 
 </div>
 
 
-<div class="modal-overlay"
-     *ngIf="mostrarModal"
-     >
-
-  <div class="modal"
-       (click)="$event.stopPropagation()">
-
+<!-- MODAL NUEVO REPORTE MANUAL -->
+<div class="modal-overlay" *ngIf="mostrarModal">
+  <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>Nuevo Reporte de Falla</h2>
-      <button class="btn-close"
-              (click)="cerrarModal()">
-        ×
-      </button>
+      <button class="btn-close" (click)="cerrarModal()">×</button>
     </div>
-
-    <form [formGroup]="reporteForm"
-          (ngSubmit)="guardarReporte()">
-
+    <form [formGroup]="reporteForm" (ngSubmit)="guardarReporte()">
       <div class="modal-body">
-
-
         <div class="form-group">
           <label>Laboratorio <span class="required">*</span></label>
-          <select formControlName="codLaboratorio"
-                  (change)="onLaboratorioChange()"
-                  class="form-control">
+          <select formControlName="codLaboratorio" (change)="onLaboratorioChange()" class="form-control">
             <option value="">Seleccione un laboratorio</option>
-            <option *ngFor="let lab of laboratorios"
-                    [value]="lab.codLaboratorio">
-              {{ lab.nombreLab }}
-            </option>
+            <option *ngFor="let lab of laboratorios" [value]="lab.codLaboratorio">{{ lab.nombreLab }}</option>
           </select>
         </div>
-
-
         <div class="form-group">
           <label>Equipo <span class="required">*</span></label>
-          <select formControlName="idEquipo"
-
-                  class="form-control">
+          <select formControlName="idEquipo" class="form-control">
             <option value="">Seleccione un equipo</option>
-            <option *ngFor="let equipo of equiposFiltrados"
-                    [value]="equipo.idEquipo">
+            <option *ngFor="let equipo of equiposFiltrados" [value]="equipo.idEquipo">
               {{ equipo.nombreEquipo }} - {{ equipo.marca }} {{ equipo.modelo }}
             </option>
           </select>
         </div>
-
-
         <div class="form-group">
           <label>Descripción <span class="required">*</span></label>
-          <textarea
-            formControlName="descripcionFalla"
-            class="form-control"
-            rows="5"
-            placeholder="Describa la falla..."></textarea>
-          <small class="char-count">
-            {{ reporteForm.get('descripcionFalla')?.value?.length || 0 }} / 500
-          </small>
+          <textarea formControlName="descripcionFalla" class="form-control" rows="5"
+                    placeholder="Describa la falla..."></textarea>
+          <small class="char-count">{{ reporteForm.get('descripcionFalla')?.value?.length || 0 }} / 500</small>
         </div>
-
       </div>
-
       <div class="modal-footer">
-        <button type="button"
-                class="btn-cancelar"
-                (click)="cerrarModal()">
-          Cancelar
-        </button>
-
-        <button type="submit"
-                class="btn-guardar"
-                [disabled]="reporteForm.invalid">
-          Guardar Reporte
-        </button>
+        <button type="button" class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+        <button type="submit" class="btn-guardar" [disabled]="reporteForm.invalid">Guardar Reporte</button>
       </div>
     </form>
-
   </div>
 </div>
+
+<!-- MODAL REPORTAR DESDE FILA -->
+<div class="modal-overlay" *ngIf="mostrarModalReportarEquipo">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Reportar Falla</h2>
+      <button class="btn-close" (click)="cerrarModalReportarEquipo()">×</button>
+    </div>
+    <form [formGroup]="reporteRapidoForm" (ngSubmit)="guardarReporteRapido()">
+      <div class="modal-body">
+        <div class="equipo-info-banner">
+          <div class="eib-row">
+            <span class="eib-label">Laboratorio</span>
+            <span class="eib-value">{{ equipoSeleccionado?.nombreLab }}</span>
+          </div>
+          <div class="eib-row">
+            <span class="eib-label">Equipo</span>
+            <span class="eib-value">{{ equipoSeleccionado?.nombreEquipo }}</span>
+          </div>
+          <div class="eib-row">
+            <span class="eib-label">Marca / Modelo</span>
+            <span class="eib-value">{{ equipoSeleccionado?.marca }} {{ equipoSeleccionado?.modelo }}</span>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:16px;">
+          <label>Descripción de la falla <span class="required">*</span></label>
+          <textarea formControlName="descripcionFalla" class="form-control" rows="5"
+                    placeholder="Describa detalladamente la falla observada..."></textarea>
+          <small class="char-count">{{ reporteRapidoForm.get('descripcionFalla')?.value?.length || 0 }} / 500</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancelar" (click)="cerrarModalReportarEquipo()">Cancelar</button>
+        <button type="submit" class="btn-guardar" [disabled]="reporteRapidoForm.invalid">Enviar Reporte</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- MODAL VER DETALLE -->
-<div class="modal-overlay" *ngIf="mostrarModalDetalle" >
+<div class="modal-overlay" *ngIf="mostrarModalDetalle">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>Detalle del Reporte #{{ reporteDetalle?.idReporte }}</h2>
@@ -308,7 +364,8 @@
       </div>
       <div class="form-group">
         <label>Equipo</label>
-        <input type="text" class="form-control" [value]="reporteDetalle.equipo?.nombreEquipo + ' — ' + reporteDetalle.equipo?.marca + ' ' + reporteDetalle.equipo?.modelo" disabled>
+        <input type="text" class="form-control"
+               [value]="reporteDetalle.equipo?.nombreEquipo + ' — ' + reporteDetalle.equipo?.marca + ' ' + reporteDetalle.equipo?.modelo" disabled>
       </div>
       <div class="form-group">
         <label>Usuario</label>
