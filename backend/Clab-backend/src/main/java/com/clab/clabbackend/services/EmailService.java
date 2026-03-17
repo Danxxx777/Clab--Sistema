@@ -193,4 +193,44 @@ public class EmailService {
             throw new RuntimeException("Error en prueba: " + e.getMessage());
         }
     }
+    // CORREO DE CREDENCIALES — nuevo usuario aprobado
+    public void enviarCredenciales(String destino, String nombreUsuario,
+                                   String username, String contraseniaTemp) {
+        String contenidoHTML =
+                "<div style='font-family: Arial, sans-serif; padding:20px; max-width:500px;'>" +
+                        "<h2 style='color:#1e7e34;'>Sistema CLAB — Acceso aprobado</h2>" +
+                        "<p>Hola <strong>" + nombreUsuario + "</strong>,</p>" +
+                        "<p>Tu solicitud de acceso ha sido <strong>aprobada</strong>. " +
+                        "Estas son tus credenciales de acceso:</p>" +
+                        "<table style='width:100%; border-collapse:collapse; margin:16px 0;'>" +
+                        "<tr><td style='padding:8px; border:1px solid #ddd; font-weight:bold;'>Usuario</td>" +
+                        "<td style='padding:8px; border:1px solid #ddd;'>" + username + "</td></tr>" +
+                        "<tr><td style='padding:8px; border:1px solid #ddd; font-weight:bold;'>Contraseña temporal</td>" +
+                        "<td style='padding:8px; border:1px solid #ddd;'>" + contraseniaTemp + "</td></tr>" +
+                        "</table>" +
+                        "<p style='color:#e74c3c;'><strong>Importante:</strong> Al ingresar por primera vez " +
+                        "se te pedirá cambiar tu contraseña.</p>" +
+                        "<hr><small>Sistema de Gestión de Laboratorios — CLAB</small>" +
+                        "</div>";
+
+        enviarCorreo("GENERAL", destino, "Credenciales de acceso - CLAB", contenidoHTML);
+    }
+
+    // CORREO DE RECHAZO DE SOLICITUD
+    public void enviarRechazoSolicitud(String destino, String nombreUsuario, String observacion) {
+        String contenidoHTML =
+                "<div style='font-family: Arial, sans-serif; padding:20px; max-width:500px;'>" +
+                        "<h2 style='color:#e74c3c;'>Sistema CLAB — Solicitud rechazada</h2>" +
+                        "<p>Hola <strong>" + nombreUsuario + "</strong>,</p>" +
+                        "<p>Lamentamos informarte que tu solicitud de acceso al sistema ha sido " +
+                        "<strong style='color:#e74c3c;'>rechazada</strong>.</p>" +
+                        (observacion != null && !observacion.isBlank()
+                                ? "<p><strong>Motivo:</strong> " + observacion + "</p>"
+                                : "") +
+                        "<p>Si crees que esto es un error, contacta directamente al administrador.</p>" +
+                        "<hr><small>Sistema de Gestión de Laboratorios — CLAB</small>" +
+                        "</div>";
+
+        enviarCorreo("GENERAL", destino, "Solicitud de acceso rechazada - CLAB", contenidoHTML);
+    }
 }

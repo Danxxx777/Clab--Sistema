@@ -1,0 +1,44 @@
+<div class="cc-wrapper">
+  <div class="cc-card">
+
+    <div class="cc-header">
+      <div class="cc-icon">🔑</div>
+      <div class="cc-brand">CLAB</div>
+      <h1>Cambiar contraseña</h1>
+      <p>Es tu primer ingreso. Por seguridad debes establecer una nueva contraseña.</p>
+    </div>
+
+    <div class="cc-error" *ngIf="errorMsg">⚠ {{ errorMsg }}</div>
+
+    <div class="cc-form">
+      <div class="cc-field">
+        <label>Nueva contraseña</label>
+        <div class="cc-input-wrap">
+          <input [type]="mostrarNueva ? 'text' : 'password'"
+                 [(ngModel)]="nuevaContrasenia"
+                 placeholder="Mínimo 8 caracteres">
+          <span class="cc-eye" (click)="mostrarNueva = !mostrarNueva">
+            {{ mostrarNueva ? '🙈' : '👁' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="cc-field">
+        <label>Confirmar contraseña</label>
+        <div class="cc-input-wrap">
+          <input [type]="mostrarConfirmar ? 'text' : 'password'"
+                 [(ngModel)]="confirmarContrasenia"
+                 placeholder="Repite la contraseña">
+          <span class="cc-eye" (click)="mostrarConfirmar = !mostrarConfirmar">
+            {{ mostrarConfirmar ? '🙈' : '👁' }}
+          </span>
+        </div>
+      </div>
+
+      <button class="cc-btn" (click)="guardar()" [disabled]="enviando">
+        {{ enviando ? 'Guardando...' : 'Guardar contraseña' }}
+      </button>
+    </div>
+
+  </div>
+</div>

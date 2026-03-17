@@ -25,6 +25,8 @@ import { authGuard, guestGuard } from './auth/auth.guard';
 import {SolicitudesReservaComponent} from './solicitudes-reserva/solicitudes-reserva';
 import {AuditoriaComponent} from './auditoria/auditoria';
 import {RolesComponent} from './roles/roles';
+import { SolicitarAccesoComponent } from './solicitar-acceso/solicitar-acceso';
+import { CambiarContraseniaComponent } from './cambiar-contrasenia/cambiar-contrasenia';
 import { BackupComponent } from './backup/backup';
 
 
@@ -60,6 +62,8 @@ export const routes: Routes = [
   { path: 'roles',          component: RolesComponent,          canActivate: [authGuard] },
   { path: 'perfil', component: PerfilComponent, canActivate: [authGuard] },
   { path: 'calendario', loadComponent: () => import('./calendario/calendario').then(m => m.CalendarioComponent), canActivate: [authGuard] },
+  { path: 'solicitar-acceso', component: SolicitarAccesoComponent },
+  { path: 'cambiar-contrasenia', component: CambiarContraseniaComponent },
   { path: 'backups', component: BackupComponent, canActivate: [authGuard] },
   { path: '**', redirectTo: 'login' }
 ];

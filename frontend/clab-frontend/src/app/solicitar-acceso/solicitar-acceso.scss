@@ -1,0 +1,308 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+// =====================
+// VARIABLES
+// =====================
+$bg:          #111111;
+$surface:     #1a1a1a;
+$border:      #2a2a2a;
+$border-h:    #3a3a3a;
+$neon:        #39ff14;
+$neon-dim:    rgba(57, 255, 20, 0.10);
+$neon-glow:   rgba(57, 255, 20, 0.06);
+$neon-border: rgba(57, 255, 20, 0.25);
+$text:        #f0f0f0;
+$muted:       #6b6b6b;
+$muted2:      #4a4a4a;
+$red-dim:     rgba(231, 76, 60, 0.12);
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+// =====================
+// WRAPPER
+// =====================
+.sa-wrapper {
+  min-height: 100vh;
+  background: $bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  font-family: 'Space Grotesk', sans-serif;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(57,255,20,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(57,255,20,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(57,255,20,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+}
+
+// =====================
+// CARD
+// =====================
+.sa-card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 560px;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px $neon-dim;
+  animation: slideUp 0.4s cubic-bezier(0.4,0,0.2,1);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, $neon-border, transparent);
+  }
+}
+
+// =====================
+// HEADER
+// =====================
+.sa-header {
+  text-align: center;
+  margin-bottom: 28px;
+
+  .sa-icon {
+    width: 56px; height: 56px;
+    background: $neon-dim;
+    border: 1px solid $neon-border;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    margin: 0 auto 16px;
+    box-shadow: 0 0 24px rgba(57,255,20,0.1);
+  }
+
+  .sa-brand {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: $neon;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-family: 'Space Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: $text;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+
+  p {
+    color: $muted;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+}
+
+// =====================
+// ERROR
+// =====================
+.sa-error {
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: #ff6b6b;
+  background: $red-dim;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(231,76,60,0.25);
+  border-left: 3px solid #ff6b6b;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+// =====================
+// FORM
+// =====================
+.sa-row {
+  margin-bottom: 14px;
+
+  &.two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+}
+
+.sa-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: $muted;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  input, textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid $border;
+    border-radius: 8px;
+    font-size: 13px;
+    color: $text;
+    background: $bg;
+    font-family: 'Space Grotesk', sans-serif;
+    transition: all 0.2s ease;
+    resize: none;
+
+    &::placeholder { color: $muted2; }
+
+    &:focus {
+      outline: none;
+      border-color: $neon-border;
+      box-shadow: 0 0 0 3px $neon-glow;
+      background: #0d0d0d;
+    }
+  }
+}
+
+// =====================
+// ACTIONS
+// =====================
+.sa-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  gap: 12px;
+}
+
+.btn-primary {
+  flex: 1;
+  padding: 12px;
+  background: $neon-dim;
+  border: 1px solid $neon-border;
+  border-radius: 8px;
+  color: $neon;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.5px;
+
+  &:hover:not(:disabled) {
+    background: rgba(57,255,20,0.18);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(57,255,20,0.15);
+  }
+
+  &:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+}
+
+.btn-secondary {
+  padding: 12px 20px;
+  background: transparent;
+  border: 1px solid $border-h;
+  border-radius: 8px;
+  color: $muted;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 46px;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: $neon-border;
+    color: $neon;
+  }
+}
+
+// =====================
+// ÉXITO
+// =====================
+.sa-success {
+  text-align: center;
+
+  .sa-success-icon {
+    width: 64px; height: 64px;
+    background: $neon-dim;
+    border: 1px solid $neon-border;
+    border-radius: 50%;
+    font-size: 2rem;
+    color: $neon;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    box-shadow: 0 0 24px rgba(57,255,20,0.15);
+  }
+
+  h2 {
+    font-family: 'Space Mono', monospace;
+    color: $text;
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  p {
+    color: $muted;
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .btn-primary { margin: 0 auto; max-width: 200px; }
+}
+
+// =====================
+// ANIMACIONES
+// =====================
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+// =====================
+// RESPONSIVE
+// =====================
+@media (max-width: 480px) {
+  .sa-card { padding: 28px 20px; }
+  .sa-row.two { grid-template-columns: 1fr; }
+  .sa-actions { flex-direction: column-reverse; }
+  .btn-secondary { width: 100%; text-align: center; }
+}
+.sa-logo {
+  height: 48px;
+  margin-bottom: 12px;
+}
