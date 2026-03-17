@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,7 +11,7 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './solicitar-acceso.html',
   styleUrls: ['./solicitar-acceso.scss']
 })
-export class SolicitarAccesoComponent {
+export class SolicitarAccesoComponent implements OnInit {
 
   form = {
     identidad: '',
@@ -19,12 +19,14 @@ export class SolicitarAccesoComponent {
     apellidos: '',
     email: '',
     telefono: '',
-    motivo: ''
+    motivo: '',
+    idRolSolicitado: null as number | null
   };
 
-  enviando  = false;
-  exito     = false;
-  errorMsg  = '';
+  roles: { id: number, nombre: string }[] = [];
+  enviando = false;
+  exito    = false;
+  errorMsg = '';
 
   constructor(
     private http: HttpClient,
@@ -32,12 +34,28 @@ export class SolicitarAccesoComponent {
     private cdr: ChangeDetectorRef
   ) {}
 
+  ngOnInit(): void {
+    this.http.get<any[]>('http://localhost:8080/roles/publicos').subscribe({
+      next: (data) => {
+        this.roles = data.map(r => ({ id: r.idRol, nombre: r.nombreRol }));
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
+  }
+
   enviar() {
     this.errorMsg = '';
 
     if (!this.form.identidad || !this.form.nombres || !this.form.apellidos ||
       !this.form.email || !this.form.motivo) {
       this.errorMsg = 'Por favor completa todos los campos obligatorios.';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    if (!this.form.idRolSolicitado) {
+      this.errorMsg = 'Selecciona el rol que solicitas.';
       this.cdr.detectChanges();
       return;
     }

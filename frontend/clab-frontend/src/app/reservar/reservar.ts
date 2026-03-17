@@ -488,7 +488,9 @@ export class ReservarComponent implements OnInit {
 
   cargarReservas(): void {
     const idUsuario = parseInt(sessionStorage.getItem('idUsuario') || '0');
-    const obs = this.rol === 'Encargado de Laboratorio'
+    const obs = (this.rol === 'Encargado de Laboratorio' ||
+      this.rol === 'Encargado_Lab' ||
+      this.rol === 'clab_encargado_lab')
       ? this.reservaService.listarPorEncargado(idUsuario)
       : this.reservaService.listar();
     obs.subscribe({
