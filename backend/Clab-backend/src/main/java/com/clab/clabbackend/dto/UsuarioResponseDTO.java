@@ -21,6 +21,7 @@ public class UsuarioResponseDTO {
     private LocalDate fechaRegistro;
     private String rol;
     private List<RolInfo> roles;
+    private List<Integer> idsRoles;
 
     @Getter
     @Setter

@@ -256,11 +256,15 @@ public class UsuarioService {
         dto.setEstado(u.getEstado());
         dto.setFechaRegistro(u.getFechaRegistro());
 
+
         var rolesVigentes = usuarioRolRepository.findAllByUsuario_IdUsuarioAndVigenteTrue(u.getIdUsuario());
         String todosLosRoles = rolesVigentes.stream()
                 .map(ur -> ur.getRol().getNombreRol())
                 .collect(java.util.stream.Collectors.joining(", "));
         dto.setRol(todosLosRoles);
+        dto.setIdsRoles(rolesVigentes.stream()
+                .map(ur -> ur.getRol().getIdRol())
+                .toList());
         dto.setRoles(rolesVigentes.stream()
                 .map(ur -> new UsuarioResponseDTO.RolInfo(
                         ur.getRol().getIdRol(),
@@ -268,5 +272,13 @@ public class UsuarioService {
                 ))
                 .toList());
         return dto;
+    }
+    @Transactional
+    public void cambiarContraseniaPrimerLogin(Integer idUsuario, String nuevaContrasenia) {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        usuario.setContrasenia(passwordEncoder.encode(nuevaContrasenia));
+        usuario.setPrimerLogin(false);
+        usuarioRepository.save(usuario);
     }
 }

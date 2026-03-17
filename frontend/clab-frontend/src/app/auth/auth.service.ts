@@ -23,7 +23,7 @@ export class AuthService {
         sessionStorage.setItem('usuario', `${response.nombres.split(' ')[0]} ${response.apellidos.split(' ')[0]}`);
         sessionStorage.setItem('idUsuario', response.idUsuario);
         sessionStorage.setItem('rolesDisponibles', JSON.stringify(response.rolesDisponibles ?? []));
-
+        sessionStorage.setItem('primerLogin', response.primerLogin ? 'true' : 'false');
       })
     );
   }
