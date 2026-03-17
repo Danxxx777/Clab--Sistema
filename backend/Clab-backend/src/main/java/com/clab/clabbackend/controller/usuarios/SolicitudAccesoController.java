@@ -54,11 +54,7 @@ public class SolicitudAccesoController {
     }
 
     @PostMapping("/aprobar/{id}")
-    public ResponseEntity<Map<String, Object>> aprobar(
-            @PathVariable Integer id,
-            HttpServletRequest request,
-            @RequestBody Map<String, List<Integer>> body) {
-
+    public ResponseEntity<Map<String, Object>> aprobar(@PathVariable Integer id, HttpServletRequest request, @RequestBody Map<String, List<Integer>> body) {
         Integer idAdmin = obtenerIdUsuario(request);
         return ResponseEntity.ok(service.aprobarSolicitud(id, idAdmin, body.get("roles")));
     }
