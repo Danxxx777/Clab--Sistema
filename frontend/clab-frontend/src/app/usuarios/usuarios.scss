@@ -1146,3 +1146,16 @@ html, body {
   strong { font-size: 13px; color: #f0f0f0; display: block; margin-bottom: 3px; }
   p { font-size: 12px; color: #6b6b6b; margin: 0; }
 }
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #39ff14;
+  color: #111;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 1px 6px;
+  margin-left: 6px;
+  min-width: 18px;
+}

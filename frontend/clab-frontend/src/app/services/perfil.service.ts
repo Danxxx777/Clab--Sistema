@@ -17,8 +17,8 @@ export interface PerfilUsuario {
   usuario: string;
   estado: string;
   rol: string;
+  idsRoles?: number[];
 }
-
 export interface ReservaHistorial {
   idReserva: number;
   laboratorio: string;

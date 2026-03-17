@@ -13,5 +13,6 @@ public class AuthResponseDTO {
     private String apellidos;
     private String rol;
     private Integer idUsuario;
-    private List<String> rolesDisponibles;;
+    private List<String> rolesDisponibles;
+    private boolean primerLogin;
 }

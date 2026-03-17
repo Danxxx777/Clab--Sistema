@@ -1,0 +1,72 @@
+<div class="sa-wrapper">
+
+  <div class="sa-card" *ngIf="!exito">
+
+    <div class="sa-header">
+      <img src="favicon.ico" alt="CLAB" class="sa-logo">
+      <h1>Solicitar Acceso</h1>
+      <p>Completa el formulario y el administrador revisará tu solicitud.</p>
+    </div>
+
+    <div class="sa-error" *ngIf="errorMsg">
+      <span>⚠ {{ errorMsg }}</span>
+    </div>
+
+    <div class="sa-form">
+
+      <div class="sa-row">
+        <div class="sa-field">
+          <label>Número de identidad *</label>
+          <input type="text" [(ngModel)]="form.identidad" placeholder="0000000000" maxlength="20">
+        </div>
+      </div>
+
+      <div class="sa-row two">
+        <div class="sa-field">
+          <label>Nombres *</label>
+          <input type="text" [(ngModel)]="form.nombres" placeholder="Juan Carlos">
+        </div>
+        <div class="sa-field">
+          <label>Apellidos *</label>
+          <input type="text" [(ngModel)]="form.apellidos" placeholder="Pérez López">
+        </div>
+      </div>
+
+      <div class="sa-row two">
+        <div class="sa-field">
+          <label>Correo institucional *</label>
+          <input type="email" [(ngModel)]="form.email" placeholder="usuario@institución.edu">
+        </div>
+        <div class="sa-field">
+          <label>Teléfono</label>
+          <input type="text" [(ngModel)]="form.telefono" placeholder="0999999999">
+        </div>
+      </div>
+
+      <div class="sa-row">
+        <div class="sa-field">
+          <label>Motivo de solicitud *</label>
+          <textarea [(ngModel)]="form.motivo" rows="3"
+                    placeholder="Describe tu cargo o razón por la que necesitas acceso..."></textarea>
+        </div>
+      </div>
+
+      <div class="sa-actions">
+        <button class="btn-secondary" (click)="irLogin()">← Volver al login</button>
+        <button class="btn-primary" (click)="enviar()" [disabled]="enviando">
+          {{ enviando ? 'Enviando...' : 'Enviar solicitud' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Estado de éxito -->
+  <div class="sa-card sa-success" *ngIf="exito">
+    <div class="sa-success-icon">✓</div>
+    <h2>¡Solicitud enviada!</h2>
+    <p>El administrador revisará tu solicitud y recibirás tus credenciales por correo cuando sea aprobada.</p>
+    <button class="btn-primary" (click)="irLogin()">Ir al login</button>
+  </div>
+
+</div>
