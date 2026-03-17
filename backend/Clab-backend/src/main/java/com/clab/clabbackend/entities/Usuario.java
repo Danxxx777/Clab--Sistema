@@ -54,4 +54,6 @@ public class Usuario {
     @Column(name = "expiracion_token")
     private java.time.LocalDateTime expiracionToken;
 
+    @Column(name = "primer_login", nullable = false)
+    private boolean primerLogin = false;
 }

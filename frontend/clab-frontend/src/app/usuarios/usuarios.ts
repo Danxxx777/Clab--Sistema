@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 import { RolService, RolResponse } from '../services/rol.service';
 import { UsuarioService, UsuarioRequest, UsuarioResponse } from '../services/usuario.service';
@@ -25,7 +26,8 @@ export class UsuariosComponent implements OnInit {
     private router: Router,
     private rolService: RolService,
     private usuarioService: UsuarioService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private http: HttpClient
   ) {}
 
   /* ==ESTADO GENERAL== */
@@ -54,6 +56,13 @@ export class UsuariosComponent implements OnInit {
   usuarioLogueado = '';
   rol = '';
   usuarioPreview = '';
+  solicitudesPendientes = 0;
+  solicitudes: any[] = [];
+  cargandoSolicitudes = false;
+  solicitudActual: any = null;
+  mostrarModalAprobar = false;
+  rolesParaAprobar: number[] = [];
+
 
   /* PAGINACIÓN */
   paginaActual = 1;
@@ -86,6 +95,7 @@ export class UsuariosComponent implements OnInit {
 
     this.cargarUsuarios();
     this.cargarRoles();
+    this.cargarSolicitudesPendientes();
   }
 
   /* ==NAVEGACIÓN== */
@@ -96,6 +106,7 @@ export class UsuariosComponent implements OnInit {
   cambiarTab(index: number): void {
     this.tabActiva = index;
     this.paginaActual = 1;
+    if (index === 1) this.cargarSolicitudes();
     this.actualizarPaginacion();
   }
 
@@ -464,13 +475,87 @@ export class UsuariosComponent implements OnInit {
       event.preventDefault();
     }
   }
-
+  cargarSolicitudesPendientes(): void {
+    this.http.get<any>('http://localhost:8080/api/solicitudes/pendientes/count').subscribe({
+      next: (res) => {
+        this.solicitudesPendientes = res.count;
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
+  }
+  cargarSolicitudes(): void {
+    this.cargandoSolicitudes = true;
+    this.http.get<any[]>('http://localhost:8080/api/solicitudes/pendientes').subscribe({
+      next: (data) => {
+        this.solicitudes = data;
+        this.cargandoSolicitudes = false;
+        this.cdr.detectChanges();
+      },
+      error: () => { this.cargandoSolicitudes = false; }
+    });
+  }
   soloTelefono(event: KeyboardEvent): void {
     const char = event.key;
     // Permite números y + (para código de país)
     if (!/^[0-9+]$/.test(char)) {
       event.preventDefault();
     }
+  }
+  abrirModalAprobar(s: any): void {
+    this.solicitudActual = s;
+    this.rolesParaAprobar = [];
+    this.mostrarModalAprobar = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarModalAprobar(): void {
+    this.mostrarModalAprobar = false;
+    this.solicitudActual = null;
+    this.rolesParaAprobar = [];
+    this.cdr.detectChanges();
+  }
+
+  toggleRolAprobar(idRol: number): void {
+    const idx = this.rolesParaAprobar.indexOf(idRol);
+    if (idx >= 0) this.rolesParaAprobar.splice(idx, 1);
+    else this.rolesParaAprobar.push(idRol);
+  }
+
+  confirmarAprobacion(): void {
+    if (!this.rolesParaAprobar.length) {
+      this.mostrarAlerta('Error', 'Selecciona al menos un rol.', 'error');
+      return;
+    }
+    const idAdmin = Number(sessionStorage.getItem('idUsuario'));
+    this.http.post<any>(`http://localhost:8080/api/solicitudes/aprobar/${this.solicitudActual.id}`,
+      { roles: this.rolesParaAprobar }
+    ).subscribe({
+      next: (res) => {
+        this.cerrarModalAprobar();
+        this.cargarSolicitudes();
+        this.cargarSolicitudesPendientes();
+        this.mostrarAlerta('¡Aprobado!', `Usuario creado y credenciales enviadas por email.`, 'exito');
+      },
+      error: () => this.mostrarAlerta('Error', 'No se pudo aprobar la solicitud.', 'error')
+    });
+  }
+
+  rechazarSolicitud(s: any): void {
+    this.accionPendiente = () => {
+      const idAdmin = Number(sessionStorage.getItem('idUsuario'));
+      this.http.post<any>(`http://localhost:8080/api/solicitudes/rechazar/${s.id}`,
+        { observacion: 'Solicitud rechazada por el administrador.' }
+      ).subscribe({
+        next: () => {
+          this.cargarSolicitudes();
+          this.cargarSolicitudesPendientes();
+          this.mostrarAlerta('Rechazada', 'La solicitud fue rechazada.', 'exito');
+        },
+        error: () => this.mostrarAlerta('Error', 'No se pudo rechazar la solicitud.', 'error')
+      });
+    };
+    this.mostrarAlerta('¿Rechazar solicitud?', `¿Deseas rechazar la solicitud de ${s.nombres} ${s.apellidos}?`, 'confirmar');
   }
 
 }

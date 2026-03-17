@@ -86,7 +86,16 @@ export class PerfilComponent implements OnInit {
       usuario:   this.perfil.usuario,
       idsRoles:  (this.perfil as any).idsRoles
     } as any).subscribe({
-      next: actualizado => { this.perfil = actualizado; this.editando = false; this.guardando = false; },
+      next: actualizado => {
+        this.perfil = actualizado;
+        this.editando = false;
+        this.guardando = false;
+        // Actualizar nombre en sessionStorage
+        sessionStorage.setItem('usuario',
+          `${actualizado.nombres.split(' ')[0]} ${actualizado.apellidos.split(' ')[0]}`
+        );
+        this.cdr.detectChanges();
+      },
       error: () => this.guardando = false
     });
   }

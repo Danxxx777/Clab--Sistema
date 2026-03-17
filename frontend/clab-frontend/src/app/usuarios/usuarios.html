@@ -114,7 +114,11 @@
   <div class="tabs-container">
     <div class="tabs">
       <button class="tab" [class.active]="tabActiva === 0" (click)="cambiarTab(0)">Usuarios</button>
-      <button class="tab" [class.active]="tabActiva === 1" (click)="cambiarTab(1)">Roles</button>
+      <button class="tab" [class.active]="tabActiva === 1" (click)="cambiarTab(1)">
+        Solicitudes
+        <span class="tab-badge" *ngIf="solicitudesPendientes > 0">{{ solicitudesPendientes }}</span>
+      </button>
+      <button class="tab" [class.active]="tabActiva === 2" (click)="cambiarTab(2)">Roles</button>
     </div>
   </div>
 
@@ -222,9 +226,63 @@
         </table>
       </div>
     </div>
+    <!-- TAB 1: SOLICITUDES -->
+    <div class="tab-content" *ngIf="tabActiva === 1">
 
+      <div class="toolbar">
+        <div class="filters-group">
+      <span style="color:#6b6b6b; font-size:13px;">
+        {{ solicitudes.length }} solicitud(es) pendiente(s)
+      </span>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th>SOLICITANTE</th>
+            <th>IDENTIDAD</th>
+            <th>EMAIL</th>
+            <th>TELÉFONO</th>
+            <th>MOTIVO</th>
+            <th>FECHA</th>
+            <th>ACCIONES</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let s of solicitudes">
+            <td>
+              <strong>{{ s.nombres }} {{ s.apellidos }}</strong>
+            </td>
+            <td>{{ s.identidad }}</td>
+            <td>{{ s.email }}</td>
+            <td>{{ s.telefono || '—' }}</td>
+            <td>
+            <span class="motivo-text" [title]="s.motivo">
+              {{ s.motivo.length > 40 ? (s.motivo | slice:0:40) + '...' : s.motivo }}
+            </span>
+            </td>
+            <td>{{ s.fechaSolicitud | date:'dd/MM/yyyy' }}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-action btn-ver" (click)="abrirModalAprobar(s)">Aprobar</button>
+                <button class="btn-action btn-eliminar" (click)="rechazarSolicitud(s)">Rechazar</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="solicitudes.length === 0 && !cargandoSolicitudes">
+            <td colspan="7" class="empty-message">No hay solicitudes pendientes</td>
+          </tr>
+          <tr *ngIf="cargandoSolicitudes">
+            <td colspan="7" class="empty-message">Cargando...</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
     <!-- TAB 1: ROLES → componente hijo independiente -->
-    <app-roles *ngIf="tabActiva === 1" />
+    <app-roles *ngIf="tabActiva === 2" />
 
   </div>
 </div>
@@ -363,6 +421,37 @@
             <span class="dot"></span><span class="dot"></span><span class="dot"></span>
           </span>
         </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- MODAL APROBAR SOLICITUD -->
+<div class="modal-overlay" *ngIf="mostrarModalAprobar">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Aprobar Solicitud</h2>
+      <button class="btn-close" (click)="cerrarModalAprobar()">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:#aaa; font-size:13px; margin-bottom:16px;">
+        Asigna uno o más roles a <strong style="color:#f0f0f0">{{ solicitudActual?.nombres }} {{ solicitudActual?.apellidos }}</strong> para crear su cuenta.
+      </p>
+      <div class="form-group full-width">
+        <label>Roles <span class="required">*</span></label>
+        <div class="roles-bd-grid">
+          <div class="rol-bd-card"
+               *ngFor="let r of rolesActivos"
+               [class.selected]="rolesParaAprobar.includes(r.id!)"
+               (click)="toggleRolAprobar(r.id!)">
+            <div class="rol-bd-name">{{ r.nombre }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-footer-right">
+        <button class="btn-cancelar" (click)="cerrarModalAprobar()">Cancelar</button>
+        <button class="btn-guardar" (click)="confirmarAprobacion()">Aprobar y crear usuario</button>
       </div>
     </div>
   </div>

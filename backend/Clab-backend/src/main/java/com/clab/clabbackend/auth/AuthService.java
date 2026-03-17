@@ -109,7 +109,7 @@ public class AuthService {
         );
 
         return new AuthResponseDTO(token, usuario.getNombres(), usuario.getApellidos(),
-                rolPrincipal, usuario.getIdUsuario(), rolesDisponibles);
+                rolPrincipal, usuario.getIdUsuario(), rolesDisponibles, usuario.isPrimerLogin());
     }
 
     // ─── CAMBIAR ROL ─────────────────────────────────────────────────────────
@@ -139,7 +139,7 @@ public class AuthService {
                 idUsuario, "Cambió al rol: " + nombreRol, ip);
 
         return new AuthResponseDTO(token, usuario.getNombres(), usuario.getApellidos(),
-                nombreRol, idUsuario, rolesDisponibles);
+                nombreRol, idUsuario, rolesDisponibles, false);
     }
 
     // ─── LOGOUT ──────────────────────────────────────────────────────────────

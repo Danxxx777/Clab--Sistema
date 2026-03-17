@@ -113,11 +113,26 @@ public class UsuarioController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
     @PutMapping("/activar/{id}")
     public void activar(@PathVariable Integer id, HttpServletRequest request) {
         usuarioService.activar(id,
                 obtenerIdUsuario(request),
                 obtenerUsuario(request),
                 auditoriaService.obtenerIp(request));
+    }
+    @PostMapping("/cambiar-contrasenia-primer-login")
+    public ResponseEntity<?> cambiarContraseniaPrimerLogin(
+            @RequestBody Map<String, Object> body) {
+        try {
+            Integer idUsuario = (Integer) body.get("idUsuario");
+            String nuevaContrasenia = (String) body.get("nuevaContrasenia");
+
+            usuarioService.cambiarContraseniaPrimerLogin(idUsuario, nuevaContrasenia);
+
+            return ResponseEntity.ok(Map.of("mensaje", "Contraseña actualizada correctamente"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }

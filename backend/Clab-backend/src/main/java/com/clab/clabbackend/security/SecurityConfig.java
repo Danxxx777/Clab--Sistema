@@ -57,6 +57,11 @@ public class SecurityConfig {
                         .requestMatchers("/estadisticas/login").permitAll()
                         .requestMatchers("/backup/**").permitAll()
                         .requestMatchers("/backup/restaurar/**").hasAnyAuthority("Administradorr")
+                        .requestMatchers("/api/solicitudes/crear").permitAll()
+                        .requestMatchers("/api/solicitudes/crear").permitAll()
+                        .requestMatchers("/api/solicitudes/**").authenticated()
+                        .requestMatchers("/api/solicitudes/**").authenticated()
+                        .requestMatchers("/usuarios/cambiar-contrasenia-primer-login").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
