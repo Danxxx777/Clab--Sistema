@@ -279,14 +279,13 @@ export class ReservarComponent implements OnInit {
   filtroEstadoActivo = '';
 
   filtrarPorEstado(estado: string): void {
-    if (this.filtroEstadoActivo === estado) {
-      this.filtroEstadoActivo = '';
-      this.reservasFiltradas = [...this.reservas];
+    if (this.filtroEstadoActivo === estado || estado === 'Total') {
+      // Si presiona el mismo o "Total", limpia el filtro
+      this.filtroEstadoActivo = estado === 'Total' ? 'Total' : '';
+      this.reservasCombinadasFiltradas = [...this.reservasCombinadas];
     } else {
       this.filtroEstadoActivo = estado;
-      this.reservasFiltradas = estado === 'Total'
-        ? [...this.reservas]
-        : this.reservas.filter(r => r.estado === estado);
+      this.reservasCombinadasFiltradas = this.reservasCombinadas.filter(r => r.estado === estado);
     }
     this.paginaActual = 1;
     this.cdr.detectChanges();
@@ -441,10 +440,16 @@ export class ReservarComponent implements OnInit {
       .sort((a, b) => {
         const fechaA = new Date(a.fecha_orden).getTime();
         const fechaB = new Date(b.fecha_orden).getTime();
-        return fechaA - fechaB;  // ← más antiguo primero
+        return fechaA - fechaB;
       });
 
-    this.reservasCombinadasFiltradas = [...this.reservasCombinadas];
+    if (this.filtroEstadoActivo && this.filtroEstadoActivo !== 'Total') {
+      this.reservasCombinadasFiltradas = this.reservasCombinadas.filter(
+        r => r.estado === this.filtroEstadoActivo
+      );
+    } else {
+      this.reservasCombinadasFiltradas = [...this.reservasCombinadas];
+    }
   }
 
 
@@ -495,8 +500,15 @@ export class ReservarComponent implements OnInit {
       : this.reservaService.listar();
     obs.subscribe({
       next: (data) => {
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+
         this.reservas = data
-          .filter(r => r.estado !== 'Cancelada' && !r.idGrupoReserva)
+          .filter(r => {
+            if (r.estado === 'Cancelada' || r.idGrupoReserva) return false;
+            const fechaReserva = new Date(r.fechaReserva + 'T00:00:00');
+            return fechaReserva >= hoy;
+          })
           .map(r => ({
             id_reserva: r.idReserva, cod_laboratorio: r.codLaboratorio,
             nombre_laboratorio: r.nombreLaboratorio, fecha_reserva: r.fechaReserva,
@@ -509,7 +521,7 @@ export class ReservarComponent implements OnInit {
             descripcion: r.descripcion || '', motivo: r.motivo
           }));
         this.reservasFiltradas = [...this.reservas];
-        this.combinarReservas(); // ← nuevo
+        this.combinarReservas();
         this.cdr.detectChanges();
       },
       error: () => this.mostrarNotificacion('Error al cargar reservas', 'error')
