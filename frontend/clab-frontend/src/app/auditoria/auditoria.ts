@@ -52,8 +52,8 @@ export class AuditoriaComponent implements OnInit {
   readonly modulos = ['AUTH', 'USUARIOS', 'ROLES', 'EQUIPOS', 'LABORATORIOS', 'RESERVAS', 'HORARIOS', 'REPORTES'];
 
   ngOnInit(): void {
-    this.rol = sessionStorage.getItem('rol') || '';
-    const userData = sessionStorage.getItem('usuario') || sessionStorage.getItem('user');
+    this.rol = localStorage.getItem('rol') || '';
+    const userData = localStorage.getItem('usuario') || localStorage.getItem('user');
     if (userData) {
       try {
         const parsed = JSON.parse(userData);
@@ -68,7 +68,7 @@ export class AuditoriaComponent implements OnInit {
   }
 
   private getHeaders(): HttpHeaders {
-    const token = sessionStorage.getItem('token') || '';
+    const token = localStorage.getItem('token') || '';
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 
@@ -94,7 +94,7 @@ export class AuditoriaComponent implements OnInit {
   }
 
   forzarLogout(sesion: SesionActivaItem): void {
-    const miId = sessionStorage.getItem('idUsuario');
+    const miId = localStorage.getItem('idUsuario');
     if (miId && sesion.idUsuario === parseInt(miId)) {
       this.modalErrorMensaje = 'No puedes cerrar tu propia sesión desde aquí.';
       this.modalErrorAbierto = true;
@@ -185,7 +185,7 @@ export class AuditoriaComponent implements OnInit {
     if (this.tabActiva === 0) this.cargarAuditorias();
     else this.cargarSesiones();
   }
-  logout(): void { sessionStorage.clear(); this.router.navigate(['/login']); }
+  logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
 
   verDetalle(a: AuditoriaItem): void {
     this.auditoriaDetalle = a;

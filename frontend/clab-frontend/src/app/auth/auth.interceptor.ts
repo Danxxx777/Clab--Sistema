@@ -3,7 +3,7 @@ import { catchError, throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
-  const token = sessionStorage.getItem('token');
+  const token = localStorage.getItem('token');
 
   // No agregar token ni interceptar rutas de autenticación
   if (req.url.includes('/auth')) {
@@ -21,9 +21,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         mostrarToast(mensaje, 'error');
       } else if (error.status === 401) {
         // Solo redirigir si hay token — significa sesión expirada/forzada
-        if (sessionStorage.getItem('token')) {
+        if (localStorage.getItem('token')) {
           mostrarToast('Tu sesión fue cerrada. Inicia sesión nuevamente.', 'warning');
-          sessionStorage.clear();
+          localStorage.clear();
           setTimeout(() => { window.location.href = '/login'; }, 1500);
         }
       } else if (error.status === 500) {
