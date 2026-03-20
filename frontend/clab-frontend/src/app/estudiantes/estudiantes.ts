@@ -78,8 +78,8 @@ export class EstudiantesComponent implements OnInit {
 
   tabActiva: number = 0;
   drawerAbierto = false;
-  rol = sessionStorage.getItem('rol') || '';
-  usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
+  rol = localStorage.getItem('rol') || '';
+  usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
 
   // ===========================
   // DATOS - ESTUDIANTES
@@ -402,8 +402,8 @@ export class EstudiantesComponent implements OnInit {
   constructor(private router: Router) {}
 
   ngOnInit(): void {
-    this.rol = sessionStorage.getItem('rol') || '';
-    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
+    this.rol = localStorage.getItem('rol') || '';
+    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
     this.estudiantesFiltrados = [...this.estudiantes];
     this.matriculasFiltradas = [...this.matriculas];
     this.inscripcionesFiltradas = [...this.inscripciones];
@@ -455,7 +455,7 @@ export class EstudiantesComponent implements OnInit {
   }
 
   logout(): void {
-    sessionStorage.clear();
+    localStorage.clear();
     this.router.navigate(['/login']);
   }
   // ===========================

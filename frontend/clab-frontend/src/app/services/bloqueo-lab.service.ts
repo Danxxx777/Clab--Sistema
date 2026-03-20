@@ -21,7 +21,7 @@ export class BloqueoLabService {
   constructor(private http: HttpClient) {}
 
   private getHeaders(): HttpHeaders {
-    const idUsuario = sessionStorage.getItem('idUsuario') || '0';
+    const idUsuario = localStorage.getItem('idUsuario') || '0';
     return new HttpHeaders({ 'id-usuario': idUsuario });
   }
 

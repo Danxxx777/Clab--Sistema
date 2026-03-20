@@ -21,8 +21,8 @@ export class AcademicoComponent implements OnInit {
 
   tabActiva = 0;
   drawerAbierto = false;
-  rol = sessionStorage.getItem('rol') || '';
-  usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
+  rol = localStorage.getItem('rol') || '';
+  usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
 
   periodos: Periodo[] = [];
   facultades: any[] = [];
@@ -155,8 +155,8 @@ export class AcademicoComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.rol = sessionStorage.getItem('rol') || '';
-    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
+    this.rol = localStorage.getItem('rol') || '';
+    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
     this.cargarPeriodos();
     this.cargarFacultades();
     this.cargarDecanos();

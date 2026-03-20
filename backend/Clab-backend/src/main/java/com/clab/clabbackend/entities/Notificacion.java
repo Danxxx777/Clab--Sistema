@@ -48,4 +48,7 @@ public class Notificacion {
 
     @Column(name = "email_origen", length = 100)
     private String emailOrigen;
+
+    @Column(name = "mensaje_corto", length = 300)
+    private String mensajeCorto;
 }

@@ -81,8 +81,8 @@ export class ReportarComponent implements OnInit {
 
   // ─── LIFECYCLE ─────────────────────────────────────────────────────────────
   ngOnInit(): void {
-    this.rol = sessionStorage.getItem('rol') || '';
-    const userData = sessionStorage.getItem('usuario') || sessionStorage.getItem('user');
+    this.rol = localStorage.getItem('rol') || '';
+    const userData = localStorage.getItem('usuario') || localStorage.getItem('user');
     if (userData) {
       try {
         const parsed = JSON.parse(userData);
@@ -110,7 +110,7 @@ export class ReportarComponent implements OnInit {
   // ─── NAVEGACIÓN ────────────────────────────────────────────────────────────
   volver(): void { this.router.navigate(['/dashboard']); }
   navegar(ruta: string): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
-  logout(): void { sessionStorage.clear(); this.router.navigate(['/login']); }
+  logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
 
   abrirModulo(index: number): void {
     this.moduloActivo = index;

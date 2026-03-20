@@ -63,8 +63,8 @@ export class ReservarComponent implements OnInit {
   // ══ TABS ══════════════════════════════════════════════════════════════════
   tabActiva: number = 0;
   drawerAbierto = false;
-  rol = sessionStorage.getItem('rol') || '';
-  usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
+  rol = localStorage.getItem('rol') || '';
+  usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
   idUsuario = 0;
   reservaDetalle: any = null;
   mostrarModalDetalle = false;
@@ -492,7 +492,7 @@ export class ReservarComponent implements OnInit {
   }
 
   cargarReservas(): void {
-    const idUsuario = parseInt(sessionStorage.getItem('idUsuario') || '0');
+    const idUsuario = parseInt(localStorage.getItem('idUsuario') || '0');
     const obs = (this.rol === 'Encargado de Laboratorio' ||
       this.rol === 'Encargado_Lab' ||
       this.rol === 'clab_encargado_lab')
@@ -565,14 +565,14 @@ export class ReservarComponent implements OnInit {
   toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
   cerrarDrawer(): void { this.drawerAbierto = false; }
   navegar(ruta: string, _texto = ''): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
-  logout(): void { sessionStorage.clear(); this.router.navigate(['/login']); }
+  logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
   volver(): void { this.router.navigate(['/dashboard']); }
 
   // ══ INIT ═════════════════════════════════════════════════════════════════
   ngOnInit(): void {
-    this.rol = sessionStorage.getItem('rol') || '';
-    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
-    this.idUsuario = parseInt(sessionStorage.getItem('idUsuario') || '0');
+    this.rol = localStorage.getItem('rol') || '';
+    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+    this.idUsuario = parseInt(localStorage.getItem('idUsuario') || '0');
     this.cargarTipos();
     this.cargarReservas();
     this.cargarLaboratorios();
@@ -765,7 +765,7 @@ export class ReservarComponent implements OnInit {
   };
 
   private cal_getHeaders(): HttpHeaders {
-    const token = sessionStorage.getItem('token') || '';
+    const token = localStorage.getItem('token') || '';
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 

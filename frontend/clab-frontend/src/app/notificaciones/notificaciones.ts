@@ -15,8 +15,8 @@ import { Notificacion} from '../interfaces/Notificacion.model';
 export class NotificacionesComponent implements OnInit {
 
   drawerAbierto = false;
-  rol = sessionStorage.getItem('rol') || '';
-  usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
+  rol = localStorage.getItem('rol') || '';
+  usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
 
   notificaciones: Notificacion[] = [];
   cargando = true;
@@ -45,13 +45,13 @@ export class NotificacionesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.rol = sessionStorage.getItem('rol') || '';
-    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
+    this.rol = localStorage.getItem('rol') || '';
+    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
     this.cargarNotificaciones();
   }
 
   private getHeaders(): HttpHeaders {
-    const token = sessionStorage.getItem('token') || '';
+    const token = localStorage.getItem('token') || '';
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 
@@ -275,6 +275,6 @@ export class NotificacionesComponent implements OnInit {
     this.cerrarDrawer();
     this.router.navigate([`/${ruta}`]);
   }
-  logout(): void { sessionStorage.clear(); this.router.navigate(['/login']); }
+  logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
   volver(): void { this.router.navigate(['/dashboard']); }
 }
