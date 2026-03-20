@@ -19,8 +19,8 @@ export class InventarioComponent implements OnInit {
 
   tabActiva: 'equipos' | 'tipos' = 'equipos';
   drawerAbierto = false;
-  rol = sessionStorage.getItem('rol') || '';
-  usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
+  rol = localStorage.getItem('rol') || '';
+  usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
 
   equipos: Equipo[] = [];
   equiposFiltrados: Equipo[] = [];
@@ -65,8 +65,8 @@ export class InventarioComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.rol = sessionStorage.getItem('rol') || '';
-    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
+    this.rol = localStorage.getItem('rol') || '';
+    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
     this.cargarEquipos();
     this.cargarTipos();
     this.cargarLaboratorios();
@@ -397,7 +397,7 @@ export class InventarioComponent implements OnInit {
     this.cerrarDrawer();
     this.router.navigate([`/${ruta}`]);
   }
-  logout(): void { sessionStorage.clear(); this.router.navigate(['/login']); }
+  logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
   volver(): void { this.router.navigate(['/dashboard']); }
 
   nuevoFormulario(): Equipo {

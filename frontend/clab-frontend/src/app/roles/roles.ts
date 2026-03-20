@@ -248,10 +248,10 @@ export class RolesComponent implements OnInit {
         this.mostrarAlerta('¡Rol guardado!', `El rol "${payload.nombreRol}" fue guardado.`, 'exito');
 
         // Si editamos el rol actual del usuario → refrescar módulos del dashboard
-        const rolActual = sessionStorage.getItem('rol');
+        const rolActual = localStorage.getItem('rol');
         if (payload.nombreRol === rolActual) {
           // Disparar evento para que el dashboard se actualice
-          sessionStorage.removeItem('modulos');
+          localStorage.removeItem('modulos');
         }
       }
     });

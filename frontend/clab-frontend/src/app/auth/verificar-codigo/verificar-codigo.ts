@@ -21,7 +21,7 @@ export class VerificarCodigoComponent implements OnInit {
   constructor(private http: HttpClient, private router: Router) {}
 
   ngOnInit() {
-    this.email = sessionStorage.getItem('recuperacion_email') ?? '';
+    this.email = localStorage.getItem('recuperacion_email') ?? '';
     if (!this.email) {
       this.router.navigate(['/forgot-password']);
     }
@@ -42,7 +42,7 @@ export class VerificarCodigoComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.cargando = false;
-        sessionStorage.setItem('recuperacion_codigo', this.codigo);
+        localStorage.setItem('recuperacion_codigo', this.codigo);
         this.router.navigate(['/reset-password']);
       },
       error: (err) => {

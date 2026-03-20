@@ -118,22 +118,46 @@
             <p>Sin notificaciones</p>
           </div>
           <div class="notif-item" *ngFor="let n of notificaciones"
-               [class.unread]="n.estado !== 'LEIDA'" (click)="marcarLeida(n)">
-            <div class="notif-avatar" [class.falla]="n.tipoNotificacion === 'FALLA'">
-              {{ (n.tipoNotificacion || 'N').charAt(0).toUpperCase() }}
+               [class.unread]="n.estado !== 'LEIDA'"
+               [class.tipo-falla]="n.tipoNotificacion === 'FALLA'"
+               [class.tipo-reserva]="n.tipoNotificacion === 'RESERVA'"
+               [class.tipo-bloqueo]="n.tipoNotificacion === 'BLOQUEO'"
+               (click)="marcarLeida(n)">
+
+            <div class="notif-avatar" [class.falla]="n.tipoNotificacion === 'FALLA'"
+                 [class.reserva]="n.tipoNotificacion === 'RESERVA'"
+                 [class.bloqueo]="n.tipoNotificacion === 'BLOQUEO'">
+              <!-- FALLA -->
+              <svg *ngIf="n.tipoNotificacion === 'FALLA'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+              </svg>
+              <!-- RESERVA -->
+              <svg *ngIf="n.tipoNotificacion === 'RESERVA'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <path d="M20 6L9 17l-5-5"/>
+              </svg>
+              <!-- BLOQUEO -->
+              <svg *ngIf="n.tipoNotificacion === 'BLOQUEO'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+              </svg>
+              <!-- OTROS -->
+              <svg *ngIf="n.tipoNotificacion !== 'FALLA' && n.tipoNotificacion !== 'RESERVA' && n.tipoNotificacion !== 'BLOQUEO'"
+                   viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
             </div>
+
             <div class="notif-item-body">
               <div class="notif-item-header">
                 <span class="notif-item-titulo">{{ n.asunto || 'Sin asunto' }}</span>
-                <span class="notif-item-time"
-                      [title]="n.fechaCreacion | date:'dd/MM/yyyy HH:mm'">
-              {{ getTimeAgo(n.fechaCreacion) }}
-            </span>
+                <span class="notif-item-time" [title]="n.fechaCreacion | date:'dd/MM/yyyy HH:mm'">
+        {{ getTimeAgo(n.fechaCreacion) }}
+      </span>
               </div>
               <div class="notif-item-msg">
-                {{ stripHtml(n.mensaje || '') | slice:0:65 }}{{ stripHtml(n.mensaje || '').length > 65 ? '...' : '' }}
+                {{ n.mensajeCorto || limpiarMensaje(n.mensaje || '') | slice:0:60 }}{{ (n.mensajeCorto || limpiarMensaje(n.mensaje || '')).length > 60 ? '...' : '' }}
               </div>
             </div>
+
             <div class="notif-unread-dot" *ngIf="n.estado !== 'LEIDA'"></div>
           </div>
         </div>

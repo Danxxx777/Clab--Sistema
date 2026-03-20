@@ -53,7 +53,7 @@ export class PerfilComponent implements OnInit {
   ngOnInit(): void {
     const id = this.authService.getIdUsuario();
     console.log('ID usuario:', id);
-    console.log('sessionStorage idUsuario:', sessionStorage.getItem('idUsuario'));
+    console.log('localStorage idUsuario:', localStorage.getItem('idUsuario'));
 
     if (!id) { this.router.navigate(['/login']); return; }
     this.cargarPerfil(id);
@@ -90,8 +90,8 @@ export class PerfilComponent implements OnInit {
         this.perfil = actualizado;
         this.editando = false;
         this.guardando = false;
-        // Actualizar nombre en sessionStorage
-        sessionStorage.setItem('usuario',
+        // Actualizar nombre en localStorage
+        localStorage.setItem('usuario',
           `${actualizado.nombres.split(' ')[0]} ${actualizado.apellidos.split(' ')[0]}`
         );
         this.cdr.detectChanges();
