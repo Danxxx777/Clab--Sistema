@@ -2,12 +2,10 @@ package com.clab.clabbackend.auth;
 
 import com.clab.clabbackend.dto.AuthResponseDTO;
 import com.clab.clabbackend.dto.LoginRequestDTO;
+import com.clab.clabbackend.dto.ModuloDTO;
 import com.clab.clabbackend.entities.Usuario;
 import com.clab.clabbackend.entities.UsuarioRol;
-import com.clab.clabbackend.repository.RolPermisoRepository;
-import com.clab.clabbackend.repository.RolRepository;
-import com.clab.clabbackend.repository.UsuarioRepository;
-import com.clab.clabbackend.repository.UsuarioRolRepository;
+import com.clab.clabbackend.repository.*;
 import com.clab.clabbackend.security.JwtService;
 import com.clab.clabbackend.services.AuditoriaService;
 import com.clab.clabbackend.services.EmailService;
@@ -33,6 +31,7 @@ public class AuthService {
     private final RolRepository rolRepository;
     private final RolPermisoRepository rolPermisoRepository;
     private final AuditoriaService auditoriaService;
+    private final ModuloRolRepository moduloRolRepository;
 
     public AuthService(PasswordEncoder passwordEncoder,
                        AuthenticationManager authenticationManager,
@@ -42,7 +41,8 @@ public class AuthService {
                        EmailService emailService,
                        RolRepository rolRepository,
                        RolPermisoRepository rolPermisoRepository,
-                       AuditoriaService auditoriaService)
+                       AuditoriaService auditoriaService,
+                       ModuloRolRepository moduloRolRepository)
     {
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -53,6 +53,7 @@ public class AuthService {
         this.rolRepository = rolRepository;
         this.rolPermisoRepository = rolPermisoRepository;
         this.auditoriaService = auditoriaService;
+        this.moduloRolRepository = moduloRolRepository;
     }
 
     private List<String> obtenerPermisosDeRol(String nombreRol) {
@@ -61,6 +62,23 @@ public class AuthService {
                         .stream()
                         .map(rp -> rp.getPermiso().getNombrePermiso())
                         .toList())
+                .orElse(List.of());
+    }
+
+    private List<ModuloDTO> obtenerModulosDeRol(String nombreRol) {
+        return rolRepository.findByNombreRolIgnoreCase(nombreRol)
+                .map(rol -> moduloRolRepository.findByRol_IdRol(rol.getIdRol())
+                        .stream()
+                        .map(mr -> new ModuloDTO(
+                                mr.getModulo().getNombre(),
+                                mr.getModulo().getRuta(),
+                                mr.getModulo().getIcono(),
+                                mr.getModulo().getOrden(),
+                                mr.getModulo().getDescripcion()
+                        ))
+                        .sorted(Comparator.comparing(ModuloDTO::orden))
+                        .toList()
+                )
                 .orElse(List.of());
     }
 
@@ -95,21 +113,25 @@ public class AuthService {
         List<String> permisos = obtenerPermisosDeRol(rolPrincipal);
         String token = jwtService.generarToken(usuario.getIdUsuario(), usuario.getUsuario(), rolPrincipal, permisos);
 
-        // Registrar sesión via SP
         auditoriaService.registrarSesion(
                 usuario.getIdUsuario(), usuario.getUsuario(),
                 token, ip, LocalDateTime.now().plusHours(1)
         );
 
-        // Auditoría via SP
         auditoriaService.registrarExito(
                 usuario.getIdUsuario(), usuario.getUsuario(),
                 "LOGIN", "AUTH", "u_usuario",
                 usuario.getIdUsuario(), "Login exitoso con rol: " + rolPrincipal, ip
         );
 
-        return new AuthResponseDTO(token, usuario.getNombres(), usuario.getApellidos(),
-                rolPrincipal, usuario.getIdUsuario(), rolesDisponibles, usuario.isPrimerLogin());
+        List<ModuloDTO> modulos = obtenerModulosDeRol(rolPrincipal); // ← nuevo
+
+        AuthResponseDTO response = new AuthResponseDTO(
+                token, usuario.getNombres(), usuario.getApellidos(),
+                rolPrincipal, usuario.getIdUsuario(), rolesDisponibles,
+                usuario.isPrimerLogin(), modulos  // ← modulos al final
+        );
+        return response;
     }
 
     // ─── CAMBIAR ROL ─────────────────────────────────────────────────────────
@@ -125,8 +147,12 @@ public class AuthService {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("El usuario no tiene el rol: " + nombreRol));
 
-        List<String> rolesDisponibles = rolesVigentes.stream()
-                .map(ur -> ur.getRol().getNombreRol()).toList();
+        List<String> rolesDisponibles = usuarioRolRepository
+                .findAllByUsuario_IdUsuarioAndVigenteTrue(idUsuario)
+                .stream()
+                .filter(ur -> "ACTIVO".equals(ur.getRol().getEstado())) // ← agrega este filtro
+                .map(ur -> ur.getRol().getNombreRol())
+                .toList();
 
         List<String> permisos = obtenerPermisosDeRol(nombreRol);
         String token = jwtService.generarToken(idUsuario, usuario.getUsuario(), nombreRol, permisos);
@@ -138,13 +164,18 @@ public class AuthService {
                 "CAMBIO_ROL", "AUTH", "u_usuario_rol",
                 idUsuario, "Cambió al rol: " + nombreRol, ip);
 
-        return new AuthResponseDTO(token, usuario.getNombres(), usuario.getApellidos(),
-                nombreRol, idUsuario, rolesDisponibles, false);
+        List<ModuloDTO> modulos = obtenerModulosDeRol(nombreRol); // ← nuevo
+
+        AuthResponseDTO response = new AuthResponseDTO(
+                token, usuario.getNombres(), usuario.getApellidos(),
+                nombreRol, idUsuario, rolesDisponibles,
+                false, modulos  // ← modulos al final
+        );
+        return response;
     }
 
     // ─── LOGOUT ──────────────────────────────────────────────────────────────
     public void logout(String token, Integer idUsuario, String ip) {
-        // SP registra sesión inactiva y auditoría en un solo paso
         auditoriaService.cerrarSesion(token, idUsuario, ip);
     }
 
@@ -189,5 +220,18 @@ public class AuthService {
         usuario.setTokenRecuperacion(null);
         usuario.setExpiracionToken(null);
         usuarioRepository.save(usuario);
+    }
+
+    public List<ModuloDTO> obtenerModulosPublico(String nombreRol) {
+        return obtenerModulosDeRol(nombreRol);
+    }
+
+    public List<String> obtenerRolesVigentes(Integer idUsuario) {
+        return usuarioRolRepository
+                .findAllByUsuario_IdUsuarioAndVigenteTrue(idUsuario)
+                .stream()
+                .filter(ur -> "ACTIVO".equals(ur.getRol().getEstado()))
+                .map(ur -> ur.getRol().getNombreRol())
+                .toList();
     }
 }

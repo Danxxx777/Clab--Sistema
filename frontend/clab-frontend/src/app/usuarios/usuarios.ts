@@ -336,7 +336,7 @@ export class UsuariosComponent implements OnInit {
         },
         error: (err) => {
           this.guardandoUsuario = false;
-          const msg: string = err.error?.error || err.error?.message || '';
+          const msg: string = err.error?.mensaje || err.error?.error || err.error?.message || '';
           if (msg.toLowerCase().includes('email') || msg.toLowerCase().includes('correo')) {
             this.errorModal = 'Ya existe un usuario con ese email.';
           } else if (msg.toLowerCase().includes('identidad')) {
@@ -363,8 +363,14 @@ export class UsuariosComponent implements OnInit {
         },
         error: (err) => {
           this.guardandoUsuario = false;
-          const msg: string = err.error?.error || err.error?.message || '';
-          this.errorModal = msg || 'No se pudo actualizar el usuario.';
+          const msg: string = err.error?.mensaje || err.error?.error || err.error?.message || '';
+          if (msg.toLowerCase().includes('email') || msg.toLowerCase().includes('correo')) {
+            this.errorModal = 'Ya existe un usuario con ese email.';
+          } else if (msg.toLowerCase().includes('identidad')) {
+            this.errorModal = 'Ya existe un usuario con esa identidad.';
+          } else {
+            this.errorModal = msg || 'No se pudo actualizar el usuario.';
+          }
           this.cdr.detectChanges();
         }
       });
