@@ -11,6 +11,7 @@ public class RolResponseDTO {
     private LocalDate fechaCreacion;
     private List<RolBDDTO> rolesBD;
     private String estado;
+    private List<Integer> modulosIds;
 
     public RolResponseDTO() {}
 
@@ -52,4 +53,7 @@ public class RolResponseDTO {
 
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
+
+    public List<Integer> getModulosIds() { return modulosIds; }
+    public void setModulosIds(List<Integer> modulosIds) { this.modulosIds = modulosIds; }
 }

@@ -15,6 +15,7 @@ export interface RolResponse {
   fechaCreacion: string;
   rolesBD: RolBD[];
   estado: string;
+  modulosIds: number[];
 }
 
 export interface RolRequest {
@@ -31,6 +32,7 @@ export interface RolRequest {
     update: boolean;
     delete: boolean;
   }[];
+  modulosIds?: number[];
 }
 
 @Injectable({

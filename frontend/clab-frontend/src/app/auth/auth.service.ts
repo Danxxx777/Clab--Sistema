@@ -24,6 +24,7 @@ export class AuthService {
         sessionStorage.setItem('idUsuario', response.idUsuario);
         sessionStorage.setItem('rolesDisponibles', JSON.stringify(response.rolesDisponibles ?? []));
         sessionStorage.setItem('primerLogin', response.primerLogin ? 'true' : 'false');
+        sessionStorage.setItem('modulos', JSON.stringify(response.modulos ?? [])); // ← nuevo
       })
     );
   }
@@ -49,6 +50,7 @@ export class AuthService {
     sessionStorage.removeItem('rolesDisponibles');
     sessionStorage.removeItem('idUsuario');
     sessionStorage.removeItem('usuario');
+    sessionStorage.removeItem('modulos'); 
   }
 
   isLoggedIn(): boolean {

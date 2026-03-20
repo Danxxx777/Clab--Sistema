@@ -14,6 +14,7 @@ export interface RolView {
   fechaCreacion?: string;
   rolesBD?: RolBD[];
   estado?: string;
+  modulosIds?: number[];
 }
 
 export interface RolRequest {

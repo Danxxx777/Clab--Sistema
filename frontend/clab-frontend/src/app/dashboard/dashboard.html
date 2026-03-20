@@ -25,89 +25,23 @@
   <div class="drawer-section-title">Módulos</div>
 
   <div class="drawer-modules">
-    @if(rol === 'Administradorr' || rol === 'Decano') {
-      <div class="drawer-item" (click)="navegar('usuarios', 'Cargando Usuarios...')">
-        <div class="di-icon ic-1"><img src="/user.png" alt="Usuarios"></div>
-        <div class="di-text"><div class="di-name">Usuarios</div><div class="di-desc">Gestión de accesos y roles</div></div>
+    <div class="drawer-item"
+         *ngFor="let m of modulos"
+         (click)="navegar(m.ruta, 'Cargando ' + m.nombre + '...')">
+      <div class="di-icon"><img [src]="'/' + m.icono" [alt]="m.nombre"></div>
+      <div class="di-text">
+        <div class="di-name">{{ m.nombre }}</div>
       </div>
-    }
-    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
-      <div class="drawer-item" (click)="navegar('laboratorios', 'Cargando Laboratorios...')">
-        <div class="di-icon ic-2"><img src="/laboratorio.png" alt="Laboratorios"></div>
-        <div class="di-text"><div class="di-name">Laboratorios</div><div class="di-desc">Sedes y encargados</div></div>
-      </div>
-    }
-    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
-      <div class="drawer-item" (click)="navegar('equipos', 'Cargando Equipos...')">
-        <div class="di-icon ic-3"><img src="/equipo.png" alt="Equipos"></div>
-        <div class="di-text"><div class="di-name">Equipos</div><div class="di-desc">Inventario y ubicaciones</div></div>
-      </div>
-    }
-    @if(rol === 'Administradorr'  || rol === 'Coordinador' || rol === 'Decano') {
-      <div class="drawer-item" (click)="navegar('reservar', 'Cargando Reservas...')">
-        <div class="di-icon ic-4"><img src="/reservacalendario.png" alt="Reservas"></div>
-        <div class="di-text"><div class="di-name">Reservas</div><div class="di-desc">Disponibilidad</div></div>
-      </div>
-    }
-    @if(rol === 'Docente' || rol === 'Coordinador') {
-      <div class="drawer-item" (click)="navegar('solicitudes-reserva', 'Cargando Solicitudes...')">
-        <div class="di-icon ic-4"><img src="/solicitud.png" alt="Solicitudes"></div>
-        <div class="di-text"><div class="di-name">Solicitudes de Reserva</div><div class="di-desc">Gestión de solicitudes</div></div>
-      </div>
-    }
+    </div>
 
-    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Coordinador') {
-      <div class="drawer-item" (click)="navegar('academico', 'Cargando Académico...')">
-        <div class="di-icon ic-5"><img src="/academico.png" alt="Académico"></div>
-        <div class="di-text"><div class="di-name">Académico</div><div class="di-desc">Períodos y carreras</div></div>
-      </div>
-    }
-    @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano') {
-      <div class="drawer-item" (click)="navegar('estudiantes', 'Cargando Estudiantes...')">
-        <div class="di-icon ic-6"><img src="/estudiantes.png" alt="Estudiantes"></div>
-        <div class="di-text"><div class="di-name">Estudiantes</div><div class="di-desc">Matrículas e inscripciones</div></div>
-      </div>
-    }
-    @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Decano') {
-      <div class="drawer-item" (click)="navegar('asistencia', 'Cargando Asistencia...')">
-        <div class="di-icon ic-7"><img src="/asistencia.png" alt="Asistencia"></div>
-        <div class="di-text"><div class="di-name">Asistencia</div><div class="di-desc">Control de asistencia</div></div>
-      </div>
-    }
-    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano' || rol === 'Docente'){
-      <div class="drawer-item" (click)="navegar('reporte-fallas', 'Cargando Fallas...')">
-        <div class="di-icon ic-8"><img src="/fallas.png" alt="Fallas"></div>
-        <div class="di-text"><div class="di-name">Reportes de Fallas</div><div class="di-desc">Seguimiento de equipos</div></div>
-      </div>
-    }
-    @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
-      <div class="drawer-item" (click)="navegar('bloqueos', 'Cargando Bloqueos...')">
-        <div class="di-icon ic-9"><img src="/bloqueos.png" alt="Bloqueos"></div>
-        <div class="di-text"><div class="di-name">Bloqueos</div><div class="di-desc">Gestión de conflictos</div></div>
-      </div>
-    }
+    <!-- Notificaciones siempre en el drawer -->
     <div class="drawer-item" (click)="navegar('notificaciones', 'Cargando Notificaciones...')">
       <div class="di-icon ic-10"><img src="/campana.png" alt="Notificaciones"></div>
-      <div class="di-text"><div class="di-name">Notificaciones</div><div class="di-desc">Centro de alertas</div></div>
+      <div class="di-text">
+        <div class="di-name">Notificaciones</div>
+        <div class="di-desc">Centro de alertas</div>
+      </div>
     </div>
-    @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado_Lab') {
-      <div class="drawer-item" (click)="navegar('reportesuso', 'Cargando Reportes...')">
-        <div class="di-icon ic-11"><img src="/uso.png" alt="Reportes"></div>
-        <div class="di-text"><div class="di-name">Reportes de Uso</div><div class="di-desc">Estadísticas</div></div>
-      </div>
-    }
-    @if(rol === 'Administradorr' || rol === 'Decano') {
-      <div class="drawer-item" (click)="navegar('auditoria', 'Cargando Auditoría...')">
-        <div class="di-icon ic-12"><img src="/auditoria.png" alt="Auditoría"></div>
-        <div class="di-text"><div class="di-name">Auditoría</div><div class="di-desc">Trazabilidad</div></div>
-      </div>
-    }
-    @if(rol === 'Administradorr') {
-      <div class="drawer-item active" (click)="navegar('backups', 'Cargando Backups...')">
-        <div class="di-icon"><img src="/backup.png" alt="Backups"></div>
-        <div class="di-text"><div class="di-name">Backups</div><div class="di-desc">Respaldos de BD</div></div>
-      </div>
-    }
   </div>
 </div>
 
@@ -240,202 +174,90 @@
 </div>
 
 <div class="page" [class.page-blur]="cargando">
+
+  <!-- ESTADÍSTICAS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon ic-blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+        </svg>
+      </div>
+      <div>
+        <div class="stat-num">{{ stats.labsActivos }}</div>
+        <div class="stat-lbl">Labs activos</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon ic-green">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <path d="M16 2v4M8 2v4M3 10h18"/>
+        </svg>
+      </div>
+      <div>
+        <div class="stat-num">{{ stats.reservasMes }}</div>
+        <div class="stat-lbl">Reservas este mes</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon ic-purple">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <div>
+        <div class="stat-num">{{ stats.usuariosActivos }}</div>
+        <div class="stat-lbl">Usuarios registrados</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon ic-amber">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+        </svg>
+      </div>
+      <div>
+        <div class="stat-num">{{ stats.equiposRegistrados }}</div>
+        <div class="stat-lbl">Equipos registrados</div>
+      </div>
+    </div>
+  </div>
   <div class="card">
 
     <div class="menu-list">
+      <ng-container *ngFor="let m of modulos">
 
-
-      <!-- Módulo 1: Usuarios -->
-      @if(rol === 'Administradorr' || rol === 'Decano')
-      {
-        <div class="menu-item" (click)="navegar('usuarios', 'Cargando Usuarios...')">
-          <img src="/user.png" alt="Usuarios" class="menu-icon">
+        <!-- Notificaciones con badge especial -->
+        <div class="menu-item" (click)="navegar(m.ruta, 'Cargando ' + m.nombre + '...')"
+             *ngIf="m.ruta === 'notificaciones'">
+          <div class="menu-icon-wrapper">
+            <img [src]="'/' + m.icono" [alt]="m.nombre" class="menu-icon">
+            @if(noLeidas > 0) {
+              <span class="notif-badge">{{ noLeidas > 99 ? '99+' : noLeidas }}</span>
+            }
+          </div>
           <div class="text">
-            <strong>Usuarios</strong>
-            <p>Gestión de usuarios, roles y permisos del sistema</p>
+            <strong>{{ m.nombre }}</strong>
+            <p>{{ m.descripcion }}</p>
           </div>
         </div>
-      }
 
-      <!-- Módulo 2: Laboratorios -->
-      @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado de Laboratorio')
-      {
-        <div class="menu-item" (click)="navegar('laboratorios', 'Cargando Laboratorios...')">
-          <img src="/laboratorio.png" alt="Laboratorios" class="menu-icon">
+        <!-- Resto de módulos -->
+        <div class="menu-item" (click)="navegar(m.ruta, 'Cargando ' + m.nombre + '...')"
+             *ngIf="m.ruta !== 'notificaciones'">
+          <img [src]="'/' + m.icono" [alt]="m.nombre" class="menu-icon">
           <div class="text">
-            <strong>Laboratorios</strong>
-            <p>Administrar laboratorios, sedes y encargados</p>
+            <strong>{{ m.nombre }}</strong>
+            <p>{{ m.descripcion }}</p>
           </div>
         </div>
-      }
 
-      <!-- Módulo 3: Equipos -->
-      @if(rol === 'Administradorr' || rol === 'Encargado de Laboratorio' || rol === 'Decano')
-      {
-        <div class="menu-item info"(click)="navegar('equipos', 'Cargando Equipos...')">
-          <img src="/equipo.png" alt="Equipos" class="menu-icon">
-          <div class="text">
-            <strong>Equipos</strong>
-            <p>Control de equipos, tipos y ubicaciones</p>
-          </div>
-        </div>
-      }
-
-      <!-- Módulo 4: Reservas -->
-      @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano' || rol === 'Encargado de Laboratorio')
-      {
-        <div class="menu-item" (click)="navegar('reservar', 'Cargando Reservas...')">
-          <img src="/reservacalendario.png" alt="Calendario" class="menu-icon">
-          <div class="text">
-            <strong>Reservas</strong>
-            <p>Gestión de reservas y disponibilidad</p>
-          </div>
-        </div>
-      }
-
-      <!-- Módulo 5: Solicitudes de Reserva -->
-      @if(rol === 'Docente' || rol === 'Coordinador' || rol === 'Decano' || rol === 'Administradorr' || rol === 'Encargado de Laboratorio')
-      {
-        <div class="menu-item" (click)="navegar('solicitudes-reserva', 'Cargando Solicitudes...')">
-          <img src="/solicitud.png" alt="Solicitudes" class="menu-icon">
-          <div class="text">
-            <strong>Solicitudes de Reserva</strong>
-            <p>Solicitar y hacer seguimiento de reservas de laboratorio</p>
-          </div>
-        </div>
-      }
-
-      <!-- Módulo 6: Calendario de Reservas -->
-      @if(rol === 'Docente' )
-      {
-        <div class="menu-item" (click)="navegar('calendario', 'Cargando Calendario...')">
-          <img src="/calendario.png" alt="Calendario" class="menu-icon">
-          <div class="text">
-            <strong>Calendario de Reservas</strong>
-            <p>Vista semanal de ocupación de laboratorios</p>
-          </div>
-        </div>
-       }
-
-      <!-- Módulo 5: Académico -->
-      @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Coordinador')
-      {
-        <div class="menu-item" (click)="navegar('academico', 'Cargando Académico...')">
-          <img src="/academico.png" alt="Académico" class="menu-icon">
-          <div class="text">
-            <strong>Académico</strong>
-            <p>Períodos, carreras, asignaturas y horarios</p>
-          </div>
-        </div>
-      }
-
-      <!-- Módulo 6: Estudiantes -->
-      @if(rol === 'Administradorr' || rol === 'Coordinador' || rol === 'Decano' || rol === 'Encargado de Laboratorio')
-      {
-        <div class="menu-item" (click)="navegar('estudiantes', 'Cargando Estudiantes...')">
-          <img src="/estudiantes.png" alt="Estudiantes" class="menu-icon">
-          <div class="text">
-            <strong>Estudiantes</strong>
-            <p>Registro de estudiantes, matrículas e inscripciones</p>
-          </div>
-        </div>
-      }
-
-      <!-- Módulo 7: Asistencia -->
-      @if(rol === 'Administradorr' || rol === 'Docente' || rol === 'Decano')
-      {
-        <div class="menu-item " (click)="navegar('asistencia', 'Cargando Asistencia...')">
-          <img src="/asistencia.png" alt="Asistencia" class="menu-icon">
-          <div class="text">
-            <strong>Asistencia</strong>
-            <p>Control de asistencia en laboratorios</p>
-          </div>
-        </div>
-      }
-
-      <!-- Módulo 8: Reportes de Fallas -->
-      @if(rol === 'Administradorr' || rol === 'Encargado de Laboratorio' || rol === 'Decano' || rol === 'Docente')
-      {
-        <div class="menu-item " (click)="navegar('reporte-fallas', 'Cargando Reportes de Fallas...')">
-          <img src="/fallas.png" alt="Reportes de Fallas" class="menu-icon">
-          <div class="text">
-            <strong>Reportes de Fallas</strong>
-            <p>Gestión de fallas y seguimiento de equipos</p>
-          </div>
-        </div>
-      }
-
-      <!-- Módulo 9: Bloqueos -->
-      @if(rol === 'Administradorr' || rol === 'Encargado de Laboratorio' || rol === 'Decano')
-      {
-        <div class="menu-item " (click)="navegar('bloqueos', 'Cargando Bloqueos...')">
-          <img src="/bloqueos.png" alt="Bloqueos" class="menu-icon">
-          <div class="text">
-            <strong>Bloqueos</strong>
-            <p>Bloqueos de laboratorios y gestión de conflictos</p>
-          </div>
-        </div>
-      }
-
-      <!-- Módulo 10: Notificaciones -->
-      <div class="menu-item" (click)="navegar('notificaciones', 'Cargando Notificaciones...')">
-        <div class="menu-icon-wrapper">
-          <img src="/campana.png" alt="Notificaciones" class="menu-icon">
-          @if(noLeidas > 0) {
-            <span class="notif-badge">{{ noLeidas > 99 ? '99+' : noLeidas }}</span>
-          }
-        </div>
-        <div class="text">
-          <strong>Notificaciones</strong>
-          <p>Centro de notificaciones y alertas</p>
-        </div>
-      </div>
-
-      <!-- Módulo 11: Reportes de Uso -->
-      @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Encargado de Laboratorio')
-      {
-        <div class="menu-item" (click)="navegar('reportesuso', 'Cargando Reportes de Uso...')">
-          <img src="/uso.png" alt="Reporte de Uso" class="menu-icon">
-          <div class="text">
-            <strong>Reportes de Uso</strong>
-            <p>Estadísticas y análisis de uso de laboratorios</p>
-          </div>
-        </div>
-      }
-
-
-      <!-- Módulo 12: Auditoría -->
-      @if(rol === 'Administradorr' || rol === 'Decano')
-      {
-        <div class="menu-item" (click)="navegar('auditoria', 'Cargando Auditoría...')">
-          <img src="/auditoria.png" alt="Auditoria" class="menu-icon">
-          <div class="text">
-            <strong>Auditoría</strong>
-            <p>Registro de acciones y trazabilidad del sistema</p>
-          </div>
-        </div>
-      }
-
-      @if(rol === 'Administradorr') {
-        <div class="menu-item" (click)="navegar('configuracion-correo', 'Cargando Configuración...')">
-          <img src="/configuracion.png" alt="Auditoria" class="menu-icon">
-          <div class="text">
-            <strong>Configuración de Correo</strong>
-            <p>Gestionar remitente y credenciales SMTP</p>
-          </div>
-        </div>
-      }
-
-      @if(rol === 'Administradorr') {
-        <div class="menu-item" (click)="navegar('backups', 'Cargando Backups...')">
-          <img src="/backup.png" alt="Backups" class="menu-icon">
-          <div class="text">
-            <strong>Backups</strong>
-            <p>Gestión y programación de respaldos de base de datos</p>
-          </div>
-        </div>
-      }
+      </ng-container>
     </div>
-  </div>
-
+</div>
 </div>

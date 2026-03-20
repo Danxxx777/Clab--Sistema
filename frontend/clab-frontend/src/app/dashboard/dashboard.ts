@@ -28,7 +28,7 @@ export class DashboardComponent implements OnInit {
   rolesDisponibles: string[] = [];
   mostrarSelectorRol = false;
   cambiandoRol = false;
-
+  modulos: { nombre: string, ruta: string, icono: string, orden: number, descripcion: string }[] = [];
   // ── User menu ────────────────────────────────────────────────────
   userMenuAbierto = false;
 
@@ -37,6 +37,9 @@ export class DashboardComponent implements OnInit {
   notifPanelAbierto = false;
   notificaciones: any[] = [];
   cargandoNotifs = false;
+
+  stats = { labsActivos: 0, reservasMes: 0, usuariosActivos: 0, equiposRegistrados: 0 };
+
 
   private apiUrl = 'http://localhost:8080';
 
@@ -62,10 +65,15 @@ export class DashboardComponent implements OnInit {
     this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
     this.rolActual       = sessionStorage.getItem('rol') || '';
 
+    // Carga inicial del sessionStorage (inmediata) para que aparezca la flecha
     const rolesGuardados = sessionStorage.getItem('rolesDisponibles');
     if (rolesGuardados) this.rolesDisponibles = JSON.parse(rolesGuardados);
 
+    // Luego actualiza del servidor (filtra inactivos)
+    this.recargarRoles();
+    this.recargarModulos();
     this.cargarNoLeidas();
+    this.cargarEstadisticas();
 
     this.testService.getTest().subscribe({
       next:  res => { this.mensajeBackend = res; this.cdr.detectChanges(); },
@@ -94,7 +102,12 @@ export class DashboardComponent implements OnInit {
       error: () => { this.noLeidas = 0; }
     });
   }
-
+  cargarEstadisticas(): void {
+    this.http.get<any>(`${this.apiUrl}/estadisticas/login`).subscribe({
+      next: (data) => { this.stats = data; this.cdr.detectChanges(); },
+      error: () => {}
+    });
+  }
   toggleNotifPanel(): void {
     this.notifPanelAbierto = !this.notifPanelAbierto;
     this.userMenuAbierto = false;
@@ -102,6 +115,20 @@ export class DashboardComponent implements OnInit {
       this.notificaciones = [];
       this.cargarNotificaciones();
     }
+  }
+  recargarModulos(): void {
+    const token = sessionStorage.getItem('token');
+    if (!token) return;
+    this.http.get<any[]>(`${this.apiUrl}/auth/mis-modulos`,
+      { headers: this.getHeaders() }
+    ).subscribe({
+      next: (modulos) => {
+        this.modulos = modulos;
+        sessionStorage.setItem('modulos', JSON.stringify(modulos));
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
   }
 
   cargarNotificaciones(): void {
@@ -182,9 +209,11 @@ export class DashboardComponent implements OnInit {
         sessionStorage.setItem('token',            res.token);
         sessionStorage.setItem('rol',              res.rol);
         sessionStorage.setItem('rolesDisponibles', JSON.stringify(res.rolesDisponibles));
+        sessionStorage.setItem('modulos',          JSON.stringify(res.modulos ?? [])); // ← nuevo
         this.rol              = res.rol;
         this.rolActual        = res.rol;
         this.rolesDisponibles = res.rolesDisponibles;
+        this.modulos          = res.modulos ?? [];
         this.cambiandoRol     = false;
         this.cargarNoLeidas();
         this.cdr.detectChanges();
@@ -247,6 +276,25 @@ export class DashboardComponent implements OnInit {
   stripHtml(html: string): string {
     if (!html) return '';
     return html.replace(/<[^>]*>/g, '').trim();
+  }
+
+  recargarRoles(): void {
+    this.http.get<string[]>(`${this.apiUrl}/auth/mis-roles`,
+      { headers: this.getHeaders() }
+    ).subscribe({
+      next: (roles) => {
+        if (!roles || roles.length === 0) return; // ← no hacer nada si viene vacío
+        this.rolesDisponibles = roles;
+        sessionStorage.setItem('rolesDisponibles', JSON.stringify(roles));
+        // Solo forzar logout si el rol actual definitivamente no existe
+        if (roles.length > 0 && !roles.includes(this.rolActual)) {
+          this.auth.logout();
+          this.router.navigate(['/login']);
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {} // ← silencioso en error
+    });
   }
 
   // ── Métodos legacy ───────────────────────────────────────────────

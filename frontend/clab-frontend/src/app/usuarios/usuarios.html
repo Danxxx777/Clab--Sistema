@@ -186,100 +186,100 @@
         </div>
         <button class="btn-agregar" (click)="abrirModalUsuario('crear')">+ Nuevo Usuario</button>
       </div>
+      <div class="users-header">
+        <div></div>
+        <div>USUARIO</div>
+        <div>CONTACTO</div>
+        <div class="col-rol">ROL</div>
+        <div class="col-estado">ESTADO</div>
+        <div>FECHA</div>
+        <div class="col-acciones">ACCIONES</div>  <!-- ← era col-estado -->
+      </div>
+      <!-- CARDS -->
+      <div class="users-list">
+        <div class="user-card" *ngFor="let u of usuariosPaginados">
+          <div class="uc-avatar">{{ (u.nombres ? u.nombres.charAt(0) : '') + (u.apellidos ? u.apellidos.charAt(0) : '') }}</div>
+          <div class="uc-info">
+            <div class="uc-name">{{ u.nombres }} {{ u.apellidos }}</div>
+            <div class="uc-username">&#64;{{ u.usuario }}</div>
+          </div>
+          <div class="uc-meta">
+    <span class="uc-meta-item">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>
+      {{ u.email || '—' }}
+    </span>
+            <span class="uc-meta-item">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 9h6M9 13h4"/></svg>
+              {{ u.identidad }}
+    </span>
+          </div>
+          <div class="col-rol">
+            <span class="badge rol-badge" [title]="u.rolNombre">{{ getRolResumido(u.rolNombre) }}</span>
+          </div>
 
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-          <tr>
-            <th>USUARIO</th><th>IDENTIDAD</th><th>ROL</th>
-            <th>ESTADO</th><th>FECHA REGISTRO</th><th>ACCIONES</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr *ngFor="let u of usuariosPaginados">
-            <td>
-              <strong>{{ u.nombres }} {{ u.apellidos }}</strong>
-              <small>&#64;{{ u.usuario }}</small>
-            </td>
-            <td>{{ u.identidad }}</td>
-            <td>
-              <span class="badge rol-badge" [title]="u.rolNombre">{{ getRolResumido(u.rolNombre) }}</span>
-            </td>
-            <td><span class="badge" [ngClass]="getEstadoClass(u.estado)">{{ u.estado }}</span></td>
-            <td>{{ u.fechaRegistro }}</td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn-action btn-editar"  (click)="abrirModalUsuario('editar', u)">Editar</button>
-                <button class="btn-action"
-                        [ngClass]="u.estado?.toUpperCase() === 'ACTIVO' ? 'btn-eliminar' : 'btn-activar'"
-                        (click)="toggleEstadoUsuario(u)">
-                  {{ u.estado?.toUpperCase() === 'ACTIVO' ? 'Desactivar' : 'Activar' }}
-                </button>
-              </div>
-            </td>
-          </tr>
-          <tr *ngIf="usuariosFiltrados.length === 0">
-            <td colspan="6" class="empty-message">No hay usuarios registrados</td>
-          </tr>
-          </tbody>
-        </table>
+          <div class="col-estado">
+            <span class="badge" [ngClass]="getEstadoClass(u.estado)">{{ u.estado }}</span>
+          </div>
+
+          <span class="uc-fecha">{{ u.fechaRegistro }}</span>
+
+          <div class="action-buttons">
+            <button class="btn-action btn-editar" (click)="abrirModalUsuario('editar', u)">Editar</button>
+            <button class="btn-action"
+                    [ngClass]="u.estado?.toUpperCase() === 'ACTIVO' ? 'btn-eliminar' : 'btn-activar'"
+                    (click)="toggleEstadoUsuario(u)">
+              {{ u.estado?.toUpperCase() === 'ACTIVO' ? 'Desactivar' : 'Activar' }}
+            </button>
+          </div>
+        </div>
+        <div class="uc-empty" *ngIf="usuariosFiltrados.length === 0">
+          No hay usuarios registrados
+        </div>
       </div>
     </div>
     <!-- TAB 1: SOLICITUDES -->
     <div class="tab-content" *ngIf="tabActiva === 1">
-
       <div class="toolbar">
         <div class="filters-group">
-      <span style="color:#6b6b6b; font-size:13px;">
-        {{ solicitudes.length }} solicitud(es) pendiente(s)
-      </span>
+          <div class="sol-count-badge">
+            <span class="sol-dot"></span>
+            {{ solicitudes.length }} solicitud(es) pendiente(s)
+          </div>
         </div>
       </div>
 
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-          <tr>
-            <th>SOLICITANTE</th>
-            <th>IDENTIDAD</th>
-            <th>EMAIL</th>
-            <th>TELÉFONO</th>
-            <th>MOTIVO</th>
-            <th>FECHA</th>
-            <th>ACCIONES</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr *ngFor="let s of solicitudes">
-            <td>
-              <strong>{{ s.nombres }} {{ s.apellidos }}</strong>
-            </td>
-            <td>{{ s.identidad }}</td>
-            <td>{{ s.email }}</td>
-            <td>{{ s.telefono || '—' }}</td>
-            <td>
-            <span class="motivo-text" [title]="s.motivo">
-              {{ s.motivo.length > 40 ? (s.motivo | slice:0:40) + '...' : s.motivo }}
-            </span>
-            </td>
-            <td>{{ s.fechaSolicitud | date:'dd/MM/yyyy' }}</td>
-            <td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn-action btn-ver" (click)="verDetalleSolicitud(s)">Ver</button>
-                <button class="btn-action btn-ver" (click)="abrirModalAprobar(s)">Aprobar</button>
-                <button class="btn-action btn-eliminar" (click)="rechazarSolicitud(s)">Rechazar</button>
-              </div>
-            </td>
-          </tr>
-          <tr *ngIf="solicitudes.length === 0 && !cargandoSolicitudes">
-            <td colspan="7" class="empty-message">No hay solicitudes pendientes</td>
-          </tr>
-          <tr *ngIf="cargandoSolicitudes">
-            <td colspan="7" class="empty-message">Cargando...</td>
-          </tr>
-          </tbody>
-        </table>
+      <div class="sol-list">
+        <div class="sol-card" *ngFor="let s of solicitudes">
+          <div class="uc-avatar">{{ s.nombres?.charAt(0) }}{{ s.apellidos?.charAt(0) }}</div>
+          <div class="uc-info">
+            <div class="uc-name">{{ s.nombres }} {{ s.apellidos }}</div>
+            <div class="uc-username">{{ s.identidad }}</div>
+          </div>
+          <div class="uc-meta">
+        <span class="uc-meta-item">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>
+          {{ s.email }}
+        </span>
+            <span class="uc-meta-item">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 13"/></svg>
+              {{ s.telefono || '—' }}
+        </span>
+          </div>
+          <div class="sol-motivo" [title]="s.motivo">
+            {{ s.motivo.length > 35 ? (s.motivo | slice:0:35) + '...' : s.motivo }}
+          </div>
+          <span class="sol-rol badge rol-badge">{{ getRolNombre(s.idRolSolicitado) }}</span>
+          <span class="uc-fecha">{{ s.fechaSolicitud | date:'dd/MM/yyyy' }}</span>
+          <div class="action-buttons">
+            <button class="btn-action btn-ver" (click)="verDetalleSolicitud(s)">Ver</button>
+            <button class="btn-action btn-activar" (click)="abrirModalAprobar(s)">Aprobar</button>
+            <button class="btn-action btn-eliminar" (click)="rechazarSolicitud(s)">Rechazar</button>
+          </div>
+        </div>
+        <div class="uc-empty" *ngIf="solicitudes.length === 0 && !cargandoSolicitudes">
+          No hay solicitudes pendientes
+        </div>
+        <div class="uc-empty" *ngIf="cargandoSolicitudes">Cargando...</div>
       </div>
     </div>
     <!-- TAB 1: ROLES → componente hijo independiente -->
@@ -466,7 +466,7 @@
 <div class="modal-overlay" *ngIf="mostrarModalDetalle">
   <div class="modal modal-detalle" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h2>📋 Detalle de Solicitud</h2>
+      <h2> Detalle de Solicitud</h2>
       <button class="btn-close" (click)="mostrarModalDetalle = false">×</button>
     </div>
     <div class="modal-body">

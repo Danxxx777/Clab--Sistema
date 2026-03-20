@@ -149,7 +149,6 @@
           <div class="backup-card">
             <div class="backup-card-header">
               <span class="backup-card-title">Backup manual</span>
-              <span class="backup-card-icon">💾</span>
             </div>
             <p class="backup-card-desc">Genera un respaldo de la base de datos ahora mismo.</p>
             <div class="form-group">
@@ -370,7 +369,6 @@
       <div class="backup-card restauracion-upload-card">
         <div class="backup-card-header">
           <span class="backup-card-title">Restaurar desde archivo</span>
-          <span class="backup-card-icon">📂</span>
         </div>
         <p class="backup-card-desc">Sube un archivo .sql o .backup para restaurar manualmente.</p>
         <div class="file-drop-zone" (click)="fileInput.click()" [class.file-drop-active]="nombreArchivoSelecto">
@@ -389,10 +387,10 @@
           </div>
         </div>
         <button class="btn-restaurar-archivo"
-                [class.btn-restaurar-custom]="nombreArchivoSelecto?.endsWith('.backup')"
+                [class.btn-restaurar-custom]="!!nombreArchivoSelecto && nombreArchivoSelecto.endsWith('.backup')"
                 (click)="restaurarDesdeArchivo()"
                 [disabled]="!archivoRestauracion || restaurandoId === -1">
-          <span *ngIf="restaurandoId !== -1">{{ nombreArchivoSelecto?.endsWith('.backup') ? 'Restaurar completo' : 'Restaurar SQL' }}</span>
+          <span *ngIf="restaurandoId !== -1">{{ nombreArchivoSelecto && nombreArchivoSelecto.endsWith('.backup') ? 'Restaurar completo' : 'Restaurar SQL' }}</span>
           <span *ngIf="restaurandoId === -1" class="btn-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
         </button>
       </div>
@@ -411,7 +409,6 @@
               <button class="btn-pag" (click)="irPaginaRestauracion(totalPaginasRestauracion)" [disabled]="paginaRestauracion === totalPaginasRestauracion">»</button>
               <span class="pag-info">{{ (paginaRestauracion - 1) * itemsRestauracion + 1 }}–{{ Math.min(paginaRestauracion * itemsRestauracion, historialExitososLocales.length) }} de {{ historialExitososLocales.length }}</span>
             </div>
-            <span class="backup-card-icon">🗄️</span>
           </div>
         </div>
         <p class="backup-card-desc">Selecciona un backup exitoso para restaurar la base de datos a ese punto.</p>

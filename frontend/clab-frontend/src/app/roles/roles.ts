@@ -30,6 +30,10 @@ export class RolesComponent implements OnInit {
   notificacionMensaje = '';
   notificacionTipo: 'exito' | 'error' | 'confirmar' = 'exito';
   accionPendiente: (() => void) | null = null;
+// Variables nuevas — agregar junto a las demás
+  modulosSistema: { idModulo: number, nombre: string, ruta: string, icono: string, esquemasRelacionados: string[] }[] = [];
+  modulosSeleccionados: number[] = [];
+  esquemasResaltados: string[] = []; // esquemas sugeridos por módulos seleccionados
 
   mostrarModalRol = false;
   modoModal: 'crear' | 'editar' = 'crear';
@@ -44,6 +48,7 @@ export class RolesComponent implements OnInit {
   rolesBDDisponibles: RolBD[] = [];
   rolesBDSeleccionados: string[] = [];
   rolesBD: string[] = [];
+  tabModal = 1;
 
   esquemas: string[] = [];
   permisosEsquema: Record<string, {
@@ -61,6 +66,7 @@ export class RolesComponent implements OnInit {
     this.cargarRoles();
     this.cargarPermisos();
     this.cargarEsquemas();
+    this.cargarModulos();
     this.rolService.listarRolesBD().subscribe(data => {
       this.rolesBDDisponibles = data;
     });
@@ -76,14 +82,14 @@ export class RolesComponent implements OnInit {
           descripcion: r.descripcion,
           fechaCreacion: r.fechaCreacion,
           rolesBD: r.rolesBD ?? [],
-          estado: r.estado ?? 'ACTIVO'
+          estado: r.estado ?? 'ACTIVO',
+          modulosIds: r.modulosIds ?? []
         }));
         this.actualizarPaginacionRoles();
         this.cdr.detectChanges();
       }
     });
   }
-
   cargarPermisos(): void {
     this.http.get<any[]>('http://localhost:8080/permisos').subscribe({
       next: (data) => { this.permisosDisponibles = data; },
@@ -108,7 +114,10 @@ export class RolesComponent implements OnInit {
   get esquemasConfigurados(): string[] {
     return Object.keys(this.permisosEsquema);
   }
-
+  get esquemasFiltrados(): string[] {
+    if (this.modulosSeleccionados.length === 0) return this.esquemas;
+    return this.esquemasResaltados.filter((v, i, a) => a.indexOf(v) === i); // únicos
+  }
   /* ==PAGINACIÓN==*/
   actualizarPaginacionRoles(): void {
     this.totalPaginasRoles = Math.max(1, Math.ceil(this.roles.length / this.itemsPorPaginaRoles));
@@ -133,6 +142,9 @@ export class RolesComponent implements OnInit {
     this.permisosSeleccionados = [];
     this.rolesBDSeleccionados = [];
     this.permisosEsquema = {};
+    this.modulosSeleccionados = [];
+    this.esquemasResaltados = [];
+    this.tabModal = 1;
 
     if (modo === 'crear') {
       this.rolActual = {
@@ -141,30 +153,34 @@ export class RolesComponent implements OnInit {
       };
     } else if (r) {
       this.rolActual = { ...r };
+
+      this.rolesBDSeleccionados = r.rolesBD?.map(rb => rb.nombreRolBd) ?? [];
+      this.modulosSeleccionados = r.modulosIds ?? [];
+      this.esquemasResaltados = this.modulosSistema
+        .filter(m => this.modulosSeleccionados.includes(m.idModulo))
+        .flatMap(m => m.esquemasRelacionados);
+
       if (r.id) {
-        this.rolService.listar().subscribe({
-          next: (data) => {
-            const rolActualizado = data.find(x => x.idRol === r.id);
-            this.rolesBDSeleccionados = rolActualizado?.rolesBD?.map(rb => rb.nombreRolBd) ?? [];
-            this.permisosEsquema = {};
-            (rolActualizado?.rolesBD ?? []).forEach(rolBd => {
-              this.rolService.obtenerPermisosEsquemas(rolBd.idRolBd).subscribe({
-                next: (permisos: any[]) => {
-                  permisos.forEach(p => {
-                    this.permisosEsquema[p.nombreEsquema] = {
-                      select: p.select, insert: p.insert,
-                      update: p.update, delete: p.delete
-                    };
-                  });
-                  this.cdr.detectChanges();
-                }
+        this.permisosEsquema = {};
+        (r.rolesBD ?? []).forEach(rolBd => {
+          this.rolService.obtenerPermisosEsquemas(rolBd.idRolBd).subscribe({
+            next: (permisos: any[]) => {
+              permisos.forEach(p => {
+                this.permisosEsquema[p.nombreEsquema] = {
+                  select: p.select, insert: p.insert,
+                  update: p.update, delete: p.delete
+                };
               });
-            });
+              this.cdr.detectChanges();
+            }
+          });
+        });
+
+        this.rolService.obtenerPermisos(r.id).subscribe({
+          next: (ids: number[]) => {
+            this.permisosSeleccionados = ids;
             this.cdr.detectChanges();
           }
-        });
-        this.rolService.obtenerPermisos(r.id).subscribe({
-          next: (ids: number[]) => { this.permisosSeleccionados = ids; this.cdr.detectChanges(); }
         });
       }
     }
@@ -172,13 +188,14 @@ export class RolesComponent implements OnInit {
     this.cargarRolesBD();
     this.mostrarModalRol = true;
   }
-
   cerrarModalRol(): void {
     this.mostrarModalRol = false;
     this.guardandoRol = false;
     this.permisosSeleccionados = [];
     this.rolActual = { nombre: '', descripcion: '', fechaCreacion: '' };
     this.permisosEsquema = {};
+    this.modulosSeleccionados = [];
+    this.esquemasResaltados = [];
     this.cdr.detectChanges();
   }
 
@@ -203,6 +220,7 @@ export class RolesComponent implements OnInit {
       descripcion: this.rolActual.descripcion,
       permisos: this.permisosSeleccionados,
       rolesBD: this.rolesBDSeleccionados,
+      modulosIds: this.modulosSeleccionados,
       permisosEsquemas: this.rolesBDSeleccionados.flatMap(nombreRolBd => {
         const rolBd = this.rolesBDDisponibles.find(r => r.nombreRolBd === nombreRolBd);
         if (!rolBd || !rolBd.idRolBd) return [];
@@ -227,11 +245,14 @@ export class RolesComponent implements OnInit {
         this.guardandoRol = false;
         this.cerrarModalRol();
         this.cargarRoles();
-        this.mostrarAlerta('¡Rol guardado!', `El rol "${payload.nombreRol}" fue guardado correctamente.`, 'exito');
-      },
-      error: () => {
-        this.guardandoRol = false;
-        this.mostrarAlerta('Error', 'No se pudo guardar el rol.', 'error');
+        this.mostrarAlerta('¡Rol guardado!', `El rol "${payload.nombreRol}" fue guardado.`, 'exito');
+
+        // Si editamos el rol actual del usuario → refrescar módulos del dashboard
+        const rolActual = sessionStorage.getItem('rol');
+        if (payload.nombreRol === rolActual) {
+          // Disparar evento para que el dashboard se actualice
+          sessionStorage.removeItem('modulos');
+        }
       }
     });
   }
@@ -334,5 +355,63 @@ export class RolesComponent implements OnInit {
     this.mostrarNotificacion = false;
     if (this.accionPendiente) { this.accionPendiente(); this.accionPendiente = null; }
     this.cdr.detectChanges();
+  }
+
+  cargarModulos(): void {
+    this.http.get<any[]>('http://localhost:8080/roles/modulos').subscribe({
+      next: (data) => {
+        this.modulosSistema = data.map(m => ({
+          idModulo: m.idModulo,
+          nombre: m.nombre,
+          ruta: m.ruta,
+          icono: m.icono,
+          esquemasRelacionados: m.esquemasRelacionados ?? []
+        }));
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  toggleModulo(idModulo: number): void {
+    const modulo = this.modulosSistema.find(m => m.idModulo === idModulo);
+    if (!modulo) return;
+
+    const idx = this.modulosSeleccionados.indexOf(idModulo);
+    if (idx >= 0) {
+      // Desmarcar módulo → quitar sus esquemas si no los usa otro módulo seleccionado
+      this.modulosSeleccionados.splice(idx, 1);
+      const esquemasAun = this.modulosSistema
+        .filter(m => this.modulosSeleccionados.includes(m.idModulo))
+        .flatMap(m => m.esquemasRelacionados);
+
+      modulo.esquemasRelacionados.forEach(esq => {
+        if (!esquemasAun.includes(esq)) {
+          delete this.permisosEsquema[esq];
+        }
+      });
+    } else {
+      // Marcar módulo → activar sus esquemas automáticamente
+      this.modulosSeleccionados.push(idModulo);
+      modulo.esquemasRelacionados.forEach(esq => {
+        if (!this.permisosEsquema[esq]) {
+          this.permisosEsquema[esq] = { select: true, insert: false, update: false, delete: false };
+        }
+      });
+    }
+
+    // Actualizar esquemas resaltados
+    this.esquemasResaltados = this.modulosSistema
+      .filter(m => this.modulosSeleccionados.includes(m.idModulo))
+      .flatMap(m => m.esquemasRelacionados);
+
+    this.cdr.detectChanges();
+  }
+
+  esModuloSeleccionado(idModulo: number): boolean {
+    return this.modulosSeleccionados.includes(idModulo);
+  }
+
+  esEsquemaResaltado(esquema: string): boolean {
+    return this.esquemasResaltados.includes(esquema);
   }
 }

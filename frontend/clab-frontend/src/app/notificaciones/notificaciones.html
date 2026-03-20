@@ -106,28 +106,28 @@
   <!-- STATS -->
   <div class="notif-stats">
     <div class="stat-card">
-      <div class="stat-icon">🔔</div>
+      <div class="stat-icon"><img src="/notificacion.png" alt="Total"></div>
       <div class="stat-info">
         <div class="stat-num">{{ notificaciones.length }}</div>
         <div class="stat-label">Total</div>
       </div>
     </div>
     <div class="stat-card warn">
-      <div class="stat-icon">📭</div>
+      <div class="stat-icon"><img src="/sinleer.png" alt="Sin leer"></div>
       <div class="stat-info">
         <div class="stat-num">{{ totalNoLeidas }}</div>
         <div class="stat-label">Sin leer</div>
       </div>
     </div>
     <div class="stat-card ok">
-      <div class="stat-icon">✅</div>
+      <div class="stat-icon"><img src="/check.png" alt="Leídas"></div>
       <div class="stat-info">
         <div class="stat-num">{{ notificaciones.length - totalNoLeidas }}</div>
         <div class="stat-label">Leídas</div>
       </div>
     </div>
     <div class="stat-card alert">
-      <div class="stat-icon">⚠️</div>
+      <div class="stat-icon"><img src="/advertencia.png" alt="Fallas"></div>
       <div class="stat-info">
         <div class="stat-num">{{ contarPorTipo('FALLA') }}</div>
         <div class="stat-label">Fallas activas</div>
@@ -154,19 +154,19 @@
       <div class="tipo-filtros">
         <button class="tipo-btn" [class.active]="filtroTipo === 'TODOS'" (click)="setFiltroTipo('TODOS')">Todos</button>
         <button class="tipo-btn falla" [class.active]="filtroTipo === 'FALLA'" (click)="setFiltroTipo('FALLA')">
-          ⚠️ Fallas
+          <img src="/advertencia.png" alt="Fallas"> Fallas
           @if(contarPorTipo('FALLA') > 0) { <span class="tipo-badge">{{ contarPorTipo('FALLA') }}</span> }
         </button>
         <button class="tipo-btn reserva" [class.active]="filtroTipo === 'RESERVA'" (click)="setFiltroTipo('RESERVA')">
-          📅 Reservas
+          <img src="/reservanoti.png" alt="Reservas"> Reservas
           @if(contarPorTipo('RESERVA') > 0) { <span class="tipo-badge">{{ contarPorTipo('RESERVA') }}</span> }
         </button>
         <button class="tipo-btn bloqueo" [class.active]="filtroTipo === 'BLOQUEO'" (click)="setFiltroTipo('BLOQUEO')">
-          🚫 Bloqueos
+          <img src="/bloqueo-de-rotacion.png" alt="Bloqueos"> Bloqueos
           @if(contarPorTipo('BLOQUEO') > 0) { <span class="tipo-badge">{{ contarPorTipo('BLOQUEO') }}</span> }
         </button>
         <button class="tipo-btn resuelta" [class.active]="filtroTipo === 'FALLA_RESUELTA'" (click)="setFiltroTipo('FALLA_RESUELTA')">
-          ✅ Resueltas
+          <img src="/check.png" alt="Resueltas"> Resueltas
         </button>
       </div>
       @if(totalNoLeidas > 0) {
@@ -191,7 +191,7 @@
 
     @if(!cargando && !error && notificacionesFiltradas.length === 0) {
       <div class="notif-estado vacio">
-        <span class="vacio-icon">🔕</span>
+        <span class="vacio-icon"><img src="/buzon.png" alt="Sin notificaciones"></span>
         <p>No hay notificaciones en esta categoría</p>
       </div>
     }
@@ -235,14 +235,20 @@
   <ng-template #itemNotif let-n="n">
     <div class="notif-item {{ getClase(n.tipoNotificacion) }}" [class.leida]="n.estado === 'LEIDA'" (click)="verDetalle(n)">
       <div class="notif-item-barra"></div>
-      <div class="notif-item-icono">{{ getIcono(n.tipoNotificacion) }}</div>
+      <div class="notif-item-icono">
+        <img [src]="getIconoImg(n.tipoNotificacion)" [alt]="n.tipoNotificacion">
+      </div>
       <div class="notif-item-body">
         <span class="notif-item-asunto">{{ n.asunto }}</span>
         <span class="notif-item-fecha">{{ n.fechaCreacion | date:'dd/MM/yyyy' }}</span>
       </div>
       <div class="notif-item-acciones" (click)="$event.stopPropagation()">
-        <button class="btn-notif-accion responder" (click)="abrirResponder(n, $event)" title="Responder">💬</button>
-        <button class="btn-notif-accion eliminar" (click)="eliminar(n.idNotificacion, $event)" title="Eliminar">🗑️</button>
+        <button class="btn-notif-accion responder" (click)="abrirResponder(n, $event)" title="Responder">
+          <img src="/buzon.png" alt="Responder">
+        </button>
+        <button class="btn-notif-accion eliminar" (click)="eliminar(n.idNotificacion, $event)" title="Eliminar">
+          <img src="/advertencia.png" alt="Eliminar">
+        </button>
       </div>
       <div class="notif-item-estado">
         @if(n.estado === 'NO_LEIDA') {
@@ -261,9 +267,10 @@
     <div class="modal-overlay" (click)="cerrarDetalle()">
       <div class="modal-box modal-detalle" (click)="$event.stopPropagation()">
 
-        <!-- Banda superior con color por tipo -->
         <div class="detalle-banda {{ getClase(notifDetalle.tipoNotificacion) }}">
-          <div class="detalle-banda-icono">{{ getIcono(notifDetalle.tipoNotificacion) }}</div>
+          <div class="detalle-banda-icono">
+            <img [src]="getIconoImg(notifDetalle.tipoNotificacion)" [alt]="notifDetalle.tipoNotificacion">
+          </div>
           <div class="detalle-banda-info">
             <span class="detalle-banda-titulo">{{ notifDetalle.asunto }}</span>
             <span class="detalle-banda-tipo">{{ notifDetalle.tipoNotificacion }}</span>
@@ -271,7 +278,6 @@
           <button class="modal-cerrar" (click)="cerrarDetalle()">×</button>
         </div>
 
-        <!-- Grid de metadatos -->
         <div class="modal-body">
           <div class="detalle-grid">
             <div class="detalle-field">
@@ -281,8 +287,8 @@
             <div class="detalle-field">
               <span class="detalle-field-label">Estado</span>
               <span class="detalle-field-value" [style.color]="notifDetalle.estado === 'NO_LEIDA' ? '#39ff14' : '#6b6b6b'">
-              {{ notifDetalle.estado === 'NO_LEIDA' ? 'Sin leer' : 'Leída' }}
-            </span>
+                {{ notifDetalle.estado === 'NO_LEIDA' ? 'Sin leer' : 'Leída' }}
+              </span>
             </div>
             <div class="detalle-field">
               <span class="detalle-field-label">Canal</span>
@@ -294,7 +300,6 @@
             </div>
           </div>
 
-          <!-- Mensaje -->
           <div class="detalle-field full">
             <span class="detalle-field-label">Mensaje</span>
             <div class="detalle-mensaje-body {{ getClase(notifDetalle.tipoNotificacion) }}" [innerHTML]="notifDetalle.mensaje"></div>
@@ -304,18 +309,19 @@
         <div class="modal-footer">
           <button class="btn-modal-cancelar" (click)="cerrarDetalle()">Cerrar</button>
           <button class="btn-modal-confirmar" (click)="abrirResponder(notifDetalle, $event); cerrarDetalle()">
-            💬 Responder
+            <img src="/buzon.png" alt="Responder"> Responder
           </button>
         </div>
       </div>
     </div>
   }
+
   <!-- MODAL RESPONDER -->
   @if(modalResponderAbierto && notifAResponder) {
     <div class="modal-overlay" (click)="cerrarResponder()">
       <div class="modal-box" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <span class="modal-titulo">💬 Responder notificación</span>
+          <span class="modal-titulo"><img src="/buzon.png" alt="Responder"> Responder notificación</span>
           <button class="modal-cerrar" (click)="cerrarResponder()">×</button>
         </div>
         <div class="modal-body">
