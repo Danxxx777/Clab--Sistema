@@ -18,22 +18,16 @@ import java.util.Map;
 @Service
 public class RolService {
 
-    @Autowired
-    private RolRepository rolRepository;
-    @Autowired
-    private PermisoRepository permisoRepository;
-    @Autowired
-    private RolPermisoRepository rolPermisoRepository;
-    @Autowired
-    private EntityManager entityManager;
-    @Autowired
-    private RolBDRepository rolBDRepository;
-    @Autowired
-    private UsuarioRolRepository UsuarioRolRepository;
-    @Autowired
-    private RolRolBDRepository rolRolBDRepository;
-    @Autowired
-    private RolBdEsquemaPermisoRepository rolBdEsquemaPermisoRepository;
+    @Autowired private RolRepository rolRepository;
+    @Autowired private PermisoRepository permisoRepository;
+    @Autowired private RolPermisoRepository rolPermisoRepository;
+    @Autowired private EntityManager entityManager;
+    @Autowired private RolBDRepository rolBDRepository;
+    @Autowired private UsuarioRolRepository UsuarioRolRepository;
+    @Autowired private RolRolBDRepository rolRolBDRepository;
+    @Autowired private RolBdEsquemaPermisoRepository rolBdEsquemaPermisoRepository;
+    @Autowired private ModuloSistemaRepository moduloSistemaRepository;
+    @Autowired private ModuloRolRepository moduloRolRepository;
 
     // ─── CONTEXT ─────────────────────────────────────────────────────────────
 
@@ -106,6 +100,7 @@ public class RolService {
         }
 
         asignarPermisosEsquemas(dto.getPermisosEsquemas());
+        guardarModulos(rolGuardado, dto.getModulosIds()); // ← nuevo
 
         return rolGuardado;
     }
@@ -123,7 +118,14 @@ public class RolService {
                             rel.getRolBd().getDescripcion()
                     ))
                     .toList();
-            return new RolResponseDTO(
+
+            List<Integer> modulosIds = moduloRolRepository // ← nuevo
+                    .findByRol_IdRol(rol.getIdRol())
+                    .stream()
+                    .map(mr -> mr.getModulo().getIdModulo())
+                    .toList();
+
+            RolResponseDTO dto = new RolResponseDTO(
                     rol.getIdRol(),
                     rol.getNombreRol(),
                     rol.getDescripcion(),
@@ -131,6 +133,8 @@ public class RolService {
                     rolesBD,
                     rol.getEstado() != null ? rol.getEstado() : "ACTIVO"
             );
+            dto.setModulosIds(modulosIds); // ← nuevo
+            return dto;
         }).toList();
     }
 
@@ -169,6 +173,7 @@ public class RolService {
         }
 
         asignarPermisosEsquemas(dto.getPermisosEsquemas());
+        guardarModulos(rolActualizado, dto.getModulosIds()); // ← nuevo
 
         return rolActualizado;
     }
@@ -201,6 +206,7 @@ public class RolService {
 
         String nombreRol = rol.getNombreRol();
 
+        moduloRolRepository.deleteByRol_IdRol(id); // ← nuevo
         UsuarioRolRepository.deleteByRol_IdRol(id);
         rolRolBDRepository.deleteByRol_IdRol(id);
         rolPermisoRepository.deleteByRol_IdRol(id);
@@ -223,6 +229,21 @@ public class RolService {
             rolPermiso.setPermiso(permiso);
             rolPermiso.setVigente(true);
             rolPermisoRepository.save(rolPermiso);
+        }
+    }
+
+    private void guardarModulos(Rol rol, List<Integer> modulosIds) {
+        moduloRolRepository.deleteByRol_IdRol(rol.getIdRol());
+        if (modulosIds == null || modulosIds.isEmpty()) return;
+        for (Integer idModulo : modulosIds) {
+            ModuloSistema modulo = moduloSistemaRepository.findById(idModulo)
+                    .orElseThrow(() -> new RuntimeException("Módulo no encontrado: " + idModulo));
+            ModuloRol moduloRol = new ModuloRol();
+            moduloRol.getId().setIdModulo(idModulo);
+            moduloRol.getId().setIdRol(rol.getIdRol());
+            moduloRol.setModulo(modulo);
+            moduloRol.setRol(rol);
+            moduloRolRepository.save(moduloRol);
         }
     }
 
@@ -298,7 +319,7 @@ public class RolService {
     public List<RolResponseDTO> listarActivos() {
         return rolRepository.findByNombreRolNotLike("clab_%").stream()
                 .filter(r -> "ACTIVO".equals(r.getEstado()))
-                .filter(r -> !r.getNombreRol().equalsIgnoreCase("Administradorr")) // ← excluir admin
+                .filter(r -> !r.getNombreRol().equalsIgnoreCase("Administradorr"))
                 .map(rol -> new RolResponseDTO(
                         rol.getIdRol(),
                         rol.getNombreRol(),

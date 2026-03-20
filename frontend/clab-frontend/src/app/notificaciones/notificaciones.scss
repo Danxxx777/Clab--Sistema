@@ -773,3 +773,65 @@ $blue-border: rgba(59, 130, 246, 0.25);
     color: #f0f0f0;
   }
 }
+// Iconos de stats
+.stat-icon img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+// Iconos de filtros tipo
+.tipo-btn img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+// Iconos de cada item de notificación
+.notif-item-icono img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+// Botones de acciones (responder/eliminar)
+.btn-notif-accion img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+// Icono estado vacío
+.vacio-icon img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+
+// Icono en banda del modal detalle
+.detalle-banda-icono img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+// Icono en botones del modal footer
+.modal-footer img,
+.modal-titulo img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+// Filtro verde neón para todos los iconos de la página
+.stat-icon img,
+.tipo-btn img,
+.notif-item-icono img,
+.btn-notif-accion img,
+.vacio-icon img,
+.detalle-banda-icono img,
+.modal-footer img,
+.modal-titulo img {
+  filter: brightness(0) saturate(100%) invert(62%) sepia(90%) saturate(600%) hue-rotate(60deg) brightness(1.1);
+}
