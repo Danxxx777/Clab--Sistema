@@ -15,4 +15,8 @@ public class AuthResponseDTO {
     private Integer idUsuario;
     private List<String> rolesDisponibles;
     private boolean primerLogin;
+    private List<ModuloDTO> modulos;
+
+    public List<ModuloDTO> getModulos() { return modulos; }
+    public void setModulos(List<ModuloDTO> modulos) { this.modulos = modulos; }
 }

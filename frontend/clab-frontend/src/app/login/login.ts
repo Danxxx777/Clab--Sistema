@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
-import {HttpClient} from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-login',
@@ -21,6 +21,7 @@ export class LoginComponent implements OnInit {
   mostrarPassword = false;
   cargando = false;
   loadingText = 'Verificando credenciales...';
+  modoAcceso: 'login' | 'solicitud' = 'login';
 
   stats = {
     labsActivos: 0,
@@ -28,6 +29,21 @@ export class LoginComponent implements OnInit {
     usuariosActivos: 0,
     equiposRegistrados: 0
   };
+
+  formSolicitud = {
+    identidad: '',
+    nombres: '',
+    apellidos: '',
+    email: '',
+    telefono: '',
+    motivo: '',
+    idRolSolicitado: null as number | null
+  };
+
+  roles: { id: number, nombre: string }[] = [];
+  enviandoSolicitud = false;
+  solicitudExito = false;
+  errorSolicitud = '';
 
   private loadingMessages = [
     'Verificando credenciales...',
@@ -43,8 +59,31 @@ export class LoginComponent implements OnInit {
     private http: HttpClient
   ) {}
 
+  ngOnInit(): void {
+    this.cargarEstadisticas();
+    this.cargarRecordado();
+    this.cargarRolesPublicos();
+  }
+
   togglePassword(): void {
     this.mostrarPassword = !this.mostrarPassword;
+  }
+
+  toggleModo(): void {
+    const container = document.querySelector('.login-left');
+    const right = document.querySelector('.login-right');
+    container?.classList.add('switching');
+    right?.classList.add('switching');
+
+    setTimeout(() => {
+      this.modoAcceso = this.modoAcceso === 'login' ? 'solicitud' : 'login';
+      this.errorMessage = '';
+      this.errorSolicitud = '';
+      this.solicitudExito = false;
+      container?.classList.remove('switching');
+      right?.classList.remove('switching');
+      this.cdr.detectChanges();
+    }, 220);
   }
 
   login(): void {
@@ -76,7 +115,6 @@ export class LoginComponent implements OnInit {
         } else {
           localStorage.removeItem('clab_usuario_recordado');
         }
-
         clearInterval(msgInterval);
         this.loadingText = '¡Bienvenido!';
         this.cdr.detectChanges();
@@ -93,10 +131,8 @@ export class LoginComponent implements OnInit {
         clearInterval(msgInterval);
         this.loadingText = 'Verificando credenciales...';
         this.cdr.detectChanges();
-
         setTimeout(() => {
           this.cargando = false;
-
           const status = err.status;
           if (status === 401 || status === 403) {
             this.errorMessage = 'Contraseña incorrecta. Verifica e intenta de nuevo.';
@@ -107,17 +143,11 @@ export class LoginComponent implements OnInit {
           } else {
             this.errorMessage = 'Usuario o contraseña incorrectos.';
           }
-
           this.cdr.detectChanges();
           this.triggerShake();
         }, 1200);
       }
     });
-  }
-
-  ngOnInit(): void {
-    this.cargarEstadisticas();
-    this.cargarRecordado();
   }
 
   cargarRecordado(): void {
@@ -131,18 +161,55 @@ export class LoginComponent implements OnInit {
 
   cargarEstadisticas(): void {
     this.http.get<any>('http://localhost:8080/estadisticas/login').subscribe({
+      next: (data) => { this.stats = data; this.cdr.detectChanges(); },
+      error: () => {}
+    });
+  }
+
+  cargarRolesPublicos(): void {
+    this.http.get<any[]>('http://localhost:8080/roles/publicos').subscribe({
       next: (data) => {
-        this.stats = data;
+        this.roles = data.map(r => ({ id: r.idRol, nombre: r.nombreRol }));
         this.cdr.detectChanges();
       },
-      error: () => {} // silencioso, no afecta el login
+      error: () => {}
+    });
+  }
+
+  enviarSolicitud(): void {
+    this.errorSolicitud = '';
+    if (!this.formSolicitud.identidad || !this.formSolicitud.nombres ||
+      !this.formSolicitud.apellidos || !this.formSolicitud.email ||
+      !this.formSolicitud.motivo) {
+      this.errorSolicitud = 'Por favor completa todos los campos obligatorios.';
+      return;
+    }
+    if (!this.formSolicitud.idRolSolicitado) {
+      this.errorSolicitud = 'Selecciona el rol que solicitas.';
+      return;
+    }
+    this.enviandoSolicitud = true;
+    this.http.post<any>('http://localhost:8080/api/solicitudes/crear', this.formSolicitud).subscribe({
+      next: (res) => {
+        this.enviandoSolicitud = false;
+        if (Number(res.codigo) === 1) {
+          this.solicitudExito = true;
+        } else {
+          this.errorSolicitud = res.mensaje;
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.enviandoSolicitud = false;
+        this.errorSolicitud = 'Error al conectar con el servidor.';
+        this.cdr.detectChanges();
+      }
     });
   }
 
   private triggerShake(): void {
     const el = document.querySelector('.login-form-container');
     el?.classList.remove('shake');
-    // forzar reflow para reiniciar animación
     void (el as HTMLElement)?.offsetWidth;
     el?.classList.add('shake');
     setTimeout(() => el?.classList.remove('shake'), 600);
