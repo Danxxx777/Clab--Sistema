@@ -2,12 +2,16 @@ package com.clab.clabbackend.auth;
 
 import com.clab.clabbackend.dto.AuthResponseDTO;
 import com.clab.clabbackend.dto.LoginRequestDTO;
+import com.clab.clabbackend.dto.ModuloDTO;
+import com.clab.clabbackend.security.JwtService;
 import com.clab.clabbackend.services.AuditoriaService;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -17,12 +21,14 @@ public class AuthController {
     private final AuthService authService;
     private final PasswordEncoder passwordEncoder;
     private final AuditoriaService auditoriaService;
+    private final JwtService jwtService;
 
     public AuthController(AuthService authService, PasswordEncoder passwordEncoder,
-                          AuditoriaService auditoriaService) {
+                          AuditoriaService auditoriaService, JwtService jwtService) {
         this.authService = authService;
         this.passwordEncoder = passwordEncoder;
         this.auditoriaService = auditoriaService;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/login")
@@ -84,5 +90,26 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
+    }
+    @GetMapping("/mis-modulos")
+    public ResponseEntity<List<ModuloDTO>> misModulos(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            Claims claims = jwtService.obtenerClaims(header.substring(7));
+            String nombreRol = claims.get("rol", String.class);
+            return ResponseEntity.ok(authService.obtenerModulosPublico(nombreRol));
+        }
+        return ResponseEntity.ok(List.of());
+    }
+
+    @GetMapping("/mis-roles")
+    public ResponseEntity<List<String>> misRoles(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            Claims claims = jwtService.obtenerClaims(header.substring(7));
+            Integer idUsuario = Integer.parseInt(claims.getSubject()); // ← subject, no claim
+            return ResponseEntity.ok(authService.obtenerRolesVigentes(idUsuario));
+        }
+        return ResponseEntity.ok(List.of());
     }
 }

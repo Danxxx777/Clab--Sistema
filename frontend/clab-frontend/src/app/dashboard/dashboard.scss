@@ -1333,3 +1333,43 @@ img {
     }
   }
 }
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding: 16px 20px 0;
+}
+
+.stat-card {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stat-icon {
+  width: 40px; height: 40px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+
+  svg { width: 18px; height: 18px; }
+}
+
+.ic-blue   { background: rgba(56,139,224,0.15); color: #378ADD; }
+.ic-green  { background: rgba(57,255,20,0.10);  color: #39ff14; }
+.ic-purple { background: rgba(127,119,221,0.15); color: #7F77DD; }
+.ic-amber  { background: rgba(239,159,39,0.15);  color: #EF9F27; }
+
+.stat-num { font-size: 22px; font-weight: 700; color: #f0f0f0; line-height: 1; }
+.stat-lbl { font-size: 11px; color: #6b6b6b; margin-top: 3px; font-family: 'Space Grotesk', sans-serif; }
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding: 16px 20px 0;
+  margin-bottom: 24px; // ← agrega esto
+}

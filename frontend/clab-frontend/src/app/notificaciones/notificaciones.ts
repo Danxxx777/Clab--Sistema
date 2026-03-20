@@ -253,7 +253,15 @@ export class NotificacionesComponent implements OnInit {
       default:               return '🔔';
     }
   }
-
+  getIconoImg(tipo: string): string {
+    const iconos: Record<string, string> = {
+      'FALLA':          '/fallas.png',
+      'RESERVA':        '/reservacalendario.png',
+      'BLOQUEO':        '/bloqueos.png',
+      'FALLA_RESUELTA': '/check.png',
+    };
+    return iconos[tipo] ?? '/notificacion.png';
+  }
   stripHtml(html: string): string {
     if (!html) return '';
     return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();

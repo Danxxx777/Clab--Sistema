@@ -3,7 +3,9 @@ package com.clab.clabbackend.controller;
 import com.clab.clabbackend.dto.RolBDDTO;
 import com.clab.clabbackend.dto.RolRequestDTO;
 import com.clab.clabbackend.dto.RolResponseDTO;
+import com.clab.clabbackend.entities.ModuloSistema;
 import com.clab.clabbackend.entities.Rol;
+import com.clab.clabbackend.repository.ModuloSistemaRepository;
 import com.clab.clabbackend.security.JwtService;
 import com.clab.clabbackend.services.RolService;
 import io.jsonwebtoken.Claims;
@@ -27,6 +29,9 @@ public class RolController {
 
     @Autowired
     private com.clab.clabbackend.services.AuditoriaService auditoriaService;
+
+    @Autowired
+    private ModuloSistemaRepository moduloSistemaRepository;
 
     // ─── HELPERS JWT ─────────────────────────────────────────────────────────
 
@@ -121,5 +126,10 @@ public class RolController {
     @GetMapping("/publicos")
     public ResponseEntity<List<RolResponseDTO>> listarPublicos() {
         return ResponseEntity.ok(rolService.listarActivos());
+    }
+
+    @GetMapping("/modulos")
+    public ResponseEntity<List<ModuloSistema>> listarModulos() {
+        return ResponseEntity.ok(moduloSistemaRepository.findByActivoTrue());
     }
 }

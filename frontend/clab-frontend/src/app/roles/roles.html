@@ -15,44 +15,39 @@
     <button class="btn-agregar" (click)="abrirModalRol('crear')">+ Nuevo Rol</button>
   </div>
 
-  <!-- TABLA -->
-  <div class="table-container">
-    <table class="data-table">
-      <thead>
-      <tr>
-        <th>ROL</th>
-        <th>DESCRIPCIÓN</th>
-        <th>ESTADO</th>
-        <th>FECHA CREACIÓN</th>
-        <th>ACCIONES</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr *ngFor="let r of rolesPaginados">
-        <td><strong>{{ r.nombre }}</strong></td>
-        <td>{{ r.descripcion }}</td>
-        <td><span class="badge" [ngClass]="getEstadoClass(r.estado)">{{ r.estado ?? 'ACTIVO' }}</span></td>
-        <td>{{ r.fechaCreacion }}</td>
-        <td>
-          <div class="action-buttons">
-            <button class="btn-action btn-editar" (click)="abrirModalRol('editar', r)">Editar</button>
-            <button class="btn-action"
-                    [ngClass]="r.estado === 'ACTIVO' ? 'btn-eliminar' : 'btn-activar'"
-                    (click)="toggleEstadoRolTabla(r)">
-              {{ r.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}
-            </button>
-          </div>
-        </td>
-      </tr>
-      <tr *ngIf="roles.length === 0">
-        <td colspan="5" class="empty-message">No hay roles registrados</td>
-      </tr>
-      </tbody>
-    </table>
+  <!-- ENCABEZADO -->
+  <div class="roles-header">
+    <div></div>
+    <div>ROL</div>
+    <div>DESCRIPCIÓN</div>
+    <div class="col-center">ESTADO</div>
+    <div class="col-center">ACCIONES</div>
+  </div>
+  <!-- CARDS -->
+  <div class="roles-list">
+    <div class="rol-card" *ngFor="let r of rolesPaginados">
+      <div class="rol-avatar" [class.rol-inactivo]="r.estado !== 'ACTIVO'">
+        {{ r.nombre ? r.nombre.charAt(0).toUpperCase() : '' }}
+      </div>
+      <div class="uc-info">
+        <div class="uc-name">{{ r.nombre }}</div>
+        <div class="uc-username">Creado: {{ r.fechaCreacion }}</div>
+      </div>
+      <div class="rol-desc">{{ r.descripcion || '—' }}</div>
+      <span class="badge" [ngClass]="getEstadoClass(r.estado)">{{ r.estado ?? 'ACTIVO' }}</span>
+      <div class="action-buttons">
+        <button class="btn-action btn-editar" (click)="abrirModalRol('editar', r)">Editar</button>
+        <button class="btn-action"
+                [ngClass]="r.estado === 'ACTIVO' ? 'btn-eliminar' : 'btn-activar'"
+                (click)="toggleEstadoRolTabla(r)">
+          {{ r.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}
+        </button>
+      </div>
+    </div>
+    <div class="uc-empty" *ngIf="roles.length === 0">No hay roles registrados</div>
   </div>
 
 </div>
-
 <!-- TOAST -->
 <div class="toast-notif" *ngIf="mostrarNotificacion" [ngClass]="{
   'toast-exito':     notificacionTipo === 'exito',
@@ -102,70 +97,106 @@
         </div>
       </div>
 
-      <div class="roles-esquemas-layout">
+      <!-- TABS INTERNOS -->
+      <div class="modal-tabs">
+        <button class="modal-tab" [class.active]="tabModal === 1" (click)="tabModal = 1">
+           Roles BD & Esquemas
+        </button>
+        <button class="modal-tab" [class.active]="tabModal === 0" (click)="tabModal = 0">
+           Módulos Dashboard
+          <span class="tab-count" *ngIf="modulosSeleccionados.length > 0">
+      {{ modulosSeleccionados.length }}
+    </span>
+        </button>
+      </div>
 
-        <!-- IZQUIERDA: Roles BD -->
-        <div class="col-roles-bd">
-          <label class="col-label">Roles de Base de Datos</label>
-          <div class="roles-bd-list">
-            <div class="rol-bd-card"
-                 *ngFor="let rolBD of rolesBDDisponibles"
-                 [class.selected]="rolesBDSeleccionados.includes(rolBD.nombreRolBd)"
-                 (click)="toggleRolBD(rolBD.nombreRolBd)">
-              <div class="rol-bd-name">{{ rolBD.nombreRolBd }}</div>
-              <div class="rol-bd-desc" *ngIf="rolBD.descripcion">{{ rolBD.descripcion }}</div>
+      <!-- TAB 0: ROLES BD + ESQUEMAS -->
+      <div *ngIf="tabModal === 1">
+        <div class="roles-esquemas-layout">
+          <div class="col-roles-bd">
+            <label class="col-label">Roles de Base de Datos</label>
+            <div class="roles-bd-list">
+              <div class="rol-bd-card"
+                   *ngFor="let rolBD of rolesBDDisponibles"
+                   [class.selected]="rolesBDSeleccionados.includes(rolBD.nombreRolBd)"
+                   (click)="toggleRolBD(rolBD.nombreRolBd)">
+                <div class="rol-bd-name">{{ rolBD.nombreRolBd }}</div>
+                <div class="rol-bd-desc" *ngIf="rolBD.descripcion">{{ rolBD.descripcion }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-esquemas" *ngIf="rolesBDSeleccionados.length > 0; else sinRolBD">
+            <label class="col-label">Permisos por Esquema</label>
+            <div class="esquemas-chips">
+              <div class="esquema-chip"
+                   *ngFor="let esq of esquemasFiltrados"
+                   [class.activo]="esquemaActivo(esq)"
+                   (click)="toggleEsquema(esq)">
+                <span class="chip-dot" *ngIf="esquemaActivo(esq)">●</span>
+                {{ esq }}
+              </div>
+            </div>
+            <div class="permisos-panel" *ngFor="let esq of esquemasConfigurados">
+              <div class="pp-header">
+                <span>🗄</span>
+                <strong>{{ esq }}</strong>
+                <button class="pp-remove" (click)="toggleEsquema(esq)">×</button>
+              </div>
+              <div class="pp-checks">
+                <label class="pp-check select">
+                  <input type="checkbox" [(ngModel)]="permisosEsquema[esq].select">
+                  <span>SELECT</span>
+                </label>
+                <label class="pp-check insert">
+                  <input type="checkbox" [(ngModel)]="permisosEsquema[esq].insert">
+                  <span>INSERT</span>
+                </label>
+                <label class="pp-check update">
+                  <input type="checkbox" [(ngModel)]="permisosEsquema[esq].update">
+                  <span>UPDATE</span>
+                </label>
+                <label class="pp-check delete">
+                  <input type="checkbox" [(ngModel)]="permisosEsquema[esq].delete">
+                  <span>DELETE</span>
+                </label>
+              </div>
+            </div>
+            <p class="esquemas-hint" *ngIf="esquemasConfigurados.length === 0">
+              Selecciona un esquema para configurar sus permisos
+            </p>
+          </div>
+
+          <ng-template #sinRolBD>
+            <div class="col-esquemas col-esquemas-empty">
+              <span>Selecciona un rol de BD para configurar esquemas</span>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+      <!-- TAB 1: MÓDULOS -->
+      <div *ngIf="tabModal === 0">
+        <div class="modulos-lista">
+          <div class="modulo-item"
+               *ngFor="let m of modulosSistema"
+               [class.selected]="esModuloSeleccionado(m.idModulo)"
+               (click)="toggleModulo(m.idModulo)">
+            <div class="modulo-check">
+              <span *ngIf="esModuloSeleccionado(m.idModulo)">✓</span>
+            </div>
+            <img [src]="'/' + m.icono" [alt]="m.nombre" class="modulo-icon-sm"
+                 onerror="this.style.display='none'">
+            <div class="modulo-info">
+              <span class="modulo-nombre">{{ m.nombre }}</span>
+              <div class="modulo-esquemas">
+                <span class="esq-tag" *ngFor="let esq of m.esquemasRelacionados">{{ esq }}</span>
+              </div>
             </div>
           </div>
         </div>
-
-        <!-- DERECHA: Esquemas -->
-        <div class="col-esquemas" *ngIf="rolesBDSeleccionados.length > 0; else sinRolBD">
-          <label class="col-label">Permisos por Esquema</label>
-          <div class="esquemas-chips">
-            <div class="esquema-chip"
-                 *ngFor="let esq of esquemas"
-                 [class.activo]="esquemaActivo(esq)"
-                 (click)="toggleEsquema(esq)">
-              <span class="chip-dot" *ngIf="esquemaActivo(esq)">●</span>
-              {{ esq }}
-            </div>
-          </div>
-          <div class="permisos-panel" *ngFor="let esq of esquemasConfigurados">
-            <div class="pp-header">
-              <span>🗄</span>
-              <strong>{{ esq }}</strong>
-              <button class="pp-remove" (click)="toggleEsquema(esq)">×</button>
-            </div>
-            <div class="pp-checks">
-              <label class="pp-check select">
-                <input type="checkbox" [(ngModel)]="permisosEsquema[esq].select">
-                <span>SELECT</span>
-              </label>
-              <label class="pp-check insert">
-                <input type="checkbox" [(ngModel)]="permisosEsquema[esq].insert">
-                <span>INSERT</span>
-              </label>
-              <label class="pp-check update">
-                <input type="checkbox" [(ngModel)]="permisosEsquema[esq].update">
-                <span>UPDATE</span>
-              </label>
-              <label class="pp-check delete">
-                <input type="checkbox" [(ngModel)]="permisosEsquema[esq].delete">
-                <span>DELETE</span>
-              </label>
-            </div>
-          </div>
-          <p class="esquemas-hint" *ngIf="esquemasConfigurados.length === 0">
-            Selecciona un esquema para configurar sus permisos
-          </p>
-        </div>
-
-        <ng-template #sinRolBD>
-          <div class="col-esquemas col-esquemas-empty">
-            <span>Selecciona un rol de BD para configurar esquemas</span>
-          </div>
-        </ng-template>
-
+        <small style="color:#6b6b6b;font-size:11px;margin-top:8px;display:block">
+          {{ modulosSeleccionados.length }} módulo(s) seleccionado(s)
+        </small>
       </div>
     </div>
 
