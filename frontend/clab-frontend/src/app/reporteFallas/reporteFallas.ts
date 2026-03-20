@@ -65,9 +65,9 @@ export class ReporteFallasComponent implements OnInit {
 
   // ── Sesión / UI ─────────────────────────────────────────
   drawerAbierto = false;
-  rol = sessionStorage.getItem('rol') || '';
-  usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
-  idUsuario = Number(sessionStorage.getItem('idUsuario'));
+  rol = localStorage.getItem('rol') || '';
+  usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+  idUsuario = Number(localStorage.getItem('idUsuario'));
   cargando = false;
   mostrarToast = false;
   toastMensaje = '';
@@ -83,9 +83,9 @@ export class ReporteFallasComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.rol = sessionStorage.getItem('rol') || '';
-    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
-    this.idUsuario = Number(sessionStorage.getItem('idUsuario'));
+    this.rol = localStorage.getItem('rol') || '';
+    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+    this.idUsuario = Number(localStorage.getItem('idUsuario'));
     this.inicializarFormularios();
     this.cargarLaboratorios();
     this.cargarReportesYEquipos();
@@ -447,7 +447,7 @@ export class ReporteFallasComponent implements OnInit {
   toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
   cerrarDrawer(): void { this.drawerAbierto = false; }
   navegar(ruta: string, _texto: string): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
-  logout(): void { sessionStorage.clear(); this.router.navigate(['/login']); }
+  logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
   volver(): void { this.router.navigate(['/dashboard']); }
   formatearFecha(fecha: any): string { if (!fecha) return ''; return new Date(fecha).toLocaleDateString('es-ES'); }
 }

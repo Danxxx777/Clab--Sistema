@@ -45,7 +45,7 @@ export class CambiarContraseniaComponent {
     }
 
     this.enviando = true;
-    const idUsuario = sessionStorage.getItem('idUsuario');
+    const idUsuario = localStorage.getItem('idUsuario');
 
     this.http.post<any>('http://localhost:8080/usuarios/cambiar-contrasenia-primer-login', {
       idUsuario: Number(idUsuario),
@@ -53,7 +53,7 @@ export class CambiarContraseniaComponent {
     }).subscribe({
       next: (res) => {
         this.enviando = false;
-        sessionStorage.setItem('primerLogin', 'false');
+        localStorage.setItem('primerLogin', 'false');
         this.router.navigate(['/dashboard']);
         this.cdr.detectChanges();
       },

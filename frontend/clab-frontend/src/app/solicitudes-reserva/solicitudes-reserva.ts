@@ -113,9 +113,9 @@ export class SolicitudesReservaComponent implements OnInit {
   // ──────────────────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
-    this.rol = sessionStorage.getItem('rol') || '';
-    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
-    this.idUsuario = parseInt(sessionStorage.getItem('idUsuario') || '0');
+    this.rol = localStorage.getItem('rol') || '';
+    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+    this.idUsuario = parseInt(localStorage.getItem('idUsuario') || '0');
 
     this.cargarSolicitudes();
     this.cargarLaboratorios();
@@ -443,7 +443,7 @@ export class SolicitudesReservaComponent implements OnInit {
 
   volver(): void { this.router.navigate(['/dashboard']); }
   navegar(ruta: string): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
-  logout(): void { sessionStorage.clear(); this.router.navigate(['/login']); }
+  logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
   toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
   cerrarDrawer(): void { this.drawerAbierto = false; }
 }

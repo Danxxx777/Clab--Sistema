@@ -61,12 +61,12 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
-    this.rol             = sessionStorage.getItem('rol');
-    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
-    this.rolActual       = sessionStorage.getItem('rol') || '';
+    this.rol             = localStorage.getItem('rol');
+    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+    this.rolActual       = localStorage.getItem('rol') || '';
 
-    // Carga inicial del sessionStorage (inmediata) para que aparezca la flecha
-    const rolesGuardados = sessionStorage.getItem('rolesDisponibles');
+    // Carga inicial del localStorage (inmediata) para que aparezca la flecha
+    const rolesGuardados = localStorage.getItem('rolesDisponibles');
     if (rolesGuardados) this.rolesDisponibles = JSON.parse(rolesGuardados);
 
     // Luego actualiza del servidor (filtra inactivos)
@@ -84,7 +84,7 @@ export class DashboardComponent implements OnInit {
   // ── Helpers HTTP ─────────────────────────────────────────────────
 
   private getHeaders(): HttpHeaders {
-    const token = sessionStorage.getItem('token') || '';
+    const token = localStorage.getItem('token') || '';
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 
@@ -117,14 +117,14 @@ export class DashboardComponent implements OnInit {
     }
   }
   recargarModulos(): void {
-    const token = sessionStorage.getItem('token');
+    const token = localStorage.getItem('token');
     if (!token) return;
     this.http.get<any[]>(`${this.apiUrl}/auth/mis-modulos`,
       { headers: this.getHeaders() }
     ).subscribe({
       next: (modulos) => {
         this.modulos = modulos;
-        sessionStorage.setItem('modulos', JSON.stringify(modulos));
+        localStorage.setItem('modulos', JSON.stringify(modulos));
         this.cdr.detectChanges();
       },
       error: () => {}
@@ -145,7 +145,14 @@ export class DashboardComponent implements OnInit {
       error: () => { this.cargandoNotifs = false; }
     });
   }
-
+  limpiarMensaje(html: string): string {
+    if (!html) return '';
+    return html
+      .replace(/<br\s*\/?>/gi, ' · ')
+      .replace(/<[^>]*>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
   getTimeAgo(fecha: string | Date): string {
     if (!fecha) return '';
     const date = new Date(fecha);
@@ -203,13 +210,13 @@ export class DashboardComponent implements OnInit {
     if (nombreRol === this.rolActual) { this.mostrarSelectorRol = false; return; }
     this.cambiandoRol = true;
     this.mostrarSelectorRol = false;
-    const idUsuario = parseInt(sessionStorage.getItem('idUsuario') || '0');
+    const idUsuario = parseInt(localStorage.getItem('idUsuario') || '0');
     this.http.post<any>(`${this.apiUrl}/auth/cambiar-rol`, { idUsuario, nombreRol }).subscribe({
       next: res => {
-        sessionStorage.setItem('token',            res.token);
-        sessionStorage.setItem('rol',              res.rol);
-        sessionStorage.setItem('rolesDisponibles', JSON.stringify(res.rolesDisponibles));
-        sessionStorage.setItem('modulos',          JSON.stringify(res.modulos ?? [])); // ← nuevo
+        localStorage.setItem('token',            res.token);
+        localStorage.setItem('rol',              res.rol);
+        localStorage.setItem('rolesDisponibles', JSON.stringify(res.rolesDisponibles));
+        localStorage.setItem('modulos',          JSON.stringify(res.modulos ?? [])); // ← nuevo
         this.rol              = res.rol;
         this.rolActual        = res.rol;
         this.rolesDisponibles = res.rolesDisponibles;
@@ -285,7 +292,7 @@ export class DashboardComponent implements OnInit {
       next: (roles) => {
         if (!roles || roles.length === 0) return; // ← no hacer nada si viene vacío
         this.rolesDisponibles = roles;
-        sessionStorage.setItem('rolesDisponibles', JSON.stringify(roles));
+        localStorage.setItem('rolesDisponibles', JSON.stringify(roles));
         // Solo forzar logout si el rol actual definitivamente no existe
         if (roles.length > 0 && !roles.includes(this.rolActual)) {
           this.auth.logout();

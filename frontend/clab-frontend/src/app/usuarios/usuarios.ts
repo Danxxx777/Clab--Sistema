@@ -78,9 +78,9 @@ export class UsuariosComponent implements OnInit {
 
   /* ==LIFECYCLE== */
   ngOnInit(): void {
-    this.rol = sessionStorage.getItem('rol') || '';
+    this.rol = localStorage.getItem('rol') || '';
 
-    const userData = sessionStorage.getItem('usuario') || sessionStorage.getItem('user');
+    const userData = localStorage.getItem('usuario') || localStorage.getItem('user');
     if (userData) {
       try {
         const parsed = JSON.parse(userData);
@@ -102,7 +102,7 @@ export class UsuariosComponent implements OnInit {
   /* ==NAVEGACIÓN== */
   volver(): void { this.router.navigate(['/dashboard']); }
   navegar(ruta: string, _texto: string): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
-  logout(): void { sessionStorage.clear(); this.router.navigate(['/login']); }
+  logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
 
   cambiarTab(index: number): void {
     this.tabActiva = index;
@@ -531,7 +531,7 @@ export class UsuariosComponent implements OnInit {
 
   confirmarAprobacion(): void {
     // Ya no es obligatorio seleccionar — viene pre-seleccionado de la solicitud
-    const idAdmin = Number(sessionStorage.getItem('idUsuario'));
+    const idAdmin = Number(localStorage.getItem('idUsuario'));
     this.http.post<any>(`http://localhost:8080/api/solicitudes/aprobar/${this.solicitudActual.id}`,
       { roles: this.rolesParaAprobar }
     ).subscribe({
@@ -547,7 +547,7 @@ export class UsuariosComponent implements OnInit {
 
   rechazarSolicitud(s: any): void {
     this.accionPendiente = () => {
-      const idAdmin = Number(sessionStorage.getItem('idUsuario'));
+      const idAdmin = Number(localStorage.getItem('idUsuario'));
       this.http.post<any>(`http://localhost:8080/api/solicitudes/rechazar/${s.id}`,
         { observacion: 'Solicitud rechazada por el administrador.' }
       ).subscribe({
