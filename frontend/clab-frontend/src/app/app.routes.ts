@@ -28,6 +28,7 @@ import {RolesComponent} from './roles/roles';
 import { SolicitarAccesoComponent } from './solicitar-acceso/solicitar-acceso';
 import { CambiarContraseniaComponent } from './cambiar-contrasenia/cambiar-contrasenia';
 import { BackupComponent } from './backup/backup';
+import {RestaurarInicialComponent} from './restaurar-inicial/restaurar-inicial';
 
 
 export const routes: Routes = [
@@ -65,5 +66,6 @@ export const routes: Routes = [
   { path: 'solicitar-acceso', component: SolicitarAccesoComponent },
   { path: 'cambiar-contrasenia', component: CambiarContraseniaComponent },
   { path: 'backups', component: BackupComponent, canActivate: [authGuard] },
+  { path: 'restaurar', component: RestaurarInicialComponent },
   { path: '**', redirectTo: 'login' }
 ];
