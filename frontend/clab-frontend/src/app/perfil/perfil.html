@@ -144,7 +144,7 @@
 
       <div class="pf-filters">
         <button class="pf-chip" [class.active]="filtroEstado === 'todas'"      (click)="aplicarFiltro('todas')">Todas</button>
-        <button class="pf-chip" [class.active]="filtroEstado === 'confirmada'" (click)="aplicarFiltro('confirmada')">Confirmadas</button>
+        <button class="pf-chip" [class.active]="filtroEstado === 'confirmada'" (click)="aplicarFiltro('confirmada')">Aprobadas</button>
         <button class="pf-chip" [class.active]="filtroEstado === 'completada'" (click)="aplicarFiltro('completada')">Completadas</button>
         <button class="pf-chip" [class.active]="filtroEstado === 'cancelada'"  (click)="aplicarFiltro('cancelada')">Canceladas</button>
         <button class="pf-chip" [class.active]="filtroEstado === 'pendiente'"  (click)="aplicarFiltro('pendiente')">Pendientes</button>
@@ -167,14 +167,30 @@
           </thead>
           <tbody>
           <tr *ngFor="let r of reservasFiltradas">
-            <td>{{ r.laboratorio }}</td>
-            <td>{{ r.fechaReserva }}</td>
-            <td>{{ r.horario }}</td>
-            <td><span class="pf-badge" [ngClass]="badgeClass(r.estado)">{{ r.estado }}</span></td>
             <td>
-              <span *ngIf="r.asistio === true" style="color:#00ff88">&#10003;</span>
-              <span *ngIf="r.asistio === false" style="color:#ff4455">&#10007;</span>
-              <span *ngIf="r.asistio === null" style="color:#6b8f6b">—</span>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:30px; height:30px; border-radius:7px; background:#0d2200; border:1px solid rgba(57,255,20,0.2); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#39ff14" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                    <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+                  </svg>
+                </div>
+                <span style="font-size:13px; font-weight:500;">{{ r.nombreLaboratorio || '—' }}</span>
+              </div>
+            </td>
+            <td>{{ r.fechaReserva | date:'dd/MM/yyyy' }}</td>
+            <td>
+        <span style="background:#1e1e1e; border:0.5px solid #2a2a2a; border-radius:6px; padding:4px 10px; font-size:12px; color:#9ca3af; font-family:'Space Mono',monospace; display:inline-block;">
+          {{ r.horaInicio }} — {{ r.horaFin }}
+        </span>
+            </td>
+            <td>
+              <span class="pf-badge" [class]="badgeClass(r.estado)">{{ r.estado }}</span>
+            </td>
+            <td>
+              <span *ngIf="r.asistio === true"  style="color:#39ff14; font-size:14px;">&#10003;</span>
+              <span *ngIf="r.asistio === false" style="color:#e74c3c; font-size:14px;">&#10007;</span>
+              <span *ngIf="r.asistio === null"  style="color:#4a4a4a;">—</span>
             </td>
           </tr>
           </tbody>

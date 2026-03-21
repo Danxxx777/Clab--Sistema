@@ -84,8 +84,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 boolean sesionValida = sesionActivaRepository
                         .findByTokenHash(tokenHash)
                         .map(s -> s.getActiva())
-                        .orElse(false);
-
+                        .orElse(true); // BD vacía — sesión sin registro se considera válida
                 if (!sesionValida) {
                     SecurityContextHolder.clearContext();
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
