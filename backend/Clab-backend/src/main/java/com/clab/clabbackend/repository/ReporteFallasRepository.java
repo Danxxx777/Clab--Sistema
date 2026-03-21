@@ -4,6 +4,7 @@ import com.clab.clabbackend.entities.ReporteFallas;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Repository;
 
@@ -15,6 +16,9 @@ public interface ReporteFallasRepository extends JpaRepository<ReporteFallas, In
     // LISTAR
     @Query(value = "SELECT * FROM reportes.fn_listar_reportes()", nativeQuery = true)
     List<Object[]> listarReportes();
+
+    @Query(value = "SELECT * FROM reportes.fn_listar_reportes_por_encargado(:idUsuario)", nativeQuery = true)
+    List<Object[]> listarReportesPorEncargado(@Param("idUsuario") Integer idUsuario);
 
     // INSERTAR
     @Transactional

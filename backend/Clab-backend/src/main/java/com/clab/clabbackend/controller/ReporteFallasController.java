@@ -22,6 +22,11 @@ public class ReporteFallasController {
         return ResponseEntity.ok(reporteService.listar());
     }
 
+    @GetMapping("/listarPorEncargado/{idUsuario}")
+    public ResponseEntity<List<Map<String, Object>>> listarPorEncargado(@PathVariable Integer idUsuario) {
+        return ResponseEntity.ok(reporteService.listarPorEncargado(idUsuario));
+    }
+
     // Crea un nuevo reporte de fallas
     @PostMapping("/crear")
     public ResponseEntity<Void> crear(@RequestBody ReporteFallasDTO dto) {
