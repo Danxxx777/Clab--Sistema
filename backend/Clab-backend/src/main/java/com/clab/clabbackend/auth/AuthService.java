@@ -89,8 +89,10 @@ public class AuthService {
                     new UsernamePasswordAuthenticationToken(request.getUsuario(), request.getContrasenia())
             );
         } catch (Exception e) {
-            auditoriaService.registrarFallo(null, request.getUsuario(),
-                    "LOGIN", "AUTH", "Intento de login fallido: credenciales incorrectas", ip);
+            try {
+                auditoriaService.registrarFallo(null, request.getUsuario(),
+                        "LOGIN", "AUTH", "Intento de login fallido: credenciales incorrectas", ip);
+            } catch (Exception ignored) {}
             throw e;
         }
 
@@ -113,25 +115,18 @@ public class AuthService {
         List<String> permisos = obtenerPermisosDeRol(rolPrincipal);
         String token = jwtService.generarToken(usuario.getIdUsuario(), usuario.getUsuario(), rolPrincipal, permisos);
 
-        auditoriaService.registrarSesion(
-                usuario.getIdUsuario(), usuario.getUsuario(),
-                token, ip, LocalDateTime.now().plusHours(1)
-        );
+        try { auditoriaService.registrarSesion(usuario.getIdUsuario(), usuario.getUsuario(),
+                token, ip, LocalDateTime.now().plusHours(1)); } catch (Exception ignored) {}
 
-        auditoriaService.registrarExito(
-                usuario.getIdUsuario(), usuario.getUsuario(),
-                "LOGIN", "AUTH", "u_usuario",
-                usuario.getIdUsuario(), "Login exitoso con rol: " + rolPrincipal, ip
-        );
+        try { auditoriaService.registrarExito(usuario.getIdUsuario(), usuario.getUsuario(),
+                "LOGIN", "AUTH", "u_usuario", usuario.getIdUsuario(),
+                "Login exitoso con rol: " + rolPrincipal, ip); } catch (Exception ignored) {}
 
-        List<ModuloDTO> modulos = obtenerModulosDeRol(rolPrincipal); // ← nuevo
+        List<ModuloDTO> modulos = obtenerModulosDeRol(rolPrincipal);
 
-        AuthResponseDTO response = new AuthResponseDTO(
-                token, usuario.getNombres(), usuario.getApellidos(),
+        return new AuthResponseDTO(token, usuario.getNombres(), usuario.getApellidos(),
                 rolPrincipal, usuario.getIdUsuario(), rolesDisponibles,
-                usuario.isPrimerLogin(), modulos  // ← modulos al final
-        );
-        return response;
+                usuario.isPrimerLogin(), modulos);
     }
 
     // ─── CAMBIAR ROL ─────────────────────────────────────────────────────────
@@ -157,9 +152,12 @@ public class AuthService {
         List<String> permisos = obtenerPermisosDeRol(nombreRol);
         String token = jwtService.generarToken(idUsuario, usuario.getUsuario(), nombreRol, permisos);
 
-        auditoriaService.registrarSesion(idUsuario, usuario.getUsuario(),
-                token, ip, LocalDateTime.now().plusHours(1));
-
+        try {
+            auditoriaService.registrarSesion(idUsuario, usuario.getUsuario(),
+                    token, ip, LocalDateTime.now().plusHours(1));
+        } catch (Exception e) {
+            // BD vacía — se omite
+        }
         auditoriaService.registrarExito(idUsuario, usuario.getUsuario(),
                 "CAMBIO_ROL", "AUTH", "u_usuario_rol",
                 idUsuario, "Cambió al rol: " + nombreRol, ip);

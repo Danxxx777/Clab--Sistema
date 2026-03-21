@@ -35,6 +35,15 @@
         </div>
       </div>
     }
+    @if(rolActual === 'Administradorr') {
+      <div class="drawer-item" (click)="navegar('backups', 'Cargando Backups...')">
+        <div class="di-icon"><img src="/backup.png" alt="Backups"></div>
+        <div class="di-text">
+          <div class="di-name">Backups</div>
+          <div class="di-desc">Gestión de respaldos</div>
+        </div>
+      </div>
+    }
 
     <div class="drawer-item"
          *ngFor="let m of modulos"
@@ -272,6 +281,15 @@
           <div class="text">
             <strong>Usuarios</strong>
             <p>Gestión de usuarios, roles y permisos del sistema</p>
+          </div>
+        </div>
+      }
+      @if(rolActual === 'Administradorr') {
+        <div class="menu-item" (click)="navegar('backups', 'Cargando Backups...')">
+          <img src="/backup.png" alt="Backups" class="menu-icon icon-neon">
+          <div class="text">
+            <strong>Backups</strong>
+            <p>Gestión de respaldos del sistema</p>
           </div>
         </div>
       }
