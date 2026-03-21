@@ -55,7 +55,25 @@ export class AuthService {
 
   isLoggedIn(): boolean {
     const token = localStorage.getItem('token');
-    return !!token;
+    if (!token) return false;
+
+    try {
+      // Decodificar el payload del JWT (parte central en base64)
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const ahora = Math.floor(Date.now() / 1000);
+
+      if (payload.exp && payload.exp < ahora) {
+        // Token expirado — limpiar sesión
+        this.limpiarSesionLocal();
+        return false;
+      }
+
+      return true;
+    } catch {
+      // Token malformado
+      this.limpiarSesionLocal();
+      return false;
+    }
   }
 
 
