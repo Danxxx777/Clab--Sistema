@@ -131,6 +131,7 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   align-items: center;
   margin-bottom: 20px;
   gap: 16px;
+  flex-wrap: nowrap;
 
   .search-container {
     flex: 1;
@@ -165,6 +166,14 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
       }
       &::placeholder { color: $muted; }
     }
+  }
+
+  .toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
   }
 
   .btn-agregar {
@@ -279,7 +288,7 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
 }
 
 
-// LAB SI / NO (exclusivo académico)
+// LAB SI / NO
 .lab-si {
   color: $neon;
   font-weight: 700;
@@ -849,7 +858,12 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   .page-title-section { padding: 10px 16px; h1 { font-size: 15px; } }
   .tabs { padding: 0 16px; overflow-x: auto; .tab { padding: 10px 16px; font-size: 12px; white-space: nowrap; } }
   .content-wrapper { padding: 0 16px; }
-  .toolbar { flex-direction: column; align-items: stretch; .search-container { max-width: 100%; } .btn-agregar { width: 100%; } }
+  .toolbar {
+    flex-wrap: wrap;
+    .search-container { max-width: 100%; }
+    .toolbar-actions { width: 100%; justify-content: flex-end; }
+    .btn-agregar { width: 100%; }
+  }
   .table-container { overflow-x: auto; border-radius: 8px; }
   .data-table { min-width: 800px; }
   .action-buttons { flex-direction: column; gap: 5px; .btn-action { width: 100%; text-align: center; } }
@@ -859,6 +873,7 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   .modal-body { padding: 18px; }
   .modal-footer { padding: 12px 18px; flex-direction: column; button { width: 100%; } }
 }
+
 .config-msg-error {
   color: #ff6b6b;
   font-size: 12px;
@@ -869,31 +884,36 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
   border-radius: 6px;
   font-family: 'Space Grotesk', sans-serif;
 }
+
+// DESPUÉS
 .btn-activar {
-  background: #39ff14;
-  color: #111;
-  border: none;
-  padding: 4px 12px;
+  background: $neon-dim;
+  color: $neon;
+  border: 1px solid $neon-border;
+  padding: 5px 12px;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.8rem;
-
-  &:hover { opacity: 0.85; }
+  font-size: 11px;
+  font-family: 'Space Grotesk', sans-serif;
+  transition: all 0.2s ease;
+  &:hover { background: rgba(57,255,20,0.18); transform: translateY(-2px); }
 }
 
 .btn-desactivar {
-  background: #e53935;
-  color: #fff;
-  border: none;
-  padding: 4px 12px;
+  background: $red-dim;
+  color: #ff6b6b;
+  border: 1px solid rgba(231,76,60,0.25);
+  padding: 5px 12px;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.8rem;
-
-  &:hover { opacity: 0.85; }
+  font-size: 11px;
+  font-family: 'Space Grotesk', sans-serif;
+  transition: all 0.2s ease;
+  &:hover { background: rgba(231,76,60,0.22); transform: translateY(-2px); }
 }
+
 // =====================
 // TIME PICKER
 // =====================
@@ -979,7 +999,57 @@ $amber-dim:   rgba(245, 158, 11, 0.10);
     font-weight: 700;
   }
 }
+
 .time-display span {
   font-family: 'Space Mono', monospace !important;
   letter-spacing: 0.05em;
+}
+
+// =====================
+// PAGINACIÓN
+// =====================
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+
+  .pagination-info-inline {
+    font-size: 12px;
+    color: $muted;
+    font-weight: 600;
+    margin-right: 6px;
+    font-family: 'Space Mono', monospace;
+    white-space: nowrap;
+  }
+
+  .btn-pag {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 6px;
+    border: 1px solid $border;
+    border-radius: 6px;
+    background: $surface;
+    color: $muted;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+
+    &:hover:not(:disabled) {
+      background: $neon-glow;
+      border-color: $neon-border;
+      color: $neon;
+    }
+    &.active {
+      background: $neon-dim;
+      border-color: $neon-border;
+      color: $neon;
+      font-weight: 700;
+    }
+    &:disabled { opacity: 0.25; cursor: not-allowed; }
+  }
 }

@@ -136,13 +136,21 @@
         <span class="search-icon">🔍</span>
         <input type="text" class="search-input" [(ngModel)]="busquedaPeriodos" (input)="filtrarPeriodos()" placeholder="Buscar períodos...">
       </div>
-      <button class="btn-agregar" (click)="agregarNuevo(0)">+ Agregar Período</button>
+      <div class="toolbar-actions">
+        <div class="pagination-controls" *ngIf="periodosFiltrado.length > 0">
+          <span class="pagination-info-inline">{{ paginaPeriodos }}/{{ totalPaginasPeriodos }}</span>
+          <button class="btn-pag" (click)="paginaPeriodos = paginaPeriodos - 1" [disabled]="paginaPeriodos === 1">‹</button>
+          <button class="btn-pag" *ngFor="let p of paginasArrayPeriodos" [class.active]="p === paginaPeriodos" (click)="paginaPeriodos = p">{{ p }}</button>
+          <button class="btn-pag" (click)="paginaPeriodos = paginaPeriodos + 1" [disabled]="paginaPeriodos === totalPaginasPeriodos">›</button>
+        </div>
+        <button class="btn-agregar" (click)="agregarNuevo(0)">+ Agregar Período</button>
+      </div>
     </div>
     <div class="table-container">
       <table class="data-table">
         <thead><tr><th>NOMBRE</th><th>FECHA INICIO</th><th>FECHA FIN</th><th>FECHA CREACIÓN</th><th>ESTADO</th><th>ACCIONES</th></tr></thead>
         <tbody>
-        <tr *ngFor="let periodo of periodosFiltrado; let i = index">
+        <tr *ngFor="let periodo of periodosPaginados; let i = index">
           <td>{{ periodo.nombrePeriodo }}</td>
           <td>{{ periodo.fechaInicio }}</td>
           <td>{{ periodo.fechaFin }}</td>
@@ -168,13 +176,21 @@
         <span class="search-icon">🔍</span>
         <input type="text" class="search-input" [(ngModel)]="busquedaCarreras" (input)="filtrarCarreras()" placeholder="Buscar carreras...">
       </div>
-      <button class="btn-agregar" (click)="agregarNuevo(1)">+ Agregar Carrera</button>
+      <div class="toolbar-actions">
+        <div class="pagination-controls" *ngIf="carrerasFiltradas.length > 0">
+          <span class="pagination-info-inline">{{ paginaCarreras }}/{{ totalPaginasCarreras }}</span>
+          <button class="btn-pag" (click)="paginaCarreras = paginaCarreras - 1" [disabled]="paginaCarreras === 1">‹</button>
+          <button class="btn-pag" *ngFor="let p of paginasArrayCarreras" [class.active]="p === paginaCarreras" (click)="paginaCarreras = p">{{ p }}</button>
+          <button class="btn-pag" (click)="paginaCarreras = paginaCarreras + 1" [disabled]="paginaCarreras === totalPaginasCarreras">›</button>
+        </div>
+        <button class="btn-agregar" (click)="agregarNuevo(1)">+ Agregar Carrera</button>
+      </div>
     </div>
     <div class="table-container">
       <table class="data-table">
         <thead><tr><th>NOMBRE</th><th>FACULTAD</th><th>COORDINADOR</th><th>ESTADO</th><th>ACCIONES</th></tr></thead>
         <tbody>
-        <tr *ngFor="let carrera of carrerasFiltradas; let i = index">
+        <tr *ngFor="let carrera of carrerasPaginadas; let i = index">
           <td><strong>{{ carrera.nombreCarrera }}</strong></td>
           <td>{{ carrera.nombreFacultad }}</td>
           <td>{{ carrera.nombreCoordinador }}</td>
@@ -199,13 +215,21 @@
         <span class="search-icon">🔍</span>
         <input type="text" class="search-input" [(ngModel)]="busquedaAsignaturas" (input)="filtrarAsignaturas()" placeholder="Buscar asignaturas...">
       </div>
-      <button class="btn-agregar" (click)="agregarNuevo(2)">+ Agregar Asignatura</button>
+      <div class="toolbar-actions">
+        <div class="pagination-controls" *ngIf="asignaturasFiltradas.length > 0">
+          <span class="pagination-info-inline">{{ paginaAsignaturas }}/{{ totalPaginasAsignaturas }}</span>
+          <button class="btn-pag" (click)="paginaAsignaturas = paginaAsignaturas - 1" [disabled]="paginaAsignaturas === 1">‹</button>
+          <button class="btn-pag" *ngFor="let p of paginasArrayAsignaturas" [class.active]="p === paginaAsignaturas" (click)="paginaAsignaturas = p">{{ p }}</button>
+          <button class="btn-pag" (click)="paginaAsignaturas = paginaAsignaturas + 1" [disabled]="paginaAsignaturas === totalPaginasAsignaturas">›</button>
+        </div>
+        <button class="btn-agregar" (click)="agregarNuevo(2)">+ Agregar Asignatura</button>
+      </div>
     </div>
     <div class="table-container">
       <table class="data-table">
         <thead><tr><th>NOMBRE</th><th>CARRERA</th><th>NIVEL</th><th>HORAS</th><th>LABORATORIO</th><th>ESTADO</th><th>ACCIONES</th></tr></thead>
         <tbody>
-        <tr *ngFor="let asignatura of asignaturasFiltradas; let i = index">
+        <tr *ngFor="let asignatura of asignaturasPaginadas; let i = index">
           <td><strong>{{ asignatura.nombre }}</strong></td>
           <td>{{ asignatura.nombreCarrera }}</td>
           <td>Nivel {{ asignatura.nivel }}</td>
@@ -232,13 +256,21 @@
         <span class="search-icon">🔍</span>
         <input type="text" class="search-input" [(ngModel)]="busquedaFacultades" (input)="filtrarFacultades()" placeholder="Buscar facultades...">
       </div>
-      <button class="btn-agregar" (click)="agregarNuevo(3)">+ Agregar Facultad</button>
+      <div class="toolbar-actions">
+        <div class="pagination-controls" *ngIf="facultadesFiltradas.length > 0">
+          <span class="pagination-info-inline">{{ paginaFacultades }}/{{ totalPaginasFacultades }}</span>
+          <button class="btn-pag" (click)="paginaFacultades = paginaFacultades - 1" [disabled]="paginaFacultades === 1">‹</button>
+          <button class="btn-pag" *ngFor="let p of paginasArrayFacultades" [class.active]="p === paginaFacultades" (click)="paginaFacultades = p">{{ p }}</button>
+          <button class="btn-pag" (click)="paginaFacultades = paginaFacultades + 1" [disabled]="paginaFacultades === totalPaginasFacultades">›</button>
+        </div>
+        <button class="btn-agregar" (click)="agregarNuevo(3)">+ Agregar Facultad</button>
+      </div>
     </div>
     <div class="table-container">
       <table class="data-table">
         <thead><tr><th>NOMBRE</th><th>DECANO</th><th>FECHA CREACIÓN</th><th>ESTADO</th><th>ACCIONES</th></tr></thead>
         <tbody>
-        <tr *ngFor="let facultad of facultadesFiltradas; let i = index">
+        <tr *ngFor="let facultad of facultadesPaginadas; let i = index">
           <td><strong>{{ facultad.nombre }}</strong></td>
           <td>{{ facultad.nombreDecano }}</td>
           <td>{{ facultad.fechaCreacion }}</td>
@@ -263,13 +295,21 @@
         <span class="search-icon">🔍</span>
         <input type="text" class="search-input" [(ngModel)]="busquedaHorarios" (input)="filtrarHorarios()" placeholder="Buscar horarios...">
       </div>
-      <button class="btn-agregar" (click)="agregarNuevo(4)">+ Agregar Horario</button>
+      <div class="toolbar-actions">
+        <div class="pagination-controls" *ngIf="horariosFiltrados.length > 0">
+          <span class="pagination-info-inline">{{ paginaHorarios }}/{{ totalPaginasHorarios }}</span>
+          <button class="btn-pag" (click)="paginaHorarios = paginaHorarios - 1" [disabled]="paginaHorarios === 1">‹</button>
+          <button class="btn-pag" *ngFor="let p of paginasArrayHorarios" [class.active]="p === paginaHorarios" (click)="paginaHorarios = p">{{ p }}</button>
+          <button class="btn-pag" (click)="paginaHorarios = paginaHorarios + 1" [disabled]="paginaHorarios === totalPaginasHorarios">›</button>
+        </div>
+        <button class="btn-agregar" (click)="agregarNuevo(4)">+ Agregar Horario</button>
+      </div>
     </div>
     <div class="table-container">
       <table class="data-table">
         <thead><tr><th>PERÍODO</th><th>ASIGNATURA</th><th>DOCENTE</th><th>DÍA</th><th>HORARIO</th><th>ESTUDIANTES</th><th>ESTADO</th><th>ACCIONES</th></tr></thead>
         <tbody>
-        <tr *ngFor="let horario of horariosFiltrados; let i = index">
+        <tr *ngFor="let horario of horariosPaginados; let i = index">
           <td><strong>{{ horario.nombrePeriodo }}</strong></td>
           <td>{{ horario.nombreAsignatura }}</td>
           <td>{{ horario.nombreDocente }}</td>
@@ -491,55 +531,37 @@
           </div>
         </div>
 
-        <!-- TIME PICKERS: HORA INICIO + HORA FIN -->
+        <!-- TIME PICKERS -->
         <div class="form-row">
-
-          <!-- HORA INICIO -->
           <div class="form-group">
             <label>Hora de Inicio <span class="required">*</span></label>
             <div class="time-picker-wrap" (click)="$event.stopPropagation()">
-              <div class="time-display"
-                   [class.active]="timePickerAbierto === 'inicio'"
-                   (click)="toggleTimePicker('inicio', $event)">
+              <div class="time-display" [class.active]="timePickerAbierto === 'inicio'" (click)="toggleTimePicker('inicio', $event)">
                 <span>{{ formularioHorario.horaInicio || '--:--' }}</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                 </svg>
               </div>
               <div class="time-picker-dropdown" *ngIf="timePickerAbierto === 'inicio'">
-                <div class="tp-option"
-                     *ngFor="let h of horas"
-                     [class.tp-selected]="formularioHorario.horaInicio === h"
-                     (click)="selectHora('inicio', h)">
-                  {{ h }}
-                </div>
+                <div class="tp-option" *ngFor="let h of horas" [class.tp-selected]="formularioHorario.horaInicio === h" (click)="selectHora('inicio', h)">{{ h }}</div>
               </div>
             </div>
           </div>
 
-          <!-- HORA FIN -->
           <div class="form-group">
             <label>Hora de Fin <span class="required">*</span></label>
             <div class="time-picker-wrap" (click)="$event.stopPropagation()">
-              <div class="time-display"
-                   [class.active]="timePickerAbierto === 'fin'"
-                   (click)="toggleTimePicker('fin', $event)">
+              <div class="time-display" [class.active]="timePickerAbierto === 'fin'" (click)="toggleTimePicker('fin', $event)">
                 <span>{{ formularioHorario.horaFin || '--:--' }}</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                 </svg>
               </div>
               <div class="time-picker-dropdown" *ngIf="timePickerAbierto === 'fin'">
-                <div class="tp-option"
-                     *ngFor="let h of horas"
-                     [class.tp-selected]="formularioHorario.horaFin === h"
-                     (click)="selectHora('fin', h)">
-                  {{ h }}
-                </div>
+                <div class="tp-option" *ngFor="let h of horas" [class.tp-selected]="formularioHorario.horaFin === h" (click)="selectHora('fin', h)">{{ h }}</div>
               </div>
             </div>
           </div>
-
         </div>
 
         <div class="form-row">
