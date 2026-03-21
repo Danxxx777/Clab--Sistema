@@ -57,6 +57,74 @@ export class AcademicoComponent implements OnInit {
   confirmMensaje = '';
   confirmAccion: (() => void) | null = null;
 
+  // =====================
+  // PAGINACIÓN
+  // =====================
+  itemsPorPagina = 10;
+
+  paginaPeriodos = 1;
+  paginaCarreras = 1;
+  paginaAsignaturas = 1;
+  paginaFacultades = 1;
+  paginaHorarios = 1;
+
+  get periodosPaginados(): any[] {
+    const i = (this.paginaPeriodos - 1) * this.itemsPorPagina;
+    return this.periodosFiltrado.slice(i, i + this.itemsPorPagina);
+  }
+  get totalPaginasPeriodos(): number {
+    return Math.max(1, Math.ceil(this.periodosFiltrado.length / this.itemsPorPagina));
+  }
+  get paginasArrayPeriodos(): number[] {
+    return Array.from({ length: this.totalPaginasPeriodos }, (_, i) => i + 1);
+  }
+
+  get carrerasPaginadas(): any[] {
+    const i = (this.paginaCarreras - 1) * this.itemsPorPagina;
+    return this.carrerasFiltradas.slice(i, i + this.itemsPorPagina);
+  }
+  get totalPaginasCarreras(): number {
+    return Math.max(1, Math.ceil(this.carrerasFiltradas.length / this.itemsPorPagina));
+  }
+  get paginasArrayCarreras(): number[] {
+    return Array.from({ length: this.totalPaginasCarreras }, (_, i) => i + 1);
+  }
+
+  get asignaturasPaginadas(): any[] {
+    const i = (this.paginaAsignaturas - 1) * this.itemsPorPagina;
+    return this.asignaturasFiltradas.slice(i, i + this.itemsPorPagina);
+  }
+  get totalPaginasAsignaturas(): number {
+    return Math.max(1, Math.ceil(this.asignaturasFiltradas.length / this.itemsPorPagina));
+  }
+  get paginasArrayAsignaturas(): number[] {
+    return Array.from({ length: this.totalPaginasAsignaturas }, (_, i) => i + 1);
+  }
+
+  get facultadesPaginadas(): any[] {
+    const i = (this.paginaFacultades - 1) * this.itemsPorPagina;
+    return this.facultadesFiltradas.slice(i, i + this.itemsPorPagina);
+  }
+  get totalPaginasFacultades(): number {
+    return Math.max(1, Math.ceil(this.facultadesFiltradas.length / this.itemsPorPagina));
+  }
+  get paginasArrayFacultades(): number[] {
+    return Array.from({ length: this.totalPaginasFacultades }, (_, i) => i + 1);
+  }
+
+  get horariosPaginados(): any[] {
+    const i = (this.paginaHorarios - 1) * this.itemsPorPagina;
+    return this.horariosFiltrados.slice(i, i + this.itemsPorPagina);
+  }
+  get totalPaginasHorarios(): number {
+    return Math.max(1, Math.ceil(this.horariosFiltrados.length / this.itemsPorPagina));
+  }
+  get paginasArrayHorarios(): number[] {
+    return Array.from({ length: this.totalPaginasHorarios }, (_, i) => i + 1);
+  }
+
+  // =====================
+
   abrirConfirm(nombreItem: string, tipo: string, accion: () => void): void {
     this.confirmMensaje = `Estás a punto de eliminar <strong>${nombreItem}</strong>.`;
     this.confirmAccion = accion;
@@ -182,27 +250,51 @@ export class AcademicoComponent implements OnInit {
 
   filtrarPeriodos(): void {
     const b = this.busquedaPeriodos.toLowerCase();
-    this.periodosFiltrado = this.periodos.filter(p => p.estado !== 'ELIMINADO').filter(p => p.nombrePeriodo.toLowerCase().includes(b) || p.estado.toLowerCase().includes(b));
+    this.periodosFiltrado = this.periodos.filter(p => p.estado !== 'ELIMINADO').filter(p =>
+      p.nombrePeriodo.toLowerCase().includes(b) || p.estado.toLowerCase().includes(b)
+    );
+    this.paginaPeriodos = 1;
   }
 
   filtrarCarreras(): void {
     const b = this.busquedaCarreras.toLowerCase();
-    this.carrerasFiltradas = this.carreras.filter(c => c.estado !== 'ELIMINADA').filter(c => c.nombreCarrera.toLowerCase().includes(b) || (c.nombreFacultad && c.nombreFacultad.toLowerCase().includes(b)) || c.estado.toLowerCase().includes(b));
+    this.carrerasFiltradas = this.carreras.filter(c => c.estado !== 'ELIMINADA').filter(c =>
+      c.nombreCarrera.toLowerCase().includes(b) ||
+      (c.nombreFacultad && c.nombreFacultad.toLowerCase().includes(b)) ||
+      c.estado.toLowerCase().includes(b)
+    );
+    this.paginaCarreras = 1;
   }
 
   filtrarAsignaturas(): void {
     const b = this.busquedaAsignaturas.toLowerCase();
-    this.asignaturasFiltradas = this.asignaturas.filter(a => a.estado !== 'ELIMINADA').filter(a => a.nombre.toLowerCase().includes(b) || (a.nombreCarrera && a.nombreCarrera.toLowerCase().includes(b)) || a.estado.toLowerCase().includes(b));
+    this.asignaturasFiltradas = this.asignaturas.filter(a => a.estado !== 'ELIMINADA').filter(a =>
+      a.nombre.toLowerCase().includes(b) ||
+      (a.nombreCarrera && a.nombreCarrera.toLowerCase().includes(b)) ||
+      a.estado.toLowerCase().includes(b)
+    );
+    this.paginaAsignaturas = 1;
   }
 
   filtrarFacultades(): void {
     const b = this.busquedaFacultades.toLowerCase();
-    this.facultadesFiltradas = this.facultades.filter(f => f.estado !== 'ELIMINADO').filter(f => f.nombre.toLowerCase().includes(b) || (f.nombreDecano && f.nombreDecano.toLowerCase().includes(b)) || f.estado.toLowerCase().includes(b));
+    this.facultadesFiltradas = this.facultades.filter(f => f.estado !== 'ELIMINADO').filter(f =>
+      f.nombre.toLowerCase().includes(b) ||
+      (f.nombreDecano && f.nombreDecano.toLowerCase().includes(b)) ||
+      f.estado.toLowerCase().includes(b)
+    );
+    this.paginaFacultades = 1;
   }
 
   filtrarHorarios(): void {
     const b = this.busquedaHorarios.toLowerCase();
-    this.horariosFiltrados = this.horarios.filter(h => h.estado !== 'ELIMINADO').filter(h => h.nombrePeriodo.toLowerCase().includes(b) || h.nombreAsignatura.toLowerCase().includes(b) || h.nombreDocente.toLowerCase().includes(b) || h.diaSemana.toLowerCase().includes(b));
+    this.horariosFiltrados = this.horarios.filter(h => h.estado !== 'ELIMINADO').filter(h =>
+      h.nombrePeriodo.toLowerCase().includes(b) ||
+      h.nombreAsignatura.toLowerCase().includes(b) ||
+      h.nombreDocente.toLowerCase().includes(b) ||
+      h.diaSemana.toLowerCase().includes(b)
+    );
+    this.paginaHorarios = 1;
   }
 
   cargarPeriodos(): void {
@@ -214,6 +306,7 @@ export class AcademicoComponent implements OnInit {
           return (b.idPeriodo ?? 0) - (a.idPeriodo ?? 0);
         });
         this.periodosFiltrado = [...this.periodos];
+        this.paginaPeriodos = 1;
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Error al cargar períodos', err)
@@ -222,7 +315,12 @@ export class AcademicoComponent implements OnInit {
 
   cargarFacultades(): void {
     this.facultadService.listar().subscribe({
-      next: (data) => { this.facultades = data.filter(f => f.estado !== 'ELIMINADO'); this.facultadesFiltradas = [...this.facultades]; this.cdr.detectChanges(); },
+      next: (data) => {
+        this.facultades = data.filter(f => f.estado !== 'ELIMINADO');
+        this.facultadesFiltradas = [...this.facultades];
+        this.paginaFacultades = 1;
+        this.cdr.detectChanges();
+      },
       error: (err) => console.error('Error al cargar facultades', err)
     });
   }
@@ -236,7 +334,12 @@ export class AcademicoComponent implements OnInit {
 
   cargarCarreras(): void {
     this.carreraService.listar().subscribe({
-      next: (data) => { this.carreras = data.filter(c => c.estado !== 'ELIMINADA'); this.carrerasFiltradas = [...this.carreras]; this.cdr.detectChanges(); },
+      next: (data) => {
+        this.carreras = data.filter(c => c.estado !== 'ELIMINADA');
+        this.carrerasFiltradas = [...this.carreras];
+        this.paginaCarreras = 1;
+        this.cdr.detectChanges();
+      },
       error: (err) => console.error('Error al cargar carreras', err)
     });
   }
@@ -250,14 +353,24 @@ export class AcademicoComponent implements OnInit {
 
   cargarAsignaturas(): void {
     this.asignaturaService.listar().subscribe({
-      next: (data) => { this.asignaturas = data.filter(a => a.estado !== 'ELIMINADA'); this.asignaturasFiltradas = [...this.asignaturas]; this.cdr.detectChanges(); },
+      next: (data) => {
+        this.asignaturas = data.filter(a => a.estado !== 'ELIMINADA');
+        this.asignaturasFiltradas = [...this.asignaturas];
+        this.paginaAsignaturas = 1;
+        this.cdr.detectChanges();
+      },
       error: (err) => console.error('Error al cargar asignaturas', err)
     });
   }
 
   cargarHorarios(): void {
     this.horarioService.listar().subscribe({
-      next: (data) => { this.horarios = data.filter(h => h.estado !== 'ELIMINADO'); this.horariosFiltrados = [...this.horarios]; this.cdr.detectChanges(); },
+      next: (data) => {
+        this.horarios = data.filter(h => h.estado !== 'ELIMINADO');
+        this.horariosFiltrados = [...this.horarios];
+        this.paginaHorarios = 1;
+        this.cdr.detectChanges();
+      },
       error: (err) => console.error('Error al cargar horarios', err)
     });
   }
@@ -300,7 +413,6 @@ export class AcademicoComponent implements OnInit {
           idAsignatura: item.idAsignatura || 0,
           idDocente: item.idDocente || 0,
           diaSemana: item.diaSemana,
-          // ← recortar los segundos si vienen como "07:30:00"
           horaInicio: (item.horaInicio || '').substring(0, 5),
           horaFin:    (item.horaFin    || '').substring(0, 5),
           numeroEstudiantes: item.numeroEstudiantes,

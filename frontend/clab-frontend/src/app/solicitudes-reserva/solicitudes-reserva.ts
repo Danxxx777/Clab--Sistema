@@ -174,8 +174,15 @@ export class SolicitudesReservaComponent implements OnInit {
   cargarSolicitudes(): void {
     this.reservaService.listarPorUsuario(this.idUsuario).subscribe({
       next: (data: any[]) => {
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+
         this.solicitudes = data
-          .filter(r => !r.idGrupoReserva)
+          .filter(r => {
+            if (r.idGrupoReserva) return false;
+            const fechaReserva = new Date(r.fechaReserva + 'T00:00:00');
+            return fechaReserva >= hoy;
+          })
           .map(r => ({
             id: r.idReserva,
             cod_laboratorio: r.codLaboratorio,
