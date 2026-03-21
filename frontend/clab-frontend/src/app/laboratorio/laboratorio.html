@@ -8,7 +8,7 @@
       CLAB
       <span>Sistema de Laboratorios</span>
     </div>
-    <button class="btn-close-drawer" (click)="cerrarDrawer()">×</button>
+    <button type="button" class="btn-close-drawer" (click)="cerrarDrawer()">×</button>
   </div>
 
   <div class="drawer-user">
@@ -104,21 +104,21 @@
 
   <div class="page-title-section">
     <div style="display:flex; align-items:center; gap:14px;">
-      <button class="btn-hamburger" [class.active]="drawerAbierto" (click)="toggleDrawer()">
+      <button type="button" class="btn-hamburger" [class.active]="drawerAbierto" (click)="toggleDrawer()">
         <div class="ham-line"></div>
         <div class="ham-line"></div>
         <div class="ham-line"></div>
       </button>
       <h1>Gestión de Laboratorios</h1>
     </div>
-    <button class="btn-volver" (click)="volver()">← Volver</button>
+    <button type="button" class="btn-volver" (click)="volver()">← Volver</button>
   </div>
 
   <div class="tabs-container">
     <div class="tabs">
-      <button class="tab" [class.active]="tabActiva === 0" (click)="cambiarTab(0)">Laboratorios</button>
-      <button class="tab" [class.active]="tabActiva === 1" (click)="cambiarTab(1)">Sedes</button>
-      <button class="tab" [class.active]="tabActiva === 2" (click)="cambiarTab(2)">Encargados</button>
+      <button type="button" class="tab" [class.active]="tabActiva === 0" (click)="cambiarTab(0)">Laboratorios</button>
+      <button type="button" class="tab" [class.active]="tabActiva === 1" (click)="cambiarTab(1)">Sedes</button>
+      <button type="button" class="tab" [class.active]="tabActiva === 2" (click)="cambiarTab(2)">Encargados</button>
     </div>
   </div>
 
@@ -132,7 +132,7 @@
           <input type="text" class="search-input" [(ngModel)]="busquedaLaboratorios"
                  (input)="filtrarLaboratorios()" placeholder="Buscar laboratorios...">
         </div>
-        <button class="btn-agregar" (click)="abrirModal('laboratorio')">+ Agregar Laboratorio</button>
+        <button type="button" class="btn-agregar" (click)="abrirModal('laboratorio')">+ Agregar Laboratorio</button>
       </div>
       <div class="table-container">
         <table class="data-table">
@@ -158,9 +158,9 @@
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn-action btn-ver"      (click)="verDetalle(lab)">Ver</button>
-                <button class="btn-action btn-editar"   (click)="editarLaboratorio(lab, i)">Editar</button>
-                <button class="btn-action btn-eliminar" (click)="eliminarLaboratorio(lab, i)">Eliminar</button>
+                <button type="button" class="btn-action btn-ver"      (click)="$event.stopPropagation(); verDetalle(lab)">Ver</button>
+                <button type="button" class="btn-action btn-editar"   (click)="$event.stopPropagation(); editarLaboratorio(lab, i)">Editar</button>
+                <button type="button" class="btn-action btn-eliminar" (click)="$event.stopPropagation(); eliminarLaboratorio(lab, i)">Eliminar</button>
               </div>
             </td>
           </tr>
@@ -180,7 +180,7 @@
           <input type="text" class="search-input" [(ngModel)]="busquedaSedes"
                  (input)="filtrarSedes()" placeholder="Buscar sedes...">
         </div>
-        <button class="btn-agregar" (click)="abrirModal('sede')">+ Agregar Sede</button>
+        <button type="button" class="btn-agregar" (click)="abrirModal('sede')">+ Agregar Sede</button>
       </div>
       <div class="table-container">
         <table class="data-table">
@@ -201,9 +201,9 @@
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn-action btn-ver"      (click)="verDetalle(sede)">Ver</button>
-                <button class="btn-action btn-editar"   (click)="editarSede(sede, i)">Editar</button>
-                <button class="btn-action btn-eliminar" (click)="eliminarSede(sede, i)">Eliminar</button>
+                <button type="button" class="btn-action btn-ver"      (click)="$event.stopPropagation(); verDetalle(sede)">Ver</button>
+                <button type="button" class="btn-action btn-editar"   (click)="$event.stopPropagation(); editarSede(sede, i)">Editar</button>
+                <button type="button" class="btn-action btn-eliminar" (click)="$event.stopPropagation(); eliminarSede(sede, i)">Eliminar</button>
               </div>
             </td>
           </tr>
@@ -223,7 +223,7 @@
           <input type="text" class="search-input" [(ngModel)]="busquedaEncargados"
                  (input)="filtrarEncargados()" placeholder="Buscar encargados...">
         </div>
-        <button class="btn-agregar" (click)="abrirModal('encargado')">+ Agregar Encargado</button>
+        <button type="button" class="btn-agregar" (click)="abrirModal('encargado')">+ Agregar Encargado</button>
       </div>
       <div class="table-container">
         <table class="data-table">
@@ -239,7 +239,7 @@
             <td>{{ enc.nombres }}</td>
             <td>{{ enc.email }}</td>
             <td>{{ enc.telefono }}</td>
-            <td>{{ enc.nombreLab }}</td>  <!-- FIX: nombreLab en vez de nombre_laboratorio -->
+            <td>{{ enc.nombreLab }}</td>
             <td>
                 <span class="badge" [ngClass]="enc.vigente ? 'badge-activo' : 'badge-inactivo'">
                   {{ enc.vigente ? 'Activo' : 'Inactivo' }}
@@ -247,9 +247,9 @@
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn-action btn-ver"      (click)="verDetalle(enc)">Ver</button>
-                <button class="btn-action btn-editar"   (click)="editarEncargado(enc, i)">Editar</button>
-                <button class="btn-action btn-eliminar" (click)="eliminarEncargado(enc, i)">Eliminar</button>
+                <button type="button" class="btn-action btn-ver"      (click)="$event.stopPropagation(); verDetalle(enc)">Ver</button>
+                <button type="button" class="btn-action btn-editar"   (click)="$event.stopPropagation(); editarEncargado(enc, i)">Editar</button>
+                <button type="button" class="btn-action btn-eliminar" (click)="$event.stopPropagation(); eliminarEncargado(enc, i)">Eliminar</button>
               </div>
             </td>
           </tr>
@@ -265,11 +265,11 @@
 </div>
 
 <!-- MODAL: LABORATORIO -->
-<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'laboratorio'" >
+<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'laboratorio'">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ modoEdicion ? 'Editar Laboratorio' : 'Agregar Nuevo Laboratorio' }}</h2>
-      <button class="btn-close" (click)="cerrarModal()">×</button>
+      <button type="button" class="btn-close" (click)="cerrarModal()">×</button>
     </div>
     <div class="modal-body">
       <div class="form-row" *ngIf="modoEdicion">
@@ -321,39 +321,20 @@
           <textarea class="form-control" [(ngModel)]="formularioLab.descripcion" placeholder="Descripción del laboratorio" rows="3"></textarea>
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group full-width">
-          <label>Foto del Laboratorio</label>
-          <div class="image-upload-container">
-            <input type="file" #fileInput accept="image/*" (change)="onFileSelected($event)" class="file-input">
-            <div class="image-preview-container" *ngIf="formularioLab.foto">
-              <img [src]="formularioLab.foto" alt="Vista previa" class="preview-image">
-              <div style="margin-top: 12px; display: flex; gap: 8px; justify-content: center;">
-                <button type="button" class="btn-remove-image" (click)="eliminarFoto()">✕ Eliminar foto</button>
-                <button type="button" class="btn-change-image" (click)="fileInput.click()">📷 Cambiar foto</button>
-              </div>
-            </div>
-            <div *ngIf="!formularioLab.foto">
-              <button type="button" class="btn-subir-foto" (click)="fileInput.click()">📷 Subir foto</button>
-              <span class="upload-hint">Formatos: JPG, PNG, GIF (máx. 5MB)</span>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
-      <button class="btn-guardar" (click)="guardarLaboratorio()">{{ modoEdicion ? 'Actualizar' : 'Guardar' }}</button>
+      <button type="button" class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+      <button type="button" class="btn-guardar" (click)="guardarLaboratorio()">{{ modoEdicion ? 'Actualizar' : 'Guardar' }}</button>
     </div>
   </div>
 </div>
 
 <!-- MODAL: SEDE -->
-<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'sede'" >
+<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'sede'">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ modoEdicion ? 'Editar Sede' : 'Agregar Nueva Sede' }}</h2>
-      <button class="btn-close" (click)="cerrarModal()">×</button>
+      <button type="button" class="btn-close" (click)="cerrarModal()">×</button>
     </div>
     <div class="modal-body">
       <div class="form-row">
@@ -387,8 +368,8 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
-      <button class="btn-guardar" (click)="guardarSede()">{{ modoEdicion ? 'Actualizar' : 'Guardar' }}</button>
+      <button type="button" class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+      <button type="button" class="btn-guardar" (click)="guardarSede()">{{ modoEdicion ? 'Actualizar' : 'Guardar' }}</button>
     </div>
   </div>
 </div>
@@ -398,7 +379,7 @@
   <div class="modal modal-detalle-sede" (click)="$event.stopPropagation()">
     <div class="modal-header-detalle">
       <h2>Detalles del Laboratorio</h2>
-      <button class="btn-close-detalle" (click)="cerrarDetalleLab()">×</button>
+      <button type="button" class="btn-close-detalle" (click)="cerrarDetalleLab()">×</button>
     </div>
     <div class="modal-body-detalle" *ngIf="labDetalle">
       <div class="campo-detalle">
@@ -431,7 +412,7 @@
       </div>
     </div>
     <div class="modal-footer-detalle">
-      <button class="btn-cerrar-detalle" (click)="cerrarDetalleLab()">Cerrar</button>
+      <button type="button" class="btn-cerrar-detalle" (click)="cerrarDetalleLab()">Cerrar</button>
     </div>
   </div>
 </div>
@@ -441,7 +422,7 @@
   <div class="modal modal-detalle-sede" (click)="$event.stopPropagation()">
     <div class="modal-header-detalle">
       <h2>Detalles del Encargado</h2>
-      <button class="btn-close-detalle" (click)="cerrarDetalleEncargado()">×</button>
+      <button type="button" class="btn-close-detalle" (click)="cerrarDetalleEncargado()">×</button>
     </div>
     <div class="modal-body-detalle" *ngIf="encargadoDetalle">
       <div class="campo-detalle">
@@ -466,18 +447,17 @@
       </div>
     </div>
     <div class="modal-footer-detalle">
-      <button class="btn-cerrar-detalle" (click)="cerrarDetalleEncargado()">Cerrar</button>
+      <button type="button" class="btn-cerrar-detalle" (click)="cerrarDetalleEncargado()">Cerrar</button>
     </div>
   </div>
 </div>
 
-
 <!-- MODAL: ENCARGADO -->
-<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'encargado'" >
+<div class="modal-overlay" *ngIf="mostrarModal && tipoModal === 'encargado'">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ modoEdicion ? 'Editar Encargado' : 'Agregar Nuevo Encargado' }}</h2>
-      <button class="btn-close" (click)="cerrarModal()">×</button>
+      <button type="button" class="btn-close" (click)="cerrarModal()">×</button>
     </div>
     <div class="modal-body">
 
@@ -510,7 +490,7 @@
       </div>
 
       <!-- VIGENTE -->
-      <div class="form-row">F
+      <div class="form-row">
         <div class="form-group full-width">
           <label>Vigente</label>
           <div class="checkbox-group">
@@ -522,36 +502,36 @@
 
     </div>
     <div class="modal-footer">
-      <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
-      <button class="btn-guardar" (click)="guardarEncargado()">{{ modoEdicion ? 'Actualizar' : 'Guardar' }}</button>
+      <button type="button" class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+      <button type="button" class="btn-guardar" (click)="guardarEncargado()">{{ modoEdicion ? 'Actualizar' : 'Guardar' }}</button>
     </div>
   </div>
 </div>
 
 <!-- MODAL: CONFIRMAR ELIMINAR -->
-<div class="modal-overlay" *ngIf="mostrarConfirmarEliminar" >
+<div class="modal-overlay" *ngIf="mostrarConfirmarEliminar">
   <div class="modal modal-confirm" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>Confirmar Eliminación</h2>
-      <button class="btn-close" (click)="cerrarModalConfirmar()">×</button>
+      <button type="button" class="btn-close" (click)="cerrarModalConfirmar()">×</button>
     </div>
     <div class="modal-body">
       <p>Estás a punto de eliminar <strong>{{ itemParaEliminar?.nombre || itemParaEliminar?.nombres || itemParaEliminar?.cod_laboratorio }}</strong>.</p>
       <p class="warning-text">Esta acción no se puede deshacer.</p>
     </div>
     <div class="modal-footer">
-      <button class="btn-cancelar" (click)="cerrarModalConfirmar()">Cancelar</button>
-      <button class="btn-eliminar-confirm" (click)="confirmarEliminacion()">Sí, Eliminar</button>
+      <button type="button" class="btn-cancelar" (click)="cerrarModalConfirmar()">Cancelar</button>
+      <button type="button" class="btn-eliminar-confirm" (click)="confirmarEliminacion()">Sí, Eliminar</button>
     </div>
   </div>
 </div>
 
 <!-- MODAL: DETALLE DE SEDE -->
-<div class="modal-overlay" *ngIf="mostrarDetalleSede" >
+<div class="modal-overlay" *ngIf="mostrarDetalleSede">
   <div class="modal modal-detalle-sede" (click)="$event.stopPropagation()">
     <div class="modal-header-detalle">
       <h2>Detalles de la Sede</h2>
-      <button class="btn-close-detalle" (click)="cerrarDetalleSede()">×</button>
+      <button type="button" class="btn-close-detalle" (click)="cerrarDetalleSede()">×</button>
     </div>
     <div class="modal-body-detalle" *ngIf="sedeDetalle">
       <div class="campo-detalle">
@@ -576,7 +556,7 @@
       </div>
     </div>
     <div class="modal-footer-detalle">
-      <button class="btn-cerrar-detalle" (click)="cerrarDetalleSede()">Cerrar</button>
+      <button type="button" class="btn-cerrar-detalle" (click)="cerrarDetalleSede()">Cerrar</button>
     </div>
   </div>
 </div>
