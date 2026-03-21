@@ -1116,3 +1116,7 @@ img {
   .user-name-nav { display: none; }
   .menu-item { min-height: 0; }
 }
+.icon-neon {
+  filter: brightness(0) saturate(100%) invert(67%) sepia(97%)
+  saturate(500%) hue-rotate(60deg) brightness(110%);
+}

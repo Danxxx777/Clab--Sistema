@@ -117,37 +117,68 @@ public class BackupService {
     public void aplicarRetencion() {
         configRepository.findById(1L).ifPresent(config -> {
             int retencion = config.getRetencion();
-            long total    = registroRepository.count();
 
-            // Si no se supera el límite, no hay nada que borrar
-            if (total <= retencion) {
-                log.info("Retención: {} backups en BD, límite es {}. Nada que borrar.",
-                        total, retencion);
-                return;
+            // ── LOCAL ──────────────────────────────────────────────
+
+            long total = registroRepository.count();
+            if (total > retencion) {
+                int cantidadABorrar = (int)(total - retencion);
+                log.info("Retención local: {} backups, límite {}. Borrando {} más antiguos.",
+                        total, retencion, cantidadABorrar);
+
+                List<BackupRegistro> conArchivo =
+                        registroRepository.findOldestWithLocalFileToDelete(cantidadABorrar);
+                for (BackupRegistro backup : conArchivo) {
+                    borrarArchivoDisco(backup.getRutaLocal());
+                }
+
+                List<BackupRegistro> aEliminar =
+                        registroRepository.findOldestToDelete(cantidadABorrar);
+                if (!aEliminar.isEmpty()) {
+                    registroRepository.deleteAll(aEliminar);
+                    log.info("Retención local aplicada: {} registros eliminados.", cantidadABorrar);
+                }
+            } else {
+                log.info("Retención local: {} backups, límite {}. Nada que borrar.", total, retencion);
             }
 
-            // Cuántos hay que eliminar
-            int cantidadABorrar = (int)(total - retencion);
-            log.info("Retención: {} backups en BD, límite es {}. Borrando los {} más antiguos.",
-                    total, retencion, cantidadABorrar);
+            // ── DRIVE ──────────────────────────────────────────────
+            if (!config.isGuardarDrive()) return;
 
-            // Paso 1: borrar archivos del disco (solo los que tienen archivo local)
-            List<BackupRegistro> conArchivo =
-                    registroRepository.findOldestWithLocalFileToDelete(cantidadABorrar);
-            for (BackupRegistro backup : conArchivo) {
-                borrarArchivoDisco(backup.getRutaLocal());
-            }
+            try {
+                List<com.google.api.services.drive.model.File> archivosEnDrive =
+                        googleDriveService.listarArchivosBackup();
 
-            // Paso 2: borrar registros de la BD
-            List<BackupRegistro> aEliminar =
-                    registroRepository.findOldestToDelete(cantidadABorrar);
-            if (!aEliminar.isEmpty()) {
-                registroRepository.deleteAll(aEliminar);
-                log.info("Retención aplicada: {} backups eliminados.", cantidadABorrar);
+                int totalDrive = archivosEnDrive.size();
+                if (totalDrive <= retencion) {
+                    log.info("Retención Drive: {} archivos, límite {}. Nada que borrar.",
+                            totalDrive, retencion);
+                    return;
+                }
+
+                int cantidadDrive = totalDrive - retencion;
+                log.info("Retención Drive: {} archivos, límite {}. Borrando {} más antiguos.",
+                        totalDrive, retencion, cantidadDrive);
+
+                // Ya vienen ordenados por createdTime asc (más antiguos primero)
+                for (int i = 0; i < cantidadDrive; i++) {
+                    String fileId   = archivosEnDrive.get(i).getId();
+                    String fileName = archivosEnDrive.get(i).getName();
+                    try {
+                        googleDriveService.eliminarArchivo(fileId);
+                        log.info("Archivo Drive eliminado por retención: {} ({})", fileName, fileId);
+                    } catch (Exception e) {
+                        log.error("No se pudo eliminar {} de Drive: {}", fileName, e.getMessage());
+                    }
+                }
+
+            } catch (Exception e) {
+                log.error("Error al aplicar retención en Drive: {}", e.getMessage());
+                // No interrumpe el flujo principal
             }
         });
-    }
 
+    }
     private void borrarArchivoDisco(String ruta) {
         try {
             Path path = Paths.get(ruta);
