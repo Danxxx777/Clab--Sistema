@@ -22,6 +22,7 @@ export class LoginComponent implements OnInit {
   cargando = false;
   loadingText = 'Verificando credenciales...';
   modoAcceso: 'login' | 'solicitud' = 'login';
+  bdVacia = false;
 
   stats = {
     labsActivos: 0,
@@ -63,6 +64,17 @@ export class LoginComponent implements OnInit {
     this.cargarEstadisticas();
     this.cargarRecordado();
     this.cargarRolesPublicos();
+    this.http.get<any>('http://localhost:8080/estadisticas/login').subscribe({
+      next: (data: any) => {
+        console.log('stats:', data);
+        this.bdVacia = data.usuariosActivos <= 1;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.bdVacia = true;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   togglePassword(): void {

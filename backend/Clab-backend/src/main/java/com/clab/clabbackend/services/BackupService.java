@@ -685,43 +685,41 @@ DELETE FROM usuarios.u_usuario WHERE usuario = 'admin_clab';
             }
 
             boolean esCustom = archivoReal.toString().endsWith(".backup");
+// Terminar todas las conexiones activas a la BD
+            ProcessBuilder pbKill = new ProcessBuilder(
+                    psqlPath, "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", "postgres",
+                    "-c", "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '" + dbNombre + "' AND pid <> pg_backend_pid()"
+            );
+            pbKill.environment().put("PGPASSWORD", dbPassword);
+            pbKill.redirectErrorStream(true);
+            pbKill.start().waitFor();
+            log.info("Conexiones a {} terminadas", dbNombre);
+            // DROP y CREATE de la BD completa desde master
+            try {
+                ProcessBuilder pbDrop = new ProcessBuilder(
+                        psqlPath, "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", "postgres",
+                        "-c", "DROP DATABASE IF EXISTS \"" + dbNombre + "\""
+                );
+                pbDrop.environment().put("PGPASSWORD", dbPassword);
+                pbDrop.redirectErrorStream(true);
+                Process dropProc = pbDrop.start();
+                String dropSalida = new String(dropProc.getInputStream().readAllBytes());
+                dropProc.waitFor();
+                log.info("DROP DATABASE ejecutado: {}", dropSalida);
 
-            // Guardar registros actuales de backup antes de restaurar
-            List<BackupRegistro> registrosActuales = new java.util.ArrayList<>();
-            try (java.sql.Connection conn = dataSource.getConnection();
-                 java.sql.Statement stmt = conn.createStatement()) {
-
-                try (java.sql.ResultSet rs = stmt.executeQuery(
-                        "SELECT * FROM configuracion.backup_registro ORDER BY id")) {
-                    while (rs.next()) {
-                        registrosActuales.add(BackupRegistro.builder()
-                                .id(rs.getLong("id"))
-                                .fecha(rs.getTimestamp("fecha").toLocalDateTime())
-                                .tipo(BackupRegistro.TipoBackup.valueOf(rs.getString("tipo")))
-                                .modalidad(BackupRegistro.ModalidadBackup.valueOf(rs.getString("modalidad")))
-                                .estado(BackupRegistro.EstadoBackup.valueOf(rs.getString("estado")))
-                                .tamano(rs.getString("tamano"))
-                                .rutaLocal(rs.getString("ruta_local"))
-                                .driveFileId(rs.getString("drive_file_id"))
-                                .error(rs.getString("error"))
-                                .build());
-                    }
-                }
-
-                String[] schemas = {
-                        "academico", "configuracion", "inventario", "laboratorios",
-                        "notificaciones", "organizacion", "recursos", "reportes",
-                        "reservas", "seguridad", "seguridad_bd", "usuarios"
-                };
-                for (String schema : schemas) {
-                    stmt.execute("DROP SCHEMA IF EXISTS " + schema + " CASCADE");
-                    stmt.execute("CREATE SCHEMA " + schema);
-                }
-                log.info("Schemas limpiados para restore limpio ({} registros de backup guardados)",
-                        registrosActuales.size());
+                ProcessBuilder pbCreate = new ProcessBuilder(
+                        psqlPath, "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", "postgres",
+                        "-c", "CREATE DATABASE \"" + dbNombre + "\""
+                );
+                pbCreate.environment().put("PGPASSWORD", dbPassword);
+                pbCreate.redirectErrorStream(true);
+                Process createProc = pbCreate.start();
+                String createSalida = new String(createProc.getInputStream().readAllBytes());
+                createProc.waitFor();
+                log.info("CREATE DATABASE ejecutado: {}", createSalida);
 
             } catch (Exception e) {
-                log.warn("No se pudo limpiar tablas de sistema: {}", e.getMessage());
+                log.warn("No se pudo recrear la BD: {}", e.getMessage());
             }
 
             // Construir comando según formato
@@ -730,8 +728,7 @@ DELETE FROM usuarios.u_usuario WHERE usuario = 'admin_clab';
                 comando = new java.util.ArrayList<>(java.util.Arrays.asList(
                         pgRestorePath,
                         "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", dbNombre,
-                        "--clean", "--if-exists",
-                        "--no-owner", "--no-privileges",
+                        "--no-owner", "--no-privileges", "--no-acl",
                         "-v",
                         archivoReal.toString()
                 ));
@@ -752,32 +749,13 @@ DELETE FROM usuarios.u_usuario WHERE usuario = 'admin_clab';
             int     codigo  = proceso.waitFor();
 
             if (codigo == 0 || codigo == 1) {
-                log.info("Restauración exitosa (código {}). Salida:\n{}", codigo, salida);
-
-                if (!registrosActuales.isEmpty()) {
-                    try {
-                        registroRepository.saveAll(registrosActuales);
-                        log.info("Registros de backup reinsertados: {}", registrosActuales.size());
-                    } catch (Exception e) {
-                        log.warn("No se pudieron reinsertar registros de backup: {}", e.getMessage());
-                    }
-                }
-
+                log.info("Restauración exitosa (código {})", codigo);
                 return BackupRespuestaDTO.ok(
                         "Restauración completada",
                         "La base de datos fue restaurada correctamente"
                 );
             } else {
                 log.error("Restauración terminó con código {}: {}", codigo, salida);
-
-                if (!registrosActuales.isEmpty()) {
-                    try {
-                        registroRepository.saveAll(registrosActuales);
-                    } catch (Exception e) {
-                        log.warn("No se pudieron reinsertar registros de backup tras fallo: {}", e.getMessage());
-                    }
-                }
-
                 return BackupRespuestaDTO.error(
                         "Error en la restauración",
                         "Terminó con código " + codigo + (salida.isBlank() ? "" : ": " + salida)
@@ -794,7 +772,6 @@ DELETE FROM usuarios.u_usuario WHERE usuario = 'admin_clab';
             Thread.currentThread().interrupt();
             return BackupRespuestaDTO.error("Restauración interrumpida", e.getMessage());
         } finally {
-            // Limpiar directorio temporal si se extrajo de ZIP
             if (tempDir != null) {
                 try {
                     Files.walk(tempDir)

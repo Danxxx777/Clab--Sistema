@@ -1,0 +1,39 @@
+<div class="restore-page">
+  <div class="restore-card">
+    <div class="restore-logo">
+      <img src="/favicon.ico" alt="CLAB">
+      <h1>CLAB</h1>
+      <p>Restauración del Sistema</p>
+    </div>
+
+    <div class="restore-body">
+      <p class="restore-desc">
+        Sube el archivo de backup <strong>(.zip o .backup)</strong> para restaurar la base de datos desde cero.
+      </p>
+
+      <div class="file-area" [class.selected]="archivoSeleccionado">
+        <input type="file" id="fileInput" accept=".zip,.backup" (change)="onArchivoSeleccionado($event)" hidden>
+        <label for="fileInput" class="file-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <span>{{ archivoSeleccionado ? archivoSeleccionado.name : 'Seleccionar archivo de backup' }}</span>
+        </label>
+      </div>
+
+      <button class="btn-restaurar" (click)="restaurar()" [disabled]="!archivoSeleccionado || cargando">
+        <span *ngIf="!cargando">Restaurar Base de Datos</span>
+        <span *ngIf="cargando">Restaurando... por favor espera</span>
+      </button>
+
+      <div class="msg-exito" *ngIf="mensaje">{{ mensaje }}</div>
+      <div class="msg-error" *ngIf="error">{{ error }}</div>
+
+      <button class="btn-login" (click)="irAlLogin()" *ngIf="mensaje">
+        Ir al Login
+      </button>
+    </div>
+  </div>
+</div>
