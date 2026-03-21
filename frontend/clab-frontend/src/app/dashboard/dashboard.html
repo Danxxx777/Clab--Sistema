@@ -174,7 +174,6 @@
             <polyline points="6 9 12 15 18 9"/>
           </svg>
         </button>
-
         <!-- DROPDOWN USUARIO -->
         <div class="user-dropdown" *ngIf="userMenuAbierto">
           <div class="ud-header">
@@ -297,12 +296,14 @@
         <!-- Resto de módulos -->
         <div class="menu-item" (click)="navegar(m.ruta, 'Cargando ' + m.nombre + '...')"
              *ngIf="m.ruta !== 'notificaciones'">
-          <img [src]="'/' + m.icono" [alt]="m.nombre" class="menu-icon">
+          <img [src]="'/' + m.icono" [alt]="m.nombre" class="menu-icon"
+               [class.icon-neon]="m.ruta === 'backups'">
           <div class="text">
             <strong>{{ m.nombre }}</strong>
             <p>{{ m.descripcion }}</p>
           </div>
         </div>
+
 
       </ng-container>
     </div>

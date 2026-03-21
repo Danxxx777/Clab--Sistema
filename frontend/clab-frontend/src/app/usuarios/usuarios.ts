@@ -37,7 +37,6 @@ export class UsuariosComponent implements OnInit {
   notificacionMensaje = '';
   notificacionTipo: 'exito' | 'error' | 'confirmar' = 'exito';
   accionPendiente: (() => void) | null = null;
-  errorModal = '';
 
   tabActiva = 0;
   mostrarModalUsuario = false;
@@ -172,7 +171,6 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
-  // Solo para el dropdown de filtro
   cargarRoles(): void {
     this.rolService.listar().subscribe({
       next: (data: RolResponse[]) => {
@@ -199,6 +197,7 @@ export class UsuariosComponent implements OnInit {
     const segundo = roles[1].charAt(0) + '..';
     return `${primero}, ${segundo}`;
   }
+
   /* ==GETTERS== */
   get rolesActivos(): RolView[] {
     return this.roles.filter(r => r.estado === 'ACTIVO');
@@ -210,7 +209,6 @@ export class UsuariosComponent implements OnInit {
   /* ==MODAL USUARIO== */
   abrirModalUsuario(modo: 'crear' | 'editar' | 'ver', u?: Usuario): void {
     this.modoModal = modo;
-    this.errorModal = '';
     this.usuarioPreview = '';
 
     if (modo === 'crear') {
@@ -243,7 +241,6 @@ export class UsuariosComponent implements OnInit {
 
   cerrarModalUsuario(): void {
     this.mostrarModalUsuario = false;
-    this.errorModal = '';
     this.usuarioPreview = '';
     this.cdr.detectChanges();
   }
@@ -261,53 +258,68 @@ export class UsuariosComponent implements OnInit {
 
   /* ==GUARDAR USUARIO== */
   guardarUsuario(): void {
-    this.errorModal = '';
     const esCrear = this.modoModal === 'crear';
 
-    // Campos obligatorios
-    if (!this.usuarioActual.identidad?.trim()) { this.errorModal = 'La identidad es obligatoria.'; return; }
-    if (!this.usuarioActual.nombres?.trim())   { this.errorModal = 'Los nombres son obligatorios.'; return; }
-    if (!this.usuarioActual.apellidos?.trim()) { this.errorModal = 'Los apellidos son obligatorios.'; return; }
-    if (!this.usuarioActual.email?.trim())     { this.errorModal = 'El email es obligatorio.'; return; }
-
-    // Validar identidad: 10 dígitos (cédula) o 13 (RUC)
-    if (!/^\d{10}(\d{3})?$/.test(this.usuarioActual.identidad.trim())) {
-      this.errorModal = 'La identidad debe tener 10 dígitos (cédula) o 13 (RUC).'; return;
+    if (!this.usuarioActual.identidad?.trim()) {
+      this.mostrarAlerta('Campo requerido', 'La identidad es obligatoria.', 'error'); return;
+    }
+    if (!this.usuarioActual.nombres?.trim()) {
+      this.mostrarAlerta('Campo requerido', 'Los nombres son obligatorios.', 'error'); return;
+    }
+    if (!this.usuarioActual.apellidos?.trim()) {
+      this.mostrarAlerta('Campo requerido', 'Los apellidos son obligatorios.', 'error'); return;
+    }
+    if (!this.usuarioActual.email?.trim()) {
+      this.mostrarAlerta('Campo requerido', 'El email es obligatorio.', 'error'); return;
     }
 
-    // Validar nombres y apellidos: solo letras, tildes, ñ y espacios
+    if (!/^\d{10}(\d{3})?$/.test(this.usuarioActual.identidad.trim())) {
+      this.mostrarAlerta('Identidad inválida', 'Debe tener 10 dígitos (cédula) o 13 (RUC).', 'error'); return;
+    }
+
+    if (this.usuarioActual.nombres.trim().length < 2) {
+      this.mostrarAlerta('Nombres inválidos', 'Los nombres deben tener al menos 2 caracteres.', 'error'); return;
+    }
     if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(this.usuarioActual.nombres.trim())) {
-      this.errorModal = 'Los nombres solo deben contener letras.'; return;
+      this.mostrarAlerta('Nombres inválidos', 'Los nombres solo deben contener letras.', 'error'); return;
+    }
+
+    if (this.usuarioActual.apellidos.trim().length < 2) {
+      this.mostrarAlerta('Apellidos inválidos', 'Los apellidos deben tener al menos 2 caracteres.', 'error'); return;
     }
     if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(this.usuarioActual.apellidos.trim())) {
-      this.errorModal = 'Los apellidos solo deben contener letras.'; return;
+      this.mostrarAlerta('Apellidos inválidos', 'Los apellidos solo deben contener letras.', 'error'); return;
     }
 
-    // Validar email
-    if (!this.esEmailValido(this.usuarioActual.email)) { this.errorModal = 'El formato del email no es válido.'; return; }
+    if (!this.esEmailValido(this.usuarioActual.email)) {
+      this.mostrarAlerta('Email inválido', 'El formato del email no es válido.', 'error'); return;
+    }
 
-    // Validar teléfono (opcional, pero si se ingresó debe ser válido)
     if (this.usuarioActual.telefono?.trim()) {
       if (!/^\+?[0-9]{7,15}$/.test(this.usuarioActual.telefono.trim())) {
-        this.errorModal = 'El teléfono no tiene un formato válido.'; return;
+        this.mostrarAlerta('Teléfono inválido', 'El teléfono no tiene un formato válido (7-15 dígitos).', 'error'); return;
       }
     }
 
-    /* Validar contraseña mínima al crear
-    if (esCrear && !this.usuarioActual.contrasenia?.trim()) { this.errorModal = 'La contraseña es obligatoria.'; return; }
-    if (esCrear && this.usuarioActual.contrasenia!.trim().length < 8) {
-      this.errorModal = 'La contraseña debe tener al menos 8 caracteres.'; return;
-    }*/
+    if (!this.usuarioActual.idsRoles?.length) {
+      this.mostrarAlerta('Rol requerido', 'Selecciona al menos un rol.', 'error'); return;
+    }
 
-    // Validar roles
-    if (!this.usuarioActual.idsRoles?.length) { this.errorModal = 'Selecciona al menos un rol.'; return; }
-
-    // Validar email duplicado
     const emailDuplicado = this.usuarios.some(u =>
       u.email?.toLowerCase() === this.usuarioActual.email?.toLowerCase() &&
       u.id !== this.usuarioActual.id
     );
-    if (emailDuplicado) { this.errorModal = 'Ya existe un usuario con ese email.'; return; }
+    if (emailDuplicado) {
+      this.mostrarAlerta('Email duplicado', 'Ya existe un usuario con ese email.', 'error'); return;
+    }
+
+    const identidadDuplicada = this.usuarios.some(u =>
+      u.identidad === this.usuarioActual.identidad.trim() &&
+      u.id !== this.usuarioActual.id
+    );
+    if (identidadDuplicada) {
+      this.mostrarAlerta('Identidad duplicada', 'Ya existe un usuario con esa identidad.', 'error'); return;
+    }
 
     const usuarioGenerado = this.modoModal === 'crear'
       ? this.generarNombreUsuario(this.usuarioActual.nombres, this.usuarioActual.apellidos)
@@ -319,7 +331,6 @@ export class UsuariosComponent implements OnInit {
       apellidos:  this.usuarioActual.apellidos.trim(),
       email:      this.usuarioActual.email.trim(),
       telefono:   this.usuarioActual.telefono?.trim() ?? '',
-      // contrasenia: this.usuarioActual.contrasenia ?? '',  ← ELIMINA ESTA LÍNEA
       usuario:    usuarioGenerado,
       idsRoles:   this.usuarioActual.idsRoles ?? []
     };
@@ -338,11 +349,11 @@ export class UsuariosComponent implements OnInit {
           this.guardandoUsuario = false;
           const msg: string = err.error?.mensaje || err.error?.error || err.error?.message || '';
           if (msg.toLowerCase().includes('email') || msg.toLowerCase().includes('correo')) {
-            this.errorModal = 'Ya existe un usuario con ese email.';
+            this.mostrarAlerta('Email duplicado', 'Ya existe un usuario con ese email.', 'error');
           } else if (msg.toLowerCase().includes('identidad')) {
-            this.errorModal = 'Ya existe un usuario con esa identidad.';
+            this.mostrarAlerta('Identidad duplicada', 'Ya existe un usuario con esa identidad.', 'error');
           } else {
-            this.errorModal = msg || 'No se pudo crear el usuario.';
+            this.mostrarAlerta('Error', msg || 'No se pudo crear el usuario.', 'error');
           }
           this.cdr.detectChanges();
         }
@@ -350,7 +361,7 @@ export class UsuariosComponent implements OnInit {
     } else {
       if (!this.usuarioActual.id) {
         this.guardandoUsuario = false;
-        this.errorModal = 'No se encontró el ID del usuario.';
+        this.mostrarAlerta('Error', 'No se encontró el ID del usuario.', 'error');
         return;
       }
       this.usuarioService.actualizar(this.usuarioActual.id, payload).subscribe({
@@ -365,11 +376,11 @@ export class UsuariosComponent implements OnInit {
           this.guardandoUsuario = false;
           const msg: string = err.error?.mensaje || err.error?.error || err.error?.message || '';
           if (msg.toLowerCase().includes('email') || msg.toLowerCase().includes('correo')) {
-            this.errorModal = 'Ya existe un usuario con ese email.';
+            this.mostrarAlerta('Email duplicado', 'Ya existe un usuario con ese email.', 'error');
           } else if (msg.toLowerCase().includes('identidad')) {
-            this.errorModal = 'Ya existe un usuario con esa identidad.';
+            this.mostrarAlerta('Identidad duplicada', 'Ya existe un usuario con esa identidad.', 'error');
           } else {
-            this.errorModal = msg || 'No se pudo actualizar el usuario.';
+            this.mostrarAlerta('Error', msg || 'No se pudo actualizar el usuario.', 'error');
           }
           this.cdr.detectChanges();
         }
@@ -464,6 +475,7 @@ export class UsuariosComponent implements OnInit {
       }, 3000);
     }
   }
+
   cerrarNotificacion(): void {
     this.mostrarNotificacion = false;
     this.accionPendiente = null;
@@ -475,13 +487,21 @@ export class UsuariosComponent implements OnInit {
     if (this.accionPendiente) { this.accionPendiente(); this.accionPendiente = null; }
     this.cdr.detectChanges();
   }
+
   soloLetras(event: KeyboardEvent): void {
     const char = event.key;
-    // Permite letras (incluyendo tildes y ñ), espacios y teclas de control
     if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]$/.test(char)) {
       event.preventDefault();
     }
   }
+
+  soloTelefono(event: KeyboardEvent): void {
+    const char = event.key;
+    const current = (event.target as HTMLInputElement).value;
+    if (char === '+' && current.length > 0) { event.preventDefault(); return; }
+    if (!/^[0-9+]$/.test(char)) { event.preventDefault(); }
+  }
+
   cargarSolicitudesPendientes(): void {
     this.http.get<any>('http://localhost:8080/api/solicitudes/pendientes/count').subscribe({
       next: (res) => {
@@ -491,6 +511,7 @@ export class UsuariosComponent implements OnInit {
       error: () => {}
     });
   }
+
   cargarSolicitudes(): void {
     this.cargandoSolicitudes = true;
     this.http.get<any[]>('http://localhost:8080/api/solicitudes/pendientes').subscribe({
@@ -502,13 +523,7 @@ export class UsuariosComponent implements OnInit {
       error: () => { this.cargandoSolicitudes = false; }
     });
   }
-  soloTelefono(event: KeyboardEvent): void {
-    const char = event.key;
-    // Permite números y + (para código de país)
-    if (!/^[0-9+]$/.test(char)) {
-      event.preventDefault();
-    }
-  }
+
   abrirModalAprobar(s: any): void {
     this.solicitudActual = s;
     this.rolesParaAprobar = s.idRolSolicitado ? [s.idRolSolicitado] : [];
@@ -530,12 +545,10 @@ export class UsuariosComponent implements OnInit {
   }
 
   confirmarAprobacion(): void {
-    // Ya no es obligatorio seleccionar — viene pre-seleccionado de la solicitud
-    const idAdmin = Number(localStorage.getItem('idUsuario'));
     this.http.post<any>(`http://localhost:8080/api/solicitudes/aprobar/${this.solicitudActual.id}`,
       { roles: this.rolesParaAprobar }
     ).subscribe({
-      next: (res) => {
+      next: () => {
         this.cerrarModalAprobar();
         this.cargarSolicitudes();
         this.cargarSolicitudesPendientes();
@@ -547,7 +560,6 @@ export class UsuariosComponent implements OnInit {
 
   rechazarSolicitud(s: any): void {
     this.accionPendiente = () => {
-      const idAdmin = Number(localStorage.getItem('idUsuario'));
       this.http.post<any>(`http://localhost:8080/api/solicitudes/rechazar/${s.id}`,
         { observacion: 'Solicitud rechazada por el administrador.' }
       ).subscribe({
@@ -561,19 +573,21 @@ export class UsuariosComponent implements OnInit {
     };
     this.mostrarAlerta('¿Rechazar solicitud?', `¿Deseas rechazar la solicitud de ${s.nombres} ${s.apellidos}?`, 'confirmar');
   }
+
   verDetalleSolicitud(s: any): void {
     this.solicitudDetalle = s;
     this.rolesParaAprobar = s.idRolSolicitado ? [s.idRolSolicitado] : [];
     this.mostrarModalDetalle = true;
     this.cdr.detectChanges();
   }
+
   getRolNombre(idRol: number | null): string {
     if (!idRol) return '—';
     const rol = this.roles.find(r => r.id === idRol);
     return rol ? rol.nombre : '—';
   }
+
   aprobarDesdeDetalle(): void {
-    // Si no hay roles seleccionados, usar el rol solicitado
     if (this.rolesParaAprobar.length === 0 && this.solicitudDetalle?.idRolSolicitado) {
       this.rolesParaAprobar = [this.solicitudDetalle.idRolSolicitado];
     }

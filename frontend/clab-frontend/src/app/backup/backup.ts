@@ -484,7 +484,11 @@ export class BackupComponent implements OnInit {
     { valor: 'SUNDAY',    label: 'Dom' }
   ];
 
-  diasMesOpciones = Array.from({ length: 28 }, (_, i) => i + 1); // [1..28]
+  get diasMesOpciones(): number[] {
+    const hoy = new Date();
+    const diasEnMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate();
+    return Array.from({ length: diasEnMes }, (_, i) => i + 1);
+  }
 
   nuevaHora = '08:00'; // Valor del input de nueva hora
 
