@@ -102,4 +102,20 @@ public class GoogleDriveService {
         log.info("Archivo subido a Drive: {} ({})", uploaded.getName(), uploaded.getId());
         return uploaded.getId();
     }
+    public List<File> listarArchivosBackup() throws Exception {
+        Drive drive = getDriveService();
+
+        return drive.files().list()
+                .setQ("'" + folderId + "' in parents and trashed = false")
+                .setOrderBy("createdTime asc") // más antiguos primero
+                .setFields("files(id, name, createdTime, size)")
+                .execute()
+                .getFiles();
+    }
+
+    public void eliminarArchivo(String fileId) throws Exception {
+        Drive drive = getDriveService();
+        drive.files().delete(fileId).execute();
+        log.info("Archivo eliminado de Drive: {}", fileId);
+    }
 }
