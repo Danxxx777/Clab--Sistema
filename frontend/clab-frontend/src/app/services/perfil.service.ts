@@ -21,13 +21,16 @@ export interface PerfilUsuario {
 }
 export interface ReservaHistorial {
   idReserva: number;
-  laboratorio: string;
+  nombreLaboratorio: string;
   fechaReserva: string;
-  horario: string;
+  horaInicio: string;
+  horaFin: string;
   estado: string;
   asistio: boolean | null;
+  nombreUsuario?: string;
+  nombreAsignatura?: string;
+  motivo?: string;
 }
-
 @Injectable({ providedIn: 'root' })
 export class PerfilService {
 

@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -134,5 +135,9 @@ public class BackupController {
         HttpStatus status = respuesta.isExito() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR;
         return ResponseEntity.status(status).body(respuesta);
     }
-
+    @PostMapping("/restaurar/inicial")
+    public ResponseEntity<?> restaurarInicial(@RequestParam("archivo") MultipartFile archivo) {
+        BackupRespuestaDTO resultado = backupService.restaurarDesdeArchivo(archivo);
+        return ResponseEntity.ok(resultado);
+    }
 }

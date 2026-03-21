@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -33,25 +34,30 @@ public class AuditoriaService {
 
     // ─── AUDITORÍA via SP ────────────────────────────────────────────────────
 
-    @Transactional
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void registrar(Integer idUsuario, String usuario, String accion,
                           String modulo, String tablaAfectada,
                           Integer idRegistro, String descripcion,
                           String ip, String resultado) {
-        entityManager.createNativeQuery(
-                        "CALL usuarios.sp_registrar_auditoria(:idUsuario, :usuario, :accion, :modulo, " +
-                                ":tabla, :idRegistro, :descripcion, :ip, :resultado)"
-                )
-                .setParameter("idUsuario",   idUsuario)
-                .setParameter("usuario",     usuario)
-                .setParameter("accion",      accion)
-                .setParameter("modulo",      modulo)
-                .setParameter("tabla",       tablaAfectada)
-                .setParameter("idRegistro",  idRegistro)
-                .setParameter("descripcion", descripcion)
-                .setParameter("ip",          ip)
-                .setParameter("resultado",   resultado != null ? resultado : "EXITOSO")
-                .executeUpdate();
+        try {
+            entityManager.createNativeQuery(
+                            "CALL usuarios.sp_registrar_auditoria(:idUsuario, :usuario, :accion, :modulo, " +
+                                    ":tabla, :idRegistro, :descripcion, :ip, :resultado)"
+                    )
+                    .setParameter("idUsuario",   idUsuario)
+                    .setParameter("usuario",     usuario)
+                    .setParameter("accion",      accion)
+                    .setParameter("modulo",      modulo)
+                    .setParameter("tabla",       tablaAfectada)
+                    .setParameter("idRegistro",  idRegistro)
+                    .setParameter("descripcion", descripcion)
+                    .setParameter("ip",          ip)
+                    .setParameter("resultado",   resultado != null ? resultado : "EXITOSO")
+                    .executeUpdate();
+        } catch (Exception e) {
+            // BD vacía — procedure no existe aún
+        }
     }
 
     @Transactional
@@ -69,29 +75,37 @@ public class AuditoriaService {
 
     // ─── SESIONES via SP ─────────────────────────────────────────────────────
 
-    @Transactional
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void registrarSesion(Integer idUsuario, String usuario,
                                 String token, String ip, LocalDateTime expira) {
-        entityManager.createNativeQuery(
-                        "CALL usuarios.sp_registrar_sesion(:idUsuario, :usuario, :tokenHash, :ip, :expira)"
-                )
-                .setParameter("idUsuario",  idUsuario)
-                .setParameter("usuario",    usuario)
-                .setParameter("tokenHash",  hashToken(token))
-                .setParameter("ip",         ip)
-                .setParameter("expira",     expira)
-                .executeUpdate();
+        try {
+            entityManager.createNativeQuery(
+                            "CALL usuarios.sp_registrar_sesion(:idUsuario, :usuario, :tokenHash, :ip, :expira)"
+                    )
+                    .setParameter("idUsuario",  idUsuario)
+                    .setParameter("usuario",    usuario)
+                    .setParameter("tokenHash",  hashToken(token))
+                    .setParameter("ip",         ip)
+                    .setParameter("expira",     expira)
+                    .executeUpdate();
+        } catch (Exception e) {
+            // BD vacía — procedure no existe aún
+        }
     }
 
-    @Transactional
     public void cerrarSesion(String token, Integer idUsuario, String ip) {
-        entityManager.createNativeQuery(
-                        "CALL usuarios.sp_cerrar_sesion(:tokenHash, :idUsuario, :ip)"
-                )
-                .setParameter("tokenHash",  hashToken(token))
-                .setParameter("idUsuario",  idUsuario)
-                .setParameter("ip",         ip)
-                .executeUpdate();
+        try {
+            entityManager.createNativeQuery(
+                            "CALL usuarios.sp_cerrar_sesion(:tokenHash, :idUsuario, :ip)"
+                    )
+                    .setParameter("tokenHash",  hashToken(token))
+                    .setParameter("idUsuario",  idUsuario)
+                    .setParameter("ip",         ip)
+                    .executeUpdate();
+        } catch (Exception e) {
+            // BD vacía — procedure no existe aún
+        }
     }
 
     @Transactional
@@ -107,10 +121,14 @@ public class AuditoriaService {
     }
 
     @Scheduled(fixedRate = 300000)
-    @Transactional
     public void limpiarSesionesExpiradas() {
-        entityManager.createNativeQuery("CALL usuarios.sp_expirar_sesiones()").executeUpdate();
+        try {
+            entityManager.createNativeQuery("CALL usuarios.sp_expirar_sesiones()").executeUpdate();
+        } catch (Exception e) {
+            // BD vacía — procedure no existe aún
+        }
     }
+
 
     // ─── CONSULTAS ───────────────────────────────────────────────────────────
 
