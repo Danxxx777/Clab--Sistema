@@ -270,14 +270,18 @@
           <div *ngIf="modoModal === 'ver'" class="form-control" style="cursor:default">{{ solicitudActual.nombre_laboratorio }}</div>
         </div>
         <div class="form-group">
-          <label>Asignatura <span class="required" *ngIf="modoModal !== 'ver'">*</span></label>
+          <label>Asignatura <span class="required" *ngIf="modoModal !== 'ver' && !tipoSinAsignatura">*</span></label>
           <select *ngIf="modoModal !== 'ver'" class="form-control"
                   [(ngModel)]="solicitudActual.id_asignatura"
-                  (change)="onAsignaturaChange()">
-            <option [value]="0">Seleccione una asignatura</option>
-            <option *ngFor="let asig of asignaturas" [value]="asig.id_asignatura">{{ asig.nombre }}</option>
+                  (change)="onAsignaturaChange()"
+                  [disabled]="tipoSinAsignatura">
+            <option [value]="0">{{ tipoSinAsignatura ? 'No aplica para este tipo' : 'Seleccione una asignatura' }}</option>
+            <ng-container *ngIf="!tipoSinAsignatura">
+              <option *ngFor="let asig of asignaturas" [value]="asig.id_asignatura">{{ asig.nombre }}</option>
+            </ng-container>
           </select>
           <div *ngIf="modoModal === 'ver'" class="form-control" style="cursor:default">{{ solicitudActual.nombre_asignatura }}</div>
+          <small *ngIf="tipoSinAsignatura && modoModal !== 'ver'" style="color:#6b6b6b; font-size:11px;">Este tipo no requiere asignatura.</small>
         </div>
       </div>
 
@@ -295,11 +299,14 @@
           <label>Horario Académico</label>
           <select *ngIf="modoModal !== 'ver'" class="form-control"
                   [(ngModel)]="solicitudActual.id_horario_academico"
-                  (change)="onHorarioChange()">
-            <option [value]="null">Sin horario académico</option>
-            <option *ngFor="let h of horariosAcademicos" [value]="h.id_horario_academico">
-              {{ h.nombre_asignatura }} - {{ h.dia_semana }} {{ h.hora_inicio }} - {{ h.hora_fin }}
-            </option>
+                  (change)="onHorarioChange()"
+                  [disabled]="tipoSinAsignatura">
+            <option [value]="null">{{ tipoSinAsignatura ? 'No aplica para este tipo' : 'Sin horario académico' }}</option>
+            <ng-container *ngIf="!tipoSinAsignatura">
+              <option *ngFor="let h of horariosAcademicos" [value]="h.id_horario_academico">
+                {{ h.nombre_asignatura }} - {{ h.dia_semana }} {{ h.hora_inicio }} - {{ h.hora_fin }}
+              </option>
+            </ng-container>
           </select>
           <div *ngIf="modoModal === 'ver'" class="form-control" style="cursor:default">
             {{ solicitudActual.id_horario_academico ? 'Con horario académico' : 'Sin horario académico' }}
@@ -311,7 +318,7 @@
       <div class="form-row">
         <div class="form-group">
           <label>Tipo de Reserva</label>
-          <select *ngIf="modoModal !== 'ver'" class="form-control" [(ngModel)]="solicitudActual.id_tipo_reserva">
+          <select *ngIf="modoModal !== 'ver'" class="form-control" [(ngModel)]="solicitudActual.id_tipo_reserva" (change)="onTipoReservaChange()">
             <option [value]="0">Seleccione un tipo</option>
             <option *ngFor="let tipo of tipos" [value]="tipo.id_tipo_reserva">{{ tipo.nombre_tipo }}</option>
           </select>

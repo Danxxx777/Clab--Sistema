@@ -63,6 +63,11 @@ public class EquipoController {
         return ResponseEntity.ok(equipoService.listar());
     }
 
+    @GetMapping("/porEncargado/{idUsuario}")
+    public ResponseEntity<List<Equipo>> equiposPorEncargado(@PathVariable Integer idUsuario) {
+        return ResponseEntity.ok(equipoService.equiposPorEncargado(idUsuario));
+    }
+
     @GetMapping("/porLaboratorio/{codLaboratorio}")
     public ResponseEntity<List<Equipo>> equiposPorLaboratorio(@PathVariable Integer codLaboratorio) {
         return ResponseEntity.ok(equipoService.equiposPorLaboratorio(codLaboratorio));

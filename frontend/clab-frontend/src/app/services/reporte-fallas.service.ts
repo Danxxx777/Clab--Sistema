@@ -22,6 +22,10 @@ export class ReporteFallasService {
     return this.http.get<any[]>(`${this.API_URL}/listar`);
   }
 
+  listarPorEncargado(idUsuario: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/listarPorEncargado/${idUsuario}`);
+  }
+
   crear(data: ReporteFallaDTO): Observable<any> {
     return this.http.post(`${this.API_URL}/crear`, data);
   }

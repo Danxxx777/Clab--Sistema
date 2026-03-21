@@ -1221,9 +1221,9 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
   }
   &__hour-label {
     background: #1a1a1a; padding: 4px 8px 0 0;
-    font-family: 'Space Mono', monospace; font-size: 9px; color: #4a4a4a;
+    font-family: 'Space Mono', monospace; font-size: 9px; color: $neon;
     text-align: right; display: flex; align-items: flex-start; justify-content: flex-end;
-    .cal-grid__row--half & { color: #2a2a2a; font-size: 8px; }
+    .cal-grid__row--half & { color: $neon; font-size: 8px; }
   }
   &__cell {
     min-height: 26px;
@@ -1284,6 +1284,12 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
       color: #4a4a4a;
       margin-top: 1px;
     }
+  }
+
+  .field-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
   }
 
   /* Vista mes */
