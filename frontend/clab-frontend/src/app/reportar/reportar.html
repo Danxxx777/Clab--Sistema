@@ -121,8 +121,104 @@
     </div>
     <div class="header-acciones">
       @if(moduloActivo !== null) {
-        <button class="btn-exportar-pdf"   (click)="exportarPDF()">⬇ PDF</button>
-        <button class="btn-exportar-excel" (click)="exportarExcel()">⬇ Excel</button>
+        <!-- PDF con dropdown -->
+        <div class="pdf-dropdown-wrap" (click)="$event.stopPropagation()">
+          <button class="btn-exportar-pdf" (click)="togglePdfPanel()">
+            ⬇ PDF <span class="pdf-arrow" [class.open]="pdfPanelAbierto">▾</span>
+          </button>
+          <div class="pdf-panel" [class.open]="pdfPanelAbierto">
+            <div class="pp-titulo">Opciones de exportación</div>
+
+            <div class="pp-campo">
+              <label>Tema</label>
+              <div class="pp-toggle">
+                <button [class.active]="temaOscuro" (click)="temaOscuro = true">
+                  <span class="tema-dot oscuro"></span> Oscuro
+                </button>
+                <button [class.active]="!temaOscuro" (click)="temaOscuro = false">
+                  <span class="tema-dot claro"></span> Claro
+                </button>
+              </div>
+            </div>
+
+            <div class="pp-campo" *ngIf="!temaOscuro">
+              <label>Header</label>
+              <div class="pp-color-row">
+                <div class="pp-swatch" [style.background]="colorHeader">
+                  <input type="color" [(ngModel)]="colorHeader">
+                </div>
+                <span class="pp-hex">{{ colorHeader }}</span>
+              </div>
+            </div>
+
+            <div class="pp-campo" *ngIf="!temaOscuro">
+              <label>Acento</label>
+              <div class="pp-color-row">
+                <div class="pp-swatch" [style.background]="colorAcento">
+                  <input type="color" [(ngModel)]="colorAcento">
+                </div>
+                <span class="pp-hex">{{ colorAcento }}</span>
+              </div>
+            </div>
+
+            <button class="pp-generar" (click)="exportarPDF(); pdfPanelAbierto = false">
+              ⬇ Generar PDF
+            </button>
+          </div>
+        </div>
+
+        <div class="pdf-dropdown-wrap" (click)="$event.stopPropagation()">
+          <button class="btn-exportar-excel" (click)="toggleExcelPanel()">
+            ⬇ Excel <span class="pdf-arrow" [class.open]="excelPanelAbierto">▾</span>
+          </button>
+          <div class="pdf-panel" [class.open]="excelPanelAbierto">
+            <div class="pp-titulo">Opciones de exportación</div>
+
+            <div class="pp-campo">
+              <label>Tema</label>
+              <div class="pp-toggle">
+                <button [class.active]="temaOscuro" (click)="temaOscuro = true">
+                  <span class="tema-dot oscuro"></span> Oscuro
+                </button>
+                <button [class.active]="!temaOscuro" (click)="temaOscuro = false">
+                  <span class="tema-dot claro"></span> Claro
+                </button>
+              </div>
+            </div>
+            <div class="pp-campo">
+              <label>Fondo</label>
+              <div class="pp-color-row">
+                <div class="pp-swatch" [style.background]="colorFondo">
+                  <input type="color" [(ngModel)]="colorFondo">
+                </div>
+                <span class="pp-hex">{{ colorFondo }}</span>
+              </div>
+            </div>
+            <div class="pp-campo">
+              <label>Acento</label>
+              <div class="pp-color-row">
+                <div class="pp-swatch" [style.background]="colorAcento">
+                  <input type="color" [(ngModel)]="colorAcento">
+                </div>
+                <span class="pp-hex">{{ colorAcento }}</span>
+              </div>
+            </div>
+
+            <div class="pp-campo">
+              <label>Hoja de gráficas</label>
+              <div class="pp-switch" [class.on]="incluirGraficas" (click)="incluirGraficas = !incluirGraficas">
+                <div class="pp-switch-thumb"></div>
+              </div>
+            </div>
+            <div class="pp-hint">
+              {{ incluirGraficas ? 'Se añadirá una hoja Resumen con gráficas' : 'Solo se exportará la hoja Detalle' }}
+            </div>
+
+            <button class="pp-generar excel" (click)="exportarExcel(); excelPanelAbierto = false">
+              ⬇ Generar Excel
+            </button>
+          </div>
+        </div>
       }
       <button class="btn-volver" (click)="moduloActivo !== null ? volverAlCentro() : volver()">← Volver</button>
     </div>

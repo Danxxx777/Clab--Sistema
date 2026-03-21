@@ -1,12 +1,10 @@
 import { Injectable } from '@angular/core';
 import { ExportOptions } from '../interfaces/Reportar.model';
 
-// ─── Paleta CLAB — fondo blanco, acentos negro + neón ─────────────────────────
+// ─── Paleta base ──────────────────────────────────────────────────────────────
 const C = {
-  black:   [17,  17,  17]  as [number,number,number],   // #111111
-  neon:    [57,  255, 20]  as [number,number,number],   // #39ff14
   white:   [255, 255, 255] as [number,number,number],
-  bg:      [250, 250, 250] as [number,number,number],   // fondo tarjetas
+  bg:      [250, 250, 250] as [number,number,number],
   chipBg:  [245, 245, 245] as [number,number,number],
   gray100: [238, 238, 238] as [number,number,number],
   gray200: [224, 224, 224] as [number,number,number],
@@ -14,8 +12,25 @@ const C = {
   gray400: [160, 160, 160] as [number,number,number],
   gray500: [120, 120, 120] as [number,number,number],
   gray700: [70,  70,  70]  as [number,number,number],
+  black:   [17,  17,  17]  as [number,number,number],
+  neon:    [57,  255, 20]  as [number,number,number],
   badgeBg: [240, 240, 240] as [number,number,number],
 };
+
+function hexToRgb(hex: string): [number, number, number] {
+  const clean = hex.replace('#', '');
+  return [
+    parseInt(clean.slice(0, 2), 16),
+    parseInt(clean.slice(2, 4), 16),
+    parseInt(clean.slice(4, 6), 16),
+  ];
+}
+
+// Calcula si el texto sobre un color debe ser blanco o negro
+function contrastColor(rgb: [number,number,number]): [number,number,number] {
+  const lum = (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
+  return lum > 0.5 ? C.black : C.white;
+}
 
 const fmtHorario = (v: string) =>
   (v || '').split(' - ').map(p => p.replace(/^(\d{2}:\d{2}):\d{2}$/, '$1')).join(' - ');
@@ -26,13 +41,21 @@ export class ExportPdfService {
   async exportar(opts: ExportOptions): Promise<void> {
     const { jsPDF } = await import('jspdf');
 
+    // ── Colores dinámicos según tema ─────────────────────────────────────────
+    const temaOscuro  = opts.temaOscuro !== false;
+    const HEADER_BG   = temaOscuro ? C.black      : hexToRgb(opts.colorHeader || '#1e3a8a');
+    const ACENTO      = temaOscuro ? C.neon        : hexToRgb(opts.colorAcento || '#3b82f6');
+    const HEADER_TEXT = contrastColor(HEADER_BG);
+    const BRAND_COLOR = temaOscuro ? C.neon        : contrastColor(HEADER_BG);
+    const BAR_FILL    = temaOscuro ? C.black       : hexToRgb(opts.colorAcento || '#3b82f6');
+
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const PW = 210, PH = 297, ML = 14, MR = 14, CW = PW - ML - MR;
     const FOOTER_H    = 8;
     const SAFE_BOTTOM = PH - FOOTER_H - 4;
     let Y = 0;
 
-    // ── Helpers ────────────────────────────────────────────────────────────────
+    // ── Helpers ───────────────────────────────────────────────────────────────
     const setFont = (style: 'normal' | 'bold', size: number, rgb: [number,number,number]) => {
       doc.setFont('helvetica', style);
       doc.setFontSize(size);
@@ -89,7 +112,7 @@ export class ExportPdfService {
       const bW = Math.min(Math.max(ratio, 0), 1) * maxW;
       if (bW > 0) {
         const finalW = bW >= maxW - 0.5 ? maxW : bW;
-        fillR(x, y, finalW, trackH, r, C.black);
+        fillR(x, y, finalW, trackH, r, BAR_FILL);
       }
     };
 
@@ -101,9 +124,8 @@ export class ExportPdfService {
       const total = (doc as any).internal.getNumberOfPages();
       for (let p = 1; p <= total; p++) {
         doc.setPage(p);
-        fill(0, PH - FOOTER_H, PW, FOOTER_H, C.black);
-        // Línea neón sobre el footer
-        hline(0, PH - FOOTER_H, PW, C.neon, 0.5);
+        fill(0, PH - FOOTER_H, PW, FOOTER_H, HEADER_BG);
+        hline(0, PH - FOOTER_H, PW, ACENTO, 0.5);
         setFont('normal', 6, C.gray400);
         op(0.6);
         cell('CLAB — Sistema de Laboratorios · UTEQ', ML, PH - FOOTER_H, FOOTER_H);
@@ -115,14 +137,12 @@ export class ExportPdfService {
       }
     };
 
-    // ── HEADER ─────────────────────────────────────────────────────────────────
+    // ── HEADER ────────────────────────────────────────────────────────────────
     const HEADER_H = 54;
-    fill(0, 0, PW, HEADER_H, C.black);
+    fill(0, 0, PW, HEADER_H, HEADER_BG);
+    hline(0, HEADER_H, PW, ACENTO, 0.8);
 
-    // Línea neón inferior del header
-    hline(0, HEADER_H, PW, C.neon, 0.8);
-
-    // ── Logo UTEQ ──────────────────────────────────────────────────────────────
+    // Logo UTEQ
     try {
       const resp = await fetch('/LogoUTEQ.png');
       const blob = await resp.blob();
@@ -135,16 +155,16 @@ export class ExportPdfService {
     } catch {}
 
     // Brand CLAB
-    setFont('bold', 22, C.neon);
+    setFont('bold', 22, BRAND_COLOR);
     doc.text('CLAB', ML + 26, 15);
 
-    setFont('normal', 7, C.white);
+    setFont('normal', 7, HEADER_TEXT);
     op(0.4);
     doc.text('SISTEMA DE LABORATORIOS  ·  UTEQ', ML + 26, 21);
     op(1);
 
     // Fecha arriba derecha
-    setFont('normal', 7, C.white);
+    setFont('normal', 7, HEADER_TEXT);
     op(0.35);
     doc.text(new Date().toLocaleDateString('es-EC', { year:'numeric', month:'long', day:'numeric' }), PW - MR, 16, { align: 'right' });
     doc.text(new Date().toLocaleTimeString('es-EC', { hour:'2-digit', minute:'2-digit' }), PW - MR, 22.5, { align: 'right' });
@@ -152,20 +172,20 @@ export class ExportPdfService {
 
     // Separador sutil
     op(0.1);
-    hline(ML, 31, PW - MR, C.white, 0.3);
+    hline(ML, 31, PW - MR, HEADER_TEXT, 0.3);
     op(1);
 
     // Sub-label REPORTE
-    setFont('normal', 7, C.white);
+    setFont('normal', 7, HEADER_TEXT);
     op(0.4);
     doc.text('REPORTE', ML, 35);
     op(1);
 
     // Título del reporte
-    setFont('bold', 16, C.white);
+    setFont('bold', 16, HEADER_TEXT);
     doc.text(opts.modulo.titulo, ML, 47);
 
-    // ── CHIPS ──────────────────────────────────────────────────────────────────
+    // ── CHIPS ─────────────────────────────────────────────────────────────────
     Y = HEADER_H;
     const CHIP_BAND_H = 13;
 
@@ -202,7 +222,7 @@ export class ExportPdfService {
 
     Y = Y + CHIP_BAND_H + 10;
 
-    // ── STATS ──────────────────────────────────────────────────────────────────
+    // ── STATS ─────────────────────────────────────────────────────────────────
     if (opts.statsModulo.length > 0) {
       checkPage(42);
 
@@ -218,31 +238,22 @@ export class ExportPdfService {
 
       opts.statsModulo.forEach((s, i) => {
         if (i >= 4) return;
-
-        // Tarjeta fondo claro con borde
         fillBorderR(sx, Y, statW, statH, 2, C.bg, C.gray200, 0.3);
-
-        // Línea neón superior de cada tarjeta
-        fillR(sx, Y, statW, 2, 1, C.neon);
-
-        // Label arriba izquierda
+        fillR(sx, Y, statW, 2, 1, ACENTO);
         setFont('normal', 5.5, C.gray500);
         doc.text(
           (s.label.length > 20 ? s.label.substring(0, 19) + '…' : s.label).toUpperCase(),
           sx + 6, Y + 8
         );
-
-        // Número centrado en negro
         setFont('bold', 18, C.black);
         doc.text(String(s.valor), sx + statW / 2, Y + 18, { align: 'center' });
-
         sx += statW + GAP;
       });
 
       Y += statH + 10;
     }
 
-    // ── GRÁFICAS ───────────────────────────────────────────────────────────────
+    // ── GRÁFICAS ──────────────────────────────────────────────────────────────
     if (opts.datosGrafica.length > 0 || opts.datosDistribucion.length > 0) {
       const CHART_HEAD_H = 10;
       const ROW_H        = 15;
@@ -265,15 +276,10 @@ export class ExportPdfService {
       // Gráfica 1
       if (opts.datosGrafica.length > 0) {
         const g1H = CHART_HEAD_H + CHART_PAD_T + opts.datosGrafica.length * ROW_H + CHART_PAD_B;
-
         fillBorderR(ML, gY, halfW, g1H, R_CARD, C.bg, C.gray200, 0.3);
-
-        // Cabecera negra con línea neón inferior
-        fillR(ML, gY, halfW, CHART_HEAD_H + R_CARD, R_CARD, C.black);
-        fill(ML, gY + CHART_HEAD_H, halfW, R_CARD, C.black);
-        // hline(ML, gY + CHART_HEAD_H, ML + halfW, C.neon, 0.5);
-
-        setFont('bold', 6, C.white);
+        fillR(ML, gY, halfW, CHART_HEAD_H + R_CARD, R_CARD, HEADER_BG);
+        fill(ML, gY + CHART_HEAD_H, halfW, R_CARD, HEADER_BG);
+        setFont('bold', 6, HEADER_TEXT);
         op(0.8);
         cell(opts.tituloGrafica1.toUpperCase(), ML + halfW / 2, gY + 2, CHART_HEAD_H - 2, { align: 'center' });
         op(1);
@@ -298,14 +304,10 @@ export class ExportPdfService {
       if (opts.datosDistribucion.length > 0) {
         const g2X = ML + halfW + 5;
         const g2H = CHART_HEAD_H + CHART_PAD_T + opts.datosDistribucion.length * ROW_H + CHART_PAD_B;
-
         fillBorderR(g2X, gY, halfW, g2H, R_CARD, C.bg, C.gray200, 0.3);
-
-        fillR(g2X, gY, halfW, CHART_HEAD_H + R_CARD, R_CARD, C.black);
-        fill(g2X, gY + CHART_HEAD_H, halfW, R_CARD, C.black);
-        // hline(g2X, gY + CHART_HEAD_H, g2X + halfW, C.neon, 0.5);
-
-        setFont('bold', 6, C.white);
+        fillR(g2X, gY, halfW, CHART_HEAD_H + R_CARD, R_CARD, HEADER_BG);
+        fill(g2X, gY + CHART_HEAD_H, halfW, R_CARD, HEADER_BG);
+        setFont('bold', 6, HEADER_TEXT);
         op(0.8);
         cell(opts.tituloGrafica2.toUpperCase(), g2X + halfW / 2, gY + 2, CHART_HEAD_H - 2, { align: 'center' });
         op(1);
@@ -331,7 +333,7 @@ export class ExportPdfService {
       ) + 10;
     }
 
-    // ── TABLA ──────────────────────────────────────────────────────────────────
+    // ── TABLA ─────────────────────────────────────────────────────────────────
     if (opts.datosReporte.length > 0 && opts.columnasTabla.length > 0) {
       checkPage(30);
 
@@ -347,19 +349,17 @@ export class ExportPdfService {
       const ROW_H  = 8;
       const R_TBL  = 2;
 
-      // Cabecera negra con línea neón inferior
-      fillR(ML, Y, CW, HEAD_H + R_TBL, R_TBL, C.black);
-      fill(ML, Y + HEAD_H, CW, R_TBL, C.black);
-      hline(ML, Y + HEAD_H, ML + CW, C.neon, 0.5);
+      fillR(ML, Y, CW, HEAD_H + R_TBL, R_TBL, HEADER_BG);
+      fill(ML, Y + HEAD_H, CW, R_TBL, HEADER_BG);
+      hline(ML, Y + HEAD_H, ML + CW, ACENTO, 0.5);
 
       cols.forEach((col, i) => {
-        setFont('bold', 6, C.white);
+        setFont('bold', 6, HEADER_TEXT);
         op(0.8);
         cell(col.toUpperCase(), ML + i * colW + colW / 2, Y, HEAD_H, { align: 'center' });
-        // Separador vertical entre columnas
         if (i > 0) {
           op(0.15);
-          vline(ML + i * colW, Y, Y + HEAD_H, C.white, 0.2);
+          vline(ML + i * colW, Y, Y + HEAD_H, HEADER_TEXT, 0.2);
         }
         op(1);
       });
@@ -399,7 +399,7 @@ export class ExportPdfService {
       Y += 6;
     }
 
-    // ── FOOTER ─────────────────────────────────────────────────────────────────
+    // ── FOOTER ────────────────────────────────────────────────────────────────
     drawFooter();
 
     const fecha    = new Date().toISOString().split('T')[0];

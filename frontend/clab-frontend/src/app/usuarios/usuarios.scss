@@ -361,7 +361,18 @@ html, body {
   text-align: center; padding: 40px; color: $muted;
   font-style: italic; font-family: 'Space Mono', monospace; font-size: 12px;
 }
-
+.modal-error-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(220, 53, 69, 0.15);
+  border-top: 1px solid rgba(220, 53, 69, 0.4);
+  border-bottom: 1px solid rgba(220, 53, 69, 0.4);
+  color: #ff6b6b;
+  font-size: 13px;
+  padding: 10px 20px;
+  flex-shrink: 0;
+}
 // =====================
 // SOLICITUDES LIST
 // =====================
