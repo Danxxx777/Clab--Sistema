@@ -433,7 +433,7 @@ export class ReservarComponent implements OnInit {
       ...r, esGrupo: false, fecha_orden: r.fecha_solicitud
     }));
     this.reservasCombinadas = [...gruposFormateados, ...reservasFormateadas]
-      .sort((a, b) => new Date(a.fecha_orden).getTime() - new Date(b.fecha_orden).getTime());
+      .sort((a, b) => new Date(b.fecha_orden).getTime() - new Date(a.fecha_orden).getTime());
     if (this.filtroEstadoActivo && this.filtroEstadoActivo !== 'Total') {
       this.reservasCombinadasFiltradas = this.reservasCombinadas.filter(r => r.estado === this.filtroEstadoActivo);
     } else {
