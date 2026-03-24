@@ -313,7 +313,11 @@ export class ConfiguracionCorreoComponent implements OnInit {
         this.guardandoDrive = false;
         this.cerrarModalDrive();
         this.cargarEstadoDrive();
-        this.mostrarAlerta('Configuración guardada', 'Credenciales de Drive actualizadas correctamente.', 'exito');
+        this.mostrarAlerta(
+          '✅ Configuración guardada',
+          'Credenciales guardadas. Ahora haz clic en "Conectar Google Drive" para autorizar.',
+          'exito'
+        );
       },
       error: err => {
         this.guardandoDrive = false;

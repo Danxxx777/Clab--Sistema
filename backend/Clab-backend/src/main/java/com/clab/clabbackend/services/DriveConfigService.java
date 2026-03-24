@@ -32,19 +32,34 @@ public class DriveConfigService {
         // Verificar si el token existe en disco
         boolean tokenExiste = false;
         if (config.getTokensPath() != null) {
-            File tokenFile = new File(config.getTokensPath());
-            tokenExiste = tokenFile.exists();
+            try {
+                java.nio.file.Path tokensDir = java.nio.file.Paths.get(config.getTokensPath()).getParent();
+                java.io.File dir = tokensDir.toFile();
+                if (dir.exists() && dir.isDirectory()) {
+                    java.io.File[] files = dir.listFiles();
+                    tokenExiste = files != null && files.length > 0;
+                }
+            } catch (Exception e) {
+                log.warn("No se pudo verificar token: {}", e.getMessage());
+            }
         }
 
-        boolean conectado = config.isConectado() && tokenExiste;
+        // Si el token existe pero la BD dice desconectado, autocorregir
+        if (tokenExiste && !config.isConectado()) {
+            config.setConectado(true);
+            driveConfigRepository.save(config);
+            log.info("Token encontrado en disco — marcando Drive como conectado en BD");
+        }
 
-        estado.put("conectado",        conectado);
-        estado.put("emailCuenta",      config.getEmailCuenta());
-        estado.put("folderId",         config.getFolderId());
-        estado.put("folderNombre",     config.getFolderNombre());
-        estado.put("fechaConexion",    config.getFechaConexion());
+        boolean conectado = tokenExiste;
+
+        estado.put("conectado",          conectado);
+        estado.put("emailCuenta",        config.getEmailCuenta());
+        estado.put("folderId",           config.getFolderId());
+        estado.put("folderNombre",       config.getFolderNombre());
+        estado.put("fechaConexion",      config.getFechaConexion());
         estado.put("fechaActualizacion", config.getFechaActualizacion());
-        // Ocultar credenciales sensibles — solo mostrar primeros chars
+
         String clientId = config.getClientId();
         estado.put("clientIdPreview",
                 clientId != null && clientId.length() > 20
@@ -80,13 +95,11 @@ public class DriveConfigService {
     public void revocarAutorizacion() {
         DriveConfig config = obtenerConfig();
 
-        // Eliminar archivo de token del disco
         if (config.getTokensPath() != null) {
             try {
                 File tokenFile = new File(config.getTokensPath());
                 File parentDir = tokenFile.getParentFile();
                 if (parentDir != null && parentDir.exists()) {
-                    // Eliminar todos los archivos dentro de la carpeta tokens/
                     File[] files = parentDir.listFiles();
                     if (files != null) {
                         for (File f : files) {

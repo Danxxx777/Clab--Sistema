@@ -146,7 +146,10 @@ export class LoginComponent implements OnInit {
         setTimeout(() => {
           this.cargando = false;
           const status = err.status;
-          if (status === 401 || status === 403) {
+          if (status === 503) {
+            this.errorMessage = 'La base de datos no tiene datos. Restaura un backup para continuar.';
+            this.bdVacia = true;
+          } else if (status === 401 || status === 403) {
             this.errorMessage = 'Contraseña incorrecta. Verifica e intenta de nuevo.';
           } else if (status === 404) {
             this.errorMessage = 'Usuario no encontrado en el sistema.';

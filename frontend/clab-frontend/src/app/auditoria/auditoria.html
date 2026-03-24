@@ -48,7 +48,6 @@
           <div class="di-text"><div class="di-name">Solicitudes de Reserva</div><div class="di-desc">Gestión de solicitudes</div></div>
         </div>
       }
-
       @if(rol === 'Administradorr' || rol === 'Decano' || rol === 'Coordinador') {
         <div class="drawer-item" (click)="navegar('academico', 'Cargando Académico...')">
           <div class="di-icon ic-5"><img src="/academico.png" alt="Académico"></div>
@@ -98,7 +97,6 @@
     </div>
   </div>
 
-
   <!-- TITLE -->
   <div class="page-title-section">
     <div style="display:flex; align-items:center; gap:14px;">
@@ -117,11 +115,12 @@
     <div class="tabs">
       <button class="tab" [class.active]="tabActiva === 0" (click)="cambiarTab(0)">Registros</button>
       <button class="tab" [class.active]="tabActiva === 1" (click)="cambiarTab(1)">Sesiones Activas</button>
+      <button class="tab" [class.active]="tabActiva === 2" (click)="cambiarTab(2)">Estadísticas BD</button>
     </div>
   </div>
 
-  <!-- STATS -->
-  <div class="stats-bar">
+  <!-- STATS GENERALES — solo tabs 0 y 1 -->
+  <div class="stats-bar" *ngIf="tabActiva !== 2">
     <div class="stat-card">
       <div class="stat-icon sc-blue">📋</div>
       <div class="stat-info">
@@ -194,7 +193,7 @@
             <th>IP</th>
             <th>RESULTADO</th>
             <th>FECHA</th>
-            <th>DETALLE</th>  <!-- ← nuevo -->
+            <th>DETALLE</th>
           </tr>
           </thead>
           <tbody>
@@ -205,15 +204,13 @@
             <td>{{ a.descripcion }}</td>
             <td><small>{{ a.ip }}</small></td>
             <td>
-      <span class="badge" [ngClass]="a.resultado === 'EXITOSO' ? 'activo' : 'inactivo'">
-        {{ a.resultado }}
-      </span>
+              <span class="badge" [ngClass]="a.resultado === 'EXITOSO' ? 'activo' : 'inactivo'">
+                {{ a.resultado }}
+              </span>
             </td>
             <td><small>{{ a.fechaHora | date:'dd/MM/yyyy HH:mm:ss' }}</small></td>
-            <td>  <!-- ← nuevo -->
-              <button *ngIf="tieneDetalle(a)" class="btn-detalle" (click)="verDetalle(a)">
-                Ver
-              </button>
+            <td>
+              <button *ngIf="tieneDetalle(a)" class="btn-detalle" (click)="verDetalle(a)">Ver</button>
               <span *ngIf="!tieneDetalle(a)" style="color:#4a4a4a;font-size:11px;">—</span>
             </td>
           </tr>
@@ -264,10 +261,195 @@
       </div>
     </div>
 
+    <!-- TAB 2: ESTADÍSTICAS BD -->
+    <div class="tab-content tab-stats" *ngIf="tabActiva === 2">
+
+      <div *ngIf="!statsBD" class="empty-message">Cargando estadísticas...</div>
+
+      <div *ngIf="statsBD">
+
+        <!-- SUB-TABS -->
+        <div class="subtabs-container">
+          <button class="subtab" [class.active]="subTabActiva === 0" (click)="subTabActiva = 0">Vista General</button>
+          <button class="subtab" [class.active]="subTabActiva === 1" (click)="subTabActiva = 1">Tablas & Bloqueos</button>
+          <button class="subtab" [class.active]="subTabActiva === 2" (click)="subTabActiva = 2">Historial de Queries</button>
+        </div>
+
+        <!-- SUB-TAB 0: VISTA GENERAL -->
+        <div *ngIf="subTabActiva === 0">
+
+          <!-- Cards BD -->
+          <div class="stats-bar" style="margin-bottom:20px">
+            <div class="stat-card">
+              <div class="stat-icon sc-green">✅</div>
+              <div class="stat-info">
+                <span class="stat-num">{{ statsBD.transaccionesCommit }}</span>
+                <span class="stat-label">Commits</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon sc-red">↩</div>
+              <div class="stat-info">
+                <span class="stat-num">{{ statsBD.transaccionesRollback }}</span>
+                <span class="stat-label">Rollbacks</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon sc-blue">⚡</div>
+              <div class="stat-info">
+                <span class="stat-num">{{ statsBD.cacheHitRatio }}%</span>
+                <span class="stat-label">Cache Hit Ratio</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon sc-purple">🔗</div>
+              <div class="stat-info">
+                <span class="stat-num">{{ statsBD.historialQueries?.length || 0 }}</span>
+                <span class="stat-label">Queries Registradas</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- GRÁFICOS -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px">
+
+            <div style="background:#0d0d0d; border:1px solid #1e1e1e; border-radius:10px; padding:16px">
+              <h4 style="color:#39ff14; font-size:11px; letter-spacing:1.5px; margin:0 0 14px; font-weight:600">ACTIVIDAD POR TABLA</h4>
+              <div style="height:230px; position:relative"><canvas id="chartActividad"></canvas></div>
+            </div>
+
+            <div style="background:#0d0d0d; border:1px solid #1e1e1e; border-radius:10px; padding:16px">
+              <h4 style="color:#39ff14; font-size:11px; letter-spacing:1.5px; margin:0 0 14px; font-weight:600">COMMITS VS ROLLBACKS</h4>
+              <div style="height:230px; position:relative"><canvas id="chartCommits"></canvas></div>
+            </div>
+
+            <div style="background:#0d0d0d; border:1px solid #1e1e1e; border-radius:10px; padding:16px; display:flex; flex-direction:column; align-items:center">
+              <h4 style="color:#39ff14; font-size:11px; letter-spacing:1.5px; margin:0 0 14px; font-weight:600; align-self:flex-start">CACHE HIT RATIO</h4>
+              <div style="height:160px; width:80%; position:relative"><canvas id="chartCache"></canvas></div>
+              <div style="font-size:32px; font-weight:700; color:#00bcd4; margin-top:-24px; letter-spacing:-1px">{{ statsBD.cacheHitRatio }}%</div>
+              <small style="color:#444; margin-top:4px; font-size:10px">Ideal &gt; 99% — Mayor es mejor</small>
+            </div>
+
+            <div style="background:#0d0d0d; border:1px solid #1e1e1e; border-radius:10px; padding:16px">
+              <h4 style="color:#39ff14; font-size:11px; letter-spacing:1.5px; margin:0 0 14px; font-weight:600">TAMAÑO DE TABLAS (kB)</h4>
+              <div style="height:230px; position:relative"><canvas id="chartTamanio"></canvas></div>
+            </div>
+
+          </div>
+          <small style="color:#333; display:block; margin-top:16px">↻ Auto-refresh cada 10 segundos</small>
+        </div>
+
+        <!-- SUB-TAB 1: TABLAS & BLOQUEOS -->
+        <div *ngIf="subTabActiva === 1">
+
+          <h3 style="color:#39ff14; margin-bottom:10px; font-size:13px; letter-spacing:1px;">TABLAS MÁS ACTIVAS</h3>
+          <div class="table-container" style="margin-bottom:24px">
+            <table class="data-table">
+              <thead>
+              <tr>
+                <th>SCHEMA</th><th>TABLA</th><th>INSERTS</th><th>UPDATES</th><th>DELETES</th><th>FILAS VIVAS</th><th>TAMAÑO</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let t of statsBD.tablasActivas">
+                <td><small>{{ t[0] }}</small></td>
+                <td><strong>{{ t[1] }}</strong></td>
+                <td>{{ t[2] }}</td>
+                <td>{{ t[3] }}</td>
+                <td>{{ t[4] }}</td>
+                <td>{{ t[5] }}</td>
+                <td><span class="badge accion-badge">{{ t[6] }}</span></td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 style="color:#39ff14; margin-bottom:10px; font-size:13px; letter-spacing:1px;">BLOQUEOS ACTIVOS</h3>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+              <tr><th>PID</th><th>USUARIO</th><th>TABLA (OID)</th><th>MODO</th><th>CONCEDIDO</th></tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let l of statsBD.bloqueos">
+                <td><small>{{ l[0] }}</small></td>
+                <td><strong>{{ l[1] }}</strong></td>
+                <td><small>{{ l[2] }}</small></td>
+                <td><span class="badge accion-badge">{{ l[3] }}</span></td>
+                <td>
+                  <span class="badge" [ngClass]="l[4] ? 'activo' : 'inactivo'">
+                    {{ l[4] ? 'Sí' : 'No' }}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="!statsBD.bloqueos?.length">
+                <td colspan="5" class="empty-message">Sin bloqueos activos</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+          <small style="color:#333; display:block; margin-top:16px">↻ Auto-refresh cada 10 segundos</small>
+        </div>
+
+        <!-- SUB-TAB 2: HISTORIAL -->
+        <div *ngIf="subTabActiva === 2">
+          <div class="toolbar" style="margin-bottom:12px">
+            <div class="filters-group">
+              <span style="font-family:'Space Mono',monospace; font-size:12px; font-weight:700; color:#39ff14; letter-spacing:1px; white-space:nowrap">
+                {{ historialFiltrado.length }} de {{ statsBD.historialQueries?.length || 0 }} queries
+              </span>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center">
+              <div class="search-container" style="max-width:300px">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input"
+                       [(ngModel)]="busquedaHistorial"
+                       (input)="filtrarHistorial()"
+                       placeholder="Filtrar por tabla, query...">
+              </div>
+              <select class="filter-select" [(ngModel)]="ordenHistorial" (change)="filtrarHistorial()">
+                <option value="tiempo">Mayor tiempo total</option>
+                <option value="llamadas">Más llamadas</option>
+                <option value="promedio">Mayor promedio</option>
+                <option value="filas">Más filas</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+              <tr>
+                <th>QUERY</th>
+                <th>LLAMADAS</th>
+                <th>TIEMPO TOTAL (ms)</th>
+                <th>PROMEDIO (ms)</th>
+                <th>FILAS</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let q of historialFiltrado">
+                <td><small style="font-family:monospace; color:#aaa">{{ q[0] }}</small></td>
+                <td>{{ q[1] }}</td>
+                <td>{{ q[2] }}</td>
+                <td>{{ q[3] }}</td>
+                <td>{{ q[4] }}</td>
+              </tr>
+              <tr *ngIf="!historialFiltrado.length">
+                <td colspan="5" class="empty-message">Sin resultados</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+          <small style="color:#333; display:block; margin-top:16px">↻ Auto-refresh cada 10 segundos</small>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
   <!-- MODAL FORZAR LOGOUT -->
-  <div class="modal-overlay" *ngIf="modalForzarAbierto" >
+  <div class="modal-overlay" *ngIf="modalForzarAbierto">
     <div class="modal-box" (click)="$event.stopPropagation()">
       <div class="modal-icon">⚠</div>
       <h3 class="modal-titulo">Forzar cierre de sesión</h3>
@@ -285,8 +467,9 @@
       </div>
     </div>
   </div>
+
   <!-- MODAL ERROR -->
-  <div class="modal-overlay" *ngIf="modalErrorAbierto" >
+  <div class="modal-overlay" *ngIf="modalErrorAbierto">
     <div class="modal-box" (click)="$event.stopPropagation()">
       <div class="modal-icon">🚫</div>
       <h3 class="modal-titulo" style="color:#ff4444">Acción no permitida</h3>
@@ -296,8 +479,9 @@
       </div>
     </div>
   </div>
+
   <!-- MODAL DETALLE AUDITORÍA -->
-  <div class="modal-overlay" *ngIf="modalDetalleAbierto" >
+  <div class="modal-overlay" *ngIf="modalDetalleAbierto">
     <div class="modal-detalle" (click)="$event.stopPropagation()">
 
       <div class="modal-detalle-header">
@@ -310,7 +494,6 @@
 
       <div class="modal-detalle-body">
 
-        <!-- Solo datos nuevos (CREAR) -->
         <ng-container *ngIf="!parsearJSON(auditoriaDetalle?.datosAnteriores) && parsearJSON(auditoriaDetalle?.datosNuevos)">
           <div class="detalle-seccion nuevo">
             <div class="detalle-seccion-titulo">✦ Datos creados</div>
@@ -323,7 +506,6 @@
           </div>
         </ng-container>
 
-        <!-- Comparación antes/después (EDITAR) -->
         <ng-container *ngIf="parsearJSON(auditoriaDetalle?.datosAnteriores) && parsearJSON(auditoriaDetalle?.datosNuevos)">
           <div class="detalle-comparacion">
             <div class="detalle-seccion antes">
@@ -333,8 +515,8 @@
                   <span class="detalle-key">{{ item.key }}</span>
                   <span class="detalle-val antes-val"
                         [class.changed]="parsearJSON(auditoriaDetalle?.datosNuevos)?.[item.key] !== item.value">
-                  {{ item.value }}
-                </span>
+                    {{ item.value }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -345,15 +527,14 @@
                   <span class="detalle-key">{{ item.key }}</span>
                   <span class="detalle-val despues-val"
                         [class.changed]="parsearJSON(auditoriaDetalle?.datosAnteriores)?.[item.key] !== item.value">
-                  {{ item.value }}
-                </span>
+                    {{ item.value }}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         </ng-container>
 
-        <!-- Solo datos anteriores (DESACTIVAR) -->
         <ng-container *ngIf="parsearJSON(auditoriaDetalle?.datosAnteriores) && !parsearJSON(auditoriaDetalle?.datosNuevos)">
           <div class="detalle-seccion antes">
             <div class="detalle-seccion-titulo">← Estado anterior</div>
@@ -369,4 +550,5 @@
       </div>
     </div>
   </div>
+
 </div>
