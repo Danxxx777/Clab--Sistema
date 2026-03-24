@@ -222,38 +222,42 @@
       <!-- CONECTADO -->
       @if(driveEstado?.conectado) {
         <div class="drive-hero-body">
-          <div class="drive-info-grid">
-            <div class="drive-info-card">
-              <span class="drive-info-label">Client ID</span>
-              <span class="drive-info-value mono">{{ driveEstado?.clientIdPreview }}</span>
-            </div>
-            <div class="drive-info-card">
-              <span class="drive-info-label">Carpeta en Drive</span>
-              <span class="drive-info-value">{{ driveEstado?.folderNombre || driveEstado?.folderId }}</span>
-            </div>
-            <div class="drive-info-card">
-              <span class="drive-info-label">Cuenta</span>
-              <span class="drive-info-value">{{ driveEstado?.emailCuenta || '—' }}</span>
-            </div>
-            <div class="drive-info-card">
-              <span class="drive-info-label">Última actualización</span>
-              <span class="drive-info-value mono">{{ driveEstado?.fechaActualizacion | date:'dd/MM/yyyy HH:mm' }}</span>
-            </div>
-          </div>
-          <div class="drive-actions">
-            <button class="btn-drive-verificar" (click)="verificarDrive()" [disabled]="verificandoDrive">
-              <span *ngIf="!verificandoDrive">↻ Verificar conexión</span>
-              <span *ngIf="verificandoDrive" class="btn-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
-            </button>
-            <button class="btn-drive-config" (click)="abrirModalDrive()">⚙️ Editar configuración</button>
-            <button class="btn-drive-revocar" (click)="confirmarRevocarDrive()">⊘ Revocar autorización</button>
-          </div>
-          <div class="drive-hint exito" *ngIf="mensajeDrive && !errorDrive">{{ mensajeDrive }}</div>
-          <div class="drive-hint error"  *ngIf="mensajeDrive && errorDrive">{{ mensajeDrive }}</div>
-        </div>
-      }
+          <!--<div class="drive-hint exito" *ngIf="driveEstado?.clientIdPreview">
+           ✅ Credenciales configuradas ({{ driveEstado?.clientIdPreview }}).
+           Haz clic en "Conectar Google Drive" para autorizar.
+         </div>-->
+         <div class="drive-info-grid">
+           <div class="drive-info-card">
+             <span class="drive-info-label">Client ID</span>
+             <span class="drive-info-value mono">{{ driveEstado?.clientIdPreview }}</span>
+           </div>
+           <div class="drive-info-card">
+             <span class="drive-info-label">Carpeta en Drive</span>
+             <span class="drive-info-value">{{ driveEstado?.folderNombre || driveEstado?.folderId }}</span>
+           </div>
+           <div class="drive-info-card">
+             <span class="drive-info-label">Cuenta</span>
+             <span class="drive-info-value">{{ driveEstado?.emailCuenta || '—' }}</span>
+           </div>
+           <div class="drive-info-card">
+             <span class="drive-info-label">Última actualización</span>
+             <span class="drive-info-value mono">{{ driveEstado?.fechaActualizacion | date:'dd/MM/yyyy HH:mm' }}</span>
+           </div>
+         </div>
+         <div class="drive-actions">
+           <button class="btn-drive-verificar" (click)="verificarDrive()" [disabled]="verificandoDrive">
+             <span *ngIf="!verificandoDrive">↻ Verificar conexión</span>
+             <span *ngIf="verificandoDrive" class="btn-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+           </button>
+           <button class="btn-drive-config" (click)="abrirModalDrive()">⚙️ Editar configuración</button>
+           <button class="btn-drive-revocar" (click)="confirmarRevocarDrive()">⊘ Revocar autorización</button>
+         </div>
+         <div class="drive-hint exito" *ngIf="mensajeDrive && !errorDrive">{{ mensajeDrive }}</div>
+         <div class="drive-hint error"  *ngIf="mensajeDrive && errorDrive">{{ mensajeDrive }}</div>
+       </div>
+     }
 
-      <!-- DESCONECTADO -->
+     <!-- DESCONECTADO -->
       @if(!driveEstado?.conectado) {
         <div class="drive-hero-body">
           <p class="drive-desc">Conecta tu cuenta de Google Drive para subir backups automáticamente. Una vez conectado, todos los backups con destino "Drive" se subirán a tu carpeta configurada.</p>

@@ -13,6 +13,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -32,6 +34,7 @@ public class AuthService {
     private final RolPermisoRepository rolPermisoRepository;
     private final AuditoriaService auditoriaService;
     private final ModuloRolRepository moduloRolRepository;
+
 
     public AuthService(PasswordEncoder passwordEncoder,
                        AuthenticationManager authenticationManager,
@@ -55,6 +58,8 @@ public class AuthService {
         this.auditoriaService = auditoriaService;
         this.moduloRolRepository = moduloRolRepository;
     }
+    @PersistenceContext
+    private EntityManager entityManager;
 
     private List<String> obtenerPermisosDeRol(String nombreRol) {
         return rolRepository.findByNombreRolIgnoreCase(nombreRol).map(rol -> rolPermisoRepository
@@ -84,21 +89,34 @@ public class AuthService {
 
     // ─── LOGIN ───────────────────────────────────────────────────────────────
     public AuthResponseDTO login(LoginRequestDTO request, String ip) {
+
+        // 1. Verificar si la BD tiene datos reales ANTES de autenticar
         try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getUsuario(), request.getContrasenia())
-            );
-        } catch (Exception e) {
-            try {
-                auditoriaService.registrarFallo(null, request.getUsuario(),
-                        "LOGIN", "AUTH", "Intento de login fallido: credenciales incorrectas", ip);
-            } catch (Exception ignored) {}
+            Long count = (Long) entityManager.createNativeQuery(
+                    "SELECT COUNT(*) FROM pg_proc p JOIN pg_namespace n ON p.pronamespace = n.oid WHERE n.nspname = 'usuarios'"
+            ).getSingleResult();
+            if (count == null || count == 0) {
+                throw new RuntimeException("__BD_VACIA__");
+            }
+        } catch (RuntimeException e) {
             throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("__BD_VACIA__");
         }
 
+        // 2. Buscar usuario manualmente
         Usuario usuario = usuarioRepository
                 .findByUsuarioAndEstado(request.getUsuario(), "ACTIVO")
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado o inactivo"));
+
+        // 3. Verificar contraseña manualmente (sin authenticationManager)
+        if (!passwordEncoder.matches(request.getContrasenia(), usuario.getContrasenia())) {
+            try {
+                auditoriaService.registrarFallo(usuario.getIdUsuario(), request.getUsuario(),
+                        "LOGIN", "AUTH", "Intento de login fallido: contraseña incorrecta", ip);
+            } catch (Exception ignored) {}
+            throw new RuntimeException("Contraseña incorrecta");
+        }
 
         List<UsuarioRol> rolesVigentes = usuarioRolRepository
                 .findAllByUsuario_IdUsuarioAndVigenteTrue(usuario.getIdUsuario())
