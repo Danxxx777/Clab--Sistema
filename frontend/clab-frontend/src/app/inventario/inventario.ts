@@ -169,6 +169,7 @@ export class InventarioComponent implements OnInit {
       e.nombreTipoEquipo.toLowerCase().includes(b) ||
       e.nombreLaboratorio.toLowerCase().includes(b)
     );
+    this.paginaActualEquipos = 1;
   }
 
   filtrarTipos(): void {
@@ -176,6 +177,7 @@ export class InventarioComponent implements OnInit {
     this.tiposFiltrados = this.tiposEquipo.filter(t =>
       t.nombre.toLowerCase().includes(b)
     );
+    this.paginaActualTipos = 1;
   }
 
   mostrarDetalleTipo = false;
@@ -384,9 +386,6 @@ export class InventarioComponent implements OnInit {
 
   cerrarModalTipo(): void { this.mostrarModalTipo = false; }
 
-  // ── TIPO EQUIPO SERVICE — ajuste de interfaz ────────────────
-  // El service.actualizar y service.crear deben aceptar nombreTipo
-  // Actualiza TipoEquipoService si el payload cambió
 
   // ── NAVEGACIÓN ──────────────────────────────────────────────
 
@@ -415,5 +414,57 @@ export class InventarioComponent implements OnInit {
       fechaAdquisicion: '',
       ubicacionFisica: ''
     };
+  }
+
+  // ══ PAGINACIÓN EQUIPOS ═══════════════════════════════════════
+  paginaActualEquipos = 1;
+  itemsPorPaginaEquipos = 6;
+
+  get totalPaginasEquipos(): number {
+    return Math.ceil(this.equiposFiltrados.length / this.itemsPorPaginaEquipos);
+  }
+
+  get equiposPaginados(): Equipo[] {
+    const i = (this.paginaActualEquipos - 1) * this.itemsPorPaginaEquipos;
+    return this.equiposFiltrados.slice(i, i + this.itemsPorPaginaEquipos);
+  }
+
+  get paginasEquipos(): number[] {
+    return Array.from({ length: this.totalPaginasEquipos }, (_, i) => i + 1);
+  }
+
+  cambiarPaginaEquipos(p: number): void {
+    if (p >= 1 && p <= this.totalPaginasEquipos) {
+      this.paginaActualEquipos = p;
+      this.cdr.detectChanges();
+    }
+  }
+
+// ══ PAGINACIÓN TIPOS ═════════════════════════════════════════
+  paginaActualTipos = 1;
+  itemsPorPaginaTipos = 6;
+
+  get totalPaginasTiposEquipo(): number {
+    return Math.ceil(this.tiposFiltrados.length / this.itemsPorPaginaTipos);
+  }
+
+  get tiposPaginados(): TipoEquipo[] {
+    const i = (this.paginaActualTipos - 1) * this.itemsPorPaginaTipos;
+    return this.tiposFiltrados.slice(i, i + this.itemsPorPaginaTipos);
+  }
+
+  get paginasTiposEquipo(): number[] {
+    return Array.from({ length: this.totalPaginasTiposEquipo }, (_, i) => i + 1);
+  }
+
+  cambiarPaginaTipos(p: number): void {
+    if (p >= 1 && p <= this.totalPaginasTiposEquipo) {
+      this.paginaActualTipos = p;
+      this.cdr.detectChanges();
+    }
+  }
+
+  limpiarSerie(): void {
+    this.formEquipo.noSerie = this.formEquipo.noSerie.replace(/[^a-zA-Z0-9\-]/g, '');
   }
 }

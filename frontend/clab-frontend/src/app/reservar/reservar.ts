@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import { TipoReservaService } from '../services/tipo-reserva.service';
 import { ReservaService } from '../services/reserva.service';
 import { LaboratorioService } from '../services/laboratorio.service';
@@ -251,7 +253,6 @@ export class ReservarComponent implements OnInit {
     }
   }
 
-  // ══ NUEVO: cambio de tipo de reserva ════════════════════════════════════
   onTipoReservaChange(): void {
     if (this.tipoSinAsignatura) {
       this.formularioReserva.id_asignatura = null;
@@ -331,6 +332,22 @@ export class ReservarComponent implements OnInit {
     this.formularioTipo = { nombre_tipo: '', descripcion: '', estado: 'Activo' };
   }
 
+  // ══ VERIFICAR BLOQUEO ════════════════════════════════════════════════════
+  verificarBloqueoLab(codLaboratorio: number, fecha: string): Observable<boolean> {
+    return this.http.get<any[]>(`${this.apiUrl}/bloqueos`).pipe(
+      map(bloqueos => {
+        const fechaReserva = new Date(fecha + 'T00:00:00');
+        return bloqueos.some(b => {
+          if (Number(b.codLaboratorio) !== Number(codLaboratorio)) return false;
+          if (b.estado?.toLowerCase() !== 'activo') return false;
+          const inicio = new Date(b.fechaInicio + 'T00:00:00');
+          const fin    = new Date(b.fechaFin    + 'T00:00:00');
+          return fechaReserva >= inicio && fechaReserva <= fin;
+        });
+      })
+    );
+  }
+
   // ══ CRUD RESERVAS ════════════════════════════════════════════════════════
   guardarReserva(): void {
     if (this.formularioReserva.esRecurrente) {
@@ -392,13 +409,38 @@ export class ReservarComponent implements OnInit {
           error: () => this.mostrarNotificacion('❌ Error al actualizar la reserva', 'error')
         });
       } else {
-        this.reservaService.crearAdmin(dto).subscribe({
-          next: () => {
-            this.cargarReservas(); this.cerrarModal();
-            this.mostrarNotificacion('✅ Reserva creada exitosamente');
-            if (this.tabActiva === 0) { this.cal_cargarReservas(); }
-          },
-          error: () => this.mostrarNotificacion('❌ Error al crear la reserva', 'error')
+        // Verificar bloqueo antes de crear
+        this.verificarBloqueoLab(
+          this.formularioReserva.cod_laboratorio,
+          this.formularioReserva.fecha_reserva
+        ).subscribe(estaBloqueado => {
+          if (estaBloqueado) {
+            this.mostrarNotificacion('❌ El laboratorio está bloqueado en esa fecha', 'error');
+            this.cdr.detectChanges();
+            return;
+          }
+          this.reservaService.crearAdmin(dto).subscribe({
+            next: () => {
+              this.cargarReservas();
+              this.cerrarModal();
+              this.mostrarNotificacion('✅ Reserva creada exitosamente');
+              if (this.tabActiva === 0) { this.cal_cargarReservas(); }
+            },
+            error: (err) => {
+              const rawMsg: string = err.error?.mensaje || err.error?.message ||
+                err.error?.error || err.message || '';
+              let mensajeUsuario = 'Error al crear la reserva';
+              if (rawMsg.toLowerCase().includes('ya está reservado') ||
+                rawMsg.toLowerCase().includes('ya esta reservado')) {
+                mensajeUsuario = '❌ El laboratorio ya está reservado en ese horario';
+              } else if (rawMsg.toLowerCase().includes('bloqueado')) {
+                mensajeUsuario = '❌ El laboratorio está bloqueado en esa fecha';
+              } else if (rawMsg) {
+                mensajeUsuario = '❌ ' + rawMsg;
+              }
+              this.mostrarNotificacion(mensajeUsuario, 'error');
+            }
+          });
         });
       }
     }
