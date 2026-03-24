@@ -28,13 +28,11 @@ import javax.sql.DataSource;
 @RequiredArgsConstructor
 public class BackupService {
 
-    // Repositorios
     private final BackupRegistroRepository registroRepository;
     private final BackupConfigRepository   configRepository;
     private final DataSource               dataSource;
     private final GoogleDriveService       googleDriveService;
 
-    // Configuración desde application.properties
     @Value("${backup.ruta-local:/backups}")
     private String rutaLocal;
 
@@ -64,6 +62,11 @@ public class BackupService {
 
     private static final DateTimeFormatter FORMATO_FECHA =
             DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+
+    private static final String[] ROLES_CLAB = {
+            "clab_decano", "clab_administrador", "clab_coordinador",
+            "clab_docente", "clab_encargado_lab", "clab_test"
+    };
 
     // =========================================================
     // SECCIÓN 1: CONFIGURACIÓN
@@ -122,7 +125,6 @@ public class BackupService {
         configRepository.findById(1L).ifPresent(config -> {
             int retencion = config.getRetencion();
 
-            // ── LOCAL ──────────────────────────────────────────────
             long total = registroRepository.count();
             if (total > retencion) {
                 int cantidadABorrar = (int)(total - retencion);
@@ -145,7 +147,6 @@ public class BackupService {
                 log.info("Retención local: {} backups, límite {}. Nada que borrar.", total, retencion);
             }
 
-            // ── DRIVE ──────────────────────────────────────────────
             if (!config.isGuardarDrive()) return;
 
             try {
@@ -249,16 +250,13 @@ public class BackupService {
                 .build();
 
         try {
-            // Paso 1: Crear carpeta si no existe
             crearCarpetaSiNoExiste(rutaEfectiva);
 
-            // Paso 2: Determinar tablas según modalidad
             List<String> tablasAIncluir = obtenerTablasParaModalidad(modalidad);
             registro.setTablasIncluidas(tablasAIncluir == null ? null : tablasAIncluir.size());
             log.info("Modalidad {}: {} tablas a incluir",
                     modalidad, tablasAIncluir == null ? "TODAS" : tablasAIncluir.size());
 
-            // Paso 3: Construir comando pg_dump
             java.util.List<String> comando = new java.util.ArrayList<>(java.util.Arrays.asList(
                     pgDumpPath, "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", dbNombre
             ));
@@ -271,8 +269,8 @@ public class BackupService {
                 comando.add("--on-conflict-do-nothing");
             }
 
-            comando.add("--exclude-table"); comando.add("configuracion.backup_registro");
-            comando.add("--exclude-table"); comando.add("configuracion.backup_config");
+            comando.add("--exclude-table-data"); comando.add("configuracion.backup_registro");
+            comando.add("--exclude-table-data"); comando.add("configuracion.backup_config");
             comando.add("-f"); comando.add(rutaArchivo);
 
             if (tablasAIncluir != null) {
@@ -298,27 +296,23 @@ public class BackupService {
             pb.environment().put("PGPASSWORD", dbPassword);
             pb.redirectErrorStream(true);
 
-            // Paso 4: Ejecutar
             log.info("Ejecutando pg_dump → {}", rutaArchivo);
             Process proceso      = pb.start();
             String salidaProceso = new String(proceso.getInputStream().readAllBytes());
             int    codigoSalida  = proceso.waitFor();
 
-            // Paso 5: Verificar resultado
             if (codigoSalida == 0) {
                 if (esCustom) {
-                    // Empaquetar en ZIP con instrucciones de restauración
                     try {
-                        Path   zipPath  = empaquetarEnZip(rutaArchivo, nombreArchivo, modalidad.name(), ahora);
-                        String rutaZip  = zipPath.toString();
+                        Path   zipPath   = empaquetarEnZip(rutaArchivo, nombreArchivo, modalidad.name(), ahora);
+                        String rutaZip   = zipPath.toString();
                         String nombreZip = zipPath.getFileName().toString();
-                        String tamano   = calcularTamanoArchivo(rutaZip);
+                        String tamano    = calcularTamanoArchivo(rutaZip);
 
                         registro.setEstado(BackupRegistro.EstadoBackup.EXITOSO);
                         registro.setTamano(tamano);
                         registro.setRutaLocal(rutaZip);
                         log.info("Backup CUSTOM empaquetado en ZIP: {} ({})", nombreZip, tamano);
-
                         subirADriveSiCorresponde(registro, zipPath, nombreZip);
                     } catch (IOException e) {
                         log.error("No se pudo empaquetar en ZIP, guardando .backup original: {}", e.getMessage());
@@ -353,12 +347,8 @@ public class BackupService {
             log.error("Backup interrumpido", e);
         }
 
-        // Paso 6: Guardar registro en BD siempre (éxito o fallo)
         BackupRegistro guardado = registroRepository.save(registro);
-
-        // Paso 7: Aplicar retención
         aplicarRetencion();
-
         return guardado;
     }
 
@@ -409,40 +399,7 @@ PASO 3 — Restaurar el backup
    (algunos warnings en amarillo son normales)
 
 -------------------------------------------------------
-PASO 4 — Crear usuario administrador temporal
--------------------------------------------------------
-En pgAdmin abre el Query Tool (ícono de rayo) con la
-BD CLAB seleccionada, pega y ejecuta este script:
-
--- Insertar usuario administrador temporal
-INSERT INTO usuarios.u_usuario (
-    usuario, nombres, apellidos, email,
-    identidad, contrasenia, estado, primer_login, fecha_registro
-) VALUES (
-    'admin_clab',
-    'Administrador',
-    'CLAB',
-    'admin@clab.com',
-    '0000000000',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
-    'ACTIVO',
-    false,
-    CURRENT_DATE
-);
-
--- Asignar rol Administradorr
-INSERT INTO usuarios.u_usuario_roles (
-    id_usuario, id_rol, vigente, fecha_asignacion
-)
-SELECT u.id_usuario, 1, true, CURRENT_DATE
-FROM usuarios.u_usuario u
-WHERE u.usuario = 'admin_clab';
-
-Usuario:    admin_clab
-Contraseña: Admin2026*
-
--------------------------------------------------------
-PASO 5 — Iniciar la aplicación CLAB
+PASO 4 — Iniciar la aplicación CLAB
 -------------------------------------------------------
 Ejecuta el backend:
   java -jar clab-backend.jar
@@ -450,23 +407,7 @@ Ejecuta el backend:
 Luego abre el navegador en:
   http://localhost:4200
 
-Ingresa con:
-  Usuario:    admin_clab
-  Contraseña: Admin2026*
-
--------------------------------------------------------
-PASO 6 — Después de ingresar
--------------------------------------------------------
-1. Ve a Configuración de Correo y verifica el SMTP
-2. Ve a Backups y verifica la configuración
-3. Una vez todo funcione, elimina el usuario temporal:
-
-DELETE FROM usuarios.u_usuario_roles
-WHERE id_usuario = (
-    SELECT id_usuario FROM usuarios.u_usuario
-    WHERE usuario = 'admin_clab'
-);
-DELETE FROM usuarios.u_usuario WHERE usuario = 'admin_clab';
+Ingresa con tus credenciales reales.
 
 =======================================================
   Generado automáticamente por CLAB Sistema v1.0
@@ -479,23 +420,19 @@ DELETE FROM usuarios.u_usuario WHERE usuario = 'admin_clab';
                 nombreArchivo,
                 fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))
         );
+
         try (java.util.zip.ZipOutputStream zos =
                      new java.util.zip.ZipOutputStream(Files.newOutputStream(pathZip))) {
-
-            // Entrada 1: el archivo .backup
             zos.putNextEntry(new java.util.zip.ZipEntry(nombreArchivo));
             Files.copy(pathBackup, zos);
             zos.closeEntry();
 
-            // Entrada 2: instrucciones
             zos.putNextEntry(new java.util.zip.ZipEntry("INSTRUCCIONES.txt"));
             zos.write(instrucciones.getBytes(java.nio.charset.StandardCharsets.UTF_8));
             zos.closeEntry();
         }
 
-        // Eliminar el .backup original — ya está dentro del ZIP
         Files.deleteIfExists(pathBackup);
-
         log.info("Backup empaquetado en ZIP con instrucciones: {}", rutaZip);
         return pathZip;
     }
@@ -671,7 +608,7 @@ DELETE FROM usuarios.u_usuario WHERE usuario = 'admin_clab';
     }
 
     private BackupRespuestaDTO ejecutarRestauracion(Path rutaArchivo) {
-        Path tempDir    = null;
+        Path tempDir     = null;
         Path archivoReal = rutaArchivo;
 
         try {
@@ -685,16 +622,19 @@ DELETE FROM usuarios.u_usuario WHERE usuario = 'admin_clab';
             }
 
             boolean esCustom = archivoReal.toString().endsWith(".backup");
-// Terminar todas las conexiones activas a la BD
+
+            // ── PASO 1: Terminar conexiones activas ──────────────────────────
             ProcessBuilder pbKill = new ProcessBuilder(
                     psqlPath, "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", "postgres",
-                    "-c", "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '" + dbNombre + "' AND pid <> pg_backend_pid()"
+                    "-c", "SELECT pg_terminate_backend(pid) FROM pg_stat_activity " +
+                    "WHERE datname = '" + dbNombre + "' AND pid <> pg_backend_pid()"
             );
             pbKill.environment().put("PGPASSWORD", dbPassword);
             pbKill.redirectErrorStream(true);
             pbKill.start().waitFor();
             log.info("Conexiones a {} terminadas", dbNombre);
-            // DROP y CREATE de la BD completa desde master
+
+            // ── PASO 2: DROP y CREATE de la BD ───────────────────────────────
             try {
                 ProcessBuilder pbDrop = new ProcessBuilder(
                         psqlPath, "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", "postgres",
@@ -717,50 +657,125 @@ DELETE FROM usuarios.u_usuario WHERE usuario = 'admin_clab';
                 String createSalida = new String(createProc.getInputStream().readAllBytes());
                 createProc.waitFor();
                 log.info("CREATE DATABASE ejecutado: {}", createSalida);
-
             } catch (Exception e) {
                 log.warn("No se pudo recrear la BD: {}", e.getMessage());
             }
 
-            // Construir comando según formato
-            java.util.List<String> comando;
+            // ── PASO 3: Crear roles de BD antes del restore ──────────────────
+            for (String rol : ROLES_CLAB) {
+                try {
+                    ProcessBuilder pbRol = new ProcessBuilder(
+                            psqlPath, "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", "postgres",
+                            "-c", "DO $$ BEGIN " +
+                            "CREATE ROLE \"" + rol + "\" WITH NOLOGIN; " +
+                            "EXCEPTION WHEN duplicate_object THEN NULL; " +
+                            "END $$;"
+                    );
+                    pbRol.environment().put("PGPASSWORD", dbPassword);
+                    pbRol.redirectErrorStream(true);
+                    pbRol.start().waitFor();
+                    log.info("Rol BD creado (o ya existía): {}", rol);
+                } catch (Exception e) {
+                    log.warn("No se pudo crear rol {}: {}", rol, e.getMessage());
+                }
+            }
+
             if (esCustom) {
-                comando = new java.util.ArrayList<>(java.util.Arrays.asList(
-                        pgRestorePath,
-                        "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", dbNombre,
-                        "--no-owner", "--no-privileges", "--no-acl",
-                        "-v",
-                        archivoReal.toString()
-                ));
+                // ── PASO 4a: Restaurar estructura y funciones ─────────────────
+                // --section=pre-data : schemas, tablas, secuencias, funciones
+                // --section=post-data: constraints, triggers, índices
+                log.info("Restaurando estructura y funciones (pre-data + post-data)...");
+                java.util.List<String> comandoEstructura = new java.util.ArrayList<>(
+                        java.util.Arrays.asList(
+                                pgRestorePath,
+                                "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", dbNombre,
+                                "--section=pre-data",
+                                "--section=post-data",
+                                "-v",
+                                archivoReal.toString()
+                        )
+                );
+                ProcessBuilder pbEstructura = new ProcessBuilder(comandoEstructura);
+                pbEstructura.environment().put("PGPASSWORD", dbPassword);
+                pbEstructura.redirectErrorStream(true);
+                Process procEstructura = pbEstructura.start();
+                String salidaEstructura = new String(procEstructura.getInputStream().readAllBytes());
+                int codigoEstructura = procEstructura.waitFor();
+                log.info("Estructura restaurada (código {})", codigoEstructura);
+                if (!salidaEstructura.isBlank()) {
+                    log.debug("Salida estructura: {}", salidaEstructura);
+                }
+
+                // ── PASO 4b: Restaurar solo datos ignorando FKs ───────────────
+                // --section=data      : solo los COPY/INSERT de datos
+                // --disable-triggers  : desactiva triggers temporalmente para
+                //                       evitar errores de FK por orden de inserción
+                log.info("Restaurando datos (--section=data --disable-triggers)...");
+                java.util.List<String> comandoDatos = new java.util.ArrayList<>(
+                        java.util.Arrays.asList(
+                                pgRestorePath,
+                                "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", dbNombre,
+                                "--section=data",
+                                "--disable-triggers",
+                                "-v",
+                                archivoReal.toString()
+                        )
+                );
+                ProcessBuilder pbDatos = new ProcessBuilder(comandoDatos);
+                pbDatos.environment().put("PGPASSWORD", dbPassword);
+                pbDatos.redirectErrorStream(true);
+                Process procDatos = pbDatos.start();
+                String salidaDatos = new String(procDatos.getInputStream().readAllBytes());
+                int codigoDatos = procDatos.waitFor();
+                log.info("Datos restaurados (código {})", codigoDatos);
+                if (!salidaDatos.isBlank()) {
+                    log.debug("Salida datos: {}", salidaDatos);
+                }
+
+                if ((codigoEstructura != 0 && codigoEstructura != 1) ||
+                        (codigoDatos != 0 && codigoDatos != 1)) {
+                    log.error("Restauración falló — estructura: {}, datos: {}",
+                            codigoEstructura, codigoDatos);
+                    return BackupRespuestaDTO.error(
+                            "Error en la restauración",
+                            "Estructura: código " + codigoEstructura +
+                                    " | Datos: código " + codigoDatos
+                    );
+                }
+
             } else {
-                comando = new java.util.ArrayList<>(java.util.Arrays.asList(
+                // ── Para archivos SQL planos ───────────────────────────────────
+                java.util.List<String> comando = new java.util.ArrayList<>(java.util.Arrays.asList(
                         psqlPath,
                         "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", dbNombre,
                         "-f", archivoReal.toString()
                 ));
+                ProcessBuilder pb = new ProcessBuilder(comando);
+                pb.environment().put("PGPASSWORD", dbPassword);
+                pb.redirectErrorStream(true);
+                Process proceso = pb.start();
+                String salida = new String(proceso.getInputStream().readAllBytes());
+                int codigo = proceso.waitFor();
+                log.info("psql terminó con código: {}", codigo);
+
+                if (codigo != 0 && codigo != 1) {
+                    log.error("Restauración SQL falló con código {}: {}", codigo, salida);
+                    return BackupRespuestaDTO.error(
+                            "Error en la restauración",
+                            "Terminó con código " + codigo + (salida.isBlank() ? "" : ": " + salida)
+                    );
+                }
             }
 
-            ProcessBuilder pb = new ProcessBuilder(comando);
-            pb.environment().put("PGPASSWORD", dbPassword);
-            pb.redirectErrorStream(true);
+            // ── PASO 5: Re-aplicar GRANTs esenciales ─────────────────────────
+            log.info("Aplicando GRANTs esenciales a los roles clab_*...");
+            aplicarGrantsEsenciales();
 
-            Process proceso = pb.start();
-            String  salida  = new String(proceso.getInputStream().readAllBytes());
-            int     codigo  = proceso.waitFor();
-
-            if (codigo == 0 || codigo == 1) {
-                log.info("Restauración exitosa (código {})", codigo);
-                return BackupRespuestaDTO.ok(
-                        "Restauración completada",
-                        "La base de datos fue restaurada correctamente"
-                );
-            } else {
-                log.error("Restauración terminó con código {}: {}", codigo, salida);
-                return BackupRespuestaDTO.error(
-                        "Error en la restauración",
-                        "Terminó con código " + codigo + (salida.isBlank() ? "" : ": " + salida)
-                );
-            }
+            log.info("Restauración completada exitosamente");
+            return BackupRespuestaDTO.ok(
+                    "Restauración completada",
+                    "La base de datos fue restaurada correctamente"
+            );
 
         } catch (IOException e) {
             log.error("No se pudo ejecutar la restauración: {}", e.getMessage());
@@ -785,7 +800,90 @@ DELETE FROM usuarios.u_usuario WHERE usuario = 'admin_clab';
     }
 
     // =========================================================
-    // SECCIÓN 11: EXTRACCIÓN DE ZIP
+    // SECCIÓN 11: GRANTS ESENCIALES
+    // =========================================================
+
+    private void aplicarGrantsEsenciales() {
+        String[][] grantSchemas = {
+                {"clab_decano",        "academico"},
+                {"clab_administrador", "academico"},
+                {"clab_coordinador",   "academico"},
+                {"clab_administrador", "configuracion"},
+                {"clab_decano",        "configuracion"},
+                {"clab_decano",        "inventario"},
+                {"clab_administrador", "inventario"},
+                {"clab_docente",       "inventario"},
+                {"clab_encargado_lab", "inventario"},
+                {"clab_decano",        "laboratorios"},
+                {"clab_administrador", "laboratorios"},
+                {"clab_encargado_lab", "laboratorios"},
+                {"clab_decano",        "notificaciones"},
+                {"clab_administrador", "notificaciones"},
+                {"clab_docente",       "notificaciones"},
+                {"clab_encargado_lab", "notificaciones"},
+                {"clab_coordinador",   "notificaciones"},
+                {"clab_administrador", "organizacion"},
+                {"clab_administrador", "public"},
+                {"clab_administrador", "recursos"},
+                {"clab_decano",        "reportes"},
+                {"clab_administrador", "reportes"},
+                {"clab_docente",       "reportes"},
+                {"clab_encargado_lab", "reportes"},
+                {"clab_decano",        "reservas"},
+                {"clab_administrador", "reservas"},
+                {"clab_docente",       "reservas"},
+                {"clab_encargado_lab", "reservas"},
+                {"clab_coordinador",   "reservas"},
+                {"clab_administrador", "seguridad"},
+                {"clab_administrador", "seguridad_bd"},
+                {"clab_decano",        "usuarios"},
+                {"clab_administrador", "usuarios"},
+                {"clab_test",          "usuarios"},
+                {"clab_coordinador",   "usuarios"},
+        };
+
+        for (String[] entry : grantSchemas) {
+            ejecutarSql(String.format("GRANT USAGE ON SCHEMA %s TO %s", entry[1], entry[0]));
+        }
+
+        String[] schemas = {
+                "academico", "configuracion", "inventario", "laboratorios",
+                "notificaciones", "organizacion", "public", "recursos",
+                "reportes", "reservas", "seguridad", "seguridad_bd", "usuarios"
+        };
+        for (String schema : schemas) {
+            for (String rol : ROLES_CLAB) {
+                ejecutarSql(String.format(
+                        "GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA %s TO %s", schema, rol));
+                ejecutarSql(String.format(
+                        "GRANT EXECUTE ON ALL PROCEDURES IN SCHEMA %s TO %s", schema, rol));
+            }
+        }
+
+        log.info("GRANTs esenciales aplicados correctamente");
+    }
+
+    private void ejecutarSql(String sql) {
+        try {
+            ProcessBuilder pb = new ProcessBuilder(
+                    psqlPath, "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", dbNombre,
+                    "-c", sql
+            );
+            pb.environment().put("PGPASSWORD", dbPassword);
+            pb.redirectErrorStream(true);
+            Process proc = pb.start();
+            String salida = new String(proc.getInputStream().readAllBytes());
+            int codigo = proc.waitFor();
+            if (codigo != 0 && !salida.contains("does not exist")) {
+                log.warn("SQL terminó con código {}: {} → {}", codigo, sql, salida.trim());
+            }
+        } catch (Exception e) {
+            log.warn("No se pudo ejecutar SQL: {} → {}", sql, e.getMessage());
+        }
+    }
+
+    // =========================================================
+    // SECCIÓN 12: EXTRACCIÓN DE ZIP
     // =========================================================
 
     private Path extraerBackupDeZip(Path zipPath, Path destDir) throws IOException {

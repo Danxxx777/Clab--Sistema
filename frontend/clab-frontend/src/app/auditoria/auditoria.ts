@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -14,7 +14,7 @@ const API = 'http://localhost:8080';
   templateUrl: './auditoria.html',
   styleUrls: ['./auditoria.scss']
 })
-export class AuditoriaComponent implements OnInit {
+export class AuditoriaComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
@@ -23,6 +23,7 @@ export class AuditoriaComponent implements OnInit {
   ) {}
 
   tabActiva = 0;
+  subTabActiva = 0;
   drawerAbierto = false;
   usuarioLogueado = '';
   rol = '';
@@ -40,7 +41,7 @@ export class AuditoriaComponent implements OnInit {
   itemsPorPagina = 30;
   totalPaginas = 1;
 
-  forzandoLogout: number | null = null; // idUsuario en proceso
+  forzandoLogout: number | null = null;
   sesionAForzar: SesionActivaItem | null = null;
   modalForzarAbierto = false;
   modalErrorAbierto = false;
@@ -48,6 +49,17 @@ export class AuditoriaComponent implements OnInit {
 
   modalDetalleAbierto = false;
   auditoriaDetalle: AuditoriaItem | null = null;
+
+  // Stats BD
+  statsBD: any = null;
+  private intervaloStats: any = null;
+  private intervaloConexiones: any = null;
+  private chartsInicializados = false;
+
+  // Historial queries — filtro y orden
+  busquedaHistorial = '';
+  ordenHistorial = 'tiempo';
+  historialFiltrado: any[] = [];
 
   readonly modulos = ['AUTH', 'USUARIOS', 'ROLES', 'EQUIPOS', 'LABORATORIOS', 'RESERVAS', 'HORARIOS', 'REPORTES'];
 
@@ -65,6 +77,38 @@ export class AuditoriaComponent implements OnInit {
 
     this.cargarAuditorias();
     this.cargarSesiones();
+    this.cargarStatsBD();
+    this.intervaloStats = setInterval(() => this.cargarStatsBD(), 10000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.intervaloStats) clearInterval(this.intervaloStats);
+    if (this.intervaloConexiones) clearInterval(this.intervaloConexiones);
+  }
+
+  private iniciarIntervaloRapido(): void {
+    if (this.intervaloConexiones) return;
+    this.intervaloConexiones = setInterval(() => this.cargarSoloConexiones(), 2000);
+  }
+
+  private detenerIntervaloRapido(): void {
+    if (this.intervaloConexiones) {
+      clearInterval(this.intervaloConexiones);
+      this.intervaloConexiones = null;
+    }
+  }
+
+  cargarSoloConexiones(): void {
+    this.http.get<any>(`${API}/auditoria/stats-bd`, { headers: this.getHeaders() }).subscribe({
+      next: (data) => {
+        if (this.statsBD) {
+          this.statsBD.conexionesActivas = data.conexionesActivas;
+          this.statsBD.bloqueos = data.bloqueos;
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
   }
 
   private getHeaders(): HttpHeaders {
@@ -91,6 +135,177 @@ export class AuditoriaComponent implements OnInit {
       },
       error: err => console.error('Error cargando sesiones', err)
     });
+  }
+
+  cargarStatsBD(): void {
+    this.http.get<any>(`${API}/auditoria/stats-bd`, { headers: this.getHeaders() }).subscribe({
+      next: (data) => {
+        this.chartsInicializados = false;
+        this.statsBD = data;
+        this.filtrarHistorial();
+        this.cdr.detectChanges();
+        setTimeout(() => this.inicializarGraficos(), 150);
+      },
+      error: err => console.error('Error cargando stats BD', err)
+    });
+  }
+
+  filtrarHistorial(): void {
+    if (!this.statsBD?.historialQueries) {
+      this.historialFiltrado = [];
+      return;
+    }
+
+    const texto = this.busquedaHistorial.toLowerCase().trim();
+
+    let resultado = this.statsBD.historialQueries.filter((q: any[]) =>
+      !texto || (q[0] || '').toLowerCase().includes(texto)
+    );
+
+    // Ordenar
+    switch (this.ordenHistorial) {
+      case 'llamadas':
+        resultado = resultado.sort((a: any[], b: any[]) => (b[1] || 0) - (a[1] || 0));
+        break;
+      case 'promedio':
+        resultado = resultado.sort((a: any[], b: any[]) => (b[3] || 0) - (a[3] || 0));
+        break;
+      case 'filas':
+        resultado = resultado.sort((a: any[], b: any[]) => (b[4] || 0) - (a[4] || 0));
+        break;
+      case 'tiempo':
+      default:
+        resultado = resultado.sort((a: any[], b: any[]) => (b[2] || 0) - (a[2] || 0));
+        break;
+    }
+
+    this.historialFiltrado = resultado;
+  }
+
+  inicializarGraficos(): void {
+    if (this.chartsInicializados || !this.statsBD || this.tabActiva !== 2) return;
+
+    const Chart = (window as any).Chart;
+    if (!Chart) return;
+
+    ['chartActividad', 'chartCommits', 'chartCache', 'chartTamanio'].forEach(id => {
+      const canvas = document.getElementById(id) as HTMLCanvasElement;
+      if (canvas) {
+        const existing = Chart.getChart(canvas);
+        if (existing) existing.destroy();
+      }
+    });
+
+    const verde    = '#39ff14';
+    const azul     = '#00bcd4';
+    const rojo     = '#ff4444';
+    const morado   = '#b388ff';
+    const gridColor = 'rgba(255,255,255,0.05)';
+    const tickColor = '#555';
+
+    const tablas = this.statsBD.tablasActivas || [];
+    const labels = tablas.map((t: any[]) => t[1]);
+
+    const ctxAct = document.getElementById('chartActividad') as HTMLCanvasElement;
+    if (ctxAct) {
+      new Chart(ctxAct, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Inserts', data: tablas.map((t: any[]) => t[2]), backgroundColor: verde + 'bb', borderRadius: 4 },
+            { label: 'Updates', data: tablas.map((t: any[]) => t[3]), backgroundColor: azul + 'bb', borderRadius: 4 },
+            { label: 'Deletes', data: tablas.map((t: any[]) => t[4]), backgroundColor: rojo + 'bb', borderRadius: 4 },
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#888', font: { size: 11 }, boxWidth: 12 } } },
+          scales: {
+            x: { ticks: { color: tickColor, font: { size: 9 } }, grid: { color: gridColor } },
+            y: { ticks: { color: tickColor, font: { size: 10 } }, grid: { color: gridColor } }
+          }
+        }
+      });
+    }
+
+    const ctxCom = document.getElementById('chartCommits') as HTMLCanvasElement;
+    if (ctxCom) {
+      new Chart(ctxCom, {
+        type: 'doughnut',
+        data: {
+          labels: ['Commits', 'Rollbacks'],
+          datasets: [{
+            data: [this.statsBD.transaccionesCommit, this.statsBD.transaccionesRollback],
+            backgroundColor: [verde + 'cc', rojo + 'cc'],
+            borderColor: ['#0d0d0d'],
+            borderWidth: 3,
+            hoverOffset: 8
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '68%',
+          plugins: { legend: { position: 'bottom', labels: { color: '#888', font: { size: 11 }, padding: 16 } } }
+        }
+      });
+    }
+
+    const ctxCache = document.getElementById('chartCache') as HTMLCanvasElement;
+    if (ctxCache) {
+      const ratio = parseFloat(this.statsBD.cacheHitRatio) || 0;
+      new Chart(ctxCache, {
+        type: 'doughnut',
+        data: {
+          datasets: [{
+            data: [ratio, 100 - ratio],
+            backgroundColor: [azul + 'ee', '#1c1c1c'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          circumference: 180, rotation: -90, cutout: '72%',
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: (c: any) => c.dataIndex === 0 ? `${ratio}%` : `${(100 - ratio).toFixed(2)}% libre` } }
+          }
+        }
+      });
+    }
+
+    const ctxTam = document.getElementById('chartTamanio') as HTMLCanvasElement;
+    if (ctxTam) {
+      const parseSize = (s: string) => {
+        if (!s) return 0;
+        const n = parseFloat(s);
+        if (s.includes('MB')) return n * 1024;
+        if (s.includes('GB')) return n * 1024 * 1024;
+        return n;
+      };
+      new Chart(ctxTam, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Tamaño (kB)',
+            data: tablas.map((t: any[]) => parseSize(t[6])),
+            backgroundColor: morado + 'bb',
+            borderRadius: 4
+          }]
+        },
+        options: {
+          indexAxis: 'y' as const,
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: tickColor, font: { size: 10 }, callback: (v: any) => v + ' kB' }, grid: { color: gridColor } },
+            y: { ticks: { color: tickColor, font: { size: 9 } }, grid: { color: gridColor } }
+          }
+        }
+      });
+    }
+
+    this.chartsInicializados = true;
   }
 
   forzarLogout(sesion: SesionActivaItem): void {
@@ -172,6 +387,14 @@ export class AuditoriaComponent implements OnInit {
   cambiarTab(index: number): void {
     this.tabActiva = index;
     if (index === 1) this.cargarSesiones();
+    if (index === 2) {
+      this.subTabActiva = 0;
+      this.chartsInicializados = false;
+      this.cargarStatsBD();
+      this.iniciarIntervaloRapido();
+    } else {
+      this.detenerIntervaloRapido();
+    }
   }
 
   toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
@@ -183,7 +406,8 @@ export class AuditoriaComponent implements OnInit {
   }
   actualizar(): void {
     if (this.tabActiva === 0) this.cargarAuditorias();
-    else this.cargarSesiones();
+    else if (this.tabActiva === 1) this.cargarSesiones();
+    else this.cargarStatsBD();
   }
   logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
 
