@@ -355,4 +355,52 @@ export class BloqueosComponent implements OnInit {
   volver(): void {
     this.router.navigate(['/dashboard']);
   }
+
+  // ══ PAGINACIÓN BLOQUEOS ══════════════════════════════════════
+  paginaActualBloqueos = 1;
+  itemsPorPaginaBloqueos = 6;
+
+  get totalPaginasBloqueos(): number {
+    return Math.ceil(this.bloqueos.length / this.itemsPorPaginaBloqueos);
+  }
+
+  get bloqueosPaginados(): Bloqueo[] {
+    const i = (this.paginaActualBloqueos - 1) * this.itemsPorPaginaBloqueos;
+    return this.bloqueos.slice(i, i + this.itemsPorPaginaBloqueos);
+  }
+
+  get paginasBloqueos(): number[] {
+    return Array.from({ length: this.totalPaginasBloqueos }, (_, i) => i + 1);
+  }
+
+  cambiarPaginaBloqueos(p: number): void {
+    if (p >= 1 && p <= this.totalPaginasBloqueos) {
+      this.paginaActualBloqueos = p;
+      this.cdr.detectChanges();
+    }
+  }
+
+// ══ PAGINACIÓN TIPOS BLOQUEO ═════════════════════════════════
+  paginaActualTiposBloqueo = 1;
+  itemsPorPaginaTiposBloqueo = 6;
+
+  get totalPaginasTiposBloqueo(): number {
+    return Math.ceil(this.tiposFiltrados.length / this.itemsPorPaginaTiposBloqueo);
+  }
+
+  get tiposBloqueoPaginados(): TipoBloqueo[] {
+    const i = (this.paginaActualTiposBloqueo - 1) * this.itemsPorPaginaTiposBloqueo;
+    return this.tiposFiltrados.slice(i, i + this.itemsPorPaginaTiposBloqueo);
+  }
+
+  get paginasTiposBloqueo(): number[] {
+    return Array.from({ length: this.totalPaginasTiposBloqueo }, (_, i) => i + 1);
+  }
+
+  cambiarPaginaTiposBloqueo(p: number): void {
+    if (p >= 1 && p <= this.totalPaginasTiposBloqueo) {
+      this.paginaActualTiposBloqueo = p;
+      this.cdr.detectChanges();
+    }
+  }
 }

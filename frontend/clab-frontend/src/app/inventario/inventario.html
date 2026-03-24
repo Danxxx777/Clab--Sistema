@@ -10,6 +10,7 @@
     </div>
     <button class="btn-volver" (click)="volver()">← Volver</button>
   </div>
+
   <!-- DRAWER OVERLAY -->
   <div class="drawer-overlay" [class.open]="drawerAbierto" (click)="cerrarDrawer()"></div>
 
@@ -22,20 +23,14 @@
       </div>
       <button class="btn-close-drawer" (click)="cerrarDrawer()">×</button>
     </div>
-
     <div class="drawer-user">
       <div class="drawer-avatar">{{ usuarioLogueado.charAt(0).toUpperCase() }}</div>
       <div class="drawer-user-info">
         <div class="dui-name">{{ usuarioLogueado }}</div>
-        <div class="role-badge">
-          <span class="role-dot"></span>
-          {{ rol }}
-        </div>
+        <div class="role-badge"><span class="role-dot"></span>{{ rol }}</div>
       </div>
     </div>
-
     <div class="drawer-section-title">Módulos</div>
-
     <div class="drawer-modules">
       @if(rol === 'Administradorr' || rol === 'Decano') {
         <div class="drawer-item" (click)="navegar('usuarios', '')">
@@ -109,33 +104,37 @@
       }
     </div>
   </div>
+
   <div class="tabs-container">
     <div class="tabs">
-      <button class="tab" [class.active]="tabActiva === 'equipos'" (click)="cambiarTab('equipos')">
-        Equipos
-      </button>
-      <button class="tab" [class.active]="tabActiva === 'tipos'" (click)="cambiarTab('tipos')">
-        Tipos de Equipo
-      </button>
+      <button class="tab" [class.active]="tabActiva === 'equipos'" (click)="cambiarTab('equipos')">Equipos</button>
+      <button class="tab" [class.active]="tabActiva === 'tipos'" (click)="cambiarTab('tipos')">Tipos de Equipo</button>
     </div>
   </div>
 
   <div class="content-wrapper">
 
-
+    <!-- TAB EQUIPOS -->
     <div class="tab-content" *ngIf="tabActiva === 'equipos'">
-
       <div class="toolbar">
         <div class="search-container">
           <span class="search-icon">🔍</span>
-          <input
-            class="search-input"
-            type="text"
-            [(ngModel)]="busquedaEquipos"
-            (input)="filtrarEquipos()"
-            placeholder="Buscar equipos...">
+          <input class="search-input" type="text" [(ngModel)]="busquedaEquipos"
+                 (input)="filtrarEquipos()" placeholder="Buscar equipos...">
         </div>
-        <button class="btn-agregar" (click)="abrirModalEquipo()">Agregar Equipo</button>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="paginacion" *ngIf="equiposFiltrados.length > 0">
+            <button class="btn-pag" (click)="cambiarPaginaEquipos(paginaActualEquipos - 1)"
+                    [disabled]="paginaActualEquipos === 1">‹</button>
+            <button class="btn-pag" *ngFor="let p of paginasEquipos"
+                    [class.activa]="p === paginaActualEquipos"
+                    (click)="cambiarPaginaEquipos(p)">{{ p }}</button>
+            <button class="btn-pag" (click)="cambiarPaginaEquipos(paginaActualEquipos + 1)"
+                    [disabled]="paginaActualEquipos === totalPaginasEquipos">›</button>
+            <span class="pag-info">{{ paginaActualEquipos }} / {{ totalPaginasEquipos }}</span>
+          </div>
+          <button class="btn-agregar" (click)="abrirModalEquipo()">Agregar Equipo</button>
+        </div>
       </div>
 
       <div class="table-container">
@@ -151,19 +150,17 @@
             <th>ACCIONES</th>
           </tr>
           </thead>
-
           <tbody>
-          <tr *ngFor="let equipo of equiposFiltrados">
+          <tr *ngFor="let equipo of equiposPaginados">
             <td>{{ equipo.noSerie }}</td>
             <td><strong>{{ equipo.nombre }}</strong></td>
             <td>{{ equipo.marca }} {{ equipo.modelo }}</td>
             <td>{{ equipo.nombreTipoEquipo }}</td>
             <td>{{ equipo.nombreLaboratorio }}</td>
             <td>
-                <span
-                  class="badge"
-                  [class.badge-activo]="equipo.estado === 'OPERATIVO'"
-                  [class.badge-inactivo]="equipo.estado !== 'OPERATIVO'">
+                <span class="badge"
+                      [class.badge-activo]="equipo.estado === 'OPERATIVO'"
+                      [class.badge-inactivo]="equipo.estado !== 'OPERATIVO'">
                   {{ equipo.estado }}
                 </span>
             </td>
@@ -175,7 +172,6 @@
               </div>
             </td>
           </tr>
-
           <tr *ngIf="equiposFiltrados.length === 0">
             <td colspan="7" class="empty-message">No hay equipos registrados</td>
           </tr>
@@ -184,24 +180,29 @@
       </div>
     </div>
 
-
+    <!-- TAB TIPOS -->
     <div class="tab-content" *ngIf="tabActiva === 'tipos'">
-
       <div class="toolbar">
         <div class="search-container">
           <span class="search-icon">🔍</span>
-          <input
-            class="search-input"
-            type="text"
-            [(ngModel)]="busquedaTipos"
-            (input)="filtrarTipos()"
-            placeholder="Buscar tipos...">
+          <input class="search-input" type="text" [(ngModel)]="busquedaTipos"
+                 (input)="filtrarTipos()" placeholder="Buscar tipos...">
         </div>
-
-        <button class="btn-agregar" (click)="abrirModalTipo()">
-          Agregar Tipo
-        </button>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="paginacion" *ngIf="tiposFiltrados.length > 0">
+            <button class="btn-pag" (click)="cambiarPaginaTipos(paginaActualTipos - 1)"
+                    [disabled]="paginaActualTipos === 1">‹</button>
+            <button class="btn-pag" *ngFor="let p of paginasTiposEquipo"
+                    [class.activa]="p === paginaActualTipos"
+                    (click)="cambiarPaginaTipos(p)">{{ p }}</button>
+            <button class="btn-pag" (click)="cambiarPaginaTipos(paginaActualTipos + 1)"
+                    [disabled]="paginaActualTipos === totalPaginasTiposEquipo">›</button>
+            <span class="pag-info">{{ paginaActualTipos }} / {{ totalPaginasTiposEquipo }}</span>
+          </div>
+          <button class="btn-agregar" (click)="abrirModalTipo()">Agregar Tipo</button>
+        </div>
       </div>
+
       <div class="table-container">
         <table class="data-table">
           <thead>
@@ -212,7 +213,7 @@
           </tr>
           </thead>
           <tbody>
-          <tr *ngFor="let tipo of tiposFiltrados">
+          <tr *ngFor="let tipo of tiposPaginados">
             <td><strong>{{ tipo.nombre }}</strong></td>
             <td>{{ tipo.descripcion || '—' }}</td>
             <td>
@@ -234,73 +235,57 @@
   </div>
 </div>
 
+<!-- MODAL EQUIPO -->
 <div class="modal-overlay" *ngIf="mostrarModalEquipo">
   <div class="modal" (click)="$event.stopPropagation()">
-
     <div class="modal-header">
       <h2>{{ modoEdicionEquipo ? 'Editar Equipo' : 'Agregar Equipo' }}</h2>
       <button class="btn-close" (click)="cerrarModalEquipo()">×</button>
     </div>
-
     <div class="modal-body">
-
       <div class="form-row">
         <div class="form-group">
           <label>Número de Serie *</label>
-          <input class="form-control"
-                 [(ngModel)]="formEquipo.noSerie"
-                 (input)="formEquipo.noSerie = formEquipo.noSerie.replace(/[^a-zA-Z0-9\-]/g, '')"
+          <input class="form-control" [(ngModel)]="formEquipo.noSerie"
+                 (input)="limpiarSerie()"
                  placeholder="Ej: SN-123456">
         </div>
-
         <div class="form-group">
           <label>Nombre *</label>
           <input class="form-control" [(ngModel)]="formEquipo.nombre">
         </div>
       </div>
-
       <div class="form-row">
         <div class="form-group">
           <label>Marca *</label>
           <input class="form-control" [(ngModel)]="formEquipo.marca">
         </div>
-
         <div class="form-group">
           <label>Modelo *</label>
           <input class="form-control" [(ngModel)]="formEquipo.modelo">
         </div>
       </div>
-
       <div class="form-row">
         <div class="form-group">
           <label>Tipo *</label>
           <select class="form-control" [(ngModel)]="formEquipo.idTipoEquipo">
             <option [value]="0">Seleccione</option>
-            <option *ngFor="let t of tiposEquipo" [value]="t.id">
-              {{ t.nombre }}
-            </option>
+            <option *ngFor="let t of tiposEquipo" [value]="t.id">{{ t.nombre }}</option>
           </select>
-
         </div>
-
         <div class="form-group">
           <label>Laboratorio *</label>
           <select class="form-control" [(ngModel)]="formEquipo.codLaboratorio">
             <option [value]="0">Seleccione</option>
-            <option *ngFor="let l of laboratorios" [value]="l.codLaboratorio">
-              {{ l.nombreLab }}
-            </option>
+            <option *ngFor="let l of laboratorios" [value]="l.codLaboratorio">{{ l.nombreLab }}</option>
           </select>
-
         </div>
       </div>
-
       <div class="form-row">
         <div class="form-group">
           <label>Fecha de Adquisición *</label>
           <input type="date" class="form-control" [(ngModel)]="formEquipo.fechaAdquisicion">
         </div>
-
         <div class="form-group">
           <label>Estado</label>
           <select class="form-control" [(ngModel)]="formEquipo.estado">
@@ -310,119 +295,89 @@
           </select>
         </div>
       </div>
-
       <div class="form-group full-width">
         <label>Ubicación Física *</label>
         <input class="form-control" [(ngModel)]="formEquipo.ubicacionFisica">
       </div>
-
     </div>
-
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cerrarModalEquipo()">Cancelar</button>
       <button class="btn-guardar" (click)="guardarEquipo()">Guardar</button>
     </div>
-
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="mostrarDetalleEquipo" >
+<!-- MODAL DETALLE EQUIPO -->
+<div class="modal-overlay" *ngIf="mostrarDetalleEquipo">
   <div class="modal modal-detalle" (click)="$event.stopPropagation()">
-
     <div class="modal-header">
       <h2>Detalles del Equipo</h2>
       <button class="btn-close" (click)="cerrarDetalleEquipo()">×</button>
     </div>
-
     <div class="modal-body">
       <div class="detalle-grid">
-
         <div class="detalle-item">
           <label>Serie</label>
           <span class="detalle-valor">{{ equipoDetalle.noSerie }}</span>
         </div>
-
         <div class="detalle-item">
           <label>Nombre</label>
           <span class="detalle-valor">{{ equipoDetalle.nombre }}</span>
         </div>
-
         <div class="detalle-item">
           <label>Marca</label>
           <span class="detalle-valor">{{ equipoDetalle.marca }}</span>
         </div>
-
         <div class="detalle-item">
           <label>Modelo</label>
           <span class="detalle-valor">{{ equipoDetalle.modelo }}</span>
         </div>
-
         <div class="detalle-item">
           <label>Tipo</label>
-          <span class="detalle-valor">
-    {{ equipoDetalle.nombreTipoEquipo }}
-  </span>
+          <span class="detalle-valor">{{ equipoDetalle.nombreTipoEquipo }}</span>
         </div>
-
         <div class="detalle-item">
           <label>Laboratorio</label>
-          <span class="detalle-valor">
-    {{ equipoDetalle.nombreLaboratorio }}
-  </span>
+          <span class="detalle-valor">{{ equipoDetalle.nombreLaboratorio }}</span>
         </div>
-
         <div class="detalle-item full-width">
           <label>Ubicación</label>
           <span class="detalle-valor">{{ equipoDetalle.ubicacionFisica }}</span>
         </div>
-
       </div>
     </div>
-
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cerrarDetalleEquipo()">Cerrar</button>
     </div>
-
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="mostrarModalTipo" >
+<!-- MODAL TIPO -->
+<div class="modal-overlay" *ngIf="mostrarModalTipo">
   <div class="modal" (click)="$event.stopPropagation()">
-
     <div class="modal-header">
       <h2>{{ modoEdicionTipo ? 'Editar Tipo de Equipo' : 'Agregar Tipo de Equipo' }}</h2>
       <button class="btn-close" (click)="cerrarModalTipo()">×</button>
     </div>
-
     <div class="modal-body">
-
       <div class="form-group full-width">
         <label>Nombre <span class="required">*</span></label>
-        <input
-          class="form-control"
-          [(ngModel)]="formularioTipo.nombre">
+        <input class="form-control" [(ngModel)]="formularioTipo.nombre">
       </div>
-
       <div class="form-group full-width">
         <label>Descripción</label>
-        <textarea
-          class="form-control"
-          rows="4"
-          [(ngModel)]="formularioTipo.descripcion"
-          placeholder="Descripción del tipo de equipo (opcional)">
-    </textarea>
+        <textarea class="form-control" rows="4" [(ngModel)]="formularioTipo.descripcion"
+                  placeholder="Descripción del tipo de equipo (opcional)"></textarea>
       </div>
-
     </div>
-
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cerrarModalTipo()">Cancelar</button>
       <button class="btn-guardar" (click)="guardarTipo()">Guardar</button>
     </div>
-
   </div>
 </div>
 
+<!-- MODAL DETALLE TIPO -->
 <div class="modal-overlay" *ngIf="mostrarDetalleTipo">
   <div class="modal modal-detalle" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -451,9 +406,7 @@
   </div>
 </div>
 
-<!-- ===================== -->
-<!-- MODAL CONFIRMACIÓN   -->
-<!-- ===================== -->
+<!-- MODAL CONFIRMACIÓN -->
 <div class="modal-overlay" *ngIf="mostrarModalConfirm">
   <div class="modal modal-confirm" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -471,17 +424,9 @@
   </div>
 </div>
 
-
-<!-- ===================== -->
-<!-- TOAST NOTIFICACIÓN -->
-<!-- ===================== -->
-<div
-  class="toast"
-  *ngIf="mostrarToast"
-  [class.toast-success]="toastTipo === 'success'"
-  [class.toast-error]="toastTipo === 'error'">
-
+<!-- TOAST -->
+<div class="toast" *ngIf="mostrarToast"
+     [class.toast-success]="toastTipo === 'success'"
+     [class.toast-error]="toastTipo === 'error'">
   {{ toastMensaje }}
 </div>
-
-
