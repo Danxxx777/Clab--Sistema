@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 
 const PROPOSITOS = [
@@ -10,7 +10,7 @@ const PROPOSITOS = [
   { value: 'NOTIFICACIONES', label: 'Notificaciones del sistema', icon: '🔔' },
   { value: 'RESERVAS',       label: 'Alertas de reservas',        icon: '📅' },
   { value: 'REPORTES',       label: 'Reportes automáticos',       icon: '📊' },
-  { value: 'RESPUESTAS',     label: 'Respuestas a usuarios',      icon: '💬' },  // ← AGREGAR
+  { value: 'RESPUESTAS',     label: 'Respuestas a usuarios',      icon: '💬' },
 ];
 
 const PRESETS: Record<string, any> = {
@@ -25,6 +25,7 @@ const PRESETS: Record<string, any> = {
     nota: 'Configura manualmente según tu proveedor SMTP'
   }
 };
+
 @Component({
   selector: 'app-configuracion-correo',
   standalone: true,
@@ -34,12 +35,14 @@ const PRESETS: Record<string, any> = {
 })
 export class ConfiguracionCorreoComponent implements OnInit {
 
-  private readonly API = 'http://localhost:8080/configuracion-correo';
+  private readonly API       = 'http://localhost:8080/configuracion-correo';
+  private readonly DRIVE_API = 'http://localhost:8080/drive';
 
-  drawerAbierto = false;
+  drawerAbierto  = false;
   usuarioLogueado = '';
   rol = '';
 
+  // ── CORREO ────────────────────────────────────────────────────────────────
   configs: any[] = [];
   cargando = false;
 
@@ -49,27 +52,57 @@ export class ConfiguracionCorreoComponent implements OnInit {
   probandoId: number | null = null;
   error = '';
   mostrarPassword = false;
+  tabActivo: 'correo' | 'drive' = 'correo';
 
-  propositos = PROPOSITOS;
-  proveedores = Object.keys(PRESETS);
+  propositos           = PROPOSITOS;
+  proveedores          = Object.keys(PRESETS);
   proveedorSeleccionado = 'GMAIL';
-  notaPreset = PRESETS['GMAIL'].nota;
+  notaPreset           = PRESETS['GMAIL'].nota;
+  configActual: any    = this.configVacia();
 
-  configActual: any = this.configVacia();
-
+  // ── NOTIFICACIONES ────────────────────────────────────────────────────────
   mostrarNotificacion = false;
-  notificacionTitulo = '';
+  notificacionTitulo  = '';
   notificacionMensaje = '';
   notificacionTipo: 'exito' | 'error' | 'confirmar' = 'exito';
   accionPendiente: (() => void) | null = null;
 
-  constructor(private router: Router, private http: HttpClient, private cdr: ChangeDetectorRef) {}
+  // ── DRIVE ─────────────────────────────────────────────────────────────────
+  driveEstado: any     = null;
+  mostrarModalDrive    = false;
+  guardandoDrive       = false;
+  verificandoDrive     = false;
+  iniciandoAuth        = false;
+  errorDrive           = false;
+  mensajeDrive         = '';
+  mostrarDriveSecret   = false;
+  driveForm = { clientId: '', clientSecret: '', folderId: '', folderNombre: '' };
+
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
-    this.rol = sessionStorage.getItem('rol') || '';
-    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
+    this.rol            = localStorage.getItem('rol')     || '';
+    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
     this.cargarConfigs();
+    this.cargarEstadoDrive();
+
+    // Detectar si viene del callback de OAuth2
+    this.route.queryParams.subscribe(params => {
+      if (params['drive'] === 'conectado') {
+        this.mostrarAlerta('✅ Drive conectado', 'Google Drive se conectó correctamente.', 'exito');
+        this.cargarEstadoDrive();
+      } else if (params['drive'] === 'error') {
+        this.mostrarAlerta('❌ Error al conectar', 'No se pudo completar la autorización de Drive.', 'error');
+      }
+    });
   }
+
+  // ── CORREO ────────────────────────────────────────────────────────────────
 
   configVacia(): any {
     return {
@@ -84,29 +117,29 @@ export class ConfiguracionCorreoComponent implements OnInit {
   cargarConfigs(): void {
     this.cargando = true;
     this.http.get<any[]>(this.API).subscribe({
-      next: (data) => { this.configs = data; this.cargando = false; this.cdr.detectChanges(); },
-      error: () => { this.cargando = false; this.cdr.detectChanges(); }
+      next: data  => { this.configs = data; this.cargando = false; this.cdr.detectChanges(); },
+      error: ()   => { this.cargando = false; this.cdr.detectChanges(); }
     });
   }
 
   abrirModalCrear(): void {
-    this.modoModal = 'crear';
-    this.configActual = this.configVacia();
+    this.modoModal            = 'crear';
+    this.configActual         = this.configVacia();
     this.proveedorSeleccionado = 'GMAIL';
-    this.notaPreset = PRESETS['GMAIL'].nota;
-    this.error = '';
-    this.mostrarPassword = false;
-    this.mostrarModal = true;
+    this.notaPreset           = PRESETS['GMAIL'].nota;
+    this.error                = '';
+    this.mostrarPassword      = false;
+    this.mostrarModal         = true;
   }
 
   abrirModalEditar(c: any): void {
-    this.modoModal = 'editar';
-    this.configActual = { ...c, passwordRemitente: '' };
+    this.modoModal            = 'editar';
+    this.configActual         = { ...c, passwordRemitente: '' };
     this.proveedorSeleccionado = c.proveedor || 'CUSTOM';
-    this.notaPreset = PRESETS[this.proveedorSeleccionado]?.nota || '';
-    this.error = '';
-    this.mostrarPassword = false;
-    this.mostrarModal = true;
+    this.notaPreset           = PRESETS[this.proveedorSeleccionado]?.nota || '';
+    this.error                = '';
+    this.mostrarPassword      = false;
+    this.mostrarModal         = true;
   }
 
   cerrarModal(): void { this.mostrarModal = false; this.cdr.detectChanges(); }
@@ -157,7 +190,7 @@ export class ConfiguracionCorreoComponent implements OnInit {
           this.modoModal === 'crear' ? '¡Configuración creada!' : '¡Configuración actualizada!',
           `"${this.configActual.nombreDisplay}" fue guardada correctamente.`, 'exito');
       },
-      error: (err) => {
+      error: err => {
         this.guardando = false;
         this.error = err.error?.error ?? 'Error al guardar.';
         this.cdr.detectChanges();
@@ -173,7 +206,7 @@ export class ConfiguracionCorreoComponent implements OnInit {
         this.mostrarAlerta('✅ Prueba exitosa',
           `Correo de prueba enviado a ${c.emailRemitente}. Revisa tu bandeja.`, 'exito');
       },
-      error: (err) => {
+      error: err => {
         this.probandoId = null;
         this.mostrarAlerta('❌ Fallo en prueba',
           err.error?.error ?? 'No se pudo conectar al servidor SMTP.', 'error');
@@ -184,7 +217,7 @@ export class ConfiguracionCorreoComponent implements OnInit {
   cambiarEstado(c: any): void {
     const nuevoEstado = !c.activo;
     this.http.patch(`${this.API}/${c.idConfig}/estado?activo=${nuevoEstado}`, {}).subscribe({
-      next: () => { c.activo = nuevoEstado; this.cdr.detectChanges(); },
+      next:  () => { c.activo = nuevoEstado; this.cdr.detectChanges(); },
       error: () => this.mostrarAlerta('Error', 'No se pudo cambiar el estado.', 'error')
     });
   }
@@ -192,7 +225,7 @@ export class ConfiguracionCorreoComponent implements OnInit {
   confirmarEliminar(c: any): void {
     this.accionPendiente = () => {
       this.http.delete(`${this.API}/${c.idConfig}`).subscribe({
-        next: () => { this.cargarConfigs(); this.mostrarAlerta('Eliminado', `"${c.nombreDisplay}" eliminado.`, 'exito'); },
+        next:  () => { this.cargarConfigs(); this.mostrarAlerta('Eliminado', `"${c.nombreDisplay}" eliminado.`, 'exito'); },
         error: () => this.mostrarAlerta('Error', 'No se pudo eliminar.', 'error')
       });
     };
@@ -200,23 +233,177 @@ export class ConfiguracionCorreoComponent implements OnInit {
   }
 
   getLabelProposito(v: string): string { return this.propositos.find(p => p.value === v)?.label ?? v; }
-  getIconProposito(v: string): string { return this.propositos.find(p => p.value === v)?.icon ?? '📧'; }
-  getProtocoloBadge(c: any): string {
-    if (c.sslHabilitado) return 'SSL 465';
+  getIconProposito(v: string):  string { return this.propositos.find(p => p.value === v)?.icon  ?? '📧'; }
+  getProtocoloBadge(c: any):    string {
+    if (c.sslHabilitado)      return 'SSL 465';
     if (c.starttlsHabilitado) return 'TLS 587';
     return 'SMTP';
   }
 
-  mostrarAlerta(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'confirmar'): void {
-    this.notificacionTitulo = titulo;
-    this.notificacionMensaje = mensaje;
-    this.notificacionTipo = tipo;
-    this.mostrarNotificacion = true;
-    this.cdr.detectChanges();
-    if (tipo !== 'confirmar') setTimeout(() => { this.mostrarNotificacion = false; this.cdr.detectChanges(); }, 4000);
+  // ── DRIVE ─────────────────────────────────────────────────────────────────
+
+  cargarEstadoDrive(): void {
+    this.http.get<any>(`${this.DRIVE_API}/estado`).subscribe({
+      next: e => {
+        console.log('Drive estado:', e);  // ← temporal
+        this.driveEstado = e;
+        this.cdr.detectChanges();
+      },
+      error: () => { this.driveEstado = { conectado: false }; this.cdr.detectChanges(); }
+    });
   }
 
-  cerrarNotificacion(): void { this.mostrarNotificacion = false; this.accionPendiente = null; this.cdr.detectChanges(); }
+  abrirModalDrive(): void {
+    this.driveForm = {
+      clientId:     '',
+      clientSecret: '',
+      folderId:     this.driveEstado?.folderId     ?? '',
+      folderNombre: this.driveEstado?.folderNombre ?? ''
+    };
+    this.mostrarModalDrive = true;
+  }
+
+  cerrarModalDrive(): void { this.mostrarModalDrive = false; }
+
+  guardarConfigDrive(): void {
+    // ── VALIDACIONES ──────────────────────────────────────────────
+    const errores: string[] = [];
+
+    const clientId     = this.driveForm.clientId.trim();
+    const clientSecret = this.driveForm.clientSecret.trim();
+    const folderId     = this.driveForm.folderId.trim();
+    const folderNombre = this.driveForm.folderNombre.trim();
+
+    // Client ID — si se ingresó, debe tener formato correcto
+    if (clientId && !clientId.endsWith('.apps.googleusercontent.com')) {
+      errores.push('El Client ID debe terminar en .apps.googleusercontent.com');
+    }
+
+    // Client Secret — si se ingresó, debe iniciar con GOCSPX-
+    if (clientSecret && !clientSecret.startsWith('GOCSPX-')) {
+      errores.push('El Client Secret debe iniciar con GOCSPX-');
+    }
+
+    // Folder ID — obligatorio, solo letras, números, guiones y guiones bajos
+    if (!folderId) {
+      errores.push('El Folder ID es obligatorio');
+    } else if (!/^[a-zA-Z0-9_\-]+$/.test(folderId)) {
+      errores.push('El Folder ID solo puede contener letras, números, - y _');
+    }
+
+    // Nombre de carpeta — obligatorio
+    if (!folderNombre) {
+      errores.push('El nombre de la carpeta es obligatorio');
+    }
+
+    if (errores.length > 0) {
+      this.mostrarAlerta('Errores de validación', errores.join(' • '), 'error');
+      return;
+    }
+
+    // ── GUARDAR ───────────────────────────────────────────────────
+    this.guardandoDrive = true;
+    this.http.put(`${this.DRIVE_API}/config`, {
+      clientId:     clientId     || null,
+      clientSecret: clientSecret || null,
+      folderId:     folderId,
+      folderNombre: folderNombre
+    }).subscribe({
+      next: () => {
+        this.guardandoDrive = false;
+        this.cerrarModalDrive();
+        this.cargarEstadoDrive();
+        this.mostrarAlerta(
+          '✅ Configuración guardada',
+          'Credenciales guardadas. Ahora haz clic en "Conectar Google Drive" para autorizar.',
+          'exito'
+        );
+      },
+      error: err => {
+        this.guardandoDrive = false;
+        this.mostrarAlerta('Error', err.error?.error ?? 'No se pudo guardar la configuración.', 'error');
+      }
+    });
+  }
+  iniciarAuthDrive(): void {
+    // Verificar que existan credenciales en BD antes de intentar auth
+    if (!this.driveEstado?.clientIdPreview) {
+      this.mostrarAlerta(
+        'Credenciales requeridas',
+        'Configura primero el Client ID y Client Secret antes de conectar.',
+        'error'
+      );
+      return;
+    }
+
+    this.iniciandoAuth = true;
+    this.cdr.detectChanges();
+    this.http.get<any>(`${this.DRIVE_API}/iniciar-auth`).subscribe({
+      next: res => {
+        this.iniciandoAuth = false;
+        this.cdr.detectChanges();
+        window.open(res.url, '_blank');
+      },
+      error: () => {
+        this.iniciandoAuth = false;
+        this.cdr.detectChanges();
+        this.mostrarAlerta('Error', 'No se pudo generar la URL de autorización.', 'error');
+      }
+    });
+  }
+  verificarDrive(): void {
+    this.verificandoDrive = true;
+    this.mensajeDrive = '';
+    this.http.get<any>(`${this.DRIVE_API}/verificar`).subscribe({
+      next: res => {
+        this.verificandoDrive = false;
+        this.errorDrive   = !res.conectado;
+        this.mensajeDrive = res.mensaje;
+        this.cargarEstadoDrive(); // ← agrega esta línea
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.verificandoDrive = false;
+        this.errorDrive   = true;
+        this.mensajeDrive = 'Error al verificar conexión.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  confirmarRevocarDrive(): void {
+    this.accionPendiente = () => {
+      this.http.post(`${this.DRIVE_API}/revocar`, {}).subscribe({
+        next: () => {
+          this.cargarEstadoDrive();
+          this.mostrarAlerta('Autorización revocada', 'Se desconectó Google Drive correctamente.', 'exito');
+        },
+        error: () => this.mostrarAlerta('Error', 'No se pudo revocar la autorización.', 'error')
+      });
+    };
+    this.mostrarAlerta('¿Revocar autorización?',
+      'Se eliminarán los tokens y se desconectará Drive.', 'confirmar');
+  }
+
+  // ── HELPERS ───────────────────────────────────────────────────────────────
+
+  mostrarAlerta(titulo: string, mensaje: string, tipo: 'exito' | 'error' | 'confirmar'): void {
+    this.notificacionTitulo  = titulo;
+    this.notificacionMensaje = mensaje;
+    this.notificacionTipo    = tipo;
+    this.mostrarNotificacion = true;
+    this.cdr.detectChanges();
+    if (tipo !== 'confirmar') {
+      setTimeout(() => { this.mostrarNotificacion = false; this.cdr.detectChanges(); }, 4000);
+    }
+  }
+
+  cerrarNotificacion(): void {
+    this.mostrarNotificacion = false;
+    this.accionPendiente = null;
+    this.cdr.detectChanges();
+  }
+
   confirmarAccion(): void {
     this.mostrarNotificacion = false;
     if (this.accionPendiente) { this.accionPendiente(); this.accionPendiente = null; }
@@ -224,8 +411,8 @@ export class ConfiguracionCorreoComponent implements OnInit {
   }
 
   toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
-  cerrarDrawer(): void { this.drawerAbierto = false; }
+  cerrarDrawer():  void { this.drawerAbierto = false; }
   navegar(ruta: string): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
-  volver(): void { this.router.navigate(['/dashboard']); }
-  logout(): void { sessionStorage.clear(); this.router.navigate(['/login']); }
+  volver():  void { this.router.navigate(['/dashboard']); }
+  logout():  void { localStorage.clear(); this.router.navigate(['/login']); }
 }

@@ -205,10 +205,25 @@ export class RolesComponent implements OnInit {
       this.mostrarAlerta('Campo requerido', 'El nombre del rol es obligatorio.', 'error');
       return;
     }
+    if (this.rolActual.nombre.trim().length < 3) {
+      this.mostrarAlerta('Nombre inválido', 'El nombre debe tener al menos 3 caracteres.', 'error');
+      return;
+    }
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s_\-]+$/.test(this.rolActual.nombre.trim())) {
+      this.mostrarAlerta('Nombre inválido', 'Solo letras, espacios, guiones o guiones bajos.', 'error');
+      return;
+    }
+    const nombreDuplicado = this.roles.some(r =>
+      r.nombre?.toLowerCase() === this.rolActual.nombre?.toLowerCase().trim() &&
+      r.id !== this.rolActual.id
+    );
+    if (nombreDuplicado) {
+      this.mostrarAlerta('Duplicado', 'Ya existe un rol con ese nombre.', 'error');
+      return;
+    }
 
     const esquemaSinPermisos = Object.entries(this.permisosEsquema)
       .find(([_, p]) => !p.select && !p.insert && !p.update && !p.delete);
-
     if (esquemaSinPermisos) {
       this.mostrarAlerta('Permiso requerido',
         `El esquema "${esquemaSinPermisos[0]}" no tiene ningún permiso seleccionado.`, 'error');
@@ -216,7 +231,7 @@ export class RolesComponent implements OnInit {
     }
 
     const payload: RolRequest = {
-      nombreRol: this.rolActual.nombre,
+      nombreRol: this.rolActual.nombre.trim(),
       descripcion: this.rolActual.descripcion,
       permisos: this.permisosSeleccionados,
       rolesBD: this.rolesBDSeleccionados,
@@ -246,12 +261,9 @@ export class RolesComponent implements OnInit {
         this.cerrarModalRol();
         this.cargarRoles();
         this.mostrarAlerta('¡Rol guardado!', `El rol "${payload.nombreRol}" fue guardado.`, 'exito');
-
-        // Si editamos el rol actual del usuario → refrescar módulos del dashboard
-        const rolActual = sessionStorage.getItem('rol');
+        const rolActual = localStorage.getItem('rol');
         if (payload.nombreRol === rolActual) {
-          // Disparar evento para que el dashboard se actualice
-          sessionStorage.removeItem('modulos');
+          localStorage.removeItem('modulos');
         }
       }
     });

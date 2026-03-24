@@ -17,21 +17,21 @@ export class AuthService {
       contrasenia
     }).pipe(
       tap(response => {
-        sessionStorage.setItem('token', response.token);
-        sessionStorage.setItem('loggedIn', 'true');
-        sessionStorage.setItem('rol', response.rol);
-        sessionStorage.setItem('usuario', `${response.nombres.split(' ')[0]} ${response.apellidos.split(' ')[0]}`);
-        sessionStorage.setItem('idUsuario', response.idUsuario);
-        sessionStorage.setItem('rolesDisponibles', JSON.stringify(response.rolesDisponibles ?? []));
-        sessionStorage.setItem('primerLogin', response.primerLogin ? 'true' : 'false');
-        sessionStorage.setItem('modulos', JSON.stringify(response.modulos ?? [])); // ← nuevo
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('loggedIn', 'true');
+        localStorage.setItem('rol', response.rol);
+        localStorage.setItem('usuario', `${response.nombres.split(' ')[0]} ${response.apellidos.split(' ')[0]}`);
+        localStorage.setItem('idUsuario', response.idUsuario);
+        localStorage.setItem('rolesDisponibles', JSON.stringify(response.rolesDisponibles ?? []));
+        localStorage.setItem('primerLogin', response.primerLogin ? 'true' : 'false');
+        localStorage.setItem('modulos', JSON.stringify(response.modulos ?? [])); // ← nuevo
       })
     );
   }
 
   logout() {
-    const token = sessionStorage.getItem('token');
-    const idUsuario = sessionStorage.getItem('idUsuario');
+    const token = localStorage.getItem('token');
+    const idUsuario = localStorage.getItem('idUsuario');
 
     if (token && idUsuario) {
       this.http.post(`${this.apiUrl}/logout`, {
@@ -44,23 +44,41 @@ export class AuthService {
   }
 
   limpiarSesionLocal(): void {
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('rol');
-    sessionStorage.removeItem('loggedIn');
-    sessionStorage.removeItem('rolesDisponibles');
-    sessionStorage.removeItem('idUsuario');
-    sessionStorage.removeItem('usuario');
-    sessionStorage.removeItem('modulos'); 
+    localStorage.removeItem('token');
+    localStorage.removeItem('rol');
+    localStorage.removeItem('loggedIn');
+    localStorage.removeItem('rolesDisponibles');
+    localStorage.removeItem('idUsuario');
+    localStorage.removeItem('usuario');
+    localStorage.removeItem('modulos');
   }
 
   isLoggedIn(): boolean {
-    const token = sessionStorage.getItem('token');
-    return !!token;
+    const token = localStorage.getItem('token');
+    if (!token) return false;
+
+    try {
+      // Decodificar el payload del JWT (parte central en base64)
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const ahora = Math.floor(Date.now() / 1000);
+
+      if (payload.exp && payload.exp < ahora) {
+        // Token expirado — limpiar sesión
+        this.limpiarSesionLocal();
+        return false;
+      }
+
+      return true;
+    } catch {
+      // Token malformado
+      this.limpiarSesionLocal();
+      return false;
+    }
   }
 
 
   getRol(): string | null {
-    return sessionStorage.getItem('rol');
+    return localStorage.getItem('rol');
   }
 
   esAdministrador(): boolean {
@@ -84,12 +102,12 @@ export class AuthService {
   }
 
   getIdUsuario(): number | null {
-    const id = sessionStorage.getItem('idUsuario');
+    const id = localStorage.getItem('idUsuario');
     return id ? parseInt(id) : null;
   }
 
   getUsuarioNombre(): string | null {
-    return sessionStorage.getItem('usuario');
+    return localStorage.getItem('usuario');
   }
 
 }

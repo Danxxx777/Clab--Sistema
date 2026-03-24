@@ -24,8 +24,8 @@ export class ResetPasswordComponent implements OnInit {
   constructor(private http: HttpClient, private router: Router) {}
 
   ngOnInit() {
-    this.email = sessionStorage.getItem('recuperacion_email') ?? '';
-    this.codigo = sessionStorage.getItem('recuperacion_codigo') ?? '';
+    this.email = localStorage.getItem('recuperacion_email') ?? '';
+    this.codigo = localStorage.getItem('recuperacion_codigo') ?? '';
     if (!this.email || !this.codigo) {
       this.router.navigate(['/forgot-password']);
     }
@@ -56,8 +56,8 @@ export class ResetPasswordComponent implements OnInit {
       next: () => {
         this.cargando = false;
         this.mensaje = '¡Contraseña actualizada correctamente!';
-        sessionStorage.removeItem('recuperacion_email');
-        sessionStorage.removeItem('recuperacion_codigo');
+        localStorage.removeItem('recuperacion_email');
+        localStorage.removeItem('recuperacion_codigo');
         setTimeout(() => this.router.navigate(['/login']), 2000);
       },
       error: (err) => {

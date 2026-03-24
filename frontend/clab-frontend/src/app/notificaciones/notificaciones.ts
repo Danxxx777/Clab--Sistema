@@ -15,8 +15,8 @@ import { Notificacion} from '../interfaces/Notificacion.model';
 export class NotificacionesComponent implements OnInit {
 
   drawerAbierto = false;
-  rol = sessionStorage.getItem('rol') || '';
-  usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
+  rol = localStorage.getItem('rol') || '';
+  usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
 
   notificaciones: Notificacion[] = [];
   cargando = true;
@@ -45,13 +45,13 @@ export class NotificacionesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.rol = sessionStorage.getItem('rol') || '';
-    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
+    this.rol = localStorage.getItem('rol') || '';
+    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
     this.cargarNotificaciones();
   }
 
   private getHeaders(): HttpHeaders {
-    const token = sessionStorage.getItem('token') || '';
+    const token = localStorage.getItem('token') || '';
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 
@@ -211,7 +211,14 @@ export class NotificacionesComponent implements OnInit {
     ).subscribe({
       next: () => {
         this.enviandoRespuesta = false;
+
+        // ← Guardar en localStorage
+        const respondidas = JSON.parse(localStorage.getItem('notif_respondidas') || '[]');
+        respondidas.push(this.notifAResponder!.idNotificacion);
+        localStorage.setItem('notif_respondidas', JSON.stringify(respondidas));
+
         this.cerrarResponder();
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error enviando respuesta:', err);
@@ -275,6 +282,74 @@ export class NotificacionesComponent implements OnInit {
     this.cerrarDrawer();
     this.router.navigate([`/${ruta}`]);
   }
-  logout(): void { sessionStorage.clear(); this.router.navigate(['/login']); }
+  logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
   volver(): void { this.router.navigate(['/dashboard']); }
+
+  parsearMensaje(tipo: string, mensaje: string): any {
+    if (!mensaje) return null;
+
+    if (tipo === 'RESERVA') {
+      // Patrón: "Nueva solicitud de reserva de <b>Nombre</b> para el FECHA de HH:MM a HH:MM"
+      const solicitudMatch = mensaje.match(/de <b>(.*?)<\/b> para el (\d{4}-\d{2}-\d{2}) de (\d{2}:\d{2}) a (\d{2}:\d{2})/);
+      if (solicitudMatch) {
+        return {
+          subtipo: 'solicitud',
+          nombre: solicitudMatch[1],
+          fecha: solicitudMatch[2],
+          horaInicio: solicitudMatch[3],
+          horaFin: solicitudMatch[4],
+        };
+      }
+      // Patrón: "Se aprobó una reserva para el FECHA a las HH:MM:SS"
+      const aprobadaMatch = mensaje.match(/Se aprobó una reserva para el (\d{4}-\d{2}-\d{2}) a las (\d{2}:\d{2})/);
+      if (aprobadaMatch) {
+        return {
+          subtipo: 'aprobada',
+          fecha: aprobadaMatch[1],
+          hora: aprobadaMatch[2],
+          laboratorio: this.notifDetalle?.asunto?.replace('Reserva aprobada en ', '') ?? '',
+        };
+      }
+    }
+
+    if (tipo === 'SISTEMA') {
+      // Extrae nombre del usuario del HTML
+      const nombreMatch = mensaje.match(/<b>Usuario:<\/b>\s*(.*?)</);
+      if (nombreMatch) {
+        return { subtipo: 'usuario', nombre: nombreMatch[1].trim() };
+      }
+    }
+
+    if (tipo === 'FALLA') {
+      const labMatch    = mensaje.match(/<b>Laboratorio:<\/b>\s*(.*?)<br>/);
+      const repMatch    = mensaje.match(/<b>Reportado por:<\/b>\s*(.*?)<br>/);
+      const descMatch   = mensaje.match(/<b>Descripción:<\/b>\s*(.*?)<\/div>/);
+      return {
+        subtipo:     'falla',
+        laboratorio: labMatch?.[1]?.trim() ?? '—',
+        reportadoPor: repMatch?.[1]?.trim() ?? '—',
+        descripcion: descMatch?.[1]?.trim() ?? '—',
+      };
+    }
+
+    if (tipo === 'FALLA_RESUELTA') {
+      const originalMatch  = mensaje.match(/<b>Mensaje original:<\/b>\s*(.*?)<br>/);
+      const respuestaMatch = mensaje.match(/<b>Respuesta:<\/b>\s*(.*?)<br>/);
+      const porMatch       = mensaje.match(/Respondido por:\s*(.*?)<\/small>/);
+      return {
+        subtipo:   'resuelta',
+        original:  originalMatch?.[1]?.trim() ?? '—',
+        respuesta: respuestaMatch?.[1]?.trim() ?? '—',
+        por:       porMatch?.[1]?.trim() ?? '—',
+      };
+    }
+
+    return null;
+  }
+  esRespondida(id: number): boolean {
+    const notif = this.notificaciones.find(n => n.idNotificacion === id);
+    if (notif?.tipoNotificacion === 'FALLA_RESUELTA') return true;
+    const respondidas = JSON.parse(localStorage.getItem('notif_respondidas') || '[]');
+    return respondidas.includes(id);
+  }
 }

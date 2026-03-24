@@ -13,6 +13,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -32,6 +34,7 @@ public class AuthService {
     private final RolPermisoRepository rolPermisoRepository;
     private final AuditoriaService auditoriaService;
     private final ModuloRolRepository moduloRolRepository;
+
 
     public AuthService(PasswordEncoder passwordEncoder,
                        AuthenticationManager authenticationManager,
@@ -55,6 +58,8 @@ public class AuthService {
         this.auditoriaService = auditoriaService;
         this.moduloRolRepository = moduloRolRepository;
     }
+    @PersistenceContext
+    private EntityManager entityManager;
 
     private List<String> obtenerPermisosDeRol(String nombreRol) {
         return rolRepository.findByNombreRolIgnoreCase(nombreRol).map(rol -> rolPermisoRepository
@@ -84,19 +89,34 @@ public class AuthService {
 
     // ─── LOGIN ───────────────────────────────────────────────────────────────
     public AuthResponseDTO login(LoginRequestDTO request, String ip) {
+
+        // 1. Verificar si la BD tiene datos reales ANTES de autenticar
         try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getUsuario(), request.getContrasenia())
-            );
-        } catch (Exception e) {
-            auditoriaService.registrarFallo(null, request.getUsuario(),
-                    "LOGIN", "AUTH", "Intento de login fallido: credenciales incorrectas", ip);
+            Long count = (Long) entityManager.createNativeQuery(
+                    "SELECT COUNT(*) FROM pg_proc p JOIN pg_namespace n ON p.pronamespace = n.oid WHERE n.nspname = 'usuarios'"
+            ).getSingleResult();
+            if (count == null || count == 0) {
+                throw new RuntimeException("__BD_VACIA__");
+            }
+        } catch (RuntimeException e) {
             throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("__BD_VACIA__");
         }
 
+        // 2. Buscar usuario manualmente
         Usuario usuario = usuarioRepository
                 .findByUsuarioAndEstado(request.getUsuario(), "ACTIVO")
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado o inactivo"));
+
+        // 3. Verificar contraseña manualmente (sin authenticationManager)
+        if (!passwordEncoder.matches(request.getContrasenia(), usuario.getContrasenia())) {
+            try {
+                auditoriaService.registrarFallo(usuario.getIdUsuario(), request.getUsuario(),
+                        "LOGIN", "AUTH", "Intento de login fallido: contraseña incorrecta", ip);
+            } catch (Exception ignored) {}
+            throw new RuntimeException("Contraseña incorrecta");
+        }
 
         List<UsuarioRol> rolesVigentes = usuarioRolRepository
                 .findAllByUsuario_IdUsuarioAndVigenteTrue(usuario.getIdUsuario())
@@ -113,25 +133,18 @@ public class AuthService {
         List<String> permisos = obtenerPermisosDeRol(rolPrincipal);
         String token = jwtService.generarToken(usuario.getIdUsuario(), usuario.getUsuario(), rolPrincipal, permisos);
 
-        auditoriaService.registrarSesion(
-                usuario.getIdUsuario(), usuario.getUsuario(),
-                token, ip, LocalDateTime.now().plusHours(1)
-        );
+        try { auditoriaService.registrarSesion(usuario.getIdUsuario(), usuario.getUsuario(),
+                token, ip, LocalDateTime.now().plusHours(1)); } catch (Exception ignored) {}
 
-        auditoriaService.registrarExito(
-                usuario.getIdUsuario(), usuario.getUsuario(),
-                "LOGIN", "AUTH", "u_usuario",
-                usuario.getIdUsuario(), "Login exitoso con rol: " + rolPrincipal, ip
-        );
+        try { auditoriaService.registrarExito(usuario.getIdUsuario(), usuario.getUsuario(),
+                "LOGIN", "AUTH", "u_usuario", usuario.getIdUsuario(),
+                "Login exitoso con rol: " + rolPrincipal, ip); } catch (Exception ignored) {}
 
-        List<ModuloDTO> modulos = obtenerModulosDeRol(rolPrincipal); // ← nuevo
+        List<ModuloDTO> modulos = obtenerModulosDeRol(rolPrincipal);
 
-        AuthResponseDTO response = new AuthResponseDTO(
-                token, usuario.getNombres(), usuario.getApellidos(),
+        return new AuthResponseDTO(token, usuario.getNombres(), usuario.getApellidos(),
                 rolPrincipal, usuario.getIdUsuario(), rolesDisponibles,
-                usuario.isPrimerLogin(), modulos  // ← modulos al final
-        );
-        return response;
+                usuario.isPrimerLogin(), modulos);
     }
 
     // ─── CAMBIAR ROL ─────────────────────────────────────────────────────────
@@ -157,9 +170,12 @@ public class AuthService {
         List<String> permisos = obtenerPermisosDeRol(nombreRol);
         String token = jwtService.generarToken(idUsuario, usuario.getUsuario(), nombreRol, permisos);
 
-        auditoriaService.registrarSesion(idUsuario, usuario.getUsuario(),
-                token, ip, LocalDateTime.now().plusHours(1));
-
+        try {
+            auditoriaService.registrarSesion(idUsuario, usuario.getUsuario(),
+                    token, ip, LocalDateTime.now().plusHours(1));
+        } catch (Exception e) {
+            // BD vacía — se omite
+        }
         auditoriaService.registrarExito(idUsuario, usuario.getUsuario(),
                 "CAMBIO_ROL", "AUTH", "u_usuario_rol",
                 idUsuario, "Cambió al rol: " + nombreRol, ip);

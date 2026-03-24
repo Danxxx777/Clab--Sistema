@@ -80,4 +80,9 @@ public class AuditoriaController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @GetMapping("/stats-bd")
+    public ResponseEntity<Map<String, Object>> statsBD() {
+        return ResponseEntity.ok(auditoriaService.obtenerStatsBD());
+    }
 }

@@ -37,11 +37,16 @@ export class ReportarComponent implements OnInit {
   usuarioLogueado = '';
   rol = '';
   drawerAbierto = false;
-
+  temaOscuro   = true;
+  colorHeader  = '#1e3a8a';
+  colorAcento  = '#3b82f6';
+  colorFondo   = '#111111';
   moduloActivo: number | null = null;
   busquedaRealizada = false;
   mostrarEstadisticas = false;
   cargando = false;
+  excelPanelAbierto = false;
+  incluirGraficas = true;
 
   // ─── MÓDULOS ───────────────────────────────────────────────────────────────
   modulos: ModuloConfig[] = [
@@ -50,7 +55,6 @@ export class ReportarComponent implements OnInit {
     { id: 'fallas',     titulo: 'Fallas',       desc: 'Historial y seguimiento de fallas',      icono: '/fallas.png',      color: 'rojo',     colorHex: '#e74c3c' },
     { id: 'usuarios',   titulo: 'Usuarios',     desc: 'Actividad y roles del sistema',          icono: '/user.png',        color: 'azul',     colorHex: '#3b82f6' },
     { id: 'reservas',   titulo: 'Reservas',     desc: 'Historial de reservas de laboratorios',  icono: '/calendario.png',  color: 'naranja',  colorHex: '#e67e22' },
-    //{ id: 'asistencia', titulo: 'Asistencia',   desc: 'Control de asistencia por laboratorio',  icono: '/asistencia.png',  color: 'cyan',     colorHex: '#06b6d4' },
     { id: 'academico',  titulo: 'Académico',    desc: 'Períodos, carreras y asignaturas',       icono: '/academico.png',   color: 'amarillo', colorHex: '#f59e0b' },
     { id: 'bloqueos',   titulo: 'Bloqueos',     desc: 'Bloqueos y restricciones de acceso',     icono: '/bloqueos.png',    color: 'morado',   colorHex: '#a855f7' },
   ];
@@ -71,7 +75,7 @@ export class ReportarComponent implements OnInit {
   columnasTabla: string[] = [];
   tituloGrafica1 = '';
   tituloGrafica2 = '';
-
+  pdfPanelAbierto = false;
   coloresGrafica = ['#39ff14', '#3b82f6', '#e67e22', '#e74c3c', '#a855f7', '#06b6d4', '#f59e0b', '#10b981'];
 
   // ─── TOAST ─────────────────────────────────────────────────────────────────
@@ -81,8 +85,8 @@ export class ReportarComponent implements OnInit {
 
   // ─── LIFECYCLE ─────────────────────────────────────────────────────────────
   ngOnInit(): void {
-    this.rol = sessionStorage.getItem('rol') || '';
-    const userData = sessionStorage.getItem('usuario') || sessionStorage.getItem('user');
+    this.rol = localStorage.getItem('rol') || '';
+    const userData = localStorage.getItem('usuario') || localStorage.getItem('user');
     if (userData) {
       try {
         const parsed = JSON.parse(userData);
@@ -97,6 +101,16 @@ export class ReportarComponent implements OnInit {
     this.cargarUsuarios();
   }
 
+  togglePdfPanel(): void {
+    this.pdfPanelAbierto = !this.pdfPanelAbierto;
+    if (this.pdfPanelAbierto) this.excelPanelAbierto = false;
+  }
+
+  toggleExcelPanel(): void {
+    this.excelPanelAbierto = !this.excelPanelAbierto;
+    if (this.excelPanelAbierto) this.pdfPanelAbierto = false;
+  }
+
   // ─── DRAWER ────────────────────────────────────────────────────────────────
   toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
   cerrarDrawer(): void { this.drawerAbierto = false; }
@@ -105,12 +119,18 @@ export class ReportarComponent implements OnInit {
     if (this.drawerAbierto && !el.closest('.drawer') && !el.closest('.btn-hamburger')) {
       this.drawerAbierto = false;
     }
+    if (this.pdfPanelAbierto && !el.closest('.pdf-dropdown-wrap')) {
+      this.pdfPanelAbierto = false;
+    }
+    if (this.excelPanelAbierto && !el.closest('.pdf-dropdown-wrap')) {
+      this.excelPanelAbierto = false;
+    }
   }
 
   // ─── NAVEGACIÓN ────────────────────────────────────────────────────────────
   volver(): void { this.router.navigate(['/dashboard']); }
   navegar(ruta: string): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
-  logout(): void { sessionStorage.clear(); this.router.navigate(['/login']); }
+  logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
 
   abrirModulo(index: number): void {
     this.moduloActivo = index;
@@ -220,14 +240,13 @@ export class ReportarComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  // ─── HELPER FILTROS ────────────────────────────────────────────────────────
   private get filtrosActuales() {
     return {
       laboratorio: this.filtros.laboratorio || undefined,
       fechaInicio: this.filtros.fechaInicio || undefined,
       fechaFin:    this.filtros.fechaFin    || undefined,
       estado:      this.filtros.estado      || undefined,
-      idUsuario:   this.filtros.idUsuario ? Number(this.filtros.idUsuario) : undefined, // ← agrega
+      idUsuario:   this.filtros.idUsuario ? Number(this.filtros.idUsuario) : undefined,
     };
   }
 
@@ -251,16 +270,16 @@ export class ReportarComponent implements OnInit {
     this.reportarService.getReporteUso(this.filtrosActuales).subscribe({
       next: (res) => {
         this.statsModulo = [
-          { icono: '📅', valor: res.stats['totalReservas'] ?? 0, label: 'Total Reservas',  color: '#39ff14' },
-          { icono: '✅', valor: res.stats['aprobadas']    ?? 0, label: 'Aprobadas',        color: '#39ff14' },
-          { icono: '⏳', valor: res.stats['pendientes']   ?? 0, label: 'Pendientes',       color: '#e67e22' },
-          { icono: '❌', valor: res.stats['canceladas']   ?? 0, label: 'Canceladas',       color: '#e74c3c' },
+          { icono: '📅', valor: res.stats['totalReservas'] ?? 0, label: 'Total Reservas', color: '#39ff14' },
+          { icono: '✅', valor: res.stats['aprobadas']    ?? 0, label: 'Aprobadas',       color: '#39ff14' },
+          { icono: '⏳', valor: res.stats['pendientes']   ?? 0, label: 'Pendientes',      color: '#e67e22' },
+          { icono: '❌', valor: res.stats['canceladas']   ?? 0, label: 'Canceladas',      color: '#e74c3c' },
         ];
         this.tituloGrafica1    = 'Reservas por Laboratorio';
         this.tituloGrafica2    = 'Distribución por Estado';
         this.datosGrafica      = res.grafica1;
         this.datosDistribucion = res.grafica2;
-        this.columnasTabla     = ['LABORATORIO', 'FECHA', 'HORARIO', 'ESTUDIANTES','ESTADO'];
+        this.columnasTabla     = ['LABORATORIO', 'FECHA', 'HORARIO', 'ESTUDIANTES', 'ESTADO'];
         this.datosReporte      = res.datos.map((d: ReporteUsoItem) => ({
           a: d.laboratorio, b: d.fecha, c: d.horario, d: d.numEstudiantes, estado: d.estado,
         }));
@@ -305,14 +324,9 @@ export class ReportarComponent implements OnInit {
         this.tituloGrafica2    = 'Top Equipos con Fallas';
         this.datosGrafica      = res.grafica1;
         this.datosDistribucion = res.grafica2;
-        this.columnasTabla = ['FECHA', 'LABORATORIO', 'EQUIPO', 'DESCRIPCIÓN', 'REPORTADO POR'];
-        this.datosReporte  = res.datos.map((d: ReporteFallaItem) => ({
-          a: d.fecha,
-          b: d.laboratorio,
-          c: d.equipo,
-          d: d.descripcion,
-          e: d.reportadoPor,
-          estado: '',
+        this.columnasTabla     = ['FECHA', 'LABORATORIO', 'EQUIPO', 'DESCRIPCIÓN', 'REPORTADO POR'];
+        this.datosReporte      = res.datos.map((d: ReporteFallaItem) => ({
+          a: d.fecha, b: d.laboratorio, c: d.equipo, d: d.descripcion, e: d.reportadoPor, estado: '',
         }));
         this.onSuccess();
       },
@@ -355,14 +369,9 @@ export class ReportarComponent implements OnInit {
         this.tituloGrafica2    = 'Estados de Reservas';
         this.datosGrafica      = res.grafica1;
         this.datosDistribucion = res.grafica2;
-        this.columnasTabla = ['FECHA', 'LABORATORIO', 'HORARIO', 'TIPO', 'MOTIVO', 'ESTADO'];
-        this.datosReporte = res.datos.map((item: ReporteReservaItem) => ({
-          a: item.fecha,
-          b: item.laboratorio,
-          c: item.horario,
-          d: item.tipo,
-          e: item.motivo,
-          estado: item.estado,
+        this.columnasTabla     = ['FECHA', 'LABORATORIO', 'HORARIO', 'TIPO', 'MOTIVO', 'ESTADO'];
+        this.datosReporte      = res.datos.map((item: ReporteReservaItem) => ({
+          a: item.fecha, b: item.laboratorio, c: item.horario, d: item.tipo, e: item.motivo, estado: item.estado,
         }));
         this.onSuccess();
       },
@@ -396,9 +405,9 @@ export class ReportarComponent implements OnInit {
     this.reportarService.getReporteAcademico(this.filtrosActuales).subscribe({
       next: (res) => {
         this.statsModulo = [
-          { icono: '📖', valor: res.stats['totalClases']   ?? 0, label: 'Total Clases',  color: '#f59e0b' },
-          { icono: '🏫', valor: res.stats['laboratorios']  ?? 0, label: 'Laboratorios',  color: '#39ff14' },
-          { icono: '👨‍🏫', valor: res.stats['docentes']     ?? 0, label: 'Docentes',      color: '#3b82f6' },
+          { icono: '📖', valor: res.stats['totalClases']  ?? 0, label: 'Total Clases',  color: '#f59e0b' },
+          { icono: '🏫', valor: res.stats['laboratorios'] ?? 0, label: 'Laboratorios',  color: '#39ff14' },
+          { icono: '👨‍🏫', valor: res.stats['docentes']    ?? 0, label: 'Docentes',      color: '#3b82f6' },
         ];
         this.tituloGrafica1    = 'Clases por Laboratorio';
         this.tituloGrafica2    = 'Clases por Docente';
@@ -427,13 +436,9 @@ export class ReportarComponent implements OnInit {
         this.datosGrafica      = res.grafica1;
         this.datosDistribucion = res.grafica2;
         this.columnasTabla     = ['LABORATORIO', 'TIPO', 'MOTIVO', 'INICIO', 'FIN', 'ESTADO'];
-        this.datosReporte = res.datos.map((item: ReporteBloqueosItem) => ({
-          a: item.laboratorio,
-          b: item.tipo,
-          c: item.motivo,
-          d: item.fechaInicio,
-          e: item.fechaFin,
-          estado: item.estado,
+        this.datosReporte      = res.datos.map((item: ReporteBloqueosItem) => ({
+          a: item.laboratorio, b: item.tipo, c: item.motivo,
+          d: item.fechaInicio, e: item.fechaFin, estado: item.estado,
         }));
         this.onSuccess();
       },
@@ -448,12 +453,12 @@ export class ReportarComponent implements OnInit {
     for (const k of keys) {
       if (k in fila) vals.push(fila[k] ?? '');
     }
-    // ← solo agrega estado si no está vacío
     if (fila.estado !== undefined && fila.estado !== '') {
       vals.push(fila.estado);
     }
     return vals;
   }
+
   getBadgeClass(estado: string): string {
     const e = (estado || '').toUpperCase();
     if (['COMPLETADA','OPERATIVO','ACTIVO','ACTIVA','APROBADA','LIBERADO','RESUELTO'].some(x => e.includes(x))) return 'badge-activo';
@@ -465,8 +470,7 @@ export class ReportarComponent implements OnInit {
   // ─── EXPORTAR ──────────────────────────────────────────────────────────────
   exportarPDF(): void {
     if (!this.mostrarEstadisticas || this.datosReporte.length === 0) {
-      this.mostrarNotif('Primero genera el reporte', 'error');
-      return;
+      this.mostrarNotif('Primero genera el reporte', 'error'); return;
     }
     const modulo    = this.modulos[this.moduloActivo!];
     const labNombre = this.laboratorios.find(
@@ -482,6 +486,9 @@ export class ReportarComponent implements OnInit {
       tituloGrafica2:    this.tituloGrafica2,
       columnasTabla:     this.columnasTabla,
       datosReporte:      this.datosReporte,
+      temaOscuro:        this.temaOscuro,
+      colorHeader:       this.colorHeader,
+      colorAcento:       this.colorAcento,
       filasTabla:        (fila) => this.filasTabla(fila),
       filtros: {
         laboratorio: this.filtros.laboratorio,
@@ -496,8 +503,7 @@ export class ReportarComponent implements OnInit {
 
   exportarExcel(): void {
     if (!this.mostrarEstadisticas || this.datosReporte.length === 0) {
-      this.mostrarNotif('Primero genera el reporte', 'error');
-      return;
+      this.mostrarNotif('Primero genera el reporte', 'error'); return;
     }
     const modulo    = this.modulos[this.moduloActivo!];
     const labNombre = this.laboratorios.find(
@@ -506,9 +512,9 @@ export class ReportarComponent implements OnInit {
 
     this.exportExcel.exportar({
       modulo,
-      statsModulo:       this.statsModulo,
-      datosGrafica:      this.datosGrafica,
-      datosDistribucion: this.datosDistribucion,
+      statsModulo:       this.incluirGraficas ? this.statsModulo       : [],
+      datosGrafica:      this.incluirGraficas ? this.datosGrafica      : [],
+      datosDistribucion: this.incluirGraficas ? this.datosDistribucion : [],
       tituloGrafica1:    this.tituloGrafica1,
       tituloGrafica2:    this.tituloGrafica2,
       columnasTabla:     this.columnasTabla,
@@ -522,6 +528,10 @@ export class ReportarComponent implements OnInit {
       },
       nombreLaboratorio: labNombre,
       usuarioLogueado:   this.usuarioLogueado,
+      incluirResumen:    this.incluirGraficas,
+      colorAcento:       this.colorAcento,
+      colorFondo:        this.colorFondo,
+      temaOscuro:        this.temaOscuro,
     }).then(() => this.mostrarNotif('Excel generado correctamente'));
   }
 

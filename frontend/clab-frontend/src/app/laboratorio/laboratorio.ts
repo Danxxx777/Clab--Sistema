@@ -1,8 +1,8 @@
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {SedeService} from '../services/sede.service';
+import { SedeService } from '../services/sede.service';
 import { LaboratorioService } from '../services/laboratorio.service';
 import { EncargadoLaboratorioService, EncargadoLaboratorioDTO, UsuarioEncargado } from '../services/encargado-laboratorio.service';
 import { Laboratorio, Sede, EncargadoLaboratorio } from '../interfaces/Laboratorio.model';
@@ -60,6 +60,10 @@ export class LaboratoriosComponent implements OnInit {
   mostrarDetalleEncargado = false;
   encargadoDetalle: EncargadoLaboratorio | null = null;
 
+  drawerAbierto = false;
+  rol = localStorage.getItem('rol') || '';
+  usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+
   constructor(
     private router: Router,
     private sedeService: SedeService,
@@ -67,10 +71,6 @@ export class LaboratoriosComponent implements OnInit {
     private encargadoLaboratorioService: EncargadoLaboratorioService,
     private cdr: ChangeDetectorRef
   ) { }
-
-  drawerAbierto = false;
-  rol = sessionStorage.getItem('rol') || '';
-  usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
 
   toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
   cerrarDrawer(): void { this.drawerAbierto = false; }
@@ -81,8 +81,17 @@ export class LaboratoriosComponent implements OnInit {
   }
 
   logout(): void {
-    sessionStorage.clear();
+    localStorage.clear();
     this.router.navigate(['/login']);
+  }
+
+  ngOnInit(): void {
+    this.rol = localStorage.getItem('rol') || '';
+    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+    this.cargarLaboratorios();
+    this.cargarSedes();
+    this.cargarEncargados();
+    this.cargarUsuariosEncargados();
   }
 
   cargarSedes(): void {
@@ -147,17 +156,8 @@ export class LaboratoriosComponent implements OnInit {
       estado_lab: lab.estadoLab || lab.estado_lab || 'Disponible',
       id_sede: lab.sede?.idSede || lab.idSede || lab.id_sede || 0,
       nombre_sede: lab.sede?.nombre || lab.nombreSede || lab.nombre_sede || '',
-      foto: lab.foto || ''
+      foto: ''
     };
-  }
-
-  ngOnInit(): void {
-    this.rol = sessionStorage.getItem('rol') || '';
-    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
-    this.cargarLaboratorios();
-    this.cargarSedes();
-    this.cargarEncargados();
-    this.cargarUsuariosEncargados();
   }
 
   cambiarTab(index: number): void {
@@ -192,23 +192,6 @@ export class LaboratoriosComponent implements OnInit {
       identidad: '', nombres: '', apellidos: '',
       email: '', telefono: '', nombreLab: ''
     };
-  }
-
-  onFileSelected(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      if (!file.type.startsWith('image/')) { alert('Imagen inválida'); return; }
-      if (file.size > 5 * 1024 * 1024) { alert('Máx 5MB'); return; }
-      const reader = new FileReader();
-      reader.onload = (e: any) => { this.formularioLab.foto = e.target.result; };
-      reader.readAsDataURL(file);
-    }
-  }
-
-  eliminarFoto(): void {
-    this.formularioLab.foto = '';
-    const fi = document.getElementById('fileInput') as HTMLInputElement;
-    if (fi) fi.value = '';
   }
 
   volver(): void { this.router.navigate(['/dashboard']); }
@@ -266,6 +249,8 @@ export class LaboratoriosComponent implements OnInit {
     this.formularioEnc = this.getFormularioEncVacio();
   }
 
+  // ─── LABORATORIO ───────────────────────────────────────────────────────────
+
   editarLaboratorio(lab: Laboratorio, index: number): void {
     this.formularioLab = { ...lab };
     this.modoEdicion = true;
@@ -274,11 +259,25 @@ export class LaboratoriosComponent implements OnInit {
     this.mostrarModal = true;
   }
 
+  validarFormularioLab(): boolean {
+    if (this.modoEdicion && ((this.formularioLab.cod_laboratorio ?? 0) > 0)) return false;
+    return !!(
+      this.formularioLab.nombre &&
+      this.formularioLab.ubicacion &&
+      (this.formularioLab.capacidad_estudiantes || 0) > 0 &&
+      (this.formularioLab.numero_equipos ?? -1) >= 0 &&
+      this.formularioLab.descripcion &&
+      this.formularioLab.estado_lab &&
+      (this.formularioLab.id_sede || 0) > 0
+    );
+  }
+
   guardarLaboratorio(): void {
     if (!this.validarFormularioLab()) {
       this.mostrarNotificacion('Por favor complete todos los campos obligatorios', 'error');
       return;
     }
+
     const labData = {
       ...(this.modoEdicion && { codLaboratorio: this.formularioLab.cod_laboratorio }),
       nombreLab: this.formularioLab.nombre,
@@ -287,9 +286,9 @@ export class LaboratoriosComponent implements OnInit {
       numeroEquipos: this.formularioLab.numero_equipos,
       descripcion: this.formularioLab.descripcion,
       estadoLab: this.formularioLab.estado_lab,
-      idSede: this.formularioLab.id_sede,
-      foto: this.formularioLab.foto
+      idSede: this.formularioLab.id_sede
     };
+
     if (this.modoEdicion && this.formularioLab.cod_laboratorio) {
       this.laboratorioService.editar(this.formularioLab.cod_laboratorio, labData).subscribe({
         next: () => {
@@ -301,32 +300,14 @@ export class LaboratoriosComponent implements OnInit {
       });
     } else {
       this.laboratorioService.crear(labData).subscribe({
-        next: (labCreado) => {
-          const m = this.mapLabActualizado(labCreado);
-          this.laboratorios.push(m);
-          this.laboratoriosFiltrados = [...this.laboratorios];
-          this.cdr.detectChanges();
+        next: () => {
           this.cerrarModal();
+          this.cargarLaboratorios();
           this.mostrarNotificacion('Laboratorio creado exitosamente');
         },
         error: () => this.mostrarNotificacion('Error al crear el laboratorio', 'error')
       });
     }
-  }
-
-  private mapLabActualizado(lab: any): Laboratorio {
-    return {
-      cod_laboratorio: lab.codLaboratorio,
-      nombre: lab.nombreLab,
-      ubicacion: lab.ubicacion,
-      capacidad_estudiantes: lab.capacidadEstudiantes,
-      numero_equipos: lab.numeroEquipos,
-      descripcion: lab.descripcion,
-      estado_lab: lab.estadoLab as 'Disponible' | 'Mantenimiento' | 'Bloqueado',
-      id_sede: lab.sede?.idSede || 0,
-      nombre_sede: lab.sede?.nombre || '',
-      foto: this.formularioLab.foto || ''
-    };
   }
 
   eliminarLaboratorio(lab: Laboratorio, index: number): void {
@@ -336,16 +317,7 @@ export class LaboratoriosComponent implements OnInit {
     this.mostrarConfirmarEliminar = true;
   }
 
-  validarFormularioLab(): boolean {
-    if (this.modoEdicion && !(this.formularioLab.cod_laboratorio || 0 > 0)) return false;
-    return !!(
-      this.formularioLab.nombre && this.formularioLab.ubicacion &&
-      (this.formularioLab.capacidad_estudiantes || 0) > 0 &&
-      (this.formularioLab.numero_equipos ?? -1) >= 0 &&
-      this.formularioLab.descripcion && this.formularioLab.estado_lab &&
-      (this.formularioLab.id_sede || 0) > 0
-    );
-  }
+  // ─── SEDE ──────────────────────────────────────────────────────────────────
 
   editarSede(sede: Sede, index: number): void {
     this.formularioSede = { ...sede };
@@ -353,6 +325,16 @@ export class LaboratoriosComponent implements OnInit {
     this.indiceEdicion = index;
     this.tipoModal = 'sede';
     this.mostrarModal = true;
+  }
+
+  validarFormularioSede(): boolean {
+    return !!(
+      this.formularioSede.nombre &&
+      this.formularioSede.direccion &&
+      this.formularioSede.telefono &&
+      this.formularioSede.email &&
+      this.formularioSede.estado
+    );
   }
 
   guardarSede(): void {
@@ -380,10 +362,7 @@ export class LaboratoriosComponent implements OnInit {
     this.mostrarConfirmarEliminar = true;
   }
 
-  validarFormularioSede(): boolean {
-    return !!(this.formularioSede.nombre && this.formularioSede.direccion &&
-      this.formularioSede.telefono && this.formularioSede.email && this.formularioSede.estado);
-  }
+  // ─── ENCARGADO ─────────────────────────────────────────────────────────────
 
   editarEncargado(enc: EncargadoLaboratorio, index: number): void {
     this.formularioEnc = {
@@ -397,6 +376,14 @@ export class LaboratoriosComponent implements OnInit {
     this.usuarioSeleccionado = this.usuariosEncargados.find(
       u => u.idUsuario === enc.id_usuario
     ) || null;
+  }
+
+  validarFormularioEnc(): boolean {
+    return !!(
+      this.formularioEnc.id_usuario > 0 &&
+      this.formularioEnc.cod_laboratorio > 0 &&
+      this.formularioEnc.fecha_asignacion
+    );
   }
 
   guardarEncargado(): void {
@@ -430,13 +417,7 @@ export class LaboratoriosComponent implements OnInit {
     this.mostrarConfirmarEliminar = true;
   }
 
-  validarFormularioEnc(): boolean {
-    return !!(
-      this.formularioEnc.id_usuario > 0 &&
-      this.formularioEnc.cod_laboratorio > 0 &&
-      this.formularioEnc.fecha_asignacion
-    );
-  }
+  // ─── ELIMINAR ──────────────────────────────────────────────────────────────
 
   cerrarModalConfirmar(): void {
     this.mostrarConfirmarEliminar = false;
@@ -445,18 +426,16 @@ export class LaboratoriosComponent implements OnInit {
   }
 
   confirmarEliminacion(): void {
-    if (this.tipoModal === 'laboratorio' && this.itemParaEliminar.cod_laboratorio) {
+    if (this.tipoModal === 'laboratorio' && this.itemParaEliminar?.cod_laboratorio) {
       this.laboratorioService.eliminar(this.itemParaEliminar.cod_laboratorio).subscribe({
         next: () => {
-          this.laboratorios.splice(this.indiceParaEliminar, 1);
-          this.filtrarLaboratorios();
-          this.cdr.detectChanges();
           this.cerrarModalConfirmar();
+          this.cargarLaboratorios();
           this.mostrarNotificacion('🗑️ Laboratorio eliminado exitosamente');
         },
         error: () => this.mostrarNotificacion('❌ Error al eliminar el laboratorio', 'error')
       });
-    } else if (this.tipoModal === 'sede' && this.itemParaEliminar.idSede) {
+    } else if (this.tipoModal === 'sede' && this.itemParaEliminar?.idSede) {
       this.sedeService.eliminar(this.itemParaEliminar.idSede).subscribe({
         next: () => {
           this.cerrarModalConfirmar();
@@ -466,7 +445,7 @@ export class LaboratoriosComponent implements OnInit {
         error: () => this.mostrarNotificacion('❌ Error al eliminar la sede', 'error')
       });
     } else if (this.tipoModal === 'encargado') {
-      const idEliminar = this.itemParaEliminar.idEncargadoLaboratorio || this.itemParaEliminar.id_encargado_laboratorio;
+      const idEliminar = this.itemParaEliminar?.idEncargadoLaboratorio || this.itemParaEliminar?.id_encargado_laboratorio;
       if (!idEliminar) return;
       this.encargadoLaboratorioService.eliminar(idEliminar).subscribe({
         next: () => {
@@ -478,6 +457,8 @@ export class LaboratoriosComponent implements OnInit {
       });
     }
   }
+
+  // ─── DETALLE ───────────────────────────────────────────────────────────────
 
   verDetalle(item: any): void {
     if (this.tabActiva === 0) {
@@ -492,20 +473,11 @@ export class LaboratoriosComponent implements OnInit {
     }
   }
 
-  cerrarDetalleLab(): void {
-    this.mostrarDetalleLab = false;
-    this.labDetalle = null;
-  }
+  cerrarDetalleLab(): void { this.mostrarDetalleLab = false; this.labDetalle = null; }
+  cerrarDetalleEncargado(): void { this.mostrarDetalleEncargado = false; this.encargadoDetalle = null; }
+  cerrarDetalleSede(): void { this.mostrarDetalleSede = false; this.sedeDetalle = null; }
 
-  cerrarDetalleEncargado(): void {
-    this.mostrarDetalleEncargado = false;
-    this.encargadoDetalle = null;
-  }
-
-  cerrarDetalleSede(): void {
-    this.mostrarDetalleSede = false;
-    this.sedeDetalle = null;
-  }
+  // ─── UTILIDADES ────────────────────────────────────────────────────────────
 
   cambiarPagina(pagina: number | string): void {
     if (pagina === 'anterior' && this.paginaActual > 1) this.paginaActual--;

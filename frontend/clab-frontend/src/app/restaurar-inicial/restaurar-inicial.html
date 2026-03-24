@@ -1,0 +1,168 @@
+<div class="restore-page">
+
+  <!-- Fondo animado -->
+  <div class="grid-bg"></div>
+  <div class="scan-line"></div>
+  <div class="glow-orb"></div>
+  <div class="particle p1"></div>
+  <div class="particle p2"></div>
+  <div class="particle p3"></div>
+  <div class="particle p4"></div>
+
+  <div class="restore-card">
+
+    <!-- PANEL LATERAL -->
+    <div class="side-panel">
+      <div class="side-brand">
+        <div class="side-logo">CLAB</div>
+        <div class="side-tagline">Sistema de Laboratorios</div>
+      </div>
+
+      <div class="side-divider"></div>
+
+      <div class="side-steps">
+        <div class="s-step">
+          <div class="s-num">①</div>
+          <div class="s-text">
+            <strong>Selecciona el backup</strong>
+            <span>Archivo .zip o .backup generado desde CLAB</span>
+          </div>
+        </div>
+        <div class="s-step">
+          <div class="s-num">②</div>
+          <div class="s-text">
+            <strong>Espera el proceso</strong>
+            <span>Puede tardar entre 30s y 2 minutos</span>
+          </div>
+        </div>
+        <div class="s-step">
+          <div class="s-num">③</div>
+          <div class="s-text">
+            <strong>Reinicia el backend</strong>
+            <span>Spring Boot debe reiniciarse tras restaurar</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-warn">
+        <div class="warn-title">⚠ Atención</div>
+        <div class="warn-body">Se borrarán todos los datos actuales antes de restaurar.</div>
+      </div>
+    </div>
+
+    <!-- PANEL PRINCIPAL -->
+    <div class="main-panel">
+
+      <div class="main-header">
+        <div class="header-lbl">Restauración del Sistema</div>
+      </div>
+
+      <!-- PASOS -->
+      <div class="steps-track">
+        <div class="step-item" [class.active]="pasoActual === 1" [class.done]="pasoActual > 1">
+          <div class="step-circle">
+            <span *ngIf="pasoActual <= 1">1</span>
+            <span *ngIf="pasoActual > 1">✓</span>
+          </div>
+          <div class="step-label">Archivo</div>
+        </div>
+        <div class="step-line" [class.done]="pasoActual > 1"></div>
+        <div class="step-item" [class.active]="pasoActual === 2" [class.done]="pasoActual > 2">
+          <div class="step-circle">
+            <span *ngIf="pasoActual <= 2">2</span>
+            <span *ngIf="pasoActual > 2">✓</span>
+          </div>
+          <div class="step-label">Restaurando</div>
+        </div>
+        <div class="step-line" [class.done]="pasoActual > 2"></div>
+        <div class="step-item" [class.active]="pasoActual === 3" [class.done]="pasoActual > 3">
+          <div class="step-circle">3</div>
+          <div class="step-label">Completado</div>
+        </div>
+      </div>
+
+      <!-- BODY -->
+      <div class="main-body">
+
+        <!-- PASO 1 -->
+        <div *ngIf="pasoActual === 1">
+          <input type="file" id="fileInput" accept=".zip,.backup" (change)="onArchivoSeleccionado($event)" hidden>
+
+          <label for="fileInput" class="dropzone"
+                 [class.has-file]="archivoSeleccionado"
+                 [class.drag-over]="isDragOver"
+                 (dragover)="onDragOver($event)"
+                 (dragleave)="onDragLeave($event)"
+                 (drop)="onDrop($event)">
+            <div class="drop-icon">{{ archivoSeleccionado ? '📦' : '↑' }}</div>
+            <div class="drop-text">
+              {{ archivoSeleccionado ? nombreArchivo : 'Haz clic o arrastra el archivo aquí' }}
+            </div>
+            <div class="drop-hint" *ngIf="!archivoSeleccionado">Formatos: .zip, .backup</div>
+          </label>
+
+          <div class="msg-error" *ngIf="error">{{ error }}</div>
+
+          <button class="btn-primary" (click)="restaurar()" [disabled]="!archivoSeleccionado">
+            Restaurar Sistema
+          </button>
+
+          <a href="/login" class="btn-back">← Volver al login</a>
+        </div>
+
+        <!-- PASO 2 -->
+        <div *ngIf="pasoActual === 2" class="progress-section">
+          <div class="progress-label">
+            <span>Restaurando base de datos...</span>
+            <span class="progress-pct">{{ progresoRedondeado }}%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-bar" [style.width.%]="progresoSimulado"></div>
+          </div>
+
+          <div class="progress-steps">
+            <div class="prog-step" [class.done]="progresoSimulado >= 20">
+              <span class="prog-dot"></span> Terminando conexiones activas
+            </div>
+            <div class="prog-step" [class.done]="progresoSimulado >= 40">
+              <span class="prog-dot"></span> Eliminando base de datos anterior
+            </div>
+            <div class="prog-step" [class.done]="progresoSimulado >= 60">
+              <span class="prog-dot"></span> Creando nueva base de datos
+            </div>
+            <div class="prog-step" [class.done]="progresoSimulado >= 80">
+              <span class="prog-dot"></span> Restaurando datos del backup
+            </div>
+            <div class="prog-step" [class.done]="progresoSimulado >= 90">
+              <span class="prog-dot"></span> Verificando integridad
+            </div>
+          </div>
+
+          <p class="progress-warn">No cierres esta ventana mientras se restaura.</p>
+        </div>
+
+        <!-- PASO 3 -->
+        <div *ngIf="pasoActual === 3" class="success-section">
+          <div class="success-icon">✓</div>
+          <h2 class="success-title">Restauración completada</h2>
+          <p class="success-desc">La base de datos fue restaurada exitosamente.</p>
+
+          <div class="alert-reiniciar">
+            <div class="alert-icon">⚠</div>
+            <div>
+              <div class="alert-title">Reinicia el backend</div>
+              <div class="alert-body">Detén y vuelve a iniciar el servidor Spring Boot para que los cambios surtan efecto.</div>
+            </div>
+          </div>
+
+          <div class="progress-track" style="margin: 14px 0">
+            <div class="progress-bar" style="width:100%"></div>
+          </div>
+
+          <button class="btn-primary" (click)="irAlLogin()">Ir al Login</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

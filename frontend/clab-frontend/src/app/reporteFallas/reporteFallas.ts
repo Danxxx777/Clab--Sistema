@@ -65,9 +65,9 @@ export class ReporteFallasComponent implements OnInit {
 
   // ── Sesión / UI ─────────────────────────────────────────
   drawerAbierto = false;
-  rol = sessionStorage.getItem('rol') || '';
-  usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
-  idUsuario = Number(sessionStorage.getItem('idUsuario'));
+  rol = localStorage.getItem('rol') || '';
+  usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+  idUsuario = Number(localStorage.getItem('idUsuario'));
   cargando = false;
   mostrarToast = false;
   toastMensaje = '';
@@ -83,9 +83,9 @@ export class ReporteFallasComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.rol = sessionStorage.getItem('rol') || '';
-    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
-    this.idUsuario = Number(sessionStorage.getItem('idUsuario'));
+    this.rol = sessionStorage.getItem('rol') || localStorage.getItem('rol') || '';
+    this.usuarioLogueado = sessionStorage.getItem('usuario') || localStorage.getItem('usuario') || 'Usuario';
+    this.idUsuario = Number(sessionStorage.getItem('idUsuario') || localStorage.getItem('idUsuario') || '0');
     this.inicializarFormularios();
     this.cargarLaboratorios();
     this.cargarReportesYEquipos();
@@ -160,14 +160,19 @@ export class ReporteFallasComponent implements OnInit {
    * Filtra reportes según rol: Docente solo ve los suyos.
    */
   cargarReportesYEquipos(): void {
-    this.reporteService.listar().subscribe({
+    const idUsuario = Number(sessionStorage.getItem('idUsuario') || localStorage.getItem('idUsuario') || '0');
+    const rol = sessionStorage.getItem('rol') || localStorage.getItem('rol') || '';
+
+    const obs = rol === 'Encargado de Laboratorio'
+      ? this.reporteService.listarPorEncargado(idUsuario)
+      : this.reporteService.listar();
+
+    obs.subscribe({
       next: (data) => {
         this.reportes = data;
-        // ── Filtro por rol ──────────────────────────────
-        if (this.rol === 'Docente') {
-          this.reportesFiltrados = data.filter(r => r.usuario?.idUsuario === this.idUsuario);
+        if (rol === 'Docente') {
+          this.reportesFiltrados = data.filter(r => r.usuario?.idUsuario === idUsuario);
         } else {
-          // Administradorr y Decano ven todos
           this.reportesFiltrados = [...data];
         }
         this.paginaReportes = 1;
@@ -196,13 +201,36 @@ export class ReporteFallasComponent implements OnInit {
   }
 
   cargarTodosLosEquipos(): void {
-    if (this.laboratorios.length === 0) {
-      this.http.get<Laboratorio[]>(`${this.API_URL}/laboratorios/listar`).subscribe({
-        next: (labs) => { this.laboratorios = labs; this.fetchEquiposDeTodosLosLabs(labs); },
-        error: (err) => console.error('Error:', err)
+    const idUsuario = Number(sessionStorage.getItem('idUsuario') || localStorage.getItem('idUsuario') || '0');
+    const rol = sessionStorage.getItem('rol') || localStorage.getItem('rol') || '';
+
+    if (rol === 'Encargado de Laboratorio') {
+      // Trae solo equipos de sus laboratorios asignados
+      this.http.get<any[]>(`${this.API_URL}/equipos/porEncargado/${idUsuario}`).subscribe({
+        next: (equipos) => {
+          const lista: EquipoConLab[] = equipos.map(eq => ({
+            idEquipo: eq.idEquipo,
+            nombreEquipo: eq.nombreEquipo,
+            marca: eq.marca,
+            modelo: eq.modelo,
+            estado: eq.estado,
+            codLaboratorio: eq.laboratorio?.codLaboratorio,
+            nombreLab: eq.laboratorio?.nombreLab
+          }));
+          this.aplicarFiltroEquiposSinReporte(lista);
+        },
+        error: (err) => console.error('Error cargando equipos por encargado:', err)
       });
     } else {
-      this.fetchEquiposDeTodosLosLabs(this.laboratorios);
+      // Decano / Admin — comportamiento original
+      if (this.laboratorios.length === 0) {
+        this.http.get<Laboratorio[]>(`${this.API_URL}/laboratorios/listar`).subscribe({
+          next: (labs) => { this.laboratorios = labs; this.fetchEquiposDeTodosLosLabs(labs); },
+          error: (err) => console.error('Error:', err)
+        });
+      } else {
+        this.fetchEquiposDeTodosLosLabs(this.laboratorios);
+      }
     }
   }
 
@@ -447,7 +475,7 @@ export class ReporteFallasComponent implements OnInit {
   toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
   cerrarDrawer(): void { this.drawerAbierto = false; }
   navegar(ruta: string, _texto: string): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
-  logout(): void { sessionStorage.clear(); this.router.navigate(['/login']); }
+  logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
   volver(): void { this.router.navigate(['/dashboard']); }
   formatearFecha(fecha: any): string { if (!fecha) return ''; return new Date(fecha).toLocaleDateString('es-ES'); }
 }

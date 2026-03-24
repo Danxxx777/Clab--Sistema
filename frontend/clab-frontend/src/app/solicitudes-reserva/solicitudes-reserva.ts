@@ -112,10 +112,28 @@ export class SolicitudesReservaComponent implements OnInit {
   }
   // ──────────────────────────────────────────────────────────────────────────
 
+  get tipoSinAsignatura(): boolean {
+    const tipo = this.tipos.find(t => t.id_tipo_reserva === Number(this.solicitudActual.id_tipo_reserva));
+    if (!tipo) return false;
+    const nombre = tipo.nombre_tipo?.toLowerCase() || '';
+    return nombre.includes('capacitacion') || nombre.includes('capacitación') ||
+      nombre.includes('sustentacion') || nombre.includes('sustentación') ||
+      nombre.includes('tesis');
+  }
+
+  onTipoReservaChange(): void {
+    if (this.tipoSinAsignatura) {
+      this.solicitudActual.id_asignatura = null;
+      this.solicitudActual.id_horario_academico = null;
+      this.horariosAcademicos = [];
+    }
+    this.cdr.detectChanges();
+  }
+
   ngOnInit(): void {
-    this.rol = sessionStorage.getItem('rol') || '';
-    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
-    this.idUsuario = parseInt(sessionStorage.getItem('idUsuario') || '0');
+    this.rol = localStorage.getItem('rol') || '';
+    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+    this.idUsuario = parseInt(localStorage.getItem('idUsuario') || '0');
 
     this.cargarSolicitudes();
     this.cargarLaboratorios();
@@ -156,8 +174,15 @@ export class SolicitudesReservaComponent implements OnInit {
   cargarSolicitudes(): void {
     this.reservaService.listarPorUsuario(this.idUsuario).subscribe({
       next: (data: any[]) => {
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+
         this.solicitudes = data
-          .filter(r => !r.idGrupoReserva)
+          .filter(r => {
+            if (r.idGrupoReserva) return false;
+            const fechaReserva = new Date(r.fechaReserva + 'T00:00:00');
+            return fechaReserva >= hoy;
+          })
           .map(r => ({
             id: r.idReserva,
             cod_laboratorio: r.codLaboratorio,
@@ -342,7 +367,7 @@ export class SolicitudesReservaComponent implements OnInit {
     }
     const s = this.solicitudActual;
 
-    if (!s.cod_laboratorio || !s.id_asignatura || !s.id_periodo ||
+    if (!s.cod_laboratorio || (!this.tipoSinAsignatura && !s.id_asignatura) || !s.id_periodo ||
       !s.fecha || !s.horaInicio || !s.horaFin ||
       !s.cantidadEstudiantes || !s.motivo?.trim()) {
       this.mostrarAlerta('Campos incompletos', 'Completa todos los campos obligatorios.', 'error');
@@ -361,7 +386,7 @@ export class SolicitudesReservaComponent implements OnInit {
       idUsuario: this.idUsuario,
       idPeriodo: s.id_periodo,
       idHorarioAcademico: s.id_horario_academico || null,
-      idAsignatura: s.id_asignatura,
+      idAsignatura: this.tipoSinAsignatura ? null : (s.id_asignatura || null),
       idTipoReserva: s.id_tipo_reserva || null,
       fechaReserva: s.fecha,
       horaInicio: s.horaInicio,
@@ -443,7 +468,7 @@ export class SolicitudesReservaComponent implements OnInit {
 
   volver(): void { this.router.navigate(['/dashboard']); }
   navegar(ruta: string): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
-  logout(): void { sessionStorage.clear(); this.router.navigate(['/login']); }
+  logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
   toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
   cerrarDrawer(): void { this.drawerAbierto = false; }
 }

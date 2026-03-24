@@ -28,13 +28,11 @@ import javax.sql.DataSource;
 @RequiredArgsConstructor
 public class BackupService {
 
-    // Repositorios
     private final BackupRegistroRepository registroRepository;
     private final BackupConfigRepository   configRepository;
     private final DataSource               dataSource;
     private final GoogleDriveService       googleDriveService;
 
-    // Configuración desde application.properties
     @Value("${backup.ruta-local:/backups}")
     private String rutaLocal;
 
@@ -62,16 +60,22 @@ public class BackupService {
     @Value("${backup.pgrestore.path:pg_restore}")
     private String pgRestorePath;
 
-    // Formateador para los nombres de archivo: backup_2024-01-15_02-00-00.sql
     private static final DateTimeFormatter FORMATO_FECHA =
             DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
 
+    private static final String[] ROLES_CLAB = {
+            "clab_decano", "clab_administrador", "clab_coordinador",
+            "clab_docente", "clab_encargado_lab", "clab_test"
+    };
+
+    // =========================================================
     // SECCIÓN 1: CONFIGURACIÓN
+    // =========================================================
+
     public BackupConfigDTO obtenerConfiguracion() {
         return configRepository.findById(1L)
                 .map(BackupConfigDTO::fromEntity)
                 .orElseGet(() -> {
-                    // Primera vez que se carga: devuelve config por defecto
                     log.info("No existe configuración de backup, devolviendo valores por defecto");
                     return BackupConfigDTO.builder()
                             .frecuencia("DIARIO")
@@ -97,14 +101,14 @@ public class BackupService {
             );
         } catch (Exception e) {
             log.error("Error al guardar configuración de backup: {}", e.getMessage());
-            return BackupRespuestaDTO.error(
-                    "No se pudo guardar la configuración",
-                    e.getMessage()
-            );
+            return BackupRespuestaDTO.error("No se pudo guardar la configuración", e.getMessage());
         }
     }
 
+    // =========================================================
     // SECCIÓN 2: HISTORIAL
+    // =========================================================
+
     public List<BackupRegistroDTO> obtenerHistorial() {
         return registroRepository.findAllByOrderByFechaDesc()
                 .stream()
@@ -112,38 +116,66 @@ public class BackupService {
                 .toList();
     }
 
+    // =========================================================
     // SECCIÓN 3: RETENCIÓN AUTOMÁTICA
+    // =========================================================
+
     @Transactional
     public void aplicarRetencion() {
         configRepository.findById(1L).ifPresent(config -> {
             int retencion = config.getRetencion();
-            long total    = registroRepository.count();
 
-            // Si no se supera el límite, no hay nada que borrar
-            if (total <= retencion) {
-                log.info("Retención: {} backups en BD, límite es {}. Nada que borrar.",
-                        total, retencion);
-                return;
+            long total = registroRepository.count();
+            if (total > retencion) {
+                int cantidadABorrar = (int)(total - retencion);
+                log.info("Retención local: {} backups, límite {}. Borrando {} más antiguos.",
+                        total, retencion, cantidadABorrar);
+
+                List<BackupRegistro> conArchivo =
+                        registroRepository.findOldestWithLocalFileToDelete(cantidadABorrar);
+                for (BackupRegistro backup : conArchivo) {
+                    borrarArchivoDisco(backup.getRutaLocal());
+                }
+
+                List<BackupRegistro> aEliminar =
+                        registroRepository.findOldestToDelete(cantidadABorrar);
+                if (!aEliminar.isEmpty()) {
+                    registroRepository.deleteAll(aEliminar);
+                    log.info("Retención local aplicada: {} registros eliminados.", cantidadABorrar);
+                }
+            } else {
+                log.info("Retención local: {} backups, límite {}. Nada que borrar.", total, retencion);
             }
 
-            // Cuántos hay que eliminar
-            int cantidadABorrar = (int)(total - retencion);
-            log.info("Retención: {} backups en BD, límite es {}. Borrando los {} más antiguos.",
-                    total, retencion, cantidadABorrar);
+            if (!config.isGuardarDrive()) return;
 
-            // Paso 1: borrar archivos del disco (solo los que tienen archivo local)
-            List<BackupRegistro> conArchivo =
-                    registroRepository.findOldestWithLocalFileToDelete(cantidadABorrar);
-            for (BackupRegistro backup : conArchivo) {
-                borrarArchivoDisco(backup.getRutaLocal());
-            }
+            try {
+                List<com.google.api.services.drive.model.File> archivosEnDrive =
+                        googleDriveService.listarArchivosBackup();
 
-            // Paso 2: borrar registros de la BD
-            List<BackupRegistro> aEliminar =
-                    registroRepository.findOldestToDelete(cantidadABorrar);
-            if (!aEliminar.isEmpty()) {
-                registroRepository.deleteAll(aEliminar);
-                log.info("Retención aplicada: {} backups eliminados.", cantidadABorrar);
+                int totalDrive = archivosEnDrive.size();
+                if (totalDrive <= retencion) {
+                    log.info("Retención Drive: {} archivos, límite {}. Nada que borrar.",
+                            totalDrive, retencion);
+                    return;
+                }
+
+                int cantidadDrive = totalDrive - retencion;
+                log.info("Retención Drive: {} archivos, límite {}. Borrando {} más antiguos.",
+                        totalDrive, retencion, cantidadDrive);
+
+                for (int i = 0; i < cantidadDrive; i++) {
+                    String fileId   = archivosEnDrive.get(i).getId();
+                    String fileName = archivosEnDrive.get(i).getName();
+                    try {
+                        googleDriveService.eliminarArchivo(fileId);
+                        log.info("Archivo Drive eliminado por retención: {} ({})", fileName, fileId);
+                    } catch (Exception e) {
+                        log.error("No se pudo eliminar {} de Drive: {}", fileName, e.getMessage());
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error al aplicar retención en Drive: {}", e.getMessage());
             }
         });
     }
@@ -162,7 +194,10 @@ public class BackupService {
         }
     }
 
+    // =========================================================
     // SECCIÓN 4: EJECUCIÓN DEL BACKUP (pg_dump)
+    // =========================================================
+
     public BackupRespuestaDTO ejecutarBackupManual(
             BackupRegistro.ModalidadBackup modalidad, String formato) {
         log.info("Iniciando backup MANUAL — modalidad: {}, formato: {}", modalidad, formato);
@@ -178,10 +213,7 @@ public class BackupService {
                             : "")
             );
         } else {
-            return BackupRespuestaDTO.error(
-                    "Error al ejecutar el backup",
-                    registro.getError()
-            );
+            return BackupRespuestaDTO.error("Error al ejecutar el backup", registro.getError());
         }
     }
 
@@ -189,7 +221,6 @@ public class BackupService {
         BackupRegistro.ModalidadBackup modalidad = configRepository.findById(1L)
                 .map(BackupConfig::getModalidadDefault)
                 .orElse(BackupRegistro.ModalidadBackup.COMPLETO);
-        // El backup automático siempre usa formato SQL por compatibilidad
         log.info("Iniciando backup AUTOMÁTICO — modalidad: {}", modalidad);
         ejecutarBackup(BackupRegistro.TipoBackup.AUTOMATICO, modalidad, "SQL");
     }
@@ -198,11 +229,9 @@ public class BackupService {
     public BackupRegistro ejecutarBackup(BackupRegistro.TipoBackup tipo,
                                          BackupRegistro.ModalidadBackup modalidad,
                                          String formato) {
-        // Determinar si es formato custom o plain
-        boolean esCustom = "CUSTOM".equalsIgnoreCase(formato);
-        String extension = esCustom ? ".backup" : ".sql";
+        boolean esCustom  = "CUSTOM".equalsIgnoreCase(formato);
+        String  extension = esCustom ? ".backup" : ".sql";
 
-        // Leer la ruta desde la BD (configurable por el admin desde la UI)
         String rutaEfectiva = configRepository.findById(1L)
                 .map(BackupConfig::getRutaLocalBackup)
                 .filter(r -> r != null && !r.isBlank())
@@ -221,52 +250,31 @@ public class BackupService {
                 .build();
 
         try {
-            // Paso 1: Crear carpeta si no existe
             crearCarpetaSiNoExiste(rutaEfectiva);
 
-            // Paso 2: Determinar qué tablas incluir según modalidad
             List<String> tablasAIncluir = obtenerTablasParaModalidad(modalidad);
             registro.setTablasIncluidas(tablasAIncluir == null ? null : tablasAIncluir.size());
             log.info("Modalidad {}: {} tablas a incluir",
-                    modalidad,
-                    tablasAIncluir == null ? "TODAS" : tablasAIncluir.size());
+                    modalidad, tablasAIncluir == null ? "TODAS" : tablasAIncluir.size());
 
-            // Paso 3: Construir el comando pg_dump
             java.util.List<String> comando = new java.util.ArrayList<>(java.util.Arrays.asList(
-                    pgDumpPath,
-                    "-h", dbHost,
-                    "-p", dbPort,
-                    "-U", dbUsuario,
-                    "-d", dbNombre
+                    pgDumpPath, "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", dbNombre
             ));
 
-            // Formato y opciones según tipo
             if (esCustom) {
-                // Formato custom: binario, incluye estructura completa, restaurable desde 0
-                comando.add("-F");
-                comando.add("c");
+                comando.add("-F"); comando.add("c");
             } else {
-                // Formato plain: SQL legible, con INSERTs
-                comando.add("-F");
-                comando.add("p");
+                comando.add("-F"); comando.add("p");
                 comando.add("--inserts");
                 comando.add("--on-conflict-do-nothing");
             }
 
-            // Excluir siempre las tablas de sistema de backup
-            comando.add("--exclude-table");
-            comando.add("configuracion.backup_registro");
-            comando.add("--exclude-table");
-            comando.add("configuracion.backup_config");
+            comando.add("--exclude-table-data"); comando.add("configuracion.backup_registro");
+            comando.add("--exclude-table-data"); comando.add("configuracion.backup_config");
+            comando.add("-f"); comando.add(rutaArchivo);
 
-            comando.add("-f");
-            comando.add(rutaArchivo);
-
-            // Para DIFERENCIAL e INCREMENTAL: agregar -t por cada tabla detectada
-            // Si tablasAIncluir es null = COMPLETO = no se agregan filtros
             if (tablasAIncluir != null) {
                 if (tablasAIncluir.isEmpty()) {
-                    // No hay tablas con cambios — crear archivo vacío con comentario
                     log.info("No hay cambios detectados para modalidad {}. Backup vacío.", modalidad);
                     Files.writeString(Paths.get(rutaArchivo),
                             "-- Backup " + modalidad.name() + " generado el " + ahora
@@ -274,50 +282,54 @@ public class BackupService {
                     registro.setEstado(BackupRegistro.EstadoBackup.EXITOSO);
                     registro.setTamano(calcularTamanoArchivo(rutaArchivo));
                     registro.setRutaLocal(rutaArchivo);
-
-                    // Subir a Drive si está habilitado en la config
                     subirADriveSiCorresponde(registro, Paths.get(rutaArchivo), nombreArchivo);
-
                     BackupRegistro guardado = registroRepository.save(registro);
                     aplicarRetencion();
                     return guardado;
                 }
-                // Agregar -t schema.tabla por cada tabla con cambios
                 for (String tabla : tablasAIncluir) {
-                    comando.add("-t");
-                    comando.add(tabla);
+                    comando.add("-t"); comando.add(tabla);
                 }
             }
 
             ProcessBuilder pb = new ProcessBuilder(comando);
-
-            // Pasar la contraseña por variable de entorno
             pb.environment().put("PGPASSWORD", dbPassword);
-
-            // Redirigir errores al mismo stream para capturarlos
             pb.redirectErrorStream(true);
 
-            // Paso 4: Ejecutar y esperar
             log.info("Ejecutando pg_dump → {}", rutaArchivo);
-            Process proceso = pb.start();
-
-            // Capturar la salida del proceso (por si hay mensajes de error)
+            Process proceso      = pb.start();
             String salidaProceso = new String(proceso.getInputStream().readAllBytes());
+            int    codigoSalida  = proceso.waitFor();
 
-            // waitFor() bloquea el hilo hasta que pg_dump termine
-            int codigoSalida = proceso.waitFor();
-
-            // Paso 5: Verificar resultado
             if (codigoSalida == 0) {
-                String tamano = calcularTamanoArchivo(rutaArchivo);
-                registro.setEstado(BackupRegistro.EstadoBackup.EXITOSO);
-                registro.setTamano(tamano);
-                registro.setRutaLocal(rutaArchivo);
-                log.info("Backup exitoso: {} ({})", nombreArchivo, tamano);
+                if (esCustom) {
+                    try {
+                        Path   zipPath   = empaquetarEnZip(rutaArchivo, nombreArchivo, modalidad.name(), ahora);
+                        String rutaZip   = zipPath.toString();
+                        String nombreZip = zipPath.getFileName().toString();
+                        String tamano    = calcularTamanoArchivo(rutaZip);
 
-                // Subir a Drive si está habilitado en la config
-                subirADriveSiCorresponde(registro, Paths.get(rutaArchivo), nombreArchivo);
-
+                        registro.setEstado(BackupRegistro.EstadoBackup.EXITOSO);
+                        registro.setTamano(tamano);
+                        registro.setRutaLocal(rutaZip);
+                        log.info("Backup CUSTOM empaquetado en ZIP: {} ({})", nombreZip, tamano);
+                        subirADriveSiCorresponde(registro, zipPath, nombreZip);
+                    } catch (IOException e) {
+                        log.error("No se pudo empaquetar en ZIP, guardando .backup original: {}", e.getMessage());
+                        String tamano = calcularTamanoArchivo(rutaArchivo);
+                        registro.setEstado(BackupRegistro.EstadoBackup.EXITOSO);
+                        registro.setTamano(tamano);
+                        registro.setRutaLocal(rutaArchivo);
+                        subirADriveSiCorresponde(registro, Paths.get(rutaArchivo), nombreArchivo);
+                    }
+                } else {
+                    String tamano = calcularTamanoArchivo(rutaArchivo);
+                    registro.setEstado(BackupRegistro.EstadoBackup.EXITOSO);
+                    registro.setTamano(tamano);
+                    registro.setRutaLocal(rutaArchivo);
+                    log.info("Backup SQL exitoso: {} ({})", nombreArchivo, tamano);
+                    subirADriveSiCorresponde(registro, Paths.get(rutaArchivo), nombreArchivo);
+                }
             } else {
                 registro.setError("pg_dump terminó con código " + codigoSalida
                         + (salidaProceso.isBlank() ? "" : ": " + salidaProceso));
@@ -325,28 +337,110 @@ public class BackupService {
             }
 
         } catch (IOException e) {
-            String error = "No se pudo ejecutar pg_dump. " +
-                    "¿Está PostgreSQL instalado y en el PATH? Error: " + e.getMessage();
+            String error = "No se pudo ejecutar pg_dump. ¿Está PostgreSQL instalado y en el PATH? Error: "
+                    + e.getMessage();
             registro.setError(error);
             log.error(error);
-
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             registro.setError("El proceso de backup fue interrumpido: " + e.getMessage());
             log.error("Backup interrumpido", e);
         }
 
-        // Paso 6: Guardar registro en BD siempre (éxito o fallo)
         BackupRegistro guardado = registroRepository.save(registro);
-
-        // Paso 7: Aplicar retención después de cada backup
         aplicarRetencion();
-
         return guardado;
     }
 
-    // Sube el archivo a Google Drive si guardarDrive=true en la config.
-    // Si Drive falla, solo se loguea — no interrumpe el backup principal.
+    // =========================================================
+    // SECCIÓN 5: EMPAQUETADO ZIP (solo CUSTOM)
+    // =========================================================
+
+    private Path empaquetarEnZip(String rutaArchivo, String nombreArchivo,
+                                 String modalidad, LocalDateTime fecha) throws IOException {
+        String nombreZip  = nombreArchivo.replace(".backup", ".zip");
+        String rutaZip    = rutaArchivo.replace(".backup", ".zip");
+        Path   pathZip    = Paths.get(rutaZip);
+        Path   pathBackup = Paths.get(rutaArchivo);
+
+        String instrucciones = """
+=======================================================
+  GUÍA DE RESTAURACIÓN — CLAB Sistema
+=======================================================
+
+Backup:    %s
+Modalidad: %s
+Generado:  %s
+
+-------------------------------------------------------
+PASO 1 — Instalar PostgreSQL (si no está instalado)
+-------------------------------------------------------
+Descarga PostgreSQL desde: https://www.postgresql.org/download/
+Durante la instalación define una contraseña para "postgres".
+
+-------------------------------------------------------
+PASO 2 — Abrir pgAdmin y crear la base de datos
+-------------------------------------------------------
+1. Abre pgAdmin
+2. Clic derecho en "Databases" → Create → Database
+3. En "Database" escribe:  CLAB
+4. En "Owner" selecciona:  postgres
+5. Clic en "Save"
+
+-------------------------------------------------------
+PASO 3 — Restaurar el backup
+-------------------------------------------------------
+1. Clic derecho en la BD "CLAB" → Restore...
+2. En "Filename" haz clic en el ícono de carpeta
+   y selecciona el archivo:  %s
+3. En la pestaña "Role name" escribe:  postgres
+4. Clic en "Restore"
+5. Cuando termine verás "Process returned exit code 0"
+   (algunos warnings en amarillo son normales)
+
+-------------------------------------------------------
+PASO 4 — Iniciar la aplicación CLAB
+-------------------------------------------------------
+Ejecuta el backend:
+  java -jar clab-backend.jar
+
+Luego abre el navegador en:
+  http://localhost:4200
+
+Ingresa con tus credenciales reales.
+
+=======================================================
+  Generado automáticamente por CLAB Sistema v1.0
+  %s
+=======================================================
+""".formatted(
+                nombreArchivo,
+                modalidad,
+                fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")),
+                nombreArchivo,
+                fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))
+        );
+
+        try (java.util.zip.ZipOutputStream zos =
+                     new java.util.zip.ZipOutputStream(Files.newOutputStream(pathZip))) {
+            zos.putNextEntry(new java.util.zip.ZipEntry(nombreArchivo));
+            Files.copy(pathBackup, zos);
+            zos.closeEntry();
+
+            zos.putNextEntry(new java.util.zip.ZipEntry("INSTRUCCIONES.txt"));
+            zos.write(instrucciones.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            zos.closeEntry();
+        }
+
+        Files.deleteIfExists(pathBackup);
+        log.info("Backup empaquetado en ZIP con instrucciones: {}", rutaZip);
+        return pathZip;
+    }
+
+    // =========================================================
+    // SECCIÓN 6: SUBIDA A DRIVE
+    // =========================================================
+
     private void subirADriveSiCorresponde(BackupRegistro registro, Path rutaPath, String nombreArchivo) {
         try {
             boolean guardarDrive = configRepository.findById(1L)
@@ -363,6 +457,10 @@ public class BackupService {
             log.error("No se pudo subir el backup a Google Drive: {}", e.getMessage());
         }
     }
+
+    // =========================================================
+    // SECCIÓN 7: HELPERS
+    // =========================================================
 
     private void crearCarpetaSiNoExiste(String ruta) throws IOException {
         Path path = Paths.get(ruta);
@@ -388,17 +486,18 @@ public class BackupService {
         }
     }
 
-    // SECCIÓN 5: DETECCIÓN DE CAMBIOS (DIFERENCIAL / INCREMENTAL)
+    // =========================================================
+    // SECCIÓN 8: DETECCIÓN DE CAMBIOS (DIFERENCIAL / INCREMENTAL)
+    // =========================================================
+
     private List<String> obtenerTablasParaModalidad(BackupRegistro.ModalidadBackup modalidad) {
         if (modalidad == BackupRegistro.ModalidadBackup.COMPLETO) {
-            return null; // null = sin filtros = dump completo
+            return null;
         }
 
-        // Buscar la fecha de referencia según el tipo
         LocalDateTime fechaReferencia = obtenerFechaReferencia(modalidad);
 
         if (fechaReferencia == null) {
-            // No hay backup previo de referencia → hacer completo como fallback seguro
             log.warn("No se encontró backup de referencia para {}. Haciendo COMPLETO como fallback.", modalidad);
             return null;
         }
@@ -409,7 +508,6 @@ public class BackupService {
 
     private LocalDateTime obtenerFechaReferencia(BackupRegistro.ModalidadBackup modalidad) {
         if (modalidad == BackupRegistro.ModalidadBackup.DIFERENCIAL) {
-            // Buscamos el último backup COMPLETO exitoso
             return registroRepository.findAllByOrderByFechaDesc()
                     .stream()
                     .filter(b -> b.getEstado() == BackupRegistro.EstadoBackup.EXITOSO
@@ -418,7 +516,6 @@ public class BackupService {
                     .findFirst()
                     .orElse(null);
         } else {
-            // INCREMENTAL → último backup exitoso de cualquier tipo
             return registroRepository.findAllByOrderByFechaDesc()
                     .stream()
                     .filter(b -> b.getEstado() == BackupRegistro.EstadoBackup.EXITOSO)
@@ -462,12 +559,14 @@ public class BackupService {
 
         } catch (Exception e) {
             log.error("Error consultando pg_stat_user_tables: {}", e.getMessage());
-            // Si falla la detección, hacer completo como fallback seguro
             return null;
         }
     }
 
-    // SECCIÓN 6: DESCARGA
+    // =========================================================
+    // SECCIÓN 9: DESCARGA
+    // =========================================================
+
     public Path obtenerRutaParaDescarga(Long id) {
         return registroRepository.findById(id)
                 .filter(b -> b.getRutaLocal() != null)
@@ -476,7 +575,10 @@ public class BackupService {
                 .orElse(null);
     }
 
-    // SECCIÓN 7: RESTAURACIÓN
+    // =========================================================
+    // SECCIÓN 10: RESTAURACIÓN
+    // =========================================================
+
     public BackupRespuestaDTO restaurarBackup(Long id) {
         return registroRepository.findById(id)
                 .map(registro -> {
@@ -494,11 +596,9 @@ public class BackupService {
     public BackupRespuestaDTO restaurarDesdeArchivo(
             org.springframework.web.multipart.MultipartFile archivo) {
         try {
-            // Guardar el archivo subido en una carpeta temporal
             Path temp = Files.createTempFile("restore_", "_" + archivo.getOriginalFilename());
             archivo.transferTo(temp.toFile());
             BackupRespuestaDTO resultado = ejecutarRestauracion(temp);
-            // Borrar el temporal después
             Files.deleteIfExists(temp);
             return resultado;
         } catch (IOException e) {
@@ -508,115 +608,175 @@ public class BackupService {
     }
 
     private BackupRespuestaDTO ejecutarRestauracion(Path rutaArchivo) {
+        Path tempDir     = null;
+        Path archivoReal = rutaArchivo;
+
         try {
             log.info("Iniciando restauración desde: {}", rutaArchivo);
 
-            // Detectar formato por extensión
-            boolean esCustom = rutaArchivo.toString().endsWith(".backup");
+            // Si es ZIP, extraer el .backup antes de restaurar
+            if (rutaArchivo.toString().endsWith(".zip")) {
+                tempDir     = Files.createTempDirectory("clab_restore_");
+                archivoReal = extraerBackupDeZip(rutaArchivo, tempDir);
+                log.info("Backup extraído del ZIP: {}", archivoReal);
+            }
 
-            // Guardar registros actuales de backup antes de restaurar
-            List<BackupRegistro> registrosActuales = new java.util.ArrayList<>();
-            try (java.sql.Connection conn = dataSource.getConnection();
-                 java.sql.Statement stmt = conn.createStatement()) {
+            boolean esCustom = archivoReal.toString().endsWith(".backup");
 
-                // Guardar registros en memoria antes de truncar
-                try (java.sql.ResultSet rs = stmt.executeQuery(
-                        "SELECT * FROM configuracion.backup_registro ORDER BY id")) {
-                    while (rs.next()) {
-                        registrosActuales.add(BackupRegistro.builder()
-                                .id(rs.getLong("id"))
-                                .fecha(rs.getTimestamp("fecha").toLocalDateTime())
-                                .tipo(BackupRegistro.TipoBackup.valueOf(rs.getString("tipo")))
-                                .modalidad(BackupRegistro.ModalidadBackup.valueOf(rs.getString("modalidad")))
-                                .estado(BackupRegistro.EstadoBackup.valueOf(rs.getString("estado")))
-                                .tamano(rs.getString("tamano"))
-                                .rutaLocal(rs.getString("ruta_local"))
-                                .driveFileId(rs.getString("drive_file_id"))
-                                .error(rs.getString("error"))
-                                .build());
-                    }
-                }
+            // ── PASO 1: Terminar conexiones activas ──────────────────────────
+            ProcessBuilder pbKill = new ProcessBuilder(
+                    psqlPath, "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", "postgres",
+                    "-c", "SELECT pg_terminate_backend(pid) FROM pg_stat_activity " +
+                    "WHERE datname = '" + dbNombre + "' AND pid <> pg_backend_pid()"
+            );
+            pbKill.environment().put("PGPASSWORD", dbPassword);
+            pbKill.redirectErrorStream(true);
+            pbKill.start().waitFor();
+            log.info("Conexiones a {} terminadas", dbNombre);
 
-                // Limpiar tablas del sistema para evitar conflictos de PK
-                stmt.execute("TRUNCATE configuracion.backup_registro RESTART IDENTITY CASCADE");
-                stmt.execute("TRUNCATE configuracion.backup_config RESTART IDENTITY CASCADE");
-                log.info("Tablas de sistema limpiadas antes de restaurar ({} registros guardados)",
-                        registrosActuales.size());
+            // ── PASO 2: DROP y CREATE de la BD ───────────────────────────────
+            try {
+                ProcessBuilder pbDrop = new ProcessBuilder(
+                        psqlPath, "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", "postgres",
+                        "-c", "DROP DATABASE IF EXISTS \"" + dbNombre + "\""
+                );
+                pbDrop.environment().put("PGPASSWORD", dbPassword);
+                pbDrop.redirectErrorStream(true);
+                Process dropProc = pbDrop.start();
+                String dropSalida = new String(dropProc.getInputStream().readAllBytes());
+                dropProc.waitFor();
+                log.info("DROP DATABASE ejecutado: {}", dropSalida);
+
+                ProcessBuilder pbCreate = new ProcessBuilder(
+                        psqlPath, "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", "postgres",
+                        "-c", "CREATE DATABASE \"" + dbNombre + "\""
+                );
+                pbCreate.environment().put("PGPASSWORD", dbPassword);
+                pbCreate.redirectErrorStream(true);
+                Process createProc = pbCreate.start();
+                String createSalida = new String(createProc.getInputStream().readAllBytes());
+                createProc.waitFor();
+                log.info("CREATE DATABASE ejecutado: {}", createSalida);
             } catch (Exception e) {
-                log.warn("No se pudo limpiar tablas de sistema: {}", e.getMessage());
+                log.warn("No se pudo recrear la BD: {}", e.getMessage());
             }
 
-            // Construir comando según formato
-            java.util.List<String> comando;
+            // ── PASO 3: Crear roles de BD antes del restore ──────────────────
+            for (String rol : ROLES_CLAB) {
+                try {
+                    ProcessBuilder pbRol = new ProcessBuilder(
+                            psqlPath, "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", "postgres",
+                            "-c", "DO $$ BEGIN " +
+                            "CREATE ROLE \"" + rol + "\" WITH NOLOGIN; " +
+                            "EXCEPTION WHEN duplicate_object THEN NULL; " +
+                            "END $$;"
+                    );
+                    pbRol.environment().put("PGPASSWORD", dbPassword);
+                    pbRol.redirectErrorStream(true);
+                    pbRol.start().waitFor();
+                    log.info("Rol BD creado (o ya existía): {}", rol);
+                } catch (Exception e) {
+                    log.warn("No se pudo crear rol {}: {}", rol, e.getMessage());
+                }
+            }
+
             if (esCustom) {
-                comando = new java.util.ArrayList<>(java.util.Arrays.asList(
-                        pgRestorePath,
-                        "-h", dbHost,
-                        "-p", dbPort,
-                        "-U", dbUsuario,
-                        "-d", dbNombre,
-                        "--clean",
-                        "--if-exists",
-                        "--no-owner",
-                        "--no-privileges",
-                        "--disable-triggers",
-                        "-v",
-                        rutaArchivo.toString()
-                ));
-            }else {
-                // psql para formato plain SQL
-                comando = new java.util.ArrayList<>(java.util.Arrays.asList(
-                        psqlPath,
-                        "-h", dbHost,
-                        "-p", dbPort,
-                        "-U", dbUsuario,
-                        "-d", dbNombre,
-                        "-f", rutaArchivo.toString()
-                ));
-            }
-
-            ProcessBuilder pb = new ProcessBuilder(comando);
-            pb.environment().put("PGPASSWORD", dbPassword);
-            pb.redirectErrorStream(true);
-
-            Process proceso = pb.start();
-            String salida = new String(proceso.getInputStream().readAllBytes());
-            int codigo = proceso.waitFor();
-
-            if (codigo == 0 || codigo == 1) {
-                log.info("Restauración exitosa desde: {}", rutaArchivo);
-
-                // Restaurar registros de backup después del restore
-                if (!registrosActuales.isEmpty()) {
-                    try {
-                        registroRepository.saveAll(registrosActuales);
-                        log.info("Registros de backup reinsertados: {}", registrosActuales.size());
-                    } catch (Exception e) {
-                        log.warn("No se pudieron reinsertar registros de backup: {}", e.getMessage());
-                    }
+                // ── PASO 4a: Restaurar estructura y funciones ─────────────────
+                // --section=pre-data : schemas, tablas, secuencias, funciones
+                // --section=post-data: constraints, triggers, índices
+                log.info("Restaurando estructura y funciones (pre-data + post-data)...");
+                java.util.List<String> comandoEstructura = new java.util.ArrayList<>(
+                        java.util.Arrays.asList(
+                                pgRestorePath,
+                                "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", dbNombre,
+                                "--section=pre-data",
+                                "--section=post-data",
+                                "-v",
+                                archivoReal.toString()
+                        )
+                );
+                ProcessBuilder pbEstructura = new ProcessBuilder(comandoEstructura);
+                pbEstructura.environment().put("PGPASSWORD", dbPassword);
+                pbEstructura.redirectErrorStream(true);
+                Process procEstructura = pbEstructura.start();
+                String salidaEstructura = new String(procEstructura.getInputStream().readAllBytes());
+                int codigoEstructura = procEstructura.waitFor();
+                log.info("Estructura restaurada (código {})", codigoEstructura);
+                if (!salidaEstructura.isBlank()) {
+                    log.debug("Salida estructura: {}", salidaEstructura);
                 }
 
-                return BackupRespuestaDTO.ok(
-                        "Restauración completada",
-                        "La base de datos fue restaurada correctamente"
+                // ── PASO 4b: Restaurar solo datos ignorando FKs ───────────────
+                // --section=data      : solo los COPY/INSERT de datos
+                // --disable-triggers  : desactiva triggers temporalmente para
+                //                       evitar errores de FK por orden de inserción
+                log.info("Restaurando datos (--section=data --disable-triggers)...");
+                java.util.List<String> comandoDatos = new java.util.ArrayList<>(
+                        java.util.Arrays.asList(
+                                pgRestorePath,
+                                "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", dbNombre,
+                                "--section=data",
+                                "--disable-triggers",
+                                "-v",
+                                archivoReal.toString()
+                        )
                 );
+                ProcessBuilder pbDatos = new ProcessBuilder(comandoDatos);
+                pbDatos.environment().put("PGPASSWORD", dbPassword);
+                pbDatos.redirectErrorStream(true);
+                Process procDatos = pbDatos.start();
+                String salidaDatos = new String(procDatos.getInputStream().readAllBytes());
+                int codigoDatos = procDatos.waitFor();
+                log.info("Datos restaurados (código {})", codigoDatos);
+                if (!salidaDatos.isBlank()) {
+                    log.debug("Salida datos: {}", salidaDatos);
+                }
+
+                if ((codigoEstructura != 0 && codigoEstructura != 1) ||
+                        (codigoDatos != 0 && codigoDatos != 1)) {
+                    log.error("Restauración falló — estructura: {}, datos: {}",
+                            codigoEstructura, codigoDatos);
+                    return BackupRespuestaDTO.error(
+                            "Error en la restauración",
+                            "Estructura: código " + codigoEstructura +
+                                    " | Datos: código " + codigoDatos
+                    );
+                }
+
             } else {
-                log.error("Restauración terminó con código {}: {}", codigo, salida);
+                // ── Para archivos SQL planos ───────────────────────────────────
+                java.util.List<String> comando = new java.util.ArrayList<>(java.util.Arrays.asList(
+                        psqlPath,
+                        "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", dbNombre,
+                        "-f", archivoReal.toString()
+                ));
+                ProcessBuilder pb = new ProcessBuilder(comando);
+                pb.environment().put("PGPASSWORD", dbPassword);
+                pb.redirectErrorStream(true);
+                Process proceso = pb.start();
+                String salida = new String(proceso.getInputStream().readAllBytes());
+                int codigo = proceso.waitFor();
+                log.info("psql terminó con código: {}", codigo);
 
-                // Aunque falló el restore, reinsertar los registros de backup
-                if (!registrosActuales.isEmpty()) {
-                    try {
-                        registroRepository.saveAll(registrosActuales);
-                    } catch (Exception e) {
-                        log.warn("No se pudieron reinsertar registros de backup tras fallo: {}", e.getMessage());
-                    }
+                if (codigo != 0 && codigo != 1) {
+                    log.error("Restauración SQL falló con código {}: {}", codigo, salida);
+                    return BackupRespuestaDTO.error(
+                            "Error en la restauración",
+                            "Terminó con código " + codigo + (salida.isBlank() ? "" : ": " + salida)
+                    );
                 }
-
-                return BackupRespuestaDTO.error(
-                        "Error en la restauración",
-                        "Terminó con código " + codigo + (salida.isBlank() ? "" : ": " + salida)
-                );
             }
+
+            // ── PASO 5: Re-aplicar GRANTs esenciales ─────────────────────────
+            log.info("Aplicando GRANTs esenciales a los roles clab_*...");
+            aplicarGrantsEsenciales();
+
+            log.info("Restauración completada exitosamente");
+            return BackupRespuestaDTO.ok(
+                    "Restauración completada",
+                    "La base de datos fue restaurada correctamente"
+            );
+
         } catch (IOException e) {
             log.error("No se pudo ejecutar la restauración: {}", e.getMessage());
             return BackupRespuestaDTO.error(
@@ -626,6 +786,120 @@ public class BackupService {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return BackupRespuestaDTO.error("Restauración interrumpida", e.getMessage());
+        } finally {
+            if (tempDir != null) {
+                try {
+                    Files.walk(tempDir)
+                            .sorted(java.util.Comparator.reverseOrder())
+                            .forEach(p -> {
+                                try { Files.delete(p); } catch (IOException ignored) {}
+                            });
+                } catch (IOException ignored) {}
+            }
         }
+    }
+
+    // =========================================================
+    // SECCIÓN 11: GRANTS ESENCIALES
+    // =========================================================
+
+    private void aplicarGrantsEsenciales() {
+        String[][] grantSchemas = {
+                {"clab_decano",        "academico"},
+                {"clab_administrador", "academico"},
+                {"clab_coordinador",   "academico"},
+                {"clab_administrador", "configuracion"},
+                {"clab_decano",        "configuracion"},
+                {"clab_decano",        "inventario"},
+                {"clab_administrador", "inventario"},
+                {"clab_docente",       "inventario"},
+                {"clab_encargado_lab", "inventario"},
+                {"clab_decano",        "laboratorios"},
+                {"clab_administrador", "laboratorios"},
+                {"clab_encargado_lab", "laboratorios"},
+                {"clab_decano",        "notificaciones"},
+                {"clab_administrador", "notificaciones"},
+                {"clab_docente",       "notificaciones"},
+                {"clab_encargado_lab", "notificaciones"},
+                {"clab_coordinador",   "notificaciones"},
+                {"clab_administrador", "organizacion"},
+                {"clab_administrador", "public"},
+                {"clab_administrador", "recursos"},
+                {"clab_decano",        "reportes"},
+                {"clab_administrador", "reportes"},
+                {"clab_docente",       "reportes"},
+                {"clab_encargado_lab", "reportes"},
+                {"clab_decano",        "reservas"},
+                {"clab_administrador", "reservas"},
+                {"clab_docente",       "reservas"},
+                {"clab_encargado_lab", "reservas"},
+                {"clab_coordinador",   "reservas"},
+                {"clab_administrador", "seguridad"},
+                {"clab_administrador", "seguridad_bd"},
+                {"clab_decano",        "usuarios"},
+                {"clab_administrador", "usuarios"},
+                {"clab_test",          "usuarios"},
+                {"clab_coordinador",   "usuarios"},
+        };
+
+        for (String[] entry : grantSchemas) {
+            ejecutarSql(String.format("GRANT USAGE ON SCHEMA %s TO %s", entry[1], entry[0]));
+        }
+
+        String[] schemas = {
+                "academico", "configuracion", "inventario", "laboratorios",
+                "notificaciones", "organizacion", "public", "recursos",
+                "reportes", "reservas", "seguridad", "seguridad_bd", "usuarios"
+        };
+        for (String schema : schemas) {
+            for (String rol : ROLES_CLAB) {
+                ejecutarSql(String.format(
+                        "GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA %s TO %s", schema, rol));
+                ejecutarSql(String.format(
+                        "GRANT EXECUTE ON ALL PROCEDURES IN SCHEMA %s TO %s", schema, rol));
+            }
+        }
+
+        log.info("GRANTs esenciales aplicados correctamente");
+    }
+
+    private void ejecutarSql(String sql) {
+        try {
+            ProcessBuilder pb = new ProcessBuilder(
+                    psqlPath, "-h", dbHost, "-p", dbPort, "-U", dbUsuario, "-d", dbNombre,
+                    "-c", sql
+            );
+            pb.environment().put("PGPASSWORD", dbPassword);
+            pb.redirectErrorStream(true);
+            Process proc = pb.start();
+            String salida = new String(proc.getInputStream().readAllBytes());
+            int codigo = proc.waitFor();
+            if (codigo != 0 && !salida.contains("does not exist")) {
+                log.warn("SQL terminó con código {}: {} → {}", codigo, sql, salida.trim());
+            }
+        } catch (Exception e) {
+            log.warn("No se pudo ejecutar SQL: {} → {}", sql, e.getMessage());
+        }
+    }
+
+    // =========================================================
+    // SECCIÓN 12: EXTRACCIÓN DE ZIP
+    // =========================================================
+
+    private Path extraerBackupDeZip(Path zipPath, Path destDir) throws IOException {
+        try (java.util.zip.ZipInputStream zis =
+                     new java.util.zip.ZipInputStream(Files.newInputStream(zipPath))) {
+            java.util.zip.ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                if (entry.getName().endsWith(".backup")) {
+                    Path destFile = destDir.resolve(entry.getName());
+                    Files.copy(zis, destFile);
+                    log.info("Archivo .backup extraído del ZIP: {}", destFile);
+                    return destFile;
+                }
+                zis.closeEntry();
+            }
+        }
+        throw new IOException("No se encontró archivo .backup dentro del ZIP: " + zipPath);
     }
 }

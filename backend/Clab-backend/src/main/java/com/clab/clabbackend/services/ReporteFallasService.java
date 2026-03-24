@@ -55,6 +55,39 @@ public class ReporteFallasService {
         return reportes;
     }
 
+    public List<Map<String, Object>> listarPorEncargado(Integer idUsuario) {
+        List<Object[]> resultados = reporteRepository.listarReportesPorEncargado(idUsuario);
+        List<Map<String, Object>> reportes = new ArrayList<>();
+
+        for (Object[] r : resultados) {
+            Map<String, Object> reporte = new HashMap<>();
+            reporte.put("idReporte", r[0]);
+            reporte.put("fechaReporte", r[1] != null ? ((java.sql.Date) r[1]).toLocalDate() : null);
+            reporte.put("descripcionFalla", r[2]);
+
+            Map<String, Object> laboratorio = new HashMap<>();
+            laboratorio.put("codLaboratorio", r[3]);
+            laboratorio.put("nombreLab", r[4]);
+            reporte.put("laboratorio", laboratorio);
+
+            Map<String, Object> equipo = new HashMap<>();
+            equipo.put("idEquipo", r[5]);
+            equipo.put("nombreEquipo", r[6]);
+            equipo.put("marca", r[7]);
+            equipo.put("modelo", r[8]);
+            reporte.put("equipo", equipo);
+
+            Map<String, Object> usuario = new HashMap<>();
+            usuario.put("idUsuario", r[9]);
+            usuario.put("email", r[10]);
+            reporte.put("usuario", usuario);
+
+            reportes.add(reporte);
+        }
+
+        return reportes;
+    }
+
     // CREAR
     public void crear(ReporteFallasDTO dto) {
         reporteRepository.insertar(

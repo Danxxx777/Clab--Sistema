@@ -108,24 +108,40 @@
     <button class="btn-volver" (click)="volver()">← Volver</button>
   </div>
 
-  <div class="content-wrapper">
+  <!-- TABS -->
+  <div class="tabs-bar">
+    <button class="tab-btn" [class.active]="tabActivo === 'correo'" (click)="tabActivo = 'correo'">
+      📧 Correo SMTP
+    </button>
+    <button class="tab-btn" [class.active]="tabActivo === 'drive'" (click)="tabActivo = 'drive'">
+      <svg width="14" height="14" viewBox="0 0 87.3 78" style="vertical-align:middle; margin-right:4px;">
+        <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L28 53H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+        <path d="M43.65 25L29.35 0c-1.35.8-2.5 1.9-3.3 3.3L1.2 48.5A9 9 0 000 53h28z" fill="#00ac47"/>
+        <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H59l5.9 11.1z" fill="#ea4335"/>
+        <path d="M43.65 25L57.95 0H29.35z" fill="#00832d"/>
+        <path d="M59 53H28L13.8 76.8h59.75z" fill="#2684fc"/>
+        <path d="M73.4 26.5L58.6 3.3A9 9 0 0055.3 0H29.35L59 53h28.3L73.4 26.5z" fill="#ffba00"/>
+      </svg>
+      Google Drive
+      <span class="drive-tab-badge" [class.conectado]="driveEstado?.conectado" [class.desconectado]="!driveEstado?.conectado">
+        {{ driveEstado?.conectado ? '●' : '○' }}
+      </span>
+    </button>
+  </div>
 
+  <!-- TAB CORREO -->
+  <div class="content-wrapper" *ngIf="tabActivo === 'correo'">
     <div class="toolbar">
       <span class="toolbar-count">{{ configs.length }} configuración{{ configs.length !== 1 ? 'es' : '' }}</span>
       <button class="btn-agregar" (click)="abrirModalCrear()">+ Nueva Configuración</button>
     </div>
-
-    <!-- VACÍO -->
     <div class="empty-state" *ngIf="!cargando && configs.length === 0">
       <div class="empty-icon">📭</div>
       <p>No hay configuraciones de correo registradas.</p>
       <button class="btn-agregar" (click)="abrirModalCrear()">Agregar primera configuración</button>
     </div>
-
-    <!-- GRID DE TARJETAS -->
     <div class="correos-grid" *ngIf="configs.length > 0">
       <div class="correo-card" *ngFor="let c of configs" [class.inactivo]="!c.activo">
-
         <div class="correo-card-header">
           <div class="correo-proposito-icon">{{ getIconProposito(c.proposito) }}</div>
           <div class="correo-card-info">
@@ -141,7 +157,6 @@
             </span>
           </div>
         </div>
-
         <div class="correo-card-body">
           <div class="correo-field">
             <span class="correo-field-label">Email</span>
@@ -160,66 +175,158 @@
             <span class="correo-field-value">{{ c.proveedor || 'CUSTOM' }}</span>
           </div>
         </div>
-
         <div class="correo-card-footer">
-          <button class="btn-card-probar"
-                  (click)="probarConfig(c)"
-                  [disabled]="probandoId === c.idConfig">
+          <button class="btn-card-probar" (click)="probarConfig(c)" [disabled]="probandoId === c.idConfig">
             <span *ngIf="probandoId !== c.idConfig">🧪 Probar</span>
             <span *ngIf="probandoId === c.idConfig" class="btn-dots">
               <span class="dot"></span><span class="dot"></span><span class="dot"></span>
             </span>
           </button>
           <button class="btn-card-editar" (click)="abrirModalEditar(c)">✏️ Editar</button>
-          <button class="btn-card-estado"
-                  [class.activar]="!c.activo" [class.desactivar]="c.activo"
-                  (click)="cambiarEstado(c)">
+          <button class="btn-card-estado" [class.activar]="!c.activo" [class.desactivar]="c.activo" (click)="cambiarEstado(c)">
             {{ c.activo ? '⊘ Desactivar' : '✓ Activar' }}
           </button>
           <button class="btn-card-eliminar" (click)="confirmarEliminar(c)">🗑</button>
         </div>
-
       </div>
+    </div>
+  </div>
+
+  <!-- TAB DRIVE -->
+  <div class="content-wrapper" *ngIf="tabActivo === 'drive'">
+
+    <!-- HERO CARD -->
+    <div class="drive-hero">
+      <div class="drive-hero-top">
+        <div class="drive-logo-wrap">
+          <svg width="26" height="23" viewBox="0 0 87.3 78">
+            <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L28 53H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+            <path d="M43.65 25L29.35 0c-1.35.8-2.5 1.9-3.3 3.3L1.2 48.5A9 9 0 000 53h28z" fill="#00ac47"/>
+            <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H59l5.9 11.1z" fill="#ea4335"/>
+            <path d="M43.65 25L57.95 0H29.35z" fill="#00832d"/>
+            <path d="M59 53H28L13.8 76.8h59.75z" fill="#2684fc"/>
+            <path d="M73.4 26.5L58.6 3.3A9 9 0 0055.3 0H29.35L59 53h28.3L73.4 26.5z" fill="#ffba00"/>
+          </svg>
+        </div>
+        <div class="drive-hero-info">
+          <div class="drive-hero-title">Google Drive</div>
+          <div class="drive-hero-sub">Almacenamiento en la nube para tus backups</div>
+        </div>
+        <span class="drive-status-badge"
+              [class.conectado]="driveEstado?.conectado"
+              [class.desconectado]="!driveEstado?.conectado">
+          {{ driveEstado?.conectado ? '● Conectado' : '○ Desconectado' }}
+        </span>
+      </div>
+
+      <!-- CONECTADO -->
+      @if(driveEstado?.conectado) {
+        <div class="drive-hero-body">
+          <!--<div class="drive-hint exito" *ngIf="driveEstado?.clientIdPreview">
+           ✅ Credenciales configuradas ({{ driveEstado?.clientIdPreview }}).
+           Haz clic en "Conectar Google Drive" para autorizar.
+         </div>-->
+         <div class="drive-info-grid">
+           <div class="drive-info-card">
+             <span class="drive-info-label">Client ID</span>
+             <span class="drive-info-value mono">{{ driveEstado?.clientIdPreview }}</span>
+           </div>
+           <div class="drive-info-card">
+             <span class="drive-info-label">Carpeta en Drive</span>
+             <span class="drive-info-value">{{ driveEstado?.folderNombre || driveEstado?.folderId }}</span>
+           </div>
+           <div class="drive-info-card">
+             <span class="drive-info-label">Cuenta</span>
+             <span class="drive-info-value">{{ driveEstado?.emailCuenta || '—' }}</span>
+           </div>
+           <div class="drive-info-card">
+             <span class="drive-info-label">Última actualización</span>
+             <span class="drive-info-value mono">{{ driveEstado?.fechaActualizacion | date:'dd/MM/yyyy HH:mm' }}</span>
+           </div>
+         </div>
+         <div class="drive-actions">
+           <button class="btn-drive-verificar" (click)="verificarDrive()" [disabled]="verificandoDrive">
+             <span *ngIf="!verificandoDrive">↻ Verificar conexión</span>
+             <span *ngIf="verificandoDrive" class="btn-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+           </button>
+           <button class="btn-drive-config" (click)="abrirModalDrive()">⚙️ Editar configuración</button>
+           <button class="btn-drive-revocar" (click)="confirmarRevocarDrive()">⊘ Revocar autorización</button>
+         </div>
+         <div class="drive-hint exito" *ngIf="mensajeDrive && !errorDrive">{{ mensajeDrive }}</div>
+         <div class="drive-hint error"  *ngIf="mensajeDrive && errorDrive">{{ mensajeDrive }}</div>
+       </div>
+     }
+
+     <!-- DESCONECTADO -->
+      @if(!driveEstado?.conectado) {
+        <div class="drive-hero-body">
+          <p class="drive-desc">Conecta tu cuenta de Google Drive para subir backups automáticamente. Una vez conectado, todos los backups con destino "Drive" se subirán a tu carpeta configurada.</p>
+
+          <div class="drive-steps">
+            <div class="drive-step">
+              <div class="drive-step-num">1</div>
+              <div class="drive-step-info">
+                <div class="drive-step-title">Configura credenciales</div>
+                <div class="drive-step-desc">Ingresa tu Client ID y Client Secret de Google Cloud Console</div>
+              </div>
+            </div>
+            <div class="drive-step-arrow">→</div>
+            <div class="drive-step">
+              <div class="drive-step-num">2</div>
+              <div class="drive-step-info">
+                <div class="drive-step-title">Autoriza el acceso</div>
+                <div class="drive-step-desc">Haz clic en Conectar para abrir el flujo OAuth2 de Google</div>
+              </div>
+            </div>
+            <div class="drive-step-arrow">→</div>
+            <div class="drive-step">
+              <div class="drive-step-num">3</div>
+              <div class="drive-step-info">
+                <div class="drive-step-title">Listo para usar</div>
+                <div class="drive-step-desc">Los backups se subirán automáticamente a tu carpeta</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="drive-actions">
+            <button class="btn-drive-conectar" (click)="iniciarAuthDrive()" [disabled]="iniciandoAuth">
+              <span *ngIf="!iniciandoAuth">Conectar Google Drive</span>
+              <span *ngIf="iniciandoAuth" class="btn-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+            </button>
+            <button class="btn-drive-config" (click)="abrirModalDrive()">⚙️ Configurar credenciales</button>
+          </div>
+          <div class="drive-hint error" *ngIf="mensajeDrive && errorDrive">{{ mensajeDrive }}</div>
+        </div>
+      }
     </div>
 
   </div>
+
 </div>
 
-<!-- MODAL CREAR/EDITAR -->
-<div class="modal-overlay" *ngIf="mostrarModal" >
+<!-- MODAL CREAR/EDITAR CORREO -->
+<div class="modal-overlay" *ngIf="mostrarModal">
   <div class="modal modal-correo" (click)="$event.stopPropagation()">
-
     <div class="modal-header">
       <h2>{{ modoModal === 'crear' ? 'Nueva Configuración' : 'Editar Configuración' }}</h2>
       <button class="btn-close" (click)="cerrarModal()">×</button>
     </div>
-
     <div class="modal-body">
-
-      <!-- SELECTOR DE PROVEEDOR -->
       <div class="form-section">
         <div class="form-section-title">📡 Proveedor</div>
         <div class="proveedor-tabs">
-          <button *ngFor="let p of proveedores"
-                  class="proveedor-tab"
+          <button *ngFor="let p of proveedores" class="proveedor-tab"
                   [class.active]="proveedorSeleccionado === p"
-                  (click)="proveedorSeleccionado = p; aplicarPreset()">
-            {{ p }}
-          </button>
+                  (click)="proveedorSeleccionado = p; aplicarPreset()">{{ p }}</button>
         </div>
-        <div class="preset-nota" *ngIf="notaPreset">
-          💡 {{ notaPreset }}
-        </div>
+        <div class="preset-nota" *ngIf="notaPreset">💡 {{ notaPreset }}</div>
       </div>
-
-      <!-- DATOS BÁSICOS -->
       <div class="form-section">
         <div class="form-section-title">📋 Datos básicos</div>
         <div class="form-row">
           <div class="form-group">
             <label>Nombre <span class="required">*</span></label>
-            <input class="form-control" [(ngModel)]="configActual.nombreDisplay"
-                   placeholder="Ej: Correo de recuperación">
+            <input class="form-control" [(ngModel)]="configActual.nombreDisplay" placeholder="Ej: Correo de recuperación">
           </div>
           <div class="form-group">
             <label>Propósito <span class="required">*</span></label>
@@ -229,8 +336,6 @@
           </div>
         </div>
       </div>
-
-      <!-- SERVIDOR -->
       <div class="form-section">
         <div class="form-section-title">🖥️ Servidor SMTP</div>
         <div class="form-row">
@@ -240,42 +345,30 @@
           </div>
           <div class="form-group">
             <label>Puerto <span class="required">*</span></label>
-            <input class="form-control" type="number" [(ngModel)]="configActual.puerto"
-                   (change)="onPuertoChange()">
+            <input class="form-control" type="number" [(ngModel)]="configActual.puerto" (change)="onPuertoChange()">
           </div>
         </div>
-
-        <!-- SEGURIDAD -->
         <div class="seguridad-row">
           <div class="seg-option" [class.active]="configActual.sslHabilitado"
                (click)="configActual.sslHabilitado=true; configActual.starttlsHabilitado=false; configActual.puerto=465">
             <div class="seg-icon">🔒</div>
-            <div class="seg-info">
-              <div class="seg-name">SSL</div>
-              <div class="seg-desc">Puerto 465 — cifrado desde inicio</div>
-            </div>
+            <div class="seg-info"><div class="seg-name">SSL</div><div class="seg-desc">Puerto 465 — cifrado desde inicio</div></div>
             <div class="seg-check" *ngIf="configActual.sslHabilitado">✓</div>
           </div>
           <div class="seg-option" [class.active]="configActual.starttlsHabilitado && !configActual.sslHabilitado"
                (click)="configActual.sslHabilitado=false; configActual.starttlsHabilitado=true; configActual.puerto=587">
             <div class="seg-icon">🔐</div>
-            <div class="seg-info">
-              <div class="seg-name">STARTTLS</div>
-              <div class="seg-desc">Puerto 587 — negocia TLS</div>
-            </div>
+            <div class="seg-info"><div class="seg-name">STARTTLS</div><div class="seg-desc">Puerto 587 — negocia TLS</div></div>
             <div class="seg-check" *ngIf="configActual.starttlsHabilitado && !configActual.sslHabilitado">✓</div>
           </div>
         </div>
       </div>
-
-      <!-- CREDENCIALES -->
       <div class="form-section">
         <div class="form-section-title">🔑 Credenciales</div>
         <div class="form-row">
           <div class="form-group">
             <label>Email remitente <span class="required">*</span></label>
-            <input class="form-control" type="email" [(ngModel)]="configActual.emailRemitente"
-                   placeholder="correo@gmail.com">
+            <input class="form-control" type="email" [(ngModel)]="configActual.emailRemitente" placeholder="correo@gmail.com">
           </div>
           <div class="form-group">
             <label>Nombre remitente</label>
@@ -299,33 +392,109 @@
           </div>
         </div>
       </div>
-
-      <!-- OPCIONES -->
       <div class="form-section">
         <div class="form-section-title">⚙️ Opciones</div>
         <div class="checks-row">
-          <label class="check-label">
-            <input type="checkbox" [(ngModel)]="configActual.authHabilitado"> Autenticación SMTP
-          </label>
-          <label class="check-label">
-            <input type="checkbox" [(ngModel)]="configActual.activo"> Activo
-          </label>
+          <label class="check-label"><input type="checkbox" [(ngModel)]="configActual.authHabilitado"> Autenticación SMTP</label>
+          <label class="check-label"><input type="checkbox" [(ngModel)]="configActual.activo"> Activo</label>
         </div>
       </div>
-
       <p class="config-msg-error" *ngIf="error">{{ error }}</p>
     </div>
-
     <div class="modal-footer">
       <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
       <button class="btn-guardar" (click)="guardar()" [disabled]="guardando">
         <span *ngIf="!guardando">{{ modoModal === 'crear' ? 'Guardar' : 'Actualizar' }}</span>
-        <span class="btn-dots" *ngIf="guardando">
+        <span class="btn-dots" *ngIf="guardando"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DRIVE CONFIG -->
+<div class="modal-overlay" *ngIf="mostrarModalDrive">
+  <div class="modal modal-correo" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <svg width="16" height="14" viewBox="0 0 87.3 78">
+          <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L28 53H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+          <path d="M43.65 25L29.35 0c-1.35.8-2.5 1.9-3.3 3.3L1.2 48.5A9 9 0 000 53h28z" fill="#00ac47"/>
+          <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H59l5.9 11.1z" fill="#ea4335"/>
+          <path d="M43.65 25L57.95 0H29.35z" fill="#00832d"/>
+          <path d="M59 53H28L13.8 76.8h59.75z" fill="#2684fc"/>
+          <path d="M73.4 26.5L58.6 3.3A9 9 0 0055.3 0H29.35L59 53h28.3L73.4 26.5z" fill="#ffba00"/>
+        </svg>
+        <h2>Configuración de Google Drive</h2>
+      </div>
+      <button class="btn-close" (click)="cerrarModalDrive()">×</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- BANNER INFO -->
+      <div class="drive-info-banner">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" style="flex-shrink:0; margin-top:1px;">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <div class="drive-info-banner-text">
+          Obtén tus credenciales en
+          <strong style="color:#93c5fd;">console.cloud.google.com</strong>
+          → APIs y servicios → Credenciales → Crear ID de cliente OAuth.
+          Selecciona <strong style="color:#93c5fd;">"Aplicación de escritorio"</strong>.
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">🔑 Credenciales OAuth2</div>
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label>Client ID <span class="hint-inline">(dejar vacío para no cambiar)</span></label>
+            <input class="form-control" [(ngModel)]="driveForm.clientId" placeholder="xxxxxx.apps.googleusercontent.com">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label>Client Secret <span class="hint-inline">(dejar vacío para no cambiar)</span></label>
+            <div class="password-wrapper">
+              <input class="form-control" [type]="mostrarDriveSecret ? 'text' : 'password'"
+                     [(ngModel)]="driveForm.clientSecret" placeholder="GOCSPX-...">
+              <button class="btn-toggle-pass" (click)="mostrarDriveSecret = !mostrarDriveSecret">
+                <img src="/ojo.png" alt="Ver" class="icon-ojo">
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">📁 Carpeta destino</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Folder ID</label>
+            <input class="form-control" [(ngModel)]="driveForm.folderId" placeholder="1djZi3h-64KIFz7...">
+          </div>
+          <div class="form-group">
+            <label>Nombre de la carpeta</label>
+            <input class="form-control" [(ngModel)]="driveForm.folderNombre" placeholder="CLAB-Backups">
+          </div>
+        </div>
+        <div class="preset-nota">
+          💡 El Folder ID está en la URL de tu carpeta de Drive:<br>
+          <span style="color:#9ca3af; font-family:'Space Mono',monospace; font-size:11px;">
+            drive.google.com/drive/folders/<strong style="color:#e5e7eb;">ID_AQUI</strong>
+          </span>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModalDrive()">Cancelar</button>
+      <button class="btn-guardar" (click)="guardarConfigDrive()" [disabled]="guardandoDrive">
+        <span *ngIf="!guardandoDrive">Guardar cambios</span>
+        <span class="btn-dots" *ngIf="guardandoDrive">
           <span class="dot"></span><span class="dot"></span><span class="dot"></span>
         </span>
       </button>
     </div>
-
   </div>
 </div>
 

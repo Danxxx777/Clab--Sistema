@@ -22,6 +22,7 @@ export class LoginComponent implements OnInit {
   cargando = false;
   loadingText = 'Verificando credenciales...';
   modoAcceso: 'login' | 'solicitud' = 'login';
+  bdVacia = false;
 
   stats = {
     labsActivos: 0,
@@ -63,6 +64,17 @@ export class LoginComponent implements OnInit {
     this.cargarEstadisticas();
     this.cargarRecordado();
     this.cargarRolesPublicos();
+    this.http.get<any>('http://localhost:8080/estadisticas/login').subscribe({
+      next: (data: any) => {
+        console.log('stats:', data);
+        this.bdVacia = data.usuariosActivos <= 1;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.bdVacia = true;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   togglePassword(): void {
@@ -119,7 +131,7 @@ export class LoginComponent implements OnInit {
         this.loadingText = '¡Bienvenido!';
         this.cdr.detectChanges();
         setTimeout(() => {
-          const esPrimerLogin = sessionStorage.getItem('primerLogin') === 'true';
+          const esPrimerLogin = localStorage.getItem('primerLogin') === 'true';
           if (esPrimerLogin) {
             this.router.navigate(['/cambiar-contrasenia']);
           } else {
@@ -134,7 +146,10 @@ export class LoginComponent implements OnInit {
         setTimeout(() => {
           this.cargando = false;
           const status = err.status;
-          if (status === 401 || status === 403) {
+          if (status === 503) {
+            this.errorMessage = 'La base de datos no tiene datos. Restaura un backup para continuar.';
+            this.bdVacia = true;
+          } else if (status === 401 || status === 403) {
             this.errorMessage = 'Contraseña incorrecta. Verifica e intenta de nuevo.';
           } else if (status === 404) {
             this.errorMessage = 'Usuario no encontrado en el sistema.';

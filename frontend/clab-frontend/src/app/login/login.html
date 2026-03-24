@@ -339,6 +339,11 @@
             <img src="/contrasena.png" style="width:14px; height:14px; margin-right:6px; vertical-align:middle;">
             Recuperar contraseña
           </a>
+          <div style="text-align:center; margin-top: 12px;" *ngIf="bdVacia">
+            <a routerLink="/restaurar" style="color:#444; font-size:0.75rem; text-decoration:none; cursor:pointer;">
+              ¿Sistema sin datos? Restaurar desde backup
+            </a>
+          </div>
         </div>
 
 

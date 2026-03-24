@@ -63,8 +63,8 @@ export class ReservarComponent implements OnInit {
   // ══ TABS ══════════════════════════════════════════════════════════════════
   tabActiva: number = 0;
   drawerAbierto = false;
-  rol = sessionStorage.getItem('rol') || '';
-  usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
+  rol = localStorage.getItem('rol') || '';
+  usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
   idUsuario = 0;
   reservaDetalle: any = null;
   mostrarModalDetalle = false;
@@ -170,6 +170,16 @@ export class ReservarComponent implements OnInit {
     return this.reservas.filter(r => r.estado === estado).length;
   }
 
+  // ══ GETTER: tipo sin asignatura ══════════════════════════════════════════
+  get tipoSinAsignatura(): boolean {
+    const tipo = this.tipos.find(t => t.id_tipo_reserva === Number(this.formularioReserva.id_tipo_reserva));
+    if (!tipo) return false;
+    const nombre = tipo.nombre_tipo?.toLowerCase() || '';
+    return nombre.includes('capacitacion') || nombre.includes('capacitación') ||
+      nombre.includes('sustentacion') || nombre.includes('sustentación') ||
+      nombre.includes('tesis');
+  }
+
   // ══ MODALES ══════════════════════════════════════════════════════════════
   mostrarModal = false;
   mostrarConfirmarEliminar = false;
@@ -229,34 +239,32 @@ export class ReservarComponent implements OnInit {
       this.formularioReserva.hora_inicio   = horario.hora_inicio;
       this.formularioReserva.hora_fin      = horario.hora_fin;
       this.formularioReserva.id_asignatura = horario.id_asignatura;
-
-      // NUEVO: prerellenar día si es recurrente
       if (this.formularioReserva.esRecurrente) {
         const diaMapper: Record<string, string> = {
-          'LUNES':      'LUNES',
-          'MARTES':     'MARTES',
-          'MIÉRCOLES':  'MIÉRCOLES',
-          'JUEVES':     'JUEVES',
-          'VIERNES':    'VIERNES',
-          'SÁBADO':     'SÁBADO',
-          'DOMINGO':    'DOMINGO'
+          'LUNES': 'LUNES', 'MARTES': 'MARTES', 'MIÉRCOLES': 'MIÉRCOLES',
+          'JUEVES': 'JUEVES', 'VIERNES': 'VIERNES', 'SÁBADO': 'SÁBADO', 'DOMINGO': 'DOMINGO'
         };
         const dia = diaMapper[horario.dia_semana?.toUpperCase()];
-        if (dia) {
-          this.formularioReserva.diasSemana = [dia];
-        }
+        if (dia) { this.formularioReserva.diasSemana = [dia]; }
       }
       this.cdr.detectChanges();
     }
   }
 
+  // ══ NUEVO: cambio de tipo de reserva ════════════════════════════════════
+  onTipoReservaChange(): void {
+    if (this.tipoSinAsignatura) {
+      this.formularioReserva.id_asignatura = null;
+      this.formularioReserva.id_horario_academico = null;
+      this.horariosAcademicos = [];
+    }
+    this.cdr.detectChanges();
+  }
+
   toggleDia(dia: string): void {
     const idx = this.formularioReserva.diasSemana.indexOf(dia);
-    if (idx === -1) {
-      this.formularioReserva.diasSemana.push(dia);
-    } else {
-      this.formularioReserva.diasSemana.splice(idx, 1);
-    }
+    if (idx === -1) { this.formularioReserva.diasSemana.push(dia); }
+    else { this.formularioReserva.diasSemana.splice(idx, 1); }
   }
 
   cargarTodosLosHorarios(): void {
@@ -280,7 +288,6 @@ export class ReservarComponent implements OnInit {
 
   filtrarPorEstado(estado: string): void {
     if (this.filtroEstadoActivo === estado || estado === 'Total') {
-      // Si presiona el mismo o "Total", limpia el filtro
       this.filtroEstadoActivo = estado === 'Total' ? 'Total' : '';
       this.reservasCombinadasFiltradas = [...this.reservasCombinadas];
     } else {
@@ -327,7 +334,6 @@ export class ReservarComponent implements OnInit {
   // ══ CRUD RESERVAS ════════════════════════════════════════════════════════
   guardarReserva(): void {
     if (this.formularioReserva.esRecurrente) {
-      // Validaciones recurrente
       if (!this.formularioReserva.cod_laboratorio ||
         !this.formularioReserva.id_periodo ||
         !this.formularioReserva.diasSemana.length ||
@@ -341,7 +347,7 @@ export class ReservarComponent implements OnInit {
         idUsuario:          this.idUsuario,
         idPeriodo:          this.formularioReserva.id_periodo,
         idHorarioAcademico: this.formularioReserva.id_horario_academico || null,
-        idAsignatura:       this.formularioReserva.id_asignatura || null,
+        idAsignatura:       this.tipoSinAsignatura ? null : (this.formularioReserva.id_asignatura || null),
         idTipoReserva:      this.formularioReserva.id_tipo_reserva || null,
         diasSemana:         this.formularioReserva.diasSemana.join(','),
         horaInicio:         this.formularioReserva.hora_inicio,
@@ -352,18 +358,13 @@ export class ReservarComponent implements OnInit {
       };
       this.reservaService.crearRecurrente(dto).subscribe({
         next: () => {
-          this.cargarReservas();
-          this.cargarGrupos();
-          this.cerrarModal();
+          this.cargarReservas(); this.cargarGrupos(); this.cerrarModal();
           this.mostrarNotificacion('✅ Reservas recurrentes creadas para todo el período');
           if (this.tabActiva === 0) this.cal_cargarReservas();
         },
-        error: (err) => this.mostrarNotificacion(
-          '❌ ' + (err.error?.message || 'Error al crear reservas recurrentes'), 'error'
-        )
+        error: (err) => this.mostrarNotificacion('❌ ' + (err.error?.message || 'Error al crear reservas recurrentes'), 'error')
       });
     } else {
-      // tu código actual de guardarReserva sin ningún cambio
       if (!this.formularioReserva.cod_laboratorio ||
         !this.formularioReserva.fecha_reserva ||
         !this.formularioReserva.hora_inicio ||
@@ -374,8 +375,8 @@ export class ReservarComponent implements OnInit {
         codLaboratorio: this.formularioReserva.cod_laboratorio,
         idUsuario: this.idUsuario,
         idPeriodo: this.formularioReserva.id_periodo || 1,
-        idHorarioAcademico: this.formularioReserva.id_horario_academico || 1,
-        idAsignatura: this.formularioReserva.id_asignatura,
+        idHorarioAcademico: this.formularioReserva.id_horario_academico || null,
+        idAsignatura: this.tipoSinAsignatura ? null : (this.formularioReserva.id_asignatura || null),
         idTipoReserva: this.formularioReserva.id_tipo_reserva,
         fechaReserva: this.formularioReserva.fecha_reserva,
         horaInicio: this.formularioReserva.hora_inicio,
@@ -393,8 +394,7 @@ export class ReservarComponent implements OnInit {
       } else {
         this.reservaService.crearAdmin(dto).subscribe({
           next: () => {
-            this.cargarReservas();
-            this.cerrarModal();
+            this.cargarReservas(); this.cerrarModal();
             this.mostrarNotificacion('✅ Reserva creada exitosamente');
             if (this.tabActiva === 0) { this.cal_cargarReservas(); }
           },
@@ -429,33 +429,20 @@ export class ReservarComponent implements OnInit {
       numero_estudiantes: g.numeroEstudiantes,
       fecha_orden:        g.fechaCreacion
     }));
-
     const reservasFormateadas = this.reservas.map(r => ({
-      ...r,
-      esGrupo: false,
-      fecha_orden: r.fecha_solicitud
+      ...r, esGrupo: false, fecha_orden: r.fecha_solicitud
     }));
-
     this.reservasCombinadas = [...gruposFormateados, ...reservasFormateadas]
-      .sort((a, b) => {
-        const fechaA = new Date(a.fecha_orden).getTime();
-        const fechaB = new Date(b.fecha_orden).getTime();
-        return fechaA - fechaB;
-      });
-
+      .sort((a, b) => new Date(b.fecha_orden).getTime() - new Date(a.fecha_orden).getTime());
     if (this.filtroEstadoActivo && this.filtroEstadoActivo !== 'Total') {
-      this.reservasCombinadasFiltradas = this.reservasCombinadas.filter(
-        r => r.estado === this.filtroEstadoActivo
-      );
+      this.reservasCombinadasFiltradas = this.reservasCombinadas.filter(r => r.estado === this.filtroEstadoActivo);
     } else {
       this.reservasCombinadasFiltradas = [...this.reservasCombinadas];
     }
   }
 
-
   editarReserva(res: Reserva, index: number): void {
-    this.modoEdicion = true; this.tipoModal = 'reserva';
-    this.mostrarModal = true;
+    this.modoEdicion = true; this.tipoModal = 'reserva'; this.mostrarModal = true;
     this.indexSeleccionado = this.reservas.findIndex(r => r.id_reserva === res.id_reserva);
     this.formularioReserva = { ...res };
   }
@@ -481,9 +468,8 @@ export class ReservarComponent implements OnInit {
   }
 
   editarTipo(tipo: TipoReserva, index: number): void {
-    this.modoEdicion = true; this.tipoModal = 'tipo';
-    this.mostrarModal = true; this.indexSeleccionado = index;
-    this.formularioTipo = { ...tipo };
+    this.modoEdicion = true; this.tipoModal = 'tipo'; this.mostrarModal = true;
+    this.indexSeleccionado = index; this.formularioTipo = { ...tipo };
   }
 
   eliminarTipo(tipo: TipoReserva, index: number): void {
@@ -492,7 +478,7 @@ export class ReservarComponent implements OnInit {
   }
 
   cargarReservas(): void {
-    const idUsuario = parseInt(sessionStorage.getItem('idUsuario') || '0');
+    const idUsuario = parseInt(localStorage.getItem('idUsuario') || '0');
     const obs = (this.rol === 'Encargado de Laboratorio' ||
       this.rol === 'Encargado_Lab' ||
       this.rol === 'clab_encargado_lab')
@@ -502,7 +488,6 @@ export class ReservarComponent implements OnInit {
       next: (data) => {
         const hoy = new Date();
         hoy.setHours(0, 0, 0, 0);
-
         this.reservas = data
           .filter(r => {
             if (r.estado === 'Cancelada' || r.idGrupoReserva) return false;
@@ -559,20 +544,19 @@ export class ReservarComponent implements OnInit {
 
   getItemNombre(): string { return this.itemSeleccionado?.nombre_tipo || ''; }
   getEstadoBadgeClass(estado: string): string { return estado.toLowerCase(); }
-
   verDetalle(res: Reserva): void { this.reservaDetalle = res; this.mostrarModalDetalle = true; }
   cerrarModalDetalle(): void { this.mostrarModalDetalle = false; this.reservaDetalle = null; }
   toggleDrawer(): void { this.drawerAbierto = !this.drawerAbierto; }
   cerrarDrawer(): void { this.drawerAbierto = false; }
   navegar(ruta: string, _texto = ''): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
-  logout(): void { sessionStorage.clear(); this.router.navigate(['/login']); }
+  logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
   volver(): void { this.router.navigate(['/dashboard']); }
 
   // ══ INIT ═════════════════════════════════════════════════════════════════
   ngOnInit(): void {
-    this.rol = sessionStorage.getItem('rol') || '';
-    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
-    this.idUsuario = parseInt(sessionStorage.getItem('idUsuario') || '0');
+    this.rol = localStorage.getItem('rol') || '';
+    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+    this.idUsuario = parseInt(localStorage.getItem('idUsuario') || '0');
     this.cargarTipos();
     this.cargarReservas();
     this.cargarLaboratorios();
@@ -580,12 +564,10 @@ export class ReservarComponent implements OnInit {
     this.cargarPeriodos();
     this.cargarGrupos();
     this.reservasFiltradas = [...this.reservas];
-
     if (this.rol === 'Encargado_Lab' || this.rol === 'clab_encargado_lab' || this.rol === 'Encargado de Laboratorio') {
       this.cargarReservasHoy();
       this.cargarUsuariosBloqueados();
     }
-
     this.cal_calcularSemanaActual();
     this.cal_mesActual = new Date(this.cal_fechaInicioSemana.getFullYear(), this.cal_fechaInicioSemana.getMonth(), 1);
     this.cal_cargarReservas();
@@ -628,10 +610,7 @@ export class ReservarComponent implements OnInit {
         const activos = data.filter((p: any) =>
           p.estado?.toLowerCase() === 'activo' || p.activo === true || p.activo === 'true'
         );
-        this.periodos = activos.map((p: any) => ({
-          id_periodo: p.idPeriodo || 0,
-          nombre_periodo: p.nombrePeriodo
-        }));
+        this.periodos = activos.map((p: any) => ({ id_periodo: p.idPeriodo || 0, nombre_periodo: p.nombrePeriodo }));
         this.cdr.detectChanges();
       }
     });
@@ -664,8 +643,7 @@ export class ReservarComponent implements OnInit {
         this.reservasHoy = data.map(r => ({
           ...r,
           asistio: r.asistio === true || r.asistio === 'true' ? true
-            : r.asistio === false || r.asistio === 'false' ? false
-              : null
+            : r.asistio === false || r.asistio === 'false' ? false : null
         }));
         this.cdr.detectChanges();
       }
@@ -710,18 +688,12 @@ export class ReservarComponent implements OnInit {
   }
 
   // ══ PAGINACIÓN RESERVAS ══════════════════════════════════════════════════
-  get totalPaginas(): number {
-    return Math.ceil(this.reservasCombinadasFiltradas.length / this.itemsPorPagina);
-  }
-
+  get totalPaginas(): number { return Math.ceil(this.reservasCombinadasFiltradas.length / this.itemsPorPagina); }
   get reservasPaginadas(): any[] {
     const i = (this.paginaActual - 1) * this.itemsPorPagina;
     return this.reservasCombinadasFiltradas.slice(i, i + this.itemsPorPagina);
   }
-
-  get paginas(): number[] {
-    return Array.from({ length: this.totalPaginas }, (_, i) => i + 1);
-  }
+  get paginas(): number[] { return Array.from({ length: this.totalPaginas }, (_, i) => i + 1); }
   cambiarPagina(p: number): void {
     if (p >= 1 && p <= this.totalPaginas) { this.paginaActual = p; this.cdr.detectChanges(); }
   }
@@ -765,7 +737,7 @@ export class ReservarComponent implements OnInit {
   };
 
   private cal_getHeaders(): HttpHeaders {
-    const token = sessionStorage.getItem('token') || '';
+    const token = localStorage.getItem('token') || '';
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 
@@ -787,35 +759,28 @@ export class ReservarComponent implements OnInit {
   cal_semanaAnterior(): void {
     this.cal_fechaInicioSemana = new Date(this.cal_fechaInicioSemana);
     this.cal_fechaInicioSemana.setDate(this.cal_fechaInicioSemana.getDate() - 7);
-    this.cal_actualizarLabelSemana();
-    this.cal_cargarReservas();
+    this.cal_actualizarLabelSemana(); this.cal_cargarReservas();
   }
 
   cal_semanaSiguiente(): void {
     this.cal_fechaInicioSemana = new Date(this.cal_fechaInicioSemana);
     this.cal_fechaInicioSemana.setDate(this.cal_fechaInicioSemana.getDate() + 7);
-    this.cal_actualizarLabelSemana();
-    this.cal_cargarReservas();
+    this.cal_actualizarLabelSemana(); this.cal_cargarReservas();
   }
 
   cal_semanaHoy(): void {
-    this.cal_reservaSeleccionada = null;
-    this.cal_vistaActiva = 'Semana';
-    this.cdr.detectChanges();
-    this.cal_calcularSemanaActual();
-    this.cal_cargarReservas();
+    this.cal_reservaSeleccionada = null; this.cal_vistaActiva = 'Semana';
+    this.cdr.detectChanges(); this.cal_calcularSemanaActual(); this.cal_cargarReservas();
   }
 
   cal_mesAnterior(): void {
     this.cal_mesActual = new Date(this.cal_mesActual.getFullYear(), this.cal_mesActual.getMonth() - 1, 1);
-    this.cal_actualizarLabelMes();
-    this.cal_cargarReservasMes();
+    this.cal_actualizarLabelMes(); this.cal_cargarReservasMes();
   }
 
   cal_mesSiguiente(): void {
     this.cal_mesActual = new Date(this.cal_mesActual.getFullYear(), this.cal_mesActual.getMonth() + 1, 1);
-    this.cal_actualizarLabelMes();
-    this.cal_cargarReservasMes();
+    this.cal_actualizarLabelMes(); this.cal_cargarReservasMes();
   }
 
   cal_actualizarLabelMes(): void {
@@ -837,15 +802,11 @@ export class ReservarComponent implements OnInit {
   }
 
   cal_setVista(v: string): void {
-    this.cal_reservaSeleccionada = null;
-    this.cal_vistaActiva = v;
-    this.cdr.detectChanges();
+    this.cal_reservaSeleccionada = null; this.cal_vistaActiva = v; this.cdr.detectChanges();
     if (v === 'Mes') {
       this.cal_mesActual = new Date(this.cal_fechaInicioSemana.getFullYear(), this.cal_fechaInicioSemana.getMonth(), 1);
       this.cal_cargarReservasMes();
-    } else {
-      this.cal_cargarReservas();
-    }
+    } else { this.cal_cargarReservas(); }
   }
 
   cal_finDeSemana(): Date {
@@ -862,24 +823,17 @@ export class ReservarComponent implements OnInit {
   }
 
   cal_cargarReservas(): void {
-    this.cal_cargandoDatos = true;
-    this.cal_errorCarga = false;
+    this.cal_cargandoDatos = true; this.cal_errorCarga = false;
     const url = `${this.apiUrl}/reservas/semana?inicio=${this.cal_formatFecha(this.cal_fechaInicioSemana)}&fin=${this.cal_formatFecha(this.cal_finDeSemana())}`;
     this.http.get<any[]>(url, { headers: this.cal_getHeaders() }).subscribe({
-      next: datos => {
-        this.cal_procesarReservas(datos);
-        this.cal_cargandoDatos = false;
-        this.cdr.detectChanges();
-      },
+      next: datos => { this.cal_procesarReservas(datos); this.cal_cargandoDatos = false; this.cdr.detectChanges(); },
       error: () => { this.cal_cargandoDatos = false; this.cal_errorCarga = true; this.cdr.detectChanges(); }
     });
   }
 
   cal_cargarReservasMes(): void {
-    this.cal_cargandoDatos = true;
-    this.cal_errorCarga = false;
-    this.cal_actualizarLabelMes();
-    this.cal_construirDiasMes();
+    this.cal_cargandoDatos = true; this.cal_errorCarga = false;
+    this.cal_actualizarLabelMes(); this.cal_construirDiasMes();
     const año = this.cal_mesActual.getFullYear();
     const mes = this.cal_mesActual.getMonth();
     const inicio = new Date(año, mes, 1);
@@ -930,7 +884,6 @@ export class ReservarComponent implements OnInit {
   private cal_procesarReservas(datos: any[]): void {
     const activas = datos.filter(r => r.estado?.toLowerCase() === 'aprobada');
     this.cal_asignarColores(activas);
-
     if (activas.length > 0) {
       const hMin = Math.min(...activas.map(r => this.cal_parseHora(r.horaInicio)));
       const hMax = Math.max(...activas.map(r => this.cal_parseHora(r.horaFin)));
@@ -938,15 +891,11 @@ export class ReservarComponent implements OnInit {
     } else {
       this.cal_construirHorasVisibles(this.cal_HORA_MIN_DEFAULT, this.cal_HORA_MAX_DEFAULT);
     }
-
-    const horaBase = this.cal_parseHora(this.cal_horasVisibles[0]);
-
     this.cal_reservas = activas.map(r => {
       const [anio, mes, dia_r] = r.fechaReserva.split('-').map(Number);
       const fecha = new Date(anio, mes - 1, dia_r);
       const dia = this.cal_diaIndex(fecha, this.cal_fechaInicioSemana);
       if (dia === -1) return null;
-
       const horaInicioStr = r.horaInicio?.toString().substring(0, 5) || '';
       const horaFinStr    = r.horaFin?.toString().substring(0, 5)    || '';
       const slotBase   = this.cal_parseHora(this.cal_horasVisibles[0]) * 2;
@@ -955,17 +904,10 @@ export class ReservarComponent implements OnInit {
       const horaInicio = Math.max(0, slotInicio - slotBase);
       const duracion   = Math.max(1, slotFin - slotInicio);
       return {
-        id:           r.idReserva,
-        laboratorio:  r.nombreLaboratorio || r.laboratorio || 'Sin lab',
-        dia,
-        horaInicio,
-        duracion,
-        titulo:       r.nombreAsignatura || r.descripcion || r.motivo || 'Reserva',
-        docente:      r.nombreUsuario || '',
-        estado:       r.estado || '',
-        fecha,
-        horaInicioStr,
-        horaFinStr,
+        id: r.idReserva, laboratorio: r.nombreLaboratorio || r.laboratorio || 'Sin lab',
+        dia, horaInicio, duracion,
+        titulo: r.nombreAsignatura || r.descripcion || r.motivo || 'Reserva',
+        docente: r.nombreUsuario || '', estado: r.estado || '', fecha, horaInicioStr, horaFinStr,
       } as ReservaCalendario;
     }).filter((r): r is ReservaCalendario => r !== null);
   }
@@ -976,20 +918,16 @@ export class ReservarComponent implements OnInit {
     this.cal_reservas = activas.map(r => {
       const [anio, mes, dia_r] = r.fechaReserva.split('-').map(Number);
       return {
-        id:          r.idReserva,
-        laboratorio: r.nombreLaboratorio || 'Sin lab',
+        id: r.idReserva, laboratorio: r.nombreLaboratorio || 'Sin lab',
         dia: 0, horaInicio: 0, duracion: 1,
-        titulo:  r.nombreAsignatura || r.motivo || 'Reserva',
-        docente: r.nombreUsuario || '',
-        estado:  r.estado || '',
-        fecha:   new Date(anio, mes - 1, dia_r),
+        titulo: r.nombreAsignatura || r.motivo || 'Reserva',
+        docente: r.nombreUsuario || '', estado: r.estado || '',
+        fecha: new Date(anio, mes - 1, dia_r),
         horaInicioStr: r.horaInicio?.toString().substring(0, 5) || '',
         horaFinStr:    r.horaFin?.toString().substring(0, 5)    || '',
       } as ReservaCalendario;
     });
   }
-
-  // ── Helpers template calendario ─────────────────────────────────────────
 
   cal_getReservasDeCelda(dia: number, horaIdx: number): ReservaCalendario[] {
     return this.cal_reservas.filter(r => r.dia === dia && r.horaInicio === horaIdx);
@@ -1005,10 +943,8 @@ export class ReservarComponent implements OnInit {
   }
 
   cal_getAlturaBloque(duracion: number): number { return duracion * 26 - 3; }
-
   cal_getColorLab(lab: string): string { return this.cal_coloresLab[lab] ?? '#39ff14'; }
 
-  // Usa los strings reales del backend
   cal_getHoraFin(reserva: ReservaCalendario): string {
     return reserva.horaFinStr
       || this.cal_horasVisibles[Math.min(reserva.horaInicio + Math.ceil(reserva.duracion), this.cal_horasVisibles.length - 1)]
@@ -1028,9 +964,7 @@ export class ReservarComponent implements OnInit {
   cal_esDiaHoy(fecha: Date | null): boolean {
     if (!fecha) return false;
     const hoy = new Date();
-    return fecha.getDate()     === hoy.getDate()     &&
-      fecha.getMonth()    === hoy.getMonth()    &&
-      fecha.getFullYear() === hoy.getFullYear();
+    return fecha.getDate() === hoy.getDate() && fecha.getMonth() === hoy.getMonth() && fecha.getFullYear() === hoy.getFullYear();
   }
 
   cal_seleccionar(reserva: ReservaCalendario): void {
@@ -1051,8 +985,7 @@ export class ReservarComponent implements OnInit {
     this.cal_confirmData = {
       diaIdx, horaIdx,
       fechaLabel: fechaLabel.charAt(0).toUpperCase() + fechaLabel.slice(1),
-      horaInicio, horaFin,
-      fechaStr: this.cal_formatFecha(fecha)
+      horaInicio, horaFin, fechaStr: this.cal_formatFecha(fecha)
     };
     this.cal_mostrarModalConfirm = true;
     this.cdr.detectChanges();
@@ -1060,63 +993,36 @@ export class ReservarComponent implements OnInit {
 
   cal_confirmarYReservar(): void {
     this.cal_mostrarModalConfirm = false;
-    this.tabActiva = 1;
-    this.modoEdicion = false;
-    this.tipoModal = 'reserva';
-    this.mostrarModal = true;
-    this.resetFormularios();
-    this.cargarTodosLosHorarios();
+    this.tabActiva = 1; this.modoEdicion = false; this.tipoModal = 'reserva';
+    this.mostrarModal = true; this.resetFormularios(); this.cargarTodosLosHorarios();
     this.formularioReserva.fecha_reserva = this.cal_confirmData.fechaStr;
     this.formularioReserva.hora_inicio   = this.cal_confirmData.horaInicio;
     this.formularioReserva.hora_fin      = this.cal_confirmData.horaFin;
     this.cdr.detectChanges();
   }
 
-  cal_cerrarModalConfirm(): void {
-    this.cal_mostrarModalConfirm = false;
-    this.cdr.detectChanges();
-  }
-
-  cal_diaClick(fecha: Date | null): void {
-    if (!fecha || this.cal_getReservasDeDia(fecha).length > 0) return;
-    const fechaStr = this.cal_formatFecha(fecha);
-    this.tabActiva = 1;
-    this.cdr.detectChanges();
-    this.tipoModal = 'reserva';
-    this.modoEdicion = false;
-    this.mostrarModal = true;
-    this.resetFormularios();
-    this.cargarTodosLosHorarios();
-    this.formularioReserva.fecha_reserva = fechaStr;
-    this.cdr.detectChanges();
-  }
+  cal_cerrarModalConfirm(): void { this.cal_mostrarModalConfirm = false; this.cdr.detectChanges(); }
 
   abrirModalCancelarGrupo(grupo: any): void {
     this.itemSeleccionado = grupo;
     this.formularioCancelacion = {
-      id_reserva: grupo.idGrupo,
-      id_usuario_cancela: this.idUsuario,
-      fecha_cancelacion: new Date().toISOString().split('T')[0],
-      motivo_cancelacion: ''
+      id_reserva: grupo.idGrupo, id_usuario_cancela: this.idUsuario,
+      fecha_cancelacion: new Date().toISOString().split('T')[0], motivo_cancelacion: ''
     };
     this.mostrarModalCancelar = true;
   }
 
   confirmarCancelacionGrupo(): void {
     if (!this.formularioCancelacion.motivo_cancelacion?.trim()) {
-      this.mostrarNotificacion('El motivo de cancelación es obligatorio', 'error');
-      return;
+      this.mostrarNotificacion('El motivo de cancelación es obligatorio', 'error'); return;
     }
     const dto = {
-      idReserva: this.itemSeleccionado.idGrupo,
-      idUsuarioCancela: this.idUsuario,
+      idReserva: this.itemSeleccionado.idGrupo, idUsuarioCancela: this.idUsuario,
       motivoCancelacion: this.formularioCancelacion.motivo_cancelacion
     };
     this.reservaService.cancelarGrupo(this.itemSeleccionado.idGrupo, dto).subscribe({
       next: () => {
-        this.cargarReservas();
-        this.cargarGrupos();
-        this.cerrarModalCancelar();
+        this.cargarReservas(); this.cargarGrupos(); this.cerrarModalCancelar();
         this.mostrarNotificacion('🗑️ Reservas recurrentes canceladas exitosamente');
       },
       error: () => this.mostrarNotificacion('❌ Error al cancelar el grupo', 'error')
@@ -1125,22 +1031,14 @@ export class ReservarComponent implements OnInit {
 
   aprobarGrupo(grupo: any): void {
     this.reservaService.aprobarGrupo(grupo.idGrupo).subscribe({
-      next: () => {
-        this.cargarReservas();
-        this.cargarGrupos();
-        this.mostrarNotificacion('✅ Todas las reservas del grupo aprobadas');
-      },
+      next: () => { this.cargarReservas(); this.cargarGrupos(); this.mostrarNotificacion('✅ Todas las reservas del grupo aprobadas'); },
       error: () => this.mostrarNotificacion('❌ Error al aprobar el grupo', 'error')
     });
   }
 
   rechazarGrupo(grupo: any): void {
     this.reservaService.rechazarGrupo(grupo.idGrupo).subscribe({
-      next: () => {
-        this.cargarReservas();
-        this.cargarGrupos();
-        this.mostrarNotificacion('🚫 Todas las reservas del grupo rechazadas');
-      },
+      next: () => { this.cargarReservas(); this.cargarGrupos(); this.mostrarNotificacion('🚫 Todas las reservas del grupo rechazadas'); },
       error: () => this.mostrarNotificacion('❌ Error al rechazar el grupo', 'error')
     });
   }

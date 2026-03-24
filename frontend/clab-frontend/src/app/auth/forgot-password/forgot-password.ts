@@ -33,8 +33,8 @@ export class ForgotPasswordComponent {
     this.http.post('http://localhost:8080/auth/forgot-password', { email: this.email }).subscribe({
       next: () => {
         this.cargando = false;
-        // Guardar email en sessionStorage para usarlo en los siguientes pasos
-        sessionStorage.setItem('recuperacion_email', this.email);
+        // Guardar email en localStorage para usarlo en los siguientes pasos
+        localStorage.setItem('recuperacion_email', this.email);
         this.router.navigate(['/verificar-codigo']);
       },
       error: (err) => {

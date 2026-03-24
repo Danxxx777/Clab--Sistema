@@ -69,9 +69,9 @@ export class CalendarioComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.usuarioLogueado = sessionStorage.getItem('usuario') || 'Usuario';
-    this.rolActual       = sessionStorage.getItem('rol')     || '';
-    this.idUsuario       = parseInt(sessionStorage.getItem('idUsuario') || '0');
+    this.usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
+    this.rolActual       = localStorage.getItem('rol')     || '';
+    this.idUsuario       = parseInt(localStorage.getItem('idUsuario') || '0');
     this.esDocente       = this.rolActual === 'Docente';
     this.construirHoras();
     this.calcularSemana();
@@ -97,7 +97,7 @@ export class CalendarioComponent implements OnInit {
   irAHoy(): void { this.semanaOffset = 0; this.calcularSemana(); this.cargarReservas(); }
 
   private getHeaders(): HttpHeaders {
-    const token = sessionStorage.getItem('token') || '';
+    const token = localStorage.getItem('token') || '';
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 

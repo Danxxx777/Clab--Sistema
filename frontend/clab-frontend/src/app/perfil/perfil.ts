@@ -36,8 +36,8 @@ export class PerfilComponent implements OnInit {
   cargandoReservas = false;
 
   get totalReservas()  { return this.reservas.length; }
-  get completadas()    { return this.reservas.filter(r => r.estado === 'COMPLETADA').length; }
-  get canceladas()     { return this.reservas.filter(r => r.estado === 'CANCELADA').length; }
+  get completadas() { return this.reservas.filter(r => r.estado === 'Completada').length; }
+  get canceladas()  { return this.reservas.filter(r => r.estado === 'Cancelada').length; }
   get pctAsistencia() {
     const c = this.reservas.filter(r => r.asistio !== null);
     return c.length ? Math.round(c.filter(r => r.asistio).length / c.length * 100) : 0;
@@ -53,7 +53,7 @@ export class PerfilComponent implements OnInit {
   ngOnInit(): void {
     const id = this.authService.getIdUsuario();
     console.log('ID usuario:', id);
-    console.log('sessionStorage idUsuario:', sessionStorage.getItem('idUsuario'));
+    console.log('localStorage idUsuario:', localStorage.getItem('idUsuario'));
 
     if (!id) { this.router.navigate(['/login']); return; }
     this.cargarPerfil(id);
@@ -90,8 +90,8 @@ export class PerfilComponent implements OnInit {
         this.perfil = actualizado;
         this.editando = false;
         this.guardando = false;
-        // Actualizar nombre en sessionStorage
-        sessionStorage.setItem('usuario',
+        // Actualizar nombre en localStorage
+        localStorage.setItem('usuario',
           `${actualizado.nombres.split(' ')[0]} ${actualizado.apellidos.split(' ')[0]}`
         );
         this.cdr.detectChanges();
@@ -166,27 +166,52 @@ export class PerfilComponent implements OnInit {
 
   cambiarTab(tab: 'datos' | 'historial'): void {
     this.tabActiva = tab;
-    if (tab === 'historial' && !this.reservas.length) this.cargarHistorial();
+    if (tab === 'historial') this.cargarHistorial(); // ← siempre recarga
   }
 
   cargarHistorial(): void {
     if (!this.perfil) return;
     this.cargandoReservas = true;
+    this.cdr.detectChanges();
     this.perfilService.obtenerHistorialReservas(this.perfil.idUsuario).subscribe({
-      next: r => { this.reservas = r; this.aplicarFiltro('todas'); this.cargandoReservas = false; },
-      error: () => this.cargandoReservas = false
+      next: r => {
+        console.log('Estados:', r.map(x => x.estado));  // ← agregar
+        this.reservas = r;
+        this.aplicarFiltro('todas');
+        this.cargandoReservas = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.cargandoReservas = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
   aplicarFiltro(estado: string): void {
     this.filtroEstado = estado;
-    this.reservasFiltradas = estado === 'todas'
-      ? this.reservas
-      : this.reservas.filter(r => r.estado === estado.toUpperCase());
+    if (estado === 'todas') {
+      this.reservasFiltradas = this.reservas;
+    } else {
+      const mapa: any = {
+        confirmada: 'Aprobada',
+        completada: 'Completada',
+        cancelada:  'Cancelada',
+        pendiente:  'Pendiente'
+      };
+      const valorBuscar = mapa[estado] ?? estado;
+      this.reservasFiltradas = this.reservas.filter(r => r.estado === valorBuscar);
+    }
+    this.cdr.detectChanges();
   }
 
   badgeClass(estado: string): string {
-    return ({ CONFIRMADA: 'confirmada', COMPLETADA: 'completada', CANCELADA: 'cancelada', PENDIENTE: 'pendiente' } as any)[estado] ?? '';
+    return ({
+      'Aprobada':   'aprobada confirmada',
+      'Completada': 'completada',
+      'Cancelada':  'cancelada',
+      'Pendiente':  'pendiente'
+    } as any)[estado] ?? '';
   }
 
   volver(): void { this.router.navigate(['/dashboard']); }

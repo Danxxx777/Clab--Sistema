@@ -267,55 +267,213 @@
     <div class="modal-overlay" (click)="cerrarDetalle()">
       <div class="modal-box modal-detalle" (click)="$event.stopPropagation()">
 
-        <div class="detalle-banda {{ getClase(notifDetalle.tipoNotificacion) }}">
-          <div class="detalle-banda-icono">
-            <img [src]="getIconoImg(notifDetalle.tipoNotificacion)" [alt]="notifDetalle.tipoNotificacion">
-          </div>
-          <div class="detalle-banda-info">
-            <span class="detalle-banda-titulo">{{ notifDetalle.asunto }}</span>
-            <span class="detalle-banda-tipo">{{ notifDetalle.tipoNotificacion }}</span>
+        <!-- HEADER OSCURO -->
+        <div class="detalle-header-dark">
+          <div class="detalle-header-left">
+            <div class="detalle-header-icon {{ getClase(notifDetalle.tipoNotificacion) }}">
+              <img [src]="getIconoImg(notifDetalle.tipoNotificacion)" [alt]="notifDetalle.tipoNotificacion">
+            </div>
+            <div>
+              <div class="detalle-header-titulo">{{ notifDetalle.asunto }}</div>
+              <div class="detalle-header-meta">
+                <span class="detalle-tipo-pill">{{ notifDetalle.tipoNotificacion }}</span>
+                <span class="detalle-time-ago">{{ notifDetalle.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+            </div>
           </div>
           <button class="modal-cerrar" (click)="cerrarDetalle()">×</button>
         </div>
 
+        <!-- TIMELINE DE ESTADO -->
+        <div class="detalle-timeline">
+          <div class="tl-step done">
+            <div class="tl-dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+            <span class="tl-label">Enviada</span>
+          </div>
+          <div class="tl-line done"></div>
+          <div class="tl-step done">
+            <div class="tl-dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+            <span class="tl-label">Recibida</span>
+          </div>
+          <div class="tl-line" [class.done]="notifDetalle.estado === 'LEIDA'"></div>
+          <div class="tl-step" [class.done]="notifDetalle.estado === 'LEIDA'">
+            <div class="tl-dot">
+              @if(notifDetalle.estado === 'LEIDA') {
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+              }
+            </div>
+            <span class="tl-label">Leída</span>
+          </div>
+          <div class="tl-line" [class.done]="esRespondida(notifDetalle.idNotificacion)"></div>
+          <div class="tl-step" [class.done]="esRespondida(notifDetalle.idNotificacion)">
+            <div class="tl-dot">
+              @if(esRespondida(notifDetalle.idNotificacion)) {
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+              } @else {
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              }
+            </div>
+            <span class="tl-label">Respondida</span>
+          </div>
+        </div>
         <div class="modal-body">
-          <div class="detalle-grid">
-            <div class="detalle-field">
-              <span class="detalle-field-label">Fecha</span>
-              <span class="detalle-field-value">{{ notifDetalle.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</span>
+
+          <!-- METADATA 3 COLS -->
+          <div class="detalle-meta-grid">
+            <div class="detalle-meta-card">
+              <span class="dmc-label">FECHA</span>
+              <span class="dmc-value">{{ notifDetalle.fechaCreacion | date:'dd/MM/yyyy' }}</span>
+              <span class="dmc-sub">{{ notifDetalle.fechaCreacion | date:'HH:mm' }}</span>
             </div>
-            <div class="detalle-field">
-              <span class="detalle-field-label">Estado</span>
-              <span class="detalle-field-value" [style.color]="notifDetalle.estado === 'NO_LEIDA' ? '#39ff14' : '#6b6b6b'">
-                {{ notifDetalle.estado === 'NO_LEIDA' ? 'Sin leer' : 'Leída' }}
-              </span>
+            <div class="detalle-meta-card">
+              <span class="dmc-label">CANAL</span>
+              <span class="dmc-value">{{ notifDetalle.canal ?? 'Sistema' }}</span>
+              <span class="dmc-sub">Interno</span>
             </div>
-            <div class="detalle-field">
-              <span class="detalle-field-label">Canal</span>
-              <span class="detalle-field-value">{{ notifDetalle.canal ?? 'SISTEMA' }}</span>
-            </div>
-            <div class="detalle-field">
-              <span class="detalle-field-label">Dirigido a</span>
-              <span class="detalle-field-value">{{ notifDetalle.rolDestino ?? '—' }}</span>
+            <div class="detalle-meta-card">
+              <span class="dmc-label">DIRIGIDO A</span>
+              <span class="dmc-value">{{ notifDetalle.rolDestino ?? '—' }}</span>
+              <span class="dmc-sub">1 destinatario</span>
             </div>
           </div>
 
-          <div class="detalle-field full">
-            <span class="detalle-field-label">Mensaje</span>
-            <div class="detalle-mensaje-body {{ getClase(notifDetalle.tipoNotificacion) }}" [innerHTML]="notifDetalle.mensaje"></div>
+          <!-- MENSAJE -->
+          <div class="detalle-mensaje-section">
+            <span class="detalle-section-label">CONTENIDO DEL MENSAJE</span>
+            <div class="detalle-mensaje-card {{ getClase(notifDetalle.tipoNotificacion) }}">
+              <div class="dmc-header">
+                <div class="dmc-header-icon {{ getClase(notifDetalle.tipoNotificacion) }}">
+                  <img [src]="getIconoImg(notifDetalle.tipoNotificacion)" [alt]="notifDetalle.tipoNotificacion">
+                </div>
+                <span class="dmc-header-titulo">{{ notifDetalle.asunto }}</span>
+                <span class="dmc-header-origen">CLAB · Sistema</span>
+              </div>
+
+              <div class="dmc-body">
+
+                <!-- RESERVA SOLICITUD -->
+                @if(notifDetalle.tipoNotificacion === 'RESERVA' && parsearMensaje('RESERVA', notifDetalle.mensaje)?.subtipo === 'solicitud') {
+                  <p class="dmc-texto">Nueva solicitud de reserva de <strong>{{ parsearMensaje('RESERVA', notifDetalle.mensaje)?.nombre }}</strong></p>
+                  <div class="dmc-info-row">
+                    <div class="dmc-info-box reserva">
+                      <span class="dib-label">FECHA</span>
+                      <span class="dib-val">{{ parsearMensaje('RESERVA', notifDetalle.mensaje)?.fecha }}</span>
+                    </div>
+                    <div class="dmc-info-box reserva">
+                      <span class="dib-label">INICIO</span>
+                      <span class="dib-val">{{ parsearMensaje('RESERVA', notifDetalle.mensaje)?.horaInicio }}</span>
+                    </div>
+                    <div class="dmc-info-box reserva">
+                      <span class="dib-label">FIN</span>
+                      <span class="dib-val">{{ parsearMensaje('RESERVA', notifDetalle.mensaje)?.horaFin }}</span>
+                    </div>
+                  </div>
+                }
+
+                <!-- RESERVA APROBADA -->
+                @if(notifDetalle.tipoNotificacion === 'RESERVA' && parsearMensaje('RESERVA', notifDetalle.mensaje)?.subtipo === 'aprobada') {
+                  <p class="dmc-texto">Tu reserva en <strong>{{ parsearMensaje('RESERVA', notifDetalle.mensaje)?.laboratorio }}</strong> fue aprobada.</p>
+                  <div class="dmc-info-row">
+                    <div class="dmc-info-box reserva">
+                      <span class="dib-label">FECHA</span>
+                      <span class="dib-val">{{ parsearMensaje('RESERVA', notifDetalle.mensaje)?.fecha }}</span>
+                    </div>
+                    <div class="dmc-info-box reserva">
+                      <span class="dib-label">HORA</span>
+                      <span class="dib-val">{{ parsearMensaje('RESERVA', notifDetalle.mensaje)?.hora }}</span>
+                    </div>
+                    <div class="dmc-info-box success">
+                      <span class="dib-label">ESTADO</span>
+                      <span class="dib-val" style="color:#39ff14">Aprobada</span>
+                    </div>
+                  </div>
+                }
+
+                <!-- SISTEMA NUEVO USUARIO -->
+                @if(notifDetalle.tipoNotificacion === 'SISTEMA') {
+                  <p class="dmc-texto">Se ha registrado un nuevo usuario en el sistema:</p>
+                  <div class="dmc-usuario-card">
+                    <div class="dmc-avatar">
+                      {{ (parsearMensaje('SISTEMA', notifDetalle.mensaje)?.nombre ?? 'U').charAt(0).toUpperCase() }}
+                    </div>
+                    <div>
+                      <div class="dmc-uname">{{ parsearMensaje('SISTEMA', notifDetalle.mensaje)?.nombre }}</div>
+                      <div class="dmc-usub">Pendiente de activación</div>
+                    </div>
+                    <span class="dmc-badge nuevo">NUEVO</span>
+                  </div>
+                }
+
+                <!-- FALLA -->
+                @if(notifDetalle.tipoNotificacion === 'FALLA') {
+                  <p class="dmc-texto">Se reportó una falla en el sistema:</p>
+                  <div class="dmc-falla-card">
+                    <div class="dmc-falla-row">
+                      <span class="dib-label">LABORATORIO</span>
+                      <span class="dmc-falla-val">{{ parsearMensaje('FALLA', notifDetalle.mensaje)?.laboratorio }}</span>
+                    </div>
+                    <div class="dmc-falla-row">
+                      <span class="dib-label">REPORTADO POR</span>
+                      <span class="dmc-falla-val">{{ parsearMensaje('FALLA', notifDetalle.mensaje)?.reportadoPor }}</span>
+                    </div>
+                    <div class="dmc-falla-row desc">
+                      <span class="dib-label">DESCRIPCIÓN</span>
+                      <span class="dmc-falla-desc">{{ parsearMensaje('FALLA', notifDetalle.mensaje)?.descripcion }}</span>
+                    </div>
+                  </div>
+                }
+
+                <!-- FALLA RESUELTA -->
+                @if(notifDetalle.tipoNotificacion === 'FALLA_RESUELTA') {
+                  <p class="dmc-texto">El encargado ha respondido tu notificación:</p>
+                  <div class="dmc-resuelta-card">
+                    <div class="dmc-falla-row">
+                      <span class="dib-label">ORIGINAL</span>
+                      <span class="dmc-falla-val">{{ parsearMensaje('FALLA_RESUELTA', notifDetalle.mensaje)?.original }}</span>
+                    </div>
+                    <div class="dmc-falla-row desc">
+                      <span class="dib-label">RESPUESTA</span>
+                      <span class="dmc-falla-desc" style="color:#39ff14">{{ parsearMensaje('FALLA_RESUELTA', notifDetalle.mensaje)?.respuesta }}</span>
+                    </div>
+                    <div class="dmc-falla-row">
+                      <span class="dib-label">RESPONDIDO POR</span>
+                      <span class="dmc-falla-val">{{ parsearMensaje('FALLA_RESUELTA', notifDetalle.mensaje)?.por }}</span>
+                    </div>
+                  </div>
+                }
+
+                <!-- FALLBACK -->
+                @if(notifDetalle.tipoNotificacion !== 'RESERVA' && notifDetalle.tipoNotificacion !== 'SISTEMA' && notifDetalle.tipoNotificacion !== 'FALLA' && notifDetalle.tipoNotificacion !== 'FALLA_RESUELTA') {
+                  <div [innerHTML]="notifDetalle.mensaje"></div>
+                }
+              </div>
+            </div>
           </div>
+
         </div>
 
+        <!-- FOOTER -->
         <div class="modal-footer">
-          <button class="btn-modal-cancelar" (click)="cerrarDetalle()">Cerrar</button>
-          <button class="btn-modal-confirmar" (click)="abrirResponder(notifDetalle, $event); cerrarDetalle()">
-            <img src="/buzon.png" alt="Responder"> Responder
-          </button>
+          <div class="modal-footer-info">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+            @if(notifDetalle.estado === 'LEIDA') {
+              <span>Leída el {{ notifDetalle.fechaCreacion | date:'dd/MM/yyyy' }}</span>
+            } @else {
+              <span>Pendiente de lectura</span>
+            }
+          </div>
+          <div class="modal-footer-actions">
+            <button class="btn-modal-cancelar" (click)="cerrarDetalle()">Cerrar</button>
+            <button class="btn-modal-confirmar" (click)="abrirResponder(notifDetalle, $event); cerrarDetalle()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Responder
+            </button>
+          </div>
         </div>
+
       </div>
     </div>
   }
-
   <!-- MODAL RESPONDER -->
   @if(modalResponderAbierto && notifAResponder) {
     <div class="modal-overlay" (click)="cerrarResponder()">

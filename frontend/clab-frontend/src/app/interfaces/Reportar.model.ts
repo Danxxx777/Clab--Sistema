@@ -49,14 +49,19 @@ export interface ExportOptions {
   filtros:           FiltrosExport;
   nombreLaboratorio?: string;
   usuarioLogueado:   string;
+  temaOscuro?:       boolean;
+  colorHeader?:      string;
+  colorAcento?:      string;
+  colorFondo?:       string;
+  incluirResumen?:   boolean;
 }
 
 // ─── FILTROS DE CONSULTA ──────────────────────────────────────────────────────
 
 export interface FiltrosReporte {
   laboratorio?: string | number;
-  fechaInicio?: string;   // YYYY-MM-DD
-  fechaFin?:    string;   // YYYY-MM-DD
+  fechaInicio?: string;
+  fechaFin?:    string;
   estado?:      string;
   idUsuario?:   string | number;
 }
@@ -98,12 +103,12 @@ export interface ReporteEquipoItem {
 }
 
 export interface ReporteFallaItem {
-  fecha:       string;
-  laboratorio: string;
-  equipo:      string;
-  descripcion: string;
+  fecha:        string;
+  laboratorio:  string;
+  equipo:       string;
+  descripcion:  string;
   reportadoPor: string;
-  estado:      string;
+  estado:       string;
 }
 
 export interface ReporteUsuarioItem {

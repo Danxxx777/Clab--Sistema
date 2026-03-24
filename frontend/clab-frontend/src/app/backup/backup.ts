@@ -106,9 +106,9 @@ export class BackupComponent implements OnInit {
 
   // Lifecycle
   ngOnInit(): void {
-    this.rol = sessionStorage.getItem('rol') || '';
+    this.rol = localStorage.getItem('rol') || '';
 
-    const userData = sessionStorage.getItem('usuario') || sessionStorage.getItem('user');
+    const userData = localStorage.getItem('usuario') || localStorage.getItem('user');
     if (userData) {
       try {
         const parsed = JSON.parse(userData);
@@ -127,7 +127,7 @@ export class BackupComponent implements OnInit {
   // Navegación
   volver():              void { this.router.navigate(['/dashboard']); }
   navegar(ruta: string): void { this.cerrarDrawer(); this.router.navigate([`/${ruta}`]); }
-  logout():              void { sessionStorage.clear(); this.router.navigate(['/login']); }
+  logout():              void { localStorage.clear(); this.router.navigate(['/login']); }
   toggleDrawer():        void { this.drawerAbierto = !this.drawerAbierto; }
   cerrarDrawer():        void { this.drawerAbierto = false; }
 
@@ -484,7 +484,11 @@ export class BackupComponent implements OnInit {
     { valor: 'SUNDAY',    label: 'Dom' }
   ];
 
-  diasMesOpciones = Array.from({ length: 28 }, (_, i) => i + 1); // [1..28]
+  get diasMesOpciones(): number[] {
+    const hoy = new Date();
+    const diasEnMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate();
+    return Array.from({ length: diasEnMes }, (_, i) => i + 1);
+  }
 
   nuevaHora = '08:00'; // Valor del input de nueva hora
 

@@ -248,3 +248,6 @@ $blue:        #3b82f6;
   transition: all .3s ease; pointer-events: none;
   &.show { opacity: 1; transform: translateY(0); }
 }
+.pf-badge {
+  &.aprobada { background: $neon-dim; color: $neon; border: 1px solid $neon-border; }
+}
