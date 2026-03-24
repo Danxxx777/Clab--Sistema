@@ -7,6 +7,7 @@ import com.clab.clabbackend.security.JwtService;
 import com.clab.clabbackend.services.AuditoriaService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -32,9 +33,39 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public AuthResponseDTO login(@RequestBody LoginRequestDTO request, HttpServletRequest httpRequest) {
+    public ResponseEntity<?> login(@RequestBody LoginRequestDTO request, HttpServletRequest httpRequest) {
         String ip = auditoriaService.obtenerIp(httpRequest);
-        return authService.login(request, ip);
+        try {
+            AuthResponseDTO response = authService.login(request, ip);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            if ("__BD_VACIA__".equals(e.getMessage())) {
+                return ResponseEntity.status(503).body(Map.of(
+                        "status", 503,
+                        "error", "Base de datos sin datos",
+                        "mensaje", "La base de datos no tiene datos. Restaura un backup para continuar."
+                ));
+            }
+            return ResponseEntity.status(401).body(Map.of(
+                    "status", 401,
+                    "error", "Credenciales inválidas",
+                    "mensaje", e.getMessage() != null ? e.getMessage() : "Usuario o contraseña incorrectos."
+            ));
+        } catch (Exception e) {
+            String msg = e.getMessage() != null ? e.getMessage() : "";
+            if (msg.contains("__BD_VACIA__") || msg.contains("does not exist") || msg.contains("no existe")) {
+                return ResponseEntity.status(503).body(Map.of(
+                        "status", 503,
+                        "error", "Base de datos sin datos",
+                        "mensaje", "La base de datos no tiene datos. Restaura un backup para continuar."
+                ));
+            }
+            return ResponseEntity.status(401).body(Map.of(
+                    "status", 401,
+                    "error", "Credenciales inválidas",
+                    "mensaje", "Usuario o contraseña incorrectos."
+            ));
+        }
     }
 
     @PostMapping("/logout")
