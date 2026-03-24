@@ -61,12 +61,11 @@
         <div class="di-text"><div class="di-name">Reportes de Fallas</div><div class="di-desc">Seguimiento de equipos</div></div>
       </div>
     }
-
     @if(rol === 'Administradorr' || rol === 'Encargado_Lab' || rol === 'Decano') {
-    <div class="drawer-item" (click)="navegar('notificaciones', '')">
-      <div class="di-icon"><img src="/campana.png" alt="Notificaciones"></div>
-      <div class="di-text"><div class="di-name">Notificaciones</div><div class="di-desc">Centro de alertas</div></div>
-    </div>
+      <div class="drawer-item" (click)="navegar('notificaciones', '')">
+        <div class="di-icon"><img src="/campana.png" alt="Notificaciones"></div>
+        <div class="di-text"><div class="di-name">Notificaciones</div><div class="di-desc">Centro de alertas</div></div>
+      </div>
     }
     @if(rol === 'Administradorr') {
       <div class="drawer-item" (click)="navegar('configuracion-correo', '')">
@@ -84,7 +83,6 @@
 </div>
 
 <div class="bloqueos-page">
-
   <div class="page-title-section">
     <div style="display:flex; align-items:center; gap:14px;">
       <button class="btn-hamburger" [class.active]="drawerAbierto" (click)="toggleDrawer()">
@@ -98,7 +96,6 @@
   </div>
 
   <div class="bloqueos-container">
-
     <div class="tabs-nav">
       <button class="tab-btn" [class.active]="tabActiva === 'bloqueos'" (click)="cambiarTab('bloqueos')">Bloqueos</button>
       <button class="tab-btn" [class.active]="tabActiva === 'tipos'" (click)="cambiarTab('tipos')">Tipos de Bloqueo</button>
@@ -107,6 +104,16 @@
     @if(tabActiva === 'bloqueos') {
       <div class="tab-content">
         <div class="bloqueos-header">
+          <div class="paginacion" *ngIf="bloqueos.length > 0">
+            <button class="btn-pag" (click)="cambiarPaginaBloqueos(paginaActualBloqueos - 1)"
+                    [disabled]="paginaActualBloqueos === 1">‹</button>
+            <button class="btn-pag" *ngFor="let p of paginasBloqueos"
+                    [class.activa]="p === paginaActualBloqueos"
+                    (click)="cambiarPaginaBloqueos(p)">{{ p }}</button>
+            <button class="btn-pag" (click)="cambiarPaginaBloqueos(paginaActualBloqueos + 1)"
+                    [disabled]="paginaActualBloqueos === totalPaginasBloqueos">›</button>
+            <span class="pag-info">{{ paginaActualBloqueos }} / {{ totalPaginasBloqueos }}</span>
+          </div>
           <button class="btn-nuevo-tipo" (click)="crearBloqueo()">+ Crear Bloqueo</button>
         </div>
         <div class="bloqueos-table-container">
@@ -117,13 +124,13 @@
                 <th>LABORATORIO</th>
                 <th>FECHA INICIO</th>
                 <th>FECHA FIN</th>
-                <th>HORARIO</th>
+                <th>TIPO BLOQUEO</th>
                 <th>MOTIVO</th>
                 <th>ACCIONES</th>
               </tr>
               </thead>
               <tbody>
-              <tr *ngFor="let bloqueo of bloqueos">
+              <tr *ngFor="let bloqueo of bloqueosPaginados">
                 <td>{{bloqueo.nombreLaboratorio}}</td>
                 <td>{{bloqueo.fechaInicio}}</td>
                 <td>{{bloqueo.fechaFin}}</td>
@@ -131,8 +138,8 @@
                 <td>{{bloqueo.motivo}}</td>
                 <td>
                   <div class="tipo-actions">
-                    <button class="btn-editar-tipo"   (click)="editar(bloqueo)">Editar</button>
-                    <button class="btn-ver-tipo"      (click)="ver(bloqueo)">Ver</button>
+                    <button class="btn-editar-tipo" (click)="editar(bloqueo)">Editar</button>
+                    <button class="btn-ver-tipo" (click)="ver(bloqueo)">Ver</button>
                     <button class="btn-eliminar-tipo" (click)="confirmarEliminar(bloqueo)">Eliminar</button>
                   </div>
                 </td>
@@ -155,9 +162,22 @@
         <div class="tipos-header">
           <div class="search-wrapper">
             <span class="search-icon">🔍</span>
-            <input type="text" class="search-input" placeholder="Buscar tipos de bloqueo..." [(ngModel)]="busquedaTipo" />
+            <input type="text" class="search-input" placeholder="Buscar tipos de bloqueo..."
+                   [(ngModel)]="busquedaTipo" />
           </div>
-          <button class="btn-nuevo-tipo" (click)="abrirModalNuevoTipo()">+ Nuevo Tipo de Bloqueo</button>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="paginacion" *ngIf="tiposFiltrados.length > 0">
+              <button class="btn-pag" (click)="cambiarPaginaTiposBloqueo(paginaActualTiposBloqueo - 1)"
+                      [disabled]="paginaActualTiposBloqueo === 1">‹</button>
+              <button class="btn-pag" *ngFor="let p of paginasTiposBloqueo"
+                      [class.activa]="p === paginaActualTiposBloqueo"
+                      (click)="cambiarPaginaTiposBloqueo(p)">{{ p }}</button>
+              <button class="btn-pag" (click)="cambiarPaginaTiposBloqueo(paginaActualTiposBloqueo + 1)"
+                      [disabled]="paginaActualTiposBloqueo === totalPaginasTiposBloqueo">›</button>
+              <span class="pag-info">{{ paginaActualTiposBloqueo }} / {{ totalPaginasTiposBloqueo }}</span>
+            </div>
+            <button class="btn-nuevo-tipo" (click)="abrirModalNuevoTipo()">+ Nuevo Tipo de Bloqueo</button>
+          </div>
         </div>
         <div class="bloqueos-table-container">
           <div class="table-wrapper">
@@ -171,7 +191,7 @@
               </tr>
               </thead>
               <tbody>
-              <tr *ngFor="let tipo of tiposFiltrados">
+              <tr *ngFor="let tipo of tiposBloqueoPaginados">
                 <td><strong>{{tipo.nombreTipo}}</strong></td>
                 <td>{{tipo.descripcion}}</td>
                 <td>
@@ -201,13 +221,12 @@
         </div>
       </div>
     }
-
   </div>
 </div>
 
-<!-- ══════════ MODAL TIPO DE BLOQUEO ══════════ -->
+<!-- MODAL TIPO DE BLOQUEO -->
 @if(mostrarModalTipo) {
-  <div class="modal-overlay" >
+  <div class="modal-overlay">
     <div class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>{{ modoEdicionTipo ? 'Editar' : 'Nuevo' }} Tipo de Bloqueo</h2>
@@ -232,43 +251,37 @@
       </div>
       <div class="modal-footer">
         <button class="btn-cancelar" (click)="cerrarModalTipo()">Cancelar</button>
-        <button class="btn-guardar"  (click)="guardarTipo()">{{ modoEdicionTipo ? 'Actualizar' : 'Guardar' }}</button>
+        <button class="btn-guardar" (click)="guardarTipo()">{{ modoEdicionTipo ? 'Actualizar' : 'Guardar' }}</button>
       </div>
     </div>
   </div>
 }
 
-<!-- ══════════ MODAL CREAR/EDITAR BLOQUEO ══════════ -->
+<!-- MODAL CREAR/EDITAR BLOQUEO -->
 @if(mostrarModalBloqueo) {
-  <div class="modal-overlay" >
+  <div class="modal-overlay">
     <div class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>{{ modoEdicionBloqueo ? 'Editar Bloqueo' : 'Nuevo Bloqueo' }}</h2>
         <button class="modal-close" (click)="cerrarModalBloqueo()">×</button>
       </div>
       <div class="modal-body">
-
         <div class="form-row">
           <div class="form-group">
             <label>Laboratorio <span class="required">*</span></label>
             <select [(ngModel)]="formBloqueo.codLaboratorio">
               <option [value]="0">Seleccione un laboratorio</option>
-              <option *ngFor="let lab of laboratorios" [value]="lab.codLaboratorio">
-                {{ lab.nombre }}
-              </option>
+              <option *ngFor="let lab of laboratorios" [value]="lab.codLaboratorio">{{ lab.nombre }}</option>
             </select>
           </div>
           <div class="form-group">
             <label>Tipo de Bloqueo <span class="required">*</span></label>
             <select [(ngModel)]="formBloqueo.idTipoBloqueo">
               <option [value]="0">Seleccione un tipo</option>
-              <option *ngFor="let tipo of tiposBloqueo" [value]="tipo.idTipoBloqueo">
-                {{ tipo.nombreTipo }}
-              </option>
+              <option *ngFor="let tipo of tiposBloqueo" [value]="tipo.idTipoBloqueo">{{ tipo.nombreTipo }}</option>
             </select>
           </div>
         </div>
-
         <div class="form-row">
           <div class="form-group">
             <label>Fecha Inicio <span class="required">*</span></label>
@@ -279,7 +292,6 @@
             <input type="date" class="form-control" [(ngModel)]="formBloqueo.fechaFin" />
           </div>
         </div>
-
         <div class="form-row">
           <div class="form-group">
             <label>Estado <span class="required">*</span></label>
@@ -290,33 +302,30 @@
           </div>
           <div class="form-group"></div>
         </div>
-
         <div class="form-row">
           <div class="form-group full-width">
             <label>Motivo <span class="required">*</span></label>
             <textarea [(ngModel)]="formBloqueo.motivo" rows="3" placeholder="Describa el motivo del bloqueo..."></textarea>
           </div>
         </div>
-
       </div>
       <div class="modal-footer">
         <button class="btn-cancelar" (click)="cerrarModalBloqueo()">Cancelar</button>
-        <button class="btn-guardar"  (click)="guardarBloqueo()">{{ modoEdicionBloqueo ? 'Actualizar' : 'Guardar' }}</button>
+        <button class="btn-guardar" (click)="guardarBloqueo()">{{ modoEdicionBloqueo ? 'Actualizar' : 'Guardar' }}</button>
       </div>
     </div>
   </div>
-
 }
-<!-- ══════════ MODAL VER DETALLE BLOQUEO ══════════ -->
+
+<!-- MODAL VER DETALLE BLOQUEO -->
 @if(mostrarModalVer) {
-  <div class="modal-overlay" >
+  <div class="modal-overlay">
     <div class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Detalles del Bloqueo</h2>
         <button class="modal-close" (click)="cerrarModalVer()">×</button>
       </div>
       <div class="modal-body">
-
         <div class="form-row">
           <div class="form-group">
             <label>Laboratorio</label>
@@ -327,7 +336,6 @@
             <input type="text" class="form-control" [value]="bloqueoSeleccionado?.nombreTipoBloqueo" disabled />
           </div>
         </div>
-
         <div class="form-row">
           <div class="form-group">
             <label>Fecha Inicio</label>
@@ -338,7 +346,6 @@
             <input type="text" class="form-control" [value]="bloqueoSeleccionado?.fechaFin" disabled />
           </div>
         </div>
-
         <div class="form-row">
           <div class="form-group">
             <label>Motivo</label>
@@ -349,7 +356,6 @@
             <input type="text" class="form-control" [value]="bloqueoSeleccionado?.estado" disabled />
           </div>
         </div>
-
       </div>
       <div class="modal-footer">
         <button class="btn-cancelar" (click)="cerrarModalVer()">Cerrar</button>
@@ -358,6 +364,7 @@
   </div>
 }
 
+<!-- MODAL CONFIRMAR ELIMINAR TIPO -->
 @if(mostrarModalConfirmTipo) {
   <div class="modal-overlay">
     <div class="modal-card modal-confirm" (click)="$event.stopPropagation()">
@@ -377,6 +384,7 @@
   </div>
 }
 
+<!-- MODAL VER TIPO -->
 @if(mostrarModalVerTipo) {
   <div class="modal-overlay">
     <div class="modal-card" (click)="$event.stopPropagation()">
@@ -405,17 +413,16 @@
   </div>
 }
 
-<!-- ══════════ TOAST ══════════ -->
-<div class="toast"
-     *ngIf="mostrarToast"
+<!-- TOAST -->
+<div class="toast" *ngIf="mostrarToast"
      [class.toast-success]="toastTipo === 'success'"
      [class.toast-error]="toastTipo === 'error'">
   {{ toastMensaje }}
 </div>
 
-<!-- ══════════ MODAL CONFIRMAR ELIMINAR ══════════ -->
+<!-- MODAL CONFIRMAR ELIMINAR BLOQUEO -->
 @if(mostrarModalConfirm) {
-  <div class="modal-overlay" >
+  <div class="modal-overlay">
     <div class="modal-card modal-confirm" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Confirmar Eliminación</h2>

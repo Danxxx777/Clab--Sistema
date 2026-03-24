@@ -1014,3 +1014,25 @@ textarea.form-control { resize: none; }
   .modal-body { padding: 18px; }
   .modal-footer { padding: 12px 18px; flex-direction: column; button { width: 100%; } }
 }
+
+.paginacion {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  .btn-pag {
+    background: #1a1a1a;
+    color: #ccc;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) { border-color: #39ff14; color: #39ff14; }
+    &.activa { background: #39ff14; color: #111; font-weight: bold; border-color: #39ff14; }
+    &:disabled { opacity: 0.3; cursor: not-allowed; }
+  }
+
+  .pag-info { color: #666; font-size: 0.85rem; margin-left: 8px; }
+}
