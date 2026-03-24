@@ -2,6 +2,9 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { ReservaService } from '../services/reserva.service';
 import { LaboratorioService } from '../services/laboratorio.service';
 import { AsignaturaService } from '../services/asignatura.service';
@@ -20,6 +23,8 @@ import { SolicitudReserva } from '../interfaces/SolicitudReserva.model';
 })
 export class SolicitudesReservaComponent implements OnInit {
 
+  private apiUrl = 'http://localhost:8080';
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
@@ -30,7 +35,8 @@ export class SolicitudesReservaComponent implements OnInit {
     private horarioService: HorarioService,
     private tipoReservaService: TipoReservaService,
     private cdr: ChangeDetectorRef,
-    private asistenciaUsuarioService: AsistenciaUsuarioService
+    private asistenciaUsuarioService: AsistenciaUsuarioService,
+    private http: HttpClient
   ) {}
 
   usuarioLogueado = '';
@@ -76,7 +82,6 @@ export class SolicitudesReservaComponent implements OnInit {
     '13:00','13:30','14:00','14:30','15:00','15:30',
     '16:00','16:30','17:00','17:30','18:00'
   ];
-
 
   toggleTimePicker(cual: 'inicio' | 'fin', event?: MouseEvent): void {
     if (this.timePickerAbierto === cual) {
@@ -171,6 +176,26 @@ export class SolicitudesReservaComponent implements OnInit {
     });
   }
 
+  // ══ VERIFICAR BLOQUEO DE LABORATORIO ════════════════════════════════════
+  verificarBloqueoLab(codLaboratorio: number, fecha: string): Observable<boolean> {
+    return this.http.get<any[]>(`${this.apiUrl}/bloqueos`).pipe(
+      map(bloqueos => {
+        console.log('Bloqueos:', bloqueos);           // ← ver qué llega
+        console.log('Lab:', codLaboratorio);           // ← ver el lab
+        console.log('Fecha:', fecha);                  // ← ver la fecha
+        const fechaReserva = new Date(fecha + 'T00:00:00');
+        return bloqueos.some(b => {
+          console.log('Comparando:', b.codLaboratorio, b.estado, b.fechaInicio, b.fechaFin);
+          if (Number(b.codLaboratorio) !== Number(codLaboratorio)) return false;
+          if (b.estado?.toLowerCase() !== 'activo') return false;
+          const inicio = new Date(b.fechaInicio + 'T00:00:00');
+          const fin    = new Date(b.fechaFin    + 'T00:00:00');
+          return fechaReserva >= inicio && fechaReserva <= fin;
+        });
+      })
+    );
+  }
+
   cargarSolicitudes(): void {
     this.reservaService.listarPorUsuario(this.idUsuario).subscribe({
       next: (data: any[]) => {
@@ -243,6 +268,7 @@ export class SolicitudesReservaComponent implements OnInit {
       error: (err: any) => console.error('Error cargando periodos:', err)
     });
   }
+
   cargarTipos(): void {
     this.tipoReservaService.listar().subscribe({
       next: (data: any[]) => {
@@ -301,7 +327,6 @@ export class SolicitudesReservaComponent implements OnInit {
       this.solicitudActual.horaFin = '';
       return;
     }
-
     const horario = this.horariosAcademicos.find(h => h.id_horario_academico == idHorario);
     if (horario) {
       this.solicitudActual.horaInicio = horario.hora_inicio;
@@ -396,24 +421,37 @@ export class SolicitudesReservaComponent implements OnInit {
       descripcion: s.descripcion || ''
     };
 
-    this.reservaService.crear(dto).subscribe({
-      next: () => {
-        this.cargarSolicitudes();
+    // Verificar bloqueo antes de crear
+    this.verificarBloqueoLab(s.cod_laboratorio, s.fecha).subscribe(estaBloqueado => {
+      if (estaBloqueado) {
         this.guardando = false;
-        this.cerrarModal();
-        this.mostrarAlerta('¡Solicitud enviada!', 'Tu solicitud está pendiente de aprobación.', 'exito');
-      },
-      error: (err: any) => {
-        console.error('Error creando solicitud:', err);
-        this.guardando = false;
-        const rawMsg: string = err.error?.mensaje || err.error?.message || err.error?.error || '';
-        let mensajeUsuario = 'No se pudo enviar la solicitud.';
-        if (rawMsg.toLowerCase().includes('ya está reservado')) mensajeUsuario = 'Este laboratorio ya está reservado en ese horario. Elige otro horario o laboratorio.';
-        else if (rawMsg.toLowerCase().includes('bloqueado'))    mensajeUsuario = 'El laboratorio está bloqueado y no puede recibir reservas.';
-        else if (rawMsg.toLowerCase().includes('horario'))      mensajeUsuario = 'El horario seleccionado no es válido.';
-        else if (rawMsg)                                        mensajeUsuario = rawMsg;
-        this.mostrarAlerta('No se pudo reservar', mensajeUsuario, 'error');
+        this.mostrarAlerta(
+          'Laboratorio bloqueado',
+          'El laboratorio está bloqueado en esa fecha y no puede recibir reservas.',
+          'error'
+        );
+        return;
       }
+
+      this.reservaService.crear(dto).subscribe({
+        next: () => {
+          this.cargarSolicitudes();
+          this.guardando = false;
+          this.cerrarModal();
+          this.mostrarAlerta('¡Solicitud enviada!', 'Tu solicitud está pendiente de aprobación.', 'exito');
+        },
+        error: (err: any) => {
+          console.error('Error creando solicitud:', err);
+          this.guardando = false;
+          const rawMsg: string = err.error?.mensaje || err.error?.message || err.error?.error || '';
+          let mensajeUsuario = 'No se pudo enviar la solicitud.';
+          if (rawMsg.toLowerCase().includes('ya está reservado')) mensajeUsuario = 'Este laboratorio ya está reservado en ese horario. Elige otro horario o laboratorio.';
+          else if (rawMsg.toLowerCase().includes('bloqueado'))    mensajeUsuario = 'El laboratorio está bloqueado y no puede recibir reservas.';
+          else if (rawMsg.toLowerCase().includes('horario'))      mensajeUsuario = 'El horario seleccionado no es válido.';
+          else if (rawMsg)                                        mensajeUsuario = rawMsg;
+          this.mostrarAlerta('No se pudo reservar', mensajeUsuario, 'error');
+        }
+      });
     });
   }
 
