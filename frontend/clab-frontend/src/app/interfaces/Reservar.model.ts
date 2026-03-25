@@ -33,6 +33,7 @@ export interface TipoReserva {
   nombre_tipo: string;
   descripcion: string;
   estado: 'Activo' | 'Inactivo';
+  requiereAsignatura: boolean | null;
 }
 
 export interface Laboratorio {

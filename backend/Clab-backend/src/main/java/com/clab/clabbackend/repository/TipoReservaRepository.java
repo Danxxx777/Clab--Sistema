@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -16,19 +17,19 @@ public interface TipoReservaRepository extends JpaRepository<TipoReserva, Intege
     @Query(value = "SELECT * FROM reservas.fn_listar_tipos_reserva()", nativeQuery = true)
     List<Object[]> listarTipos();
 
-    // INSERTAR
     @Transactional
     @Modifying
-    @Query(value = "CALL reservas.sp_insertar_tipo_reserva(:nombreTipo, :descripcion)",
+    @Query(value = "CALL reservas.sp_insertar_tipo_reserva(:nombreTipo, :descripcion, CAST(:requiereAsignatura AS boolean))",
             nativeQuery = true)
-    void insertar(String nombreTipo, String descripcion);
+    void insertar(@Param("nombreTipo") String nombreTipo,
+                  @Param("descripcion") String descripcion,
+                  @Param("requiereAsignatura") Boolean requiereAsignatura);
 
-    // ACTUALIZAR
     @Transactional
     @Modifying
-    @Query(value = "CALL reservas.sp_actualizar_tipo_reserva(:idTipoReserva, :nombreTipo, :descripcion)",
+    @Query(value = "SELECT reservas.sp_actualizar_tipo_reserva(:idTipoReserva, :nombreTipo, :descripcion, :requiereAsignatura::boolean)",
             nativeQuery = true)
-    void actualizar(Integer idTipoReserva, String nombreTipo, String descripcion);
+    void actualizar(Integer idTipoReserva, String nombreTipo, String descripcion, Boolean requiereAsignatura);
 
     // ELIMINAR (BAJA LÓGICA)
     @Transactional
