@@ -120,10 +120,7 @@ export class SolicitudesReservaComponent implements OnInit {
   get tipoSinAsignatura(): boolean {
     const tipo = this.tipos.find(t => t.id_tipo_reserva === Number(this.solicitudActual.id_tipo_reserva));
     if (!tipo) return false;
-    const nombre = tipo.nombre_tipo?.toLowerCase() || '';
-    return nombre.includes('capacitacion') || nombre.includes('capacitación') ||
-      nombre.includes('sustentacion') || nombre.includes('sustentación') ||
-      nombre.includes('tesis');
+    return tipo.requiereAsignatura === false || tipo.requiereAsignatura === null;
   }
 
   onTipoReservaChange(): void {
@@ -272,10 +269,13 @@ export class SolicitudesReservaComponent implements OnInit {
   cargarTipos(): void {
     this.tipoReservaService.listar().subscribe({
       next: (data: any[]) => {
-        this.tipos = data.map(t => ({ id_tipo_reserva: t.idTipoReserva, nombre_tipo: t.nombreTipo }));
+        this.tipos = data.map(t => ({
+          id_tipo_reserva: t.idTipoReserva,
+          nombre_tipo: t.nombreTipo,
+          requiereAsignatura: t.requiereAsignatura
+        }));
         this.cdr.detectChanges();
-      },
-      error: (err: any) => console.error('Error cargando tipos:', err)
+      }
     });
   }
 
@@ -441,14 +441,19 @@ export class SolicitudesReservaComponent implements OnInit {
           this.mostrarAlerta('¡Solicitud enviada!', 'Tu solicitud está pendiente de aprobación.', 'exito');
         },
         error: (err: any) => {
+          console.error('Error completo:', JSON.stringify(err.error));
           console.error('Error creando solicitud:', err);
           this.guardando = false;
-          const rawMsg: string = err.error?.mensaje || err.error?.message || err.error?.error || '';
+          const rawMsg: string = err.error?.mensaje || err.error?.message || err.error?.error || err.message || '';
+          const fullMsg = JSON.stringify(err.error || '').toLowerCase();
           let mensajeUsuario = 'No se pudo enviar la solicitud.';
-          if (rawMsg.toLowerCase().includes('ya está reservado')) mensajeUsuario = 'Este laboratorio ya está reservado en ese horario. Elige otro horario o laboratorio.';
-          else if (rawMsg.toLowerCase().includes('bloqueado'))    mensajeUsuario = 'El laboratorio está bloqueado y no puede recibir reservas.';
-          else if (rawMsg.toLowerCase().includes('horario'))      mensajeUsuario = 'El horario seleccionado no es válido.';
-          else if (rawMsg)                                        mensajeUsuario = rawMsg;
+          if (rawMsg.toLowerCase().includes('ya está reservado') || fullMsg.includes('ya está reservado') || fullMsg.includes('ya esta reservado')) {
+            mensajeUsuario = '❌ Este laboratorio ya está reservado en ese horario. Elige otro horario.';
+          } else if (rawMsg.toLowerCase().includes('bloqueado') || fullMsg.includes('bloqueado')) {
+            mensajeUsuario = '❌ El laboratorio está bloqueado en esa fecha.';
+          } else if (rawMsg) {
+            mensajeUsuario = '❌ ' + rawMsg;
+          }
           this.mostrarAlerta('No se pudo reservar', mensajeUsuario, 'error');
         }
       });
