@@ -11,6 +11,7 @@ import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import java.time.LocalDateTime;
 import java.util.Map;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.security.authentication.BadCredentialsException;
 
@@ -141,6 +142,25 @@ public class GlobalExceptionHandler {
                 "status", 400,
                 "error", "Error en la solicitud",
                 "mensaje", ex.getMessage(),
+                "timestamp", LocalDateTime.now().toString()
+        ));
+    }
+
+    @ExceptionHandler(JpaSystemException.class)
+    public ResponseEntity<Map<String, Object>> handleJpaSystem(JpaSystemException ex) {
+        String mensaje = "Error en la base de datos";
+        String msg = ex.getMessage() != null ? ex.getMessage() : "";
+
+        if (msg.contains("ERROR:")) {
+            mensaje = msg.substring(msg.indexOf("ERROR:") + 7).trim();
+            if (mensaje.contains("\n")) mensaje = mensaje.substring(0, mensaje.indexOf("\n")).trim();
+            if (mensaje.contains("<EOL>")) mensaje = mensaje.substring(0, mensaje.indexOf("<EOL>")).trim();
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                "status", 400,
+                "error", "Error de validación",
+                "mensaje", mensaje,
                 "timestamp", LocalDateTime.now().toString()
         ));
     }

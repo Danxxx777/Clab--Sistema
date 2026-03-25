@@ -141,9 +141,9 @@ public class ReservaService {
         setActorContext(actorId, actorUsuario);
         reservaRepository.insertarAdmin(
                 dto.getCodLaboratorio(), dto.getIdUsuario(), dto.getIdPeriodo(),
-                dto.getIdHorarioAcademico(), dto.getIdAsignatura(), dto.getIdTipoReserva(),
                 dto.getFechaReserva(), dto.getHoraInicio(), dto.getHoraFin(),
-                dto.getMotivo(), dto.getNumeroEstudiantes(), dto.getDescripcion()
+                dto.getMotivo(), dto.getNumeroEstudiantes(), dto.getDescripcion(),
+                dto.getIdHorarioAcademico(), dto.getIdAsignatura(), dto.getIdTipoReserva()
         );
     }
 
