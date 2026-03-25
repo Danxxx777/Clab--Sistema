@@ -51,23 +51,23 @@ public interface ReservaRepository extends JpaRepository<Reserva, Integer> {
     @Transactional
     @Modifying
     @Query(value = "CALL reservas.sp_insertar_reserva_admin(" +
-            ":codLaboratorio, :idUsuario, :idPeriodo, :idHorarioAcademico, " +
-            ":idAsignatura, :idTipoReserva, :fechaReserva, :horaInicio, " +
-            ":horaFin, :motivo, :numeroEstudiantes, :descripcion)",
+            ":codLaboratorio, :idUsuario, :idPeriodo, :fechaReserva, " +
+            ":horaInicio, :horaFin, :motivo, :numeroEstudiantes, :descripcion, " +
+            ":idHorarioAcademico, :idAsignatura, :idTipoReserva)",
             nativeQuery = true)
     void insertarAdmin(
             Integer codLaboratorio,
             Integer idUsuario,
             Integer idPeriodo,
-            Integer idHorarioAcademico,
-            Integer idAsignatura,
-            Integer idTipoReserva,
             LocalDate fechaReserva,
             LocalTime horaInicio,
             LocalTime horaFin,
             String motivo,
             Integer numeroEstudiantes,
-            String descripcion
+            String descripcion,
+            Integer idHorarioAcademico,
+            Integer idAsignatura,
+            Integer idTipoReserva
     );
 
     // ACTUALIZAR

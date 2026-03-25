@@ -176,10 +176,7 @@ export class ReservarComponent implements OnInit {
   get tipoSinAsignatura(): boolean {
     const tipo = this.tipos.find(t => t.id_tipo_reserva === Number(this.formularioReserva.id_tipo_reserva));
     if (!tipo) return false;
-    const nombre = tipo.nombre_tipo?.toLowerCase() || '';
-    return nombre.includes('capacitacion') || nombre.includes('capacitación') ||
-      nombre.includes('sustentacion') || nombre.includes('sustentación') ||
-      nombre.includes('tesis');
+    return tipo.requiereAsignatura === false || tipo.requiereAsignatura === null;
   }
 
   // ══ MODALES ══════════════════════════════════════════════════════════════
@@ -329,7 +326,7 @@ export class ReservarComponent implements OnInit {
       esRecurrente: false,
       diasSemana: [] as string[]
     };
-    this.formularioTipo = { nombre_tipo: '', descripcion: '', estado: 'Activo' };
+    this.formularioTipo = { nombre_tipo: '', descripcion: '', estado: 'Activo', requiereAsignatura: true };
   }
 
   // ══ VERIFICAR BLOQUEO ════════════════════════════════════════════════════
@@ -494,24 +491,42 @@ export class ReservarComponent implements OnInit {
     if (!this.formularioTipo.nombre_tipo?.trim()) {
       this.mostrarNotificacion('El nombre del tipo es obligatorio', 'error'); return;
     }
-    const dto = { nombreTipo: this.formularioTipo.nombre_tipo, descripcion: this.formularioTipo.descripcion || '' };
+    const dto = {
+      nombreTipo: this.formularioTipo.nombre_tipo,
+      descripcion: this.formularioTipo.descripcion || '',
+      requiereAsignatura: this.formularioTipo.requiereAsignatura !== false
+    };
+
+    console.log('DTO enviado:', JSON.stringify(dto)); // ← TEMPORAL
+
     if (this.modoEdicion && this.indexSeleccionado !== null) {
       const id = this.tipos[this.indexSeleccionado].id_tipo_reserva;
       this.tipoReservaService.actualizar(id, dto).subscribe({
         next: () => { this.cargarTipos(); this.cerrarModal(); this.mostrarNotificacion('✅ Tipo actualizado'); },
-        error: () => this.mostrarNotificacion('❌ Error al actualizar el tipo', 'error')
+        error: (err) => {
+          console.error('Error completo:', err); // ← TEMPORAL
+          this.mostrarNotificacion('❌ Error al actualizar el tipo', 'error');
+        }
       });
     } else {
       this.tipoReservaService.crear(dto).subscribe({
         next: () => { this.cargarTipos(); this.cerrarModal(); this.mostrarNotificacion('✅ Tipo creado'); },
-        error: () => this.mostrarNotificacion('❌ Error al crear el tipo', 'error')
+        error: (err) => {
+          console.error('Error completo:', err); // ← TEMPORAL
+          this.mostrarNotificacion('❌ Error al crear el tipo', 'error');
+        }
       });
     }
   }
 
   editarTipo(tipo: TipoReserva, index: number): void {
     this.modoEdicion = true; this.tipoModal = 'tipo'; this.mostrarModal = true;
-    this.indexSeleccionado = index; this.formularioTipo = { ...tipo };
+    this.indexSeleccionado = index;
+    this.formularioTipo = {
+      ...tipo,
+      nombre_tipo: tipo.nombre_tipo,
+      requiereAsignatura: tipo.requiereAsignatura  // ← nuevo
+    };
   }
 
   eliminarTipo(tipo: TipoReserva, index: number): void {
@@ -620,7 +635,8 @@ export class ReservarComponent implements OnInit {
       next: (data) => {
         this.tipos = data.map(t => ({
           id_tipo_reserva: t.idTipoReserva, nombre_tipo: t.nombreTipo,
-          descripcion: t.descripcion, estado: t.estado as 'Activo' | 'Inactivo'
+          descripcion: t.descripcion, estado: t.estado as 'Activo' | 'Inactivo',
+          requiereAsignatura: t.requiereAsignatura
         }));
         this.tiposFiltrados = [...this.tipos];
         this.cdr.detectChanges();
@@ -711,7 +727,7 @@ export class ReservarComponent implements OnInit {
         this.asistenciaUsuarioService.usuarioBloqueado(reserva.idUsuario).subscribe({
           next: (bloqueado) => {
             this.mostrarNotificacion(
-              bloqueado ? `⚠️ Usuario ${reserva.nombreUsuario} bloqueado` : `📋 Falta registrada`,
+              bloqueado ? ` Usuario ${reserva.nombreUsuario} bloqueado` : ` Falta registrada`,
               bloqueado ? 'error' : 'success'
             );
             this.cargarReservasHoy(); this.cargarUsuariosBloqueados(); this.cdr.detectChanges();

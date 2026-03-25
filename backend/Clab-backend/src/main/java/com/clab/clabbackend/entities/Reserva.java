@@ -29,8 +29,8 @@ public class Reserva {
     @JoinColumn(name = "id_periodo", nullable = false)
     private PeriodoAcademico periodo;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "id_horario_academico", nullable = false)
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "id_horario_academico", nullable = true)
     private HorarioAcademico horarioAcademico;
 
     @ManyToOne

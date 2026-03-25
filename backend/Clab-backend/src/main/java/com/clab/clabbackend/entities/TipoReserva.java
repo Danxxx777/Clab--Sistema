@@ -24,4 +24,7 @@ public class TipoReserva {
 
     @Column(name = "estado", length = 15)
     private String estado;
+
+    @Column(name = "requiere_asignatura")
+    private Boolean requiereAsignatura = true;
 }

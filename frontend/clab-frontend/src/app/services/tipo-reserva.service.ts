@@ -6,6 +6,7 @@ export interface TipoReservaDTO {
   idTipoReserva?: number;
   nombreTipo: string;
   descripcion: string;
+  requiereAsignatura: boolean;
 }
 
 export interface TipoReserva {
@@ -13,6 +14,7 @@ export interface TipoReserva {
   nombreTipo: string;
   descripcion: string;
   estado: string;
+  requiereAsignatura: boolean;
 }
 
 @Injectable({

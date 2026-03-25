@@ -54,15 +54,30 @@ public class TipoReservaController {
     // ─── ENDPOINTS ───────────────────────────────────────────────────────────
 
     @GetMapping("/listar")
-    public ResponseEntity<List<TipoReserva>> listar() {
-        return ResponseEntity.ok(tipoReservaService.listar());
+    public ResponseEntity<?> listar() {
+        try {
+            return ResponseEntity.ok(tipoReservaService.listar());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
     }
 
     @PostMapping("/crear")
-    public ResponseEntity<Void> crear(@RequestBody TipoReservaDTO dto, HttpServletRequest request) {
-        tipoReservaService.crear(dto, obtenerIdUsuario(request), obtenerUsuario(request));
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> crear(@RequestBody TipoReservaDTO dto, HttpServletRequest request) {
+        try {
+            System.out.println("=== CREAR TIPO RESERVA ===");
+            System.out.println("DTO recibido: " + dto.getNombreTipo() + " / " + dto.getDescripcion() + " / " + dto.getRequiereAsignatura());
+            tipoReservaService.crear(dto, obtenerIdUsuario(request), obtenerUsuario(request));
+            System.out.println("=== CREADO OK ===");
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            System.out.println("=== ERROR AL CREAR: " + e.getMessage() + " ===");
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(e.getMessage());
+        }
     }
+
 
     @PutMapping("/actualizar/{id}")
     public ResponseEntity<Void> actualizar(@PathVariable Integer id,
