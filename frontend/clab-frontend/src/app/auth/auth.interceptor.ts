@@ -28,6 +28,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         }
       } else if (error.status === 500) {
         mostrarToast('Error interno del servidor. Intenta de nuevo.', 'error');
+      } else if (error.status === 0) {
+    // Backend caído / sin conexión
+        if (localStorage.getItem('token')) {
+          mostrarToast('El servidor no está disponible. Cerrando sesión...', 'warning');
+          localStorage.clear();
+          setTimeout(() => { window.location.href = '/login'; }, 1500);
+        }
       }
       return throwError(() => error);
     })
