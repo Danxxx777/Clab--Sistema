@@ -33,6 +33,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable()).cors(cors -> cors.configurationSource(corsConfigurationSource())).sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/ping").permitAll()
                         .requestMatchers("/auditoria/**").permitAll()
                         .requestMatchers("/api/test/**").permitAll()
                         .requestMatchers("/equipos/**").permitAll()
