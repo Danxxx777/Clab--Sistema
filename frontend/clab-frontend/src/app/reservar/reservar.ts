@@ -12,11 +12,9 @@ import { AsignaturaService } from '../services/asignatura.service';
 import { PeriodoService } from '../services/periodo.service';
 import { HorarioService } from '../services/horario.service';
 import { AsistenciaUsuarioService } from '../services/asistencia-usuario.service';
+import { ToastAprobacionComponent, EstadoAprobacion } from '../toast-aprobacion/toast-aprobacion';
 import { AuthService } from '../auth/auth.service';
-import {
-  Reserva, Cancelacion, TipoReserva, Laboratorio,
-  Asignatura, Periodo, HorarioAcademico, Usuario
-} from '../interfaces/Reservar.model';
+import {Reserva, Cancelacion, TipoReserva, Laboratorio, Asignatura, Periodo, HorarioAcademico, Usuario} from '../interfaces/Reservar.model';
 
 interface ReservaCalendario {
   id: number;
@@ -30,6 +28,8 @@ interface ReservaCalendario {
   fecha: Date;
   horaInicioStr: string;
   horaFinStr: string;
+  col?: number;
+  totalCols?: number;
 }
 
 const PALETA = [
@@ -40,7 +40,7 @@ const PALETA = [
 @Component({
   selector: 'app-reservar',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ToastAprobacionComponent],
   templateUrl: './reservar.html',
   styleUrls: ['./reservar.scss']
 })
@@ -88,6 +88,26 @@ export class ReservarComponent implements OnInit {
     }
   }
 
+  getDiaNombre(dia: string): string {
+    return dia; // 'Lun', 'Mar', etc.
+  }
+
+  getDiaNumero(dia: string): string {
+    const dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+    const idx = dias.indexOf(dia);
+    if (idx === -1) return '';
+    const fecha = new Date(this.cal_fechaInicioSemana);
+    fecha.setDate(fecha.getDate() + idx);
+    return fecha.getDate().toString();
+  }
+  esDiaHoy(dia: string): boolean {
+    const dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+    const idx = dias.indexOf(dia);
+    if (idx === -1) return false;
+    const fecha = new Date(this.cal_fechaInicioSemana);
+    fecha.setDate(fecha.getDate() + idx);
+    return this.cal_esDiaHoy(fecha);
+  }
   // ══ LISTAS PRINCIPALES ════════════════════════════════════════════════════
   reservas: Reserva[] = [];
   reservasFiltradas: Reserva[] = [];
@@ -114,11 +134,16 @@ export class ReservarComponent implements OnInit {
     '16:00', '16:30', '17:00', '17:30'
   ];
   timePickerAbierto: string | null = null;
+  mostrarToastAprobacion = false;
+  estadoToastAprobacion: EstadoAprobacion = 'cargando';
 
   grupos: any[] = [];
   reservasCombinadas: any[] = [];
   reservasCombinadasFiltradas: any[] = [];
 
+  onToastAprobacionCerrado(): void {
+    this.mostrarToastAprobacion = false;
+  }
   cerrarTimePickerSiAfuera(event: Event) {
     const target = event.target as HTMLElement;
     if (!target.closest('.time-picker-wrap')) {
@@ -213,7 +238,7 @@ export class ReservarComponent implements OnInit {
     this.indexSeleccionado = index;
     this.formularioCancelacion = {
       id_reserva: res.id_reserva,
-      id_usuario_cancela: 0,
+      id_usuario_cancela: this.idUsuario,
       fecha_cancelacion: new Date().toISOString().split('T')[0],
       motivo_cancelacion: ''
     };
@@ -303,7 +328,7 @@ export class ReservarComponent implements OnInit {
     }
     const dto = {
       idReserva: this.formularioCancelacion.id_reserva,
-      idUsuarioCancela: this.formularioCancelacion.id_usuario_cancela || 1,
+      idUsuarioCancela: this.idUsuario,
       motivoCancelacion: this.formularioCancelacion.motivo_cancelacion
     };
     this.reservaService.cancelar(dto).subscribe({
@@ -406,7 +431,6 @@ export class ReservarComponent implements OnInit {
           error: () => this.mostrarNotificacion('❌ Error al actualizar la reserva', 'error')
         });
       } else {
-        // Verificar bloqueo antes de crear
         this.verificarBloqueoLab(
           this.formularioReserva.cod_laboratorio,
           this.formularioReserva.fecha_reserva
@@ -496,25 +520,16 @@ export class ReservarComponent implements OnInit {
       descripcion: this.formularioTipo.descripcion || '',
       requiereAsignatura: this.formularioTipo.requiereAsignatura !== false
     };
-
-    console.log('DTO enviado:', JSON.stringify(dto)); // ← TEMPORAL
-
     if (this.modoEdicion && this.indexSeleccionado !== null) {
       const id = this.tipos[this.indexSeleccionado].id_tipo_reserva;
       this.tipoReservaService.actualizar(id, dto).subscribe({
         next: () => { this.cargarTipos(); this.cerrarModal(); this.mostrarNotificacion('✅ Tipo actualizado'); },
-        error: (err) => {
-          console.error('Error completo:', err); // ← TEMPORAL
-          this.mostrarNotificacion('❌ Error al actualizar el tipo', 'error');
-        }
+        error: () => this.mostrarNotificacion('❌ Error al actualizar el tipo', 'error')
       });
     } else {
       this.tipoReservaService.crear(dto).subscribe({
         next: () => { this.cargarTipos(); this.cerrarModal(); this.mostrarNotificacion('✅ Tipo creado'); },
-        error: (err) => {
-          console.error('Error completo:', err); // ← TEMPORAL
-          this.mostrarNotificacion('❌ Error al crear el tipo', 'error');
-        }
+        error: () => this.mostrarNotificacion('❌ Error al crear el tipo', 'error')
       });
     }
   }
@@ -522,11 +537,7 @@ export class ReservarComponent implements OnInit {
   editarTipo(tipo: TipoReserva, index: number): void {
     this.modoEdicion = true; this.tipoModal = 'tipo'; this.mostrarModal = true;
     this.indexSeleccionado = index;
-    this.formularioTipo = {
-      ...tipo,
-      nombre_tipo: tipo.nombre_tipo,
-      requiereAsignatura: tipo.requiereAsignatura  // ← nuevo
-    };
+    this.formularioTipo = { ...tipo, nombre_tipo: tipo.nombre_tipo, requiereAsignatura: tipo.requiereAsignatura };
   }
 
   eliminarTipo(tipo: TipoReserva, index: number): void {
@@ -571,9 +582,17 @@ export class ReservarComponent implements OnInit {
   }
 
   aprobarReserva(res: any): void {
+    this.estadoToastAprobacion = 'cargando';
+    this.mostrarToastAprobacion = true;
+
     this.reservaService.aprobar(res.id_reserva).subscribe({
-      next: () => { this.cargarReservas(); this.mostrarNotificacion('✅ Reserva aprobada correctamente'); },
-      error: () => this.mostrarNotificacion('❌ Error al aprobar la reserva', 'error')
+      next: () => {
+        this.estadoToastAprobacion = 'exito';
+        this.cargarReservas();
+      },
+      error: () => {
+        this.estadoToastAprobacion = 'error';
+      }
     });
   }
 
@@ -880,6 +899,35 @@ export class ReservarComponent implements OnInit {
     return `${y}-${m}-${day}`;
   }
 
+  // ── Distribuye reservas solapadas en columnas (estilo Google Calendar) ──
+  private cal_asignarColumnas(reservas: ReservaCalendario[]): void {
+    if (!reservas.length) return;
+    reservas.sort((a, b) => a.horaInicio - b.horaInicio);
+    const finPorCol: number[] = [];
+    for (const r of reservas) {
+      let asignada = false;
+      for (let c = 0; c < finPorCol.length; c++) {
+        if (finPorCol[c] <= r.horaInicio) {
+          r.col = c;
+          finPorCol[c] = r.horaInicio + r.duracion;
+          asignada = true;
+          break;
+        }
+      }
+      if (!asignada) {
+        r.col = finPorCol.length;
+        finPorCol.push(r.horaInicio + r.duracion);
+      }
+    }
+    for (const r of reservas) {
+      const concurrentes = reservas.filter(o =>
+        o.horaInicio < r.horaInicio + r.duracion &&
+        r.horaInicio < o.horaInicio + o.duracion
+      );
+      r.totalCols = Math.max(...concurrentes.map(o => (o.col ?? 0) + 1));
+    }
+  }
+
   cal_cargarReservas(): void {
     this.cal_cargandoDatos = true; this.cal_errorCarga = false;
     const url = `${this.apiUrl}/reservas/semana?inicio=${this.cal_formatFecha(this.cal_fechaInicioSemana)}&fin=${this.cal_formatFecha(this.cal_finDeSemana())}`;
@@ -927,7 +975,7 @@ export class ReservarComponent implements OnInit {
     this.cal_horasVisibles = [];
     for (let h = hMin; h <= hMax; h++) {
       this.cal_horasVisibles.push(`${h.toString().padStart(2,'0')}:00`);
-      if (h < hMax) this.cal_horasVisibles.push(`${h.toString().padStart(2,'0')}:30`);
+      if (h < hMax) this.cal_horasVisibles.push(`${h.toString().padStart(2,'00')}:30`);
     }
   }
 
@@ -966,8 +1014,14 @@ export class ReservarComponent implements OnInit {
         dia, horaInicio, duracion,
         titulo: r.nombreAsignatura || r.descripcion || r.motivo || 'Reserva',
         docente: r.nombreUsuario || '', estado: r.estado || '', fecha, horaInicioStr, horaFinStr,
+        col: 0, totalCols: 1
       } as ReservaCalendario;
     }).filter((r): r is ReservaCalendario => r !== null);
+
+    // Asignar columnas para reservas solapadas, agrupadas por día
+    for (let dia = 0; dia <= 5; dia++) {
+      this.cal_asignarColumnas(this.cal_reservas.filter(r => r.dia === dia));
+    }
   }
 
   private cal_procesarReservasMes(datos: any[]): void {
@@ -983,6 +1037,7 @@ export class ReservarComponent implements OnInit {
         fecha: new Date(anio, mes - 1, dia_r),
         horaInicioStr: r.horaInicio?.toString().substring(0, 5) || '',
         horaFinStr:    r.horaFin?.toString().substring(0, 5)    || '',
+        col: 0, totalCols: 1
       } as ReservaCalendario;
     });
   }
@@ -1088,9 +1143,18 @@ export class ReservarComponent implements OnInit {
   }
 
   aprobarGrupo(grupo: any): void {
+    this.estadoToastAprobacion = 'cargando';
+    this.mostrarToastAprobacion = true;
+
     this.reservaService.aprobarGrupo(grupo.idGrupo).subscribe({
-      next: () => { this.cargarReservas(); this.cargarGrupos(); this.mostrarNotificacion('✅ Todas las reservas del grupo aprobadas'); },
-      error: () => this.mostrarNotificacion('❌ Error al aprobar el grupo', 'error')
+      next: () => {
+        this.estadoToastAprobacion = 'exito';
+        this.cargarReservas();
+        this.cargarGrupos();
+      },
+      error: () => {
+        this.estadoToastAprobacion = 'error';
+      }
     });
   }
 
