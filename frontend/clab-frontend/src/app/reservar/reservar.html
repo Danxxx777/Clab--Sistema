@@ -401,8 +401,13 @@
                 </td>
                 <td>
                   <div class="action-buttons">
-                    <button class="btn-action btn-aprobar" [disabled]="res.asistio === true" (click)="registrarAsistencia(res)">Asistencia</button>
-                    <button class="btn-action btn-rechazar" [disabled]="res.asistio === true" (click)="registrarFalta(res)">Falta</button>
+                    <button class="btn-action btn-aprobar"
+                            [disabled]="res.asistio === true"
+                            (click)="registrarAsistencia(res)">Asistencia</button>
+
+                    <button class="btn-action btn-rechazar"
+                            [disabled]="res.asistio === false"
+                            (click)="registrarFalta(res)">Falta</button>
                   </div>
                 </td>
               </tr>
@@ -420,7 +425,8 @@
               <tr *ngFor="let b of usuariosBloqueados">
                 <td><strong>{{ b.nombreUsuario }}</strong></td>
                 <td>{{ b.motivo }}</td><td>{{ b.fechaBloqueo }}</td>
-                <td><button class="btn-action btn-aprobar" (click)="desbloquearUsuario(b.idUsuario)">Desbloquear</button></td>
+                <td>
+                  <button class="btn-action btn-aprobar" (click)="desbloquearUsuario(b.idUsuario)">Desbloquear</button>                </td>
               </tr>
               <tr *ngIf="usuariosBloqueados.length === 0"><td colspan="4" class="empty-message">No hay usuarios bloqueados</td></tr>
               </tbody>
