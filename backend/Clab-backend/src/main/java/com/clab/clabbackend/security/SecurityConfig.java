@@ -66,6 +66,7 @@ public class SecurityConfig {
                         .requestMatchers("/drive/**").permitAll()
                         .requestMatchers("/backup/restaurar/inicial").permitAll()
                         .requestMatchers("/usuarios/cambiar-contrasenia-primer-login").authenticated()
+                        .requestMatchers("/fotos/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
