@@ -734,29 +734,43 @@ export class ReservarComponent implements OnInit {
   }
 
   registrarAsistencia(reserva: any): void {
-    this.asistenciaUsuarioService.registrarAsistencia(reserva.idReserva, reserva.idUsuario, undefined).subscribe({
+    const idReserva = reserva.idReserva ?? reserva.id_reserva;
+    const idUsuario = reserva.idUsuario ?? reserva.id_usuario;
+    this.asistenciaUsuarioService.registrarAsistencia(idReserva, idUsuario, undefined).subscribe({
       next: () => { this.mostrarNotificacion('✅ Asistencia registrada'); this.cargarReservasHoy(); this.cdr.detectChanges(); },
       error: () => this.mostrarNotificacion('❌ Error al registrar asistencia', 'error')
     });
   }
 
   registrarFalta(reserva: any): void {
-    this.asistenciaUsuarioService.registrarFalta(reserva.idReserva, reserva.idUsuario).subscribe({
+    const idReserva = reserva.idReserva ?? reserva.id_reserva;
+    const idUsuario = reserva.idUsuario ?? reserva.id_usuario;
+
+    // Actualiza el estado local inmediatamente sin esperar al servidor
+    reserva.asistio = false;
+    this.cdr.detectChanges();
+
+    this.asistenciaUsuarioService.registrarFalta(idReserva, idUsuario).subscribe({
       next: () => {
-        this.asistenciaUsuarioService.usuarioBloqueado(reserva.idUsuario).subscribe({
+        this.asistenciaUsuarioService.usuarioBloqueado(idUsuario).subscribe({
           next: (bloqueado) => {
             this.mostrarNotificacion(
-              bloqueado ? ` Usuario ${reserva.nombreUsuario} bloqueado` : ` Falta registrada`,
+              bloqueado ? `⚠️ Usuario ${reserva.nombreUsuario} bloqueado` : `✅ Falta registrada`,
               bloqueado ? 'error' : 'success'
             );
-            this.cargarReservasHoy(); this.cargarUsuariosBloqueados(); this.cdr.detectChanges();
+            this.cargarReservasHoy();
+            this.cargarUsuariosBloqueados();
+            this.cdr.detectChanges();
           }
         });
       },
-      error: () => this.mostrarNotificacion('❌ Error al registrar falta', 'error')
+      error: () => {
+        reserva.asistio = null; // revierte si falla
+        this.mostrarNotificacion('❌ Error al registrar falta', 'error');
+        this.cdr.detectChanges();
+      }
     });
   }
-
   desbloquearUsuario(idUsuario: number): void {
     this.asistenciaUsuarioService.desbloquearUsuario(idUsuario).subscribe({
       next: () => { this.mostrarNotificacion('✅ Usuario desbloqueado'); this.cargarUsuariosBloqueados(); this.cdr.detectChanges(); },

@@ -424,7 +424,19 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
     }
   }
 }
+.section-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: $neon;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
 
+.asistencia-section {
+  margin-bottom: 32px;
+}
 // =====================
 // MODAL
 // =====================
@@ -1827,4 +1839,22 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
   &__divider { display: none; }
   &__lab { display: none; }
   &__docente { display: none; }
+}
+.asistencia-section {
+  .btn-action.btn-aprobar {
+    background: $neon-glow;
+    color: $neon;
+    border: 1px solid $neon-border;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+
+    &:hover {
+      background: $neon-dim;
+      transform: translateY(-2px);
+    }
+  }
 }
