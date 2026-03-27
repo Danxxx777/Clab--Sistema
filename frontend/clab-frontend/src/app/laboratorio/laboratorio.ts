@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { SedeService } from '../services/sede.service';
 import { LaboratorioService } from '../services/laboratorio.service';
 import { EncargadoLaboratorioService, EncargadoLaboratorioDTO, UsuarioEncargado } from '../services/encargado-laboratorio.service';
+import { FotoService, FotoDTO } from '../services/foto.service';
 import { Laboratorio, Sede, EncargadoLaboratorio } from '../interfaces/Laboratorio.model';
 
 
@@ -64,11 +65,26 @@ export class LaboratoriosComponent implements OnInit {
   rol = localStorage.getItem('rol') || '';
   usuarioLogueado = localStorage.getItem('usuario') || 'Usuario';
 
+  // ─── FOTOS (modal crear/editar) ────────────────────────────────────────────
+  fotoSeleccionada: File | null = null;
+  previsualizacionFoto: string | null = null;
+
+  // ─── FOTOS EXISTENTES EN EDICIÓN ──────────────────────────────────────────
+  fotosEdicion: FotoDTO[] = [];
+  cargandoFotosEdicion = false;
+
+  // ─── FOTOS DEL DETALLE (galería) ───────────────────────────────────────────
+  fotosDetalle: FotoDTO[] = [];
+  cargandoFotosDetalle = false;
+  fotoDetalleActiva = 0;
+  mostrarLightbox = false;
+
   constructor(
     private router: Router,
     private sedeService: SedeService,
     private laboratorioService: LaboratorioService,
     private encargadoLaboratorioService: EncargadoLaboratorioService,
+    private fotoService: FotoService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -111,6 +127,26 @@ export class LaboratoriosComponent implements OnInit {
         this.laboratorios = data.map(lab => this.mapearLaboratorio(lab));
         this.laboratoriosFiltrados = [...this.laboratorios];
         this.cdr.detectChanges();
+
+        this.laboratorios.forEach((lab, index) => {
+          const cod = lab.cod_laboratorio;
+          if (!cod) return;
+
+          this.fotoService.listarPorLaboratorio(cod).subscribe({
+            next: (fotos: FotoDTO[]) => {
+              if (fotos?.length > 0) {
+                this.laboratorios[index].foto = fotos[0].urlFoto;
+                const filtIndex = this.laboratoriosFiltrados
+                  .findIndex(f => f.cod_laboratorio === cod);
+                if (filtIndex !== -1) {
+                  this.laboratoriosFiltrados[filtIndex].foto = fotos[0].urlFoto;
+                }
+                this.cdr.detectChanges();
+              }
+            },
+            error: (err) => console.warn(`Sin foto para laboratorio ${cod}:`, err.status)
+          });
+        });
       },
       error: (err) => console.error('Error cargando laboratorios', err)
     });
@@ -146,17 +182,26 @@ export class LaboratoriosComponent implements OnInit {
   }
 
   private mapearLaboratorio(lab: any): Laboratorio {
+    const foto = lab.urlFoto
+      || lab.url_foto
+      || lab.foto
+      || lab.fotoUrl
+      || lab.foto_url
+      || lab.imagen
+      || lab.imageUrl
+      || '';
+
     return {
-      cod_laboratorio: lab.codLaboratorio || lab.cod_laboratorio || 0,
-      nombre: lab.nombreLab || lab.nombre || '',
-      ubicacion: lab.ubicacion || '',
-      capacidad_estudiantes: lab.capacidadEstudiantes || lab.capacidad_estudiantes || 0,
-      numero_equipos: lab.numeroEquipos || lab.numero_equipos || 0,
-      descripcion: lab.descripcion || '',
-      estado_lab: lab.estadoLab || lab.estado_lab || 'Disponible',
-      id_sede: lab.sede?.idSede || lab.idSede || lab.id_sede || 0,
-      nombre_sede: lab.sede?.nombre || lab.nombreSede || lab.nombre_sede || '',
-      foto: ''
+      cod_laboratorio:       lab.codLaboratorio       || lab.cod_laboratorio       || 0,
+      nombre:                lab.nombreLab             || lab.nombre                || '',
+      ubicacion:             lab.ubicacion                                          || '',
+      capacidad_estudiantes: lab.capacidadEstudiantes  || lab.capacidad_estudiantes || 0,
+      numero_equipos:        lab.numeroEquipos          || lab.numero_equipos        || 0,
+      descripcion:           lab.descripcion                                         || '',
+      estado_lab:            lab.estadoLab             || lab.estado_lab            || 'Disponible',
+      id_sede:               lab.sede?.idSede          || lab.idSede                || lab.id_sede || 0,
+      nombre_sede:           lab.sede?.nombre          || lab.nombreSede            || lab.nombre_sede || '',
+      foto
     };
   }
 
@@ -231,6 +276,7 @@ export class LaboratoriosComponent implements OnInit {
     this.mostrarModal = true;
     this.modoEdicion = false;
     this.usuarioSeleccionado = null;
+    this.fotosEdicion = [];
     this.resetFormularios();
   }
 
@@ -240,6 +286,9 @@ export class LaboratoriosComponent implements OnInit {
     this.modoEdicion = false;
     this.indiceEdicion = -1;
     this.usuarioSeleccionado = null;
+    this.fotoSeleccionada = null;
+    this.previsualizacionFoto = null;
+    this.fotosEdicion = [];
     this.resetFormularios();
   }
 
@@ -257,20 +306,71 @@ export class LaboratoriosComponent implements OnInit {
     this.indiceEdicion = index;
     this.tipoModal = 'laboratorio';
     this.mostrarModal = true;
+    this.fotoSeleccionada = null;
+    this.previsualizacionFoto = null;
+    this.fotosEdicion = [];
+
+    // ✅ Cargar fotos existentes para mostrarlas en el modal con botón de eliminar
+    const cod = lab.cod_laboratorio;
+    if (cod) {
+      this.cargandoFotosEdicion = true;
+      this.fotoService.listarPorLaboratorio(cod).subscribe({
+        next: (fotos: FotoDTO[]) => {
+          this.fotosEdicion = fotos || [];
+          this.cargandoFotosEdicion = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.fotosEdicion = [];
+          this.cargandoFotosEdicion = false;
+          this.cdr.detectChanges();
+        }
+      });
+    }
   }
 
   validarFormularioLab(): boolean {
-    if (this.modoEdicion && ((this.formularioLab.cod_laboratorio ?? 0) > 0)) return false;
     return !!(
-      this.formularioLab.nombre &&
-      this.formularioLab.ubicacion &&
+      this.formularioLab.nombre?.trim() &&
+      this.formularioLab.ubicacion?.trim() &&
       (this.formularioLab.capacidad_estudiantes || 0) > 0 &&
       (this.formularioLab.numero_equipos ?? -1) >= 0 &&
-      this.formularioLab.descripcion &&
+      this.formularioLab.descripcion?.trim() &&
       this.formularioLab.estado_lab &&
       (this.formularioLab.id_sede || 0) > 0
     );
   }
+
+  // ─── FOTOS — selección desde el modal ──────────────────────────────────────
+
+  onFotoModalSeleccionada(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    this.fotoSeleccionada = input.files[0];
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.previsualizacionFoto = e.target?.result as string;
+      this.cdr.detectChanges();
+    };
+    reader.readAsDataURL(this.fotoSeleccionada);
+  }
+
+  // ─── ELIMINAR FOTO DESDE MODAL DE EDICIÓN ──────────────────────────────────
+
+  eliminarFotoEnEdicion(foto: FotoDTO): void {
+    this.fotoService.eliminarFoto(foto.idFoto).subscribe({
+      next: () => {
+        this.fotosEdicion = this.fotosEdicion.filter(f => f.idFoto !== foto.idFoto);
+        this.mostrarNotificacion('Foto eliminada correctamente');
+        this.cdr.detectChanges();
+      },
+      error: () => this.mostrarNotificacion('Error al eliminar la foto', 'error')
+    });
+  }
+
+  // ─── GUARDAR LABORATORIO (con foto opcional) ────────────────────────────────
 
   guardarLaboratorio(): void {
     if (!this.validarFormularioLab()) {
@@ -292,18 +392,52 @@ export class LaboratoriosComponent implements OnInit {
     if (this.modoEdicion && this.formularioLab.cod_laboratorio) {
       this.laboratorioService.editar(this.formularioLab.cod_laboratorio, labData).subscribe({
         next: () => {
+          if (this.fotoSeleccionada) {
+            this.fotoService.subirFotos(
+              this.formularioLab.cod_laboratorio as number,
+              [this.fotoSeleccionada]
+            ).subscribe({
+              next: () => {
+                this.fotoSeleccionada = null;
+                this.previsualizacionFoto = null;
+              },
+              error: () => this.mostrarNotificacion('Laboratorio actualizado, pero hubo un error al subir la foto', 'error')
+            });
+          }
           this.cerrarModal();
           this.cargarLaboratorios();
           this.mostrarNotificacion('Laboratorio actualizado correctamente');
         },
         error: () => this.mostrarNotificacion('Error al editar el laboratorio', 'error')
       });
+
     } else {
       this.laboratorioService.crear(labData).subscribe({
-        next: () => {
-          this.cerrarModal();
-          this.cargarLaboratorios();
-          this.mostrarNotificacion('Laboratorio creado exitosamente');
+        next: (labCreado: any) => {
+          const codLaboratorio = labCreado?.codLaboratorio
+            || labCreado?.cod_laboratorio
+            || labCreado?.id;
+
+          if (this.fotoSeleccionada && codLaboratorio) {
+            this.fotoService.subirFotos(codLaboratorio, [this.fotoSeleccionada]).subscribe({
+              next: () => {
+                this.fotoSeleccionada = null;
+                this.previsualizacionFoto = null;
+                this.cerrarModal();
+                this.cargarLaboratorios();
+                this.mostrarNotificacion('Laboratorio creado con foto exitosamente');
+              },
+              error: () => {
+                this.cerrarModal();
+                this.cargarLaboratorios();
+                this.mostrarNotificacion('Laboratorio creado, pero hubo un error al subir la foto', 'error');
+              }
+            });
+          } else {
+            this.cerrarModal();
+            this.cargarLaboratorios();
+            this.mostrarNotificacion('Laboratorio creado exitosamente');
+          }
         },
         error: () => this.mostrarNotificacion('Error al crear el laboratorio', 'error')
       });
@@ -464,6 +598,25 @@ export class LaboratoriosComponent implements OnInit {
     if (this.tabActiva === 0) {
       this.labDetalle = item;
       this.mostrarDetalleLab = true;
+      this.fotosDetalle = [];
+      this.cargandoFotosDetalle = true;
+      const cod = item.cod_laboratorio;
+      if (cod) {
+        this.fotoService.listarPorLaboratorio(cod).subscribe({
+          next: (fotos: FotoDTO[]) => {
+            this.fotosDetalle = fotos || [];
+            this.cargandoFotosDetalle = false;
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            this.fotosDetalle = [];
+            this.cargandoFotosDetalle = false;
+            this.cdr.detectChanges();
+          }
+        });
+      } else {
+        this.cargandoFotosDetalle = false;
+      }
     } else if (this.tabActiva === 1) {
       this.sedeDetalle = item;
       this.mostrarDetalleSede = true;
@@ -473,9 +626,36 @@ export class LaboratoriosComponent implements OnInit {
     }
   }
 
-  cerrarDetalleLab(): void { this.mostrarDetalleLab = false; this.labDetalle = null; }
+  cerrarDetalleLab(): void {
+    this.mostrarDetalleLab = false;
+    this.labDetalle = null;
+    this.fotosDetalle = [];
+    this.mostrarLightbox = false;
+  }
+
   cerrarDetalleEncargado(): void { this.mostrarDetalleEncargado = false; this.encargadoDetalle = null; }
   cerrarDetalleSede(): void { this.mostrarDetalleSede = false; this.sedeDetalle = null; }
+
+  // ─── LIGHTBOX ──────────────────────────────────────────────────────────────
+
+  abrirLightbox(index: number): void {
+    this.fotoDetalleActiva = index;
+    this.mostrarLightbox = true;
+  }
+
+  cerrarLightbox(): void { this.mostrarLightbox = false; }
+
+  lightboxAnterior(): void {
+    this.fotoDetalleActiva = this.fotoDetalleActiva > 0
+      ? this.fotoDetalleActiva - 1
+      : this.fotosDetalle.length - 1;
+  }
+
+  lightboxSiguiente(): void {
+    this.fotoDetalleActiva = this.fotoDetalleActiva < this.fotosDetalle.length - 1
+      ? this.fotoDetalleActiva + 1
+      : 0;
+  }
 
   // ─── UTILIDADES ────────────────────────────────────────────────────────────
 
@@ -502,5 +682,9 @@ export class LaboratoriosComponent implements OnInit {
     this.toastTipo = tipo;
     this.mostrarToast = true;
     setTimeout(() => { this.mostrarToast = false; this.cdr.detectChanges(); }, 3000);
+  }
+
+  onImgError(event: Event): void {
+    console.error('Error cargando imagen:', (event.target as HTMLImageElement).src);
   }
 }

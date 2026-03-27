@@ -272,12 +272,15 @@
       <button type="button" class="btn-close" (click)="cerrarModal()">×</button>
     </div>
     <div class="modal-body">
+
+      <!-- CÓDIGO (solo edición) -->
       <div class="form-row" *ngIf="modoEdicion">
         <div class="form-group full-width">
           <label>Código</label>
           <input type="number" class="form-control" [(ngModel)]="formularioLab.cod_laboratorio" [disabled]="true" readonly>
         </div>
       </div>
+
       <div class="form-row">
         <div class="form-group">
           <label>Nombre del Laboratorio <span class="required">*</span></label>
@@ -288,6 +291,7 @@
           <input type="text" class="form-control" [(ngModel)]="formularioLab.ubicacion" placeholder="Ej: Edificio A, Piso 2">
         </div>
       </div>
+
       <div class="form-row">
         <div class="form-group">
           <label>Sede <span class="required">*</span></label>
@@ -301,6 +305,7 @@
           <input type="number" class="form-control" [(ngModel)]="formularioLab.capacidad_estudiantes" placeholder="Ej: 30" min="1">
         </div>
       </div>
+
       <div class="form-row">
         <div class="form-group">
           <label>Número de Equipos <span class="required">*</span></label>
@@ -315,12 +320,68 @@
           </select>
         </div>
       </div>
+
       <div class="form-row">
         <div class="form-group full-width">
           <label>Descripción <span class="required">*</span></label>
           <textarea class="form-control" [(ngModel)]="formularioLab.descripcion" placeholder="Descripción del laboratorio" rows="3"></textarea>
         </div>
       </div>
+
+      <!-- ─── FOTOS DEL LABORATORIO ─────────────────────────────────────────── -->
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>FOTOS DEL LABORATORIO</label>
+
+          <!-- Fotos existentes (solo en edición) -->
+          <div *ngIf="modoEdicion">
+            <div class="fotos-edicion-loading" *ngIf="cargandoFotosEdicion">
+              <span>Cargando fotos...</span>
+            </div>
+
+            <div *ngIf="!cargandoFotosEdicion && fotosEdicion.length > 0">
+              <p class="fotos-edicion-label">Fotos actuales — haz clic en ✕ para eliminar</p>
+              <div class="fotos-edicion-grid">
+                <div class="fotos-edicion-item" *ngFor="let foto of fotosEdicion">
+                  <img [src]="foto.urlFoto" [alt]="'Foto ' + foto.idFoto" (error)="onImgError($event)">
+                  <button type="button"
+                          class="btn-eliminar-foto-edicion"
+                          title="Eliminar esta foto"
+                          (click)="eliminarFotoEnEdicion(foto)">✕</button>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="!cargandoFotosEdicion && fotosEdicion.length === 0">
+              <p class="fotos-edicion-vacio">Sin fotos aún</p>
+            </div>
+          </div>
+
+          <!-- Separador solo en edición -->
+          <div class="fotos-separador" *ngIf="modoEdicion">
+            <span>Agregar nueva foto</span>
+          </div>
+
+          <!-- Botón subir -->
+          <label class="upload-foto-btn" for="inputFotoLab">
+            <span>📷 Seleccionar foto</span>
+            <input id="inputFotoLab" type="file" accept="image/jpg, image/png, image/gif"
+                   style="display:none"
+                   (change)="onFotoModalSeleccionada($event)">
+          </label>
+          <small class="upload-hint">Formatos: JPG, PNG, GIF (máx. 5MB)</small>
+
+          <!-- Previsualización de la nueva foto -->
+          <div class="preview-foto-lab" *ngIf="previsualizacionFoto">
+            <img [src]="previsualizacionFoto" alt="Preview foto laboratorio">
+            <button type="button" class="btn-quitar-foto"
+                    (click)="fotoSeleccionada = null; previsualizacionFoto = null">✕</button>
+          </div>
+
+        </div>
+      </div>
+      <!-- ─────────────────────────────────────────────────────────────────────── -->
+
     </div>
     <div class="modal-footer">
       <button type="button" class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
@@ -382,6 +443,7 @@
       <button type="button" class="btn-close-detalle" (click)="cerrarDetalleLab()">×</button>
     </div>
     <div class="modal-body-detalle" *ngIf="labDetalle">
+
       <div class="campo-detalle">
         <label>CÓDIGO</label>
         <div class="valor-detalle">{{ labDetalle.cod_laboratorio }}</div>
@@ -410,10 +472,49 @@
         <label>ESTADO</label>
         <div class="valor-detalle">{{ labDetalle.estado_lab }}</div>
       </div>
+
+      <!-- ─── GALERÍA DE FOTOS ──────────────────────────────────────────────── -->
+      <div class="campo-detalle full-width">
+        <label>FOTOS</label>
+
+        <div class="galeria-loading" *ngIf="cargandoFotosDetalle">
+          <span>Cargando fotos...</span>
+        </div>
+
+        <div class="valor-detalle sin-foto" *ngIf="!cargandoFotosDetalle && fotosDetalle.length === 0">
+          Sin fotos registradas
+        </div>
+
+        <div class="galeria-detalle-grid" *ngIf="!cargandoFotosDetalle && fotosDetalle.length > 0">
+          <div class="galeria-detalle-item"
+               *ngFor="let foto of fotosDetalle; let i = index"
+               (click)="abrirLightbox(i)">
+            <img [src]="foto.urlFoto" [alt]="'Foto ' + (i + 1)" (error)="onImgError($event)">
+            <div class="galeria-detalle-overlay"><span>🔍</span></div>
+          </div>
+        </div>
+
+        <div class="galeria-contador" *ngIf="!cargandoFotosDetalle && fotosDetalle.length > 0">
+          {{ fotosDetalle.length }} foto{{ fotosDetalle.length !== 1 ? 's' : '' }}
+        </div>
+      </div>
+      <!-- ─────────────────────────────────────────────────────────────────────── -->
+
     </div>
     <div class="modal-footer-detalle">
       <button type="button" class="btn-cerrar-detalle" (click)="cerrarDetalleLab()">Cerrar</button>
     </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox-overlay" *ngIf="mostrarLightbox" (click)="cerrarLightbox()">
+  <div class="lightbox-content" (click)="$event.stopPropagation()">
+    <button type="button" class="lightbox-close" (click)="cerrarLightbox()">×</button>
+    <button type="button" class="lightbox-nav lightbox-prev" (click)="lightboxAnterior()" *ngIf="fotosDetalle.length > 1">‹</button>
+    <img [src]="fotosDetalle[fotoDetalleActiva]?.urlFoto" [alt]="'Foto ' + (fotoDetalleActiva + 1)" class="lightbox-img" (error)="onImgError($event)">
+    <button type="button" class="lightbox-nav lightbox-next" (click)="lightboxSiguiente()" *ngIf="fotosDetalle.length > 1">›</button>
+    <div class="lightbox-counter" *ngIf="fotosDetalle.length > 1">{{ fotoDetalleActiva + 1 }} / {{ fotosDetalle.length }}</div>
   </div>
 </div>
 
@@ -460,8 +561,6 @@
       <button type="button" class="btn-close" (click)="cerrarModal()">×</button>
     </div>
     <div class="modal-body">
-
-      <!-- COMBO ENCARGADO -->
       <div class="form-row">
         <div class="form-group full-width">
           <label>Encargado <span class="required">*</span></label>
@@ -473,8 +572,6 @@
           </select>
         </div>
       </div>
-
-      <!-- LABORATORIO Y FECHA -->
       <div class="form-row">
         <div class="form-group">
           <label>Laboratorio Asignado <span class="required">*</span></label>
@@ -488,8 +585,6 @@
           <input type="date" class="form-control" [(ngModel)]="formularioEnc.fecha_asignacion">
         </div>
       </div>
-
-      <!-- VIGENTE -->
       <div class="form-row">
         <div class="form-group full-width">
           <label>Vigente</label>
@@ -499,7 +594,6 @@
           </div>
         </div>
       </div>
-
     </div>
     <div class="modal-footer">
       <button type="button" class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
