@@ -143,4 +143,13 @@ public class AuthController {
         }
         return ResponseEntity.ok(List.of());
     }
+
+    @RestController
+    public class PingController {
+
+        @GetMapping("/ping")
+        public ResponseEntity<String> ping() {
+            return ResponseEntity.ok("pong");
+        }
+    }
 }
