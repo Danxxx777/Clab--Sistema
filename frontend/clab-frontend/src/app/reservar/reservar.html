@@ -169,7 +169,10 @@
         <div class="cal-grid">
           <div class="cal-grid__header">
             <div class="cal-grid__corner"></div>
-            <div class="cal-grid__day" *ngFor="let dia of cal_dias">{{ dia }}</div>
+            <div class="cal-grid__day" [class.cal-day--today]="esDiaHoy(dia)" *ngFor="let dia of cal_dias">
+              <span class="cal-day__num">{{ getDiaNumero(dia) }}</span>
+              {{ getDiaNombre(dia) }}
+            </div>
           </div>
           <div class="cal-empty" *ngIf="cal_horasVisibles.length === 0">No hay reservas esta semana.</div>
           <div class="cal-grid__row" [class.cal-grid__row--half]="hora.endsWith(':30')"
@@ -181,14 +184,23 @@
                  title="{{ cal_getReservasDeCelda(di, hi).length === 0 ? 'Reservar aquí' : '' }}">
               <div *ngFor="let res of cal_getReservasDeCelda(di, hi)" class="cal-block"
                    [class.cal-block--selected]="cal_reservaSeleccionada?.id === res.id"
-                   [style.border-left-color]="cal_getColorLab(res.laboratorio)"
-                   [style.background]="cal_getColorLab(res.laboratorio) + '18'"
                    [style.height.px]="cal_getAlturaBloque(res.duracion)"
                    [style.top.px]="cal_getTopOffset(res)"
+                   [style.position]="'absolute'"
+                   [style.width]="(100 / (res.totalCols || 1)) + '%'"
+                   [style.left]="((res.col || 0) * (100 / (res.totalCols || 1))) + '%'"
+                   [style.border-left-color]="cal_getColorLab(res.laboratorio)"
+                   [style.background]="cal_getColorLab(res.laboratorio) + '18'"
                    (click)="$event.stopPropagation(); cal_seleccionar(res)">
-                <span class="cal-block__titulo" [style.color]="cal_getColorLab(res.laboratorio)">{{ res.titulo }}</span>
-                <span class="cal-block__lab">{{ res.laboratorio }}</span>
-                <span class="cal-block__docente">{{ res.docente }}</span>
+                <div class="cal-block__divider" [style.background]="cal_getColorLab(res.laboratorio)"></div>
+                <div class="cal-block__inner">
+                  <div class="cal-block__top-row">
+                    <span class="cal-block__titulo">{{ res.titulo }}</span>
+                    <span class="cal-block__badge" *ngIf="res.estado === 'Aprobada'">Aprobada</span>
+                  </div>
+                  <span class="cal-block__meta">{{ res.laboratorio }}</span>
+                  <span class="cal-block__meta">{{ res.docente }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -754,3 +766,8 @@
      [class.toast-error]="toastTipo === 'error'">
   {{ toastMensaje }}
 </div>
+<app-toast-aprobacion
+  [visible]="mostrarToastAprobacion"
+  [estado]="estadoToastAprobacion"
+  (cerrado)="onToastAprobacionCerrado()">
+</app-toast-aprobacion>

@@ -1,0 +1,57 @@
+<div class="toast-backdrop" *ngIf="visible">
+  <div class="toast-card" [class.toast-error]="failed">
+
+    <!-- Header -->
+    <div class="toast-header">
+      <div class="header-dot" [class.dot-done]="completed" [class.dot-error]="failed"></div>
+      <span class="toast-title">
+        {{ completed ? 'Reserva aprobada' : failed ? 'Error al procesar' : 'Procesando reserva' }}
+      </span>
+      <button class="toast-close" *ngIf="completed || failed" (click)="cerrar()">✕</button>
+    </div>
+
+    <!-- Steps -->
+    <div class="toast-steps">
+      <div
+        *ngFor="let step of steps; let i = index"
+        class="toast-step"
+        [ngClass]="getStepClass(i)">
+
+        <div class="step-indicator">
+          <!-- Spinner activo -->
+          <div class="step-spinner" *ngIf="i === currentStep && !completed && !failed"></div>
+          <!-- Check hecho -->
+          <span class="step-check" *ngIf="completed || i < currentStep">✓</span>
+          <!-- Punto en espera -->
+          <div class="step-dot" *ngIf="i > currentStep && !completed"></div>
+          <!-- Error -->
+          <span class="step-error-icon" *ngIf="failed && i === currentStep">✕</span>
+        </div>
+
+        <div class="step-text">
+          <!-- Aquí puedes poner tu icono: <img src="..." class="step-icon"> -->
+          <span class="step-label">{{ step.label }}</span>
+          <span class="step-sub">{{ getStepSub(i) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barra de progreso -->
+    <div class="toast-progress" *ngIf="!failed">
+      <div class="progress-bg">
+        <div class="progress-fill" [style.width.%]="progressPercent"></div>
+      </div>
+    </div>
+
+    <!-- Mensaje de error -->
+    <div class="error-msg" *ngIf="failed">
+      Ocurrió un error al procesar la reserva. Intenta de nuevo.
+    </div>
+
+    <!-- Badge de éxito -->
+    <div class="success-badge" *ngIf="completed">
+      ✓ Notificación enviada al encargado del laboratorio
+    </div>
+
+  </div>
+</div>
