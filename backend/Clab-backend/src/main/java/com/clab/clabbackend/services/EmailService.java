@@ -2,78 +2,102 @@ package com.clab.clabbackend.services;
 
 import com.clab.clabbackend.entities.ConfiguracionCorreo;
 import com.clab.clabbackend.repository.ConfiguracionCorreoRepository;
-import jakarta.mail.internet.MimeMessage;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Properties;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 @Service
 public class EmailService {
 
     private final ConfiguracionCorreoRepository configRepo;
+    private final HttpClient httpClient;
+
+    @Value("${brevo.api-key}")
+    private String brevoApiKey;
 
     public EmailService(ConfiguracionCorreoRepository configRepo) {
         this.configRepo = configRepo;
-    }
-
-    private JavaMailSenderImpl construirMailSender(ConfiguracionCorreo config) {
-        JavaMailSenderImpl sender = new JavaMailSenderImpl();
-        sender.setHost(config.getHost());
-        sender.setPort(config.getPuerto());
-        sender.setUsername(config.getEmailRemitente());
-        sender.setPassword(config.getPasswordRemitente());
-
-        // Protocolo (SMTP por defecto)
-        String protocolo = config.getProtocolo() != null
-                ? config.getProtocolo().toLowerCase()
-                : "smtp";
-        sender.setProtocol(protocolo);
-
-        Properties props = sender.getJavaMailProperties();
-        props.put("mail.transport.protocol", protocolo);
-        props.put("mail.smtp.auth", String.valueOf(config.getAuthHabilitado()));
-
-        boolean sslHabilitado = Boolean.TRUE.equals(config.getSslHabilitado());
-        boolean starttlsHabilitado = Boolean.TRUE.equals(config.getStarttlsHabilitado());
-        int timeout = config.getTimeoutMs() != null ? config.getTimeoutMs() : 5000;
-
-        if (sslHabilitado) {
-            //  SSL en puerto 465 — conexión cifrada desde el inicio
-            props.put("mail.smtp.ssl.enable", "true");
-            props.put("mail.smtp.ssl.trust", config.getHost());
-            props.put("mail.smtp.starttls.enable", "false");
-            props.put("mail.smtp.starttls.required", "false");
-            props.put("mail.smtp.socketFactory.port", String.valueOf(config.getPuerto()));
-            props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-            props.put("mail.smtp.socketFactory.fallback", "false");
-        } else if (starttlsHabilitado) {
-            //  STARTTLS en puerto 587 — inicia sin cifrado, luego negocia TLS
-            props.put("mail.smtp.starttls.enable", "true");
-            props.put("mail.smtp.starttls.required", "true");
-            props.put("mail.smtp.ssl.enable", "false");
-            props.put("mail.smtp.ssl.trust", config.getHost());
-        } else {
-            // Sin cifrado (solo para entornos internos/testing)
-            props.put("mail.smtp.starttls.enable", "false");
-            props.put("mail.smtp.ssl.enable", "false");
-        }
-
-        // Timeouts para evitar cuelgues
-        props.put("mail.smtp.connectiontimeout", String.valueOf(timeout));
-        props.put("mail.smtp.timeout", String.valueOf(timeout));
-        props.put("mail.smtp.writetimeout", String.valueOf(timeout));
-
-        props.put("mail.debug", "false");
-
-        return sender;
+        this.httpClient = HttpClient.newHttpClient();
     }
 
     private ConfiguracionCorreo obtenerConfig(String proposito) {
-        return configRepo.findFirstByPropositoAndActivoTrue(proposito).orElseGet(() -> configRepo.findFirstByPropositoAndActivoTrue("GENERAL")
-                        .orElseGet(() -> configRepo.findFirstByActivoTrue().orElseThrow(() -> new RuntimeException(
+        return configRepo.findFirstByPropositoAndActivoTrue(proposito)
+                .orElseGet(() -> configRepo.findFirstByPropositoAndActivoTrue("GENERAL")
+                        .orElseGet(() -> configRepo.findFirstByActivoTrue()
+                                .orElseThrow(() -> new RuntimeException(
                                         "No hay configuración de correo activa para el propósito: " + proposito))));
+    }
+
+    // MÉTODO GENÉRICO
+    public void enviarCorreo(String proposito, String destino, String asunto, String contenidoHTML) {
+        try {
+            ConfiguracionCorreo config = obtenerConfig(proposito);
+            String nombreRemitente = config.getNombreRemitente() != null ? config.getNombreRemitente() : "CLAB";
+            String emailRemitente = config.getEmailRemitente();
+
+            String body = String.format("""
+                {
+                    "sender": {"name": "%s", "email": "%s"},
+                    "to": [{"email": "%s"}],
+                    "subject": "%s",
+                    "htmlContent": %s
+                }
+                """,
+                    nombreRemitente,
+                    emailRemitente,
+                    destino,
+                    asunto,
+                    toJsonString(contenidoHTML)
+            );
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
+                    .header("Content-Type", "application/json")
+                    .header("api-key", brevoApiKey)
+                    .POST(HttpRequest.BodyPublishers.ofString(body))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() >= 300) {
+                throw new RuntimeException("Brevo error " + response.statusCode() + ": " + response.body());
+            }
+
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Error enviando correo [" + proposito + "]: " + e.getMessage());
+        }
+    }
+
+    // Convierte el HTML a JSON string escapado
+    private String toJsonString(String html) {
+        return "\"" + html
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                + "\"";
+    }
+
+    // PROBAR CONFIGURACIÓN
+    public void probarConfiguracion(Integer idConfig) {
+        ConfiguracionCorreo config = configRepo.findById(idConfig)
+                .orElseThrow(() -> new RuntimeException("Configuración no encontrada"));
+
+        String html =
+                "<div style='font-family:Arial,sans-serif;padding:20px;'>" +
+                        "<h3 style='color:#39ff14;'>✅ Prueba exitosa</h3>" +
+                        "<p>La configuración <strong>" + config.getNombreDisplay() + "</strong> " +
+                        "está funcionando correctamente.</p>" +
+                        "<p>Proveedor: <strong>Brevo API</strong></p>" +
+                        "</div>";
+
+        enviarCorreo("GENERAL", config.getEmailRemitente(), "Prueba de configuración - CLAB", html);
     }
 
     // CORREO DE RECUPERACIÓN DE CONTRASEÑA
@@ -132,67 +156,9 @@ public class EmailService {
                         "<hr><small>Sistema de Gestión de Laboratorios — CLAB</small>" +
                         "</div>";
 
-        enviarCorreo("NOTIFICACIONES", destino,
-                "Cuenta bloqueada por inasistencias - CLAB", contenidoHTML);
+        enviarCorreo("NOTIFICACIONES", destino, "Cuenta bloqueada por inasistencias - CLAB", contenidoHTML);
     }
 
-
-    // MÉTODO GENÉRICO — úsalo para cualquier correo futuro
-    public void enviarCorreo(String proposito, String destino,
-                             String asunto, String contenidoHTML) {
-        try {
-            ConfiguracionCorreo config = obtenerConfig(proposito);
-            JavaMailSenderImpl sender = construirMailSender(config);
-            MimeMessage mensaje = sender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
-
-            String nombreRemitente = config.getNombreRemitente() != null
-                    ? config.getNombreRemitente() : "CLAB";
-
-            helper.setFrom(config.getEmailRemitente(), nombreRemitente);
-            helper.setTo(destino);
-            helper.setSubject(asunto);
-            helper.setText(contenidoHTML, true);
-            sender.send(mensaje);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error enviando correo [" + proposito + "]: " + e.getMessage());
-        }
-    }
-
-    // PROBAR CONFIGURACIÓN
-
-    public void probarConfiguracion(Integer idConfig) {
-        ConfiguracionCorreo config = configRepo.findById(idConfig)
-                .orElseThrow(() -> new RuntimeException("Configuración no encontrada"));
-
-        String html =
-                "<div style='font-family:Arial,sans-serif;padding:20px;'>" +
-                        "<h3 style='color:#39ff14;'>✅ Prueba exitosa</h3>" +
-                        "<p>La configuración <strong>" + config.getNombreDisplay() + "</strong> " +
-                        "está funcionando correctamente.</p>" +
-                        "<p>Protocolo: <strong>" +
-                        (Boolean.TRUE.equals(config.getSslHabilitado()) ? "SSL (puerto 465)"
-                                : Boolean.TRUE.equals(config.getStarttlsHabilitado()) ? "STARTTLS (puerto 587)"
-                                : "Sin cifrado") +
-                        "</strong></p>" +
-                        "</div>";
-
-        try {
-            JavaMailSenderImpl sender = construirMailSender(config);
-            MimeMessage mensaje = sender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
-            helper.setFrom(config.getEmailRemitente(),
-                    config.getNombreRemitente() != null ? config.getNombreRemitente() : "CLAB");
-            helper.setTo(config.getEmailRemitente()); // se envía a sí mismo como prueba
-            helper.setSubject("Prueba de configuración SMTP - CLAB");
-            helper.setText(html, true);
-            sender.send(mensaje);
-        } catch (Exception e) {
-            throw new RuntimeException("Error en prueba: " + e.getMessage());
-        }
-    }
     // CORREO DE CREDENCIALES — nuevo usuario aprobado
     public void enviarCredenciales(String destino, String nombreUsuario,
                                    String username, String contraseniaTemp) {

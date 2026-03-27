@@ -1,0 +1,241 @@
+/* ===== Toast backdrop ===== */
+.toast-backdrop {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 9999;
+  animation: slideIn .25s cubic-bezier(.4,0,.2,1);
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Card ===== */
+.toast-card {
+  background: #1a1a1a;
+  border: 1px solid #39ff14;
+  border-radius: 12px;
+  padding: 20px 22px;
+  width: 340px;
+  font-family: 'Space Grotesk', sans-serif;
+  transition: border-color .3s;
+}
+
+.toast-card.toast-error {
+  border-color: #ff3939;
+}
+
+/* ===== Header ===== */
+.toast-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.header-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #39ff14;
+  animation: pulseDot 1.2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.header-dot.dot-done {
+  animation: none;
+}
+
+.header-dot.dot-error {
+  background: #ff3939;
+  animation: none;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: .3; transform: scale(.6); }
+}
+
+.toast-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: #39ff14;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  flex: 1;
+}
+
+.toast-card.toast-error .toast-title {
+  color: #ff3939;
+}
+
+.toast-close {
+  background: transparent;
+  border: none;
+  color: #555;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0;
+  transition: color .2s;
+}
+
+.toast-close:hover {
+  color: #ccc;
+}
+
+/* ===== Steps ===== */
+.toast-steps {
+  display: flex;
+  flex-direction: column;
+}
+
+.toast-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #222;
+  transition: opacity .3s;
+}
+
+.toast-step:last-child {
+  border-bottom: none;
+}
+
+.toast-step.waiting {
+  opacity: .3;
+}
+
+.toast-step.active {
+  opacity: 1;
+}
+
+.toast-step.done {
+  opacity: .6;
+}
+
+/* Indicador (spinner / check / dot) */
+.step-indicator {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.step-spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #1e5c00;
+  border-top-color: #39ff14;
+  animation: spin .75s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.step-check {
+  color: #39ff14;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.step-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #333;
+}
+
+.step-error-icon {
+  color: #ff3939;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Icono personalizable (opcional) */
+.step-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+/* Texto */
+.step-text {
+  flex: 1;
+}
+
+.step-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #ccc;
+  line-height: 1.3;
+}
+
+.toast-step.waiting .step-label { color: #444; }
+.toast-step.active  .step-label { color: #fff; }
+.toast-step.done    .step-label { color: #777; }
+
+.step-sub {
+  display: block;
+  font-size: 11px;
+  color: #444;
+  margin-top: 2px;
+  font-family: 'Space Mono', monospace;
+}
+
+.toast-step.active .step-sub { color: #2a7a00; }
+.toast-step.done   .step-sub { color: #2a5000; }
+
+/* ===== Barra de progreso ===== */
+.toast-progress {
+  margin-top: 14px;
+}
+
+.progress-bg {
+  height: 3px;
+  background: #222;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #39ff14;
+  border-radius: 2px;
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+
+/* ===== Badge éxito ===== */
+.success-badge {
+  margin-top: 12px;
+  padding: 9px 12px;
+  background: #0a2200;
+  border: 1px solid #1e5c00;
+  border-radius: 8px;
+  font-size: 11px;
+  color: #39ff14;
+  font-family: 'Space Mono', monospace;
+}
+
+/* ===== Mensaje error ===== */
+.error-msg {
+  margin-top: 12px;
+  padding: 9px 12px;
+  background: #2a0000;
+  border: 1px solid #5c1e1e;
+  border-radius: 8px;
+  font-size: 11px;
+  color: #ff6b6b;
+  font-family: 'Space Mono', monospace;
+}

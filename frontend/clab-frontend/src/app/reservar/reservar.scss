@@ -423,7 +423,6 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
       &:hover { background: rgba(245,158,11,0.18); transform: translateY(-2px); }
     }
   }
-
 }
 
 // =====================
@@ -487,7 +486,6 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
     letter-spacing: 0.5px;
   }
 
-  // Header peligro (cancelación)
   &.modal-header-danger {
     background: rgba(231,76,60,0.12);
     border-bottom-color: rgba(231,76,60,0.25);
@@ -536,7 +534,6 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
   }
 }
 
-// Info cancelar reserva
 .cancelar-info {
   background: rgba(231,76,60,0.08);
   border: 1px solid rgba(231,76,60,0.2);
@@ -999,6 +996,7 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
   .modal-body { padding: 18px; }
   .modal-footer { padding: 12px 18px; flex-direction: column; button { width: 100%; } }
 }
+
 .detalle-estado-bar {
   display: flex;
   align-items: center;
@@ -1008,16 +1006,8 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
   border-bottom: 1px solid #2a2a2a;
 }
 
-.badge-large {
-  font-size: 13px;
-  padding: 6px 16px;
-}
-
-.detalle-id {
-  color: #555;
-  font-size: 13px;
-  font-family: 'Space Mono', monospace;
-}
+.badge-large { font-size: 13px; padding: 6px 16px; }
+.detalle-id { color: #555; font-size: 13px; font-family: 'Space Mono', monospace; }
 
 .detalle-grid {
   display: grid;
@@ -1029,24 +1019,11 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
   display: flex;
   flex-direction: column;
   gap: 4px;
-
-  &.full-width {
-    grid-column: 1 / -1;
-  }
+  &.full-width { grid-column: 1 / -1; }
 }
 
-.detalle-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #555;
-  font-family: 'Space Mono', monospace;
-}
-
-.detalle-valor {
-  font-size: 14px;
-  color: #e0e0e0;
-}
+.detalle-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #555; font-family: 'Space Mono', monospace; }
+.detalle-valor { font-size: 14px; color: #e0e0e0; }
 
 .btn-rechazar-footer {
   background: transparent;
@@ -1057,11 +1034,7 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
   cursor: pointer;
   font-size: 13px;
   transition: all 0.2s;
-
-  &:hover {
-    background: #f44336;
-    color: #fff;
-  }
+  &:hover { background: #f44336; color: #fff; }
 }
 
 .badge-falta {
@@ -1075,6 +1048,7 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
   color: #f59e0b;
   border: 1px solid rgba(245, 158, 11, 0.3);
 }
+
 .paginacion {
   display: flex;
   align-items: center;
@@ -1098,192 +1072,215 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
 
   .pag-info { color: #666; font-size: 0.85rem; margin-left: 8px; }
 }
-/* ══ AGREGAR AL FINAL DE reservar.scss ══════════════════════════════════════
-   Estilos del calendario integrado en el tab de Reservas
-   ══════════════════════════════════════════════════════════════════════════ */
 
-/* Hint */
+// =====================
+// CALENDARIO — REDISEÑO
+// =====================
+
 .cal-hint {
   font-size: 12px;
-  color: #6b6b6b;
-  margin-bottom: 12px;
+  color: #555;
+  margin-top: 12px;
+  margin-bottom: 0;
   font-family: 'Space Mono', monospace;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-/* Tab calendario sin padding extra */
 .tab-content--cal {
   padding: 0;
   position: relative;
 }
 
-/* Toolbar inline del calendario (dentro del tab, no sticky global) */
+// ── Toolbar compacto ──
 .cal-toolbar-inline {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
-  gap: 12px;
-  padding: 10px 0 12px;
-  border-bottom: 1px solid #2a2a2a;
-  margin-bottom: 16px;
+  gap: 10px;
+  padding: 10px 0 14px;
+  border-bottom: 0.5px solid rgba(255,255,255,0.06);
+  margin-bottom: 18px;
 
-  .cal-toolbar__legend {
-    display: flex; align-items: center; flex-wrap: wrap; gap: 14px; flex-shrink: 0;
-  }
   .cal-toolbar__nav {
     display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center;
   }
   .cal-toolbar__vistas {
-    display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+    display: flex; align-items: center; flex-shrink: 0;
+    border: 0.5px solid rgba(255,255,255,0.08);
+    border-radius: 7px;
+    overflow: hidden;
   }
 }
 
-/* Leyenda */
-.cal-legend__item { display: flex; align-items: center; gap: 6px; }
-.cal-legend__dot  { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
-.cal-legend__name { font-family: 'Space Mono', monospace; font-size: 10px; color: #6b6b6b; }
-
-/* Botones nav */
 .btn-nav {
-  background: transparent; border: 1px solid rgba(57,255,20,0.25); color: #39ff14;
-  font-size: 1.2rem; line-height: 1; padding: 4px 12px; border-radius: 6px;
-  cursor: pointer; transition: background .2s; font-family: 'Space Mono', monospace;
-  &:hover { background: rgba(57,255,20,0.07); }
+  background: rgba(57,255,20,0.07);
+  border: 0.5px solid rgba(57,255,20,0.2);
+  color: #39ff14;
+  font-size: 1rem;
+  line-height: 1;
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .15s;
+  font-family: 'Space Mono', monospace;
+  display: flex; align-items: center; justify-content: center;
+  &:hover { background: rgba(57,255,20,0.15); }
 }
 
 .cal-periodo-label {
-  font-family: 'Space Mono', monospace; font-size: .82rem; font-weight: 700;
-  color: #f0f0f0; white-space: nowrap; min-width: 200px; text-align: center;
+  font-family: 'Space Mono', monospace;
+  font-size: .8rem;
+  font-weight: 700;
+  color: #aaa;
+  white-space: nowrap;
+  min-width: 180px;
+  text-align: center;
 }
 
-/* Botones vista */
 .btn-vista {
-  background: transparent; color: #39ff14; border: 1px solid rgba(57,255,20,0.25);
-  padding: 5px 14px; border-radius: 6px; font-family: 'Space Mono', monospace;
-  font-size: 10px; letter-spacing: 0.1em; cursor: pointer; transition: all 0.15s;
-  &--active { background: #39ff14; color: #000; font-weight: 700; border-color: #39ff14; }
-  &:hover:not(.btn-vista--active) { background: rgba(57,255,20,0.07); }
+  background: transparent;
+  color: #555;
+  border: none;
+  border-right: 0.5px solid rgba(255,255,255,0.07);
+  padding: 5px 13px;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all 0.12s;
+
+  &:last-child { border-right: none; }
+  &--active { background: rgba(57,255,20,0.12); color: #39ff14; }
+  &:hover:not(.btn-vista--active) { color: #ccc; background: rgba(255,255,255,0.04); }
 }
 
-/* Estado cargando/error */
 .cal-status {
   display: flex; align-items: center; gap: 10px;
   padding: 24px 0; color: #6b6b6b; font-size: .9rem;
   &--error { color: #f87171; }
   &__spinner {
-    width: 20px; height: 20px; border: 2px solid rgba(57,255,20,0.12);
-    border-top-color: #39ff14; border-radius: 50%;
+    width: 20px; height: 20px;
+    border: 2px solid rgba(57,255,20,0.12);
+    border-top-color: #39ff14;
+    border-radius: 50%;
     animation: spin .8s linear infinite;
   }
 }
+
 .btn-retry {
   margin-left: 8px; background: transparent; border: 1px solid #f87171;
   color: #f87171; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: .82rem;
   &:hover { background: rgba(248,113,113,0.12); }
 }
-.cal-empty { padding: 40px 0; text-align: center; color: #4a4a4a; font-size: .9rem; font-family: 'Space Mono', monospace; }
 
-/* Grid semana */
-.cal-scroll { overflow-x: auto; border: 1px solid #2a2a2a; border-radius: 10px; }
+.cal-empty {
+  padding: 40px 0; text-align: center;
+  color: #4a4a4a; font-size: .9rem;
+  font-family: 'Space Mono', monospace;
+}
+
+// ── Grid scroll wrapper ──
+.cal-scroll {
+  overflow-x: auto;
+  border: 0.5px solid rgba(255,255,255,0.07);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+// ── Grid principal ──
 .cal-grid {
   min-width: 760px;
   overflow: visible;
   position: relative;
 
+  // Header con número de día grande
   &__header {
     display: grid;
-    grid-template-columns: 72px repeat(6, 1fr);
-    background: #2a2a2a;
-    gap: 1px;
+    grid-template-columns: 56px repeat(6, 1fr);
+    background: #161616;
+    border-bottom: 0.5px solid rgba(255,255,255,0.07);
+    gap: 0;
   }
 
-  &__corner {
-    background: #1a1a1a;
-  }
+  &__corner { background: #161616; }
 
   &__day {
-    background: #1a1a1a;
+    background: #161616;
     text-align: center;
-    padding: 9px 0;
+    padding: 8px 0 7px;
     font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: #39ff14;
-    letter-spacing: 0.2em;
-    font-weight: 700;
-    border-bottom: 2px solid #39ff14;
+    font-size: 10px;
+    color: #444;
+    letter-spacing: 0.1em;
+    font-weight: 500;
     text-transform: uppercase;
+    border-left: 0.5px solid rgba(255,255,255,0.04);
+
+    // Número grande encima
+    .cal-day__num {
+      display: block;
+      font-size: 16px;
+      font-weight: 500;
+      color: #333;
+      line-height: 1.1;
+      margin-bottom: 3px;
+    }
+
+    &.cal-day--today {
+      color: #39ff14;
+      .cal-day__num { color: #39ff14; }
+    }
   }
 
   &__row {
-    display: grid; grid-template-columns: 72px repeat(6,1fr); gap: 1px; margin-top: 0;
+    display: grid;
+    grid-template-columns: 56px repeat(6, 1fr);
+    gap: 0;
     overflow: visible;
-    border-top: 1px solid #2a2a2a;
-    &.cal-grid__row--half { border-top: 1px dashed rgba(255,255,255,0.04); }
+    border-bottom: 0.5px solid rgba(255,255,255,0.04);
+
+    &:last-child { border-bottom: none; }
+
+    &.cal-grid__row--half {
+      border-bottom: 0.5px dashed rgba(255,255,255,0.025);
+    }
   }
+
   &__hour-label {
-    background: #1a1a1a; padding: 4px 8px 0 0;
-    font-family: 'Space Mono', monospace; font-size: 9px; color: $neon;
-    text-align: right; display: flex; align-items: flex-start; justify-content: flex-end;
-    .cal-grid__row--half & { color: $neon; font-size: 8px; }
+    background: #131313;
+    padding: 6px 8px 0 0;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: #4a4a4a;
+    text-align: right;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    border-right: 0.5px solid rgba(255,255,255,0.05);
+
+    .cal-grid__row--half & { font-size: 9px; color: #333; }
   }
+
   &__cell {
-    min-height: 26px;
-    background: #1e1e1e;
+    min-height: 52px;
+    background: #131313;
     position: relative;
-    transition: background 0.15s;
+    transition: background 0.1s;
     overflow: visible;
+    border-left: 0.5px solid rgba(255,255,255,0.03);
+
+    // Columna de hoy ligeramente destacada
+    &.cal-cell--today { background: #141a13; }
 
     &:hover {
-      background: rgba(57, 255, 20, 0.04);
-    }
-  }
-
-  /* Bloque reserva */
-  .cal-block {
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    right: 3px;
-    border-left: 3px solid;
-    padding: 5px 7px;
-    cursor: pointer;
-    z-index: 2;
-    transition: filter 0.2s, transform 0.2s;
-    overflow: hidden;
-    border-radius: 0 4px 4px 0;
-
-    &:hover {
-      filter: brightness(1.4);
-      transform: translateX(2px);
+      background: rgba(57, 255, 20, 0.025);
+      cursor: pointer;
     }
 
-    &--selected {
-      filter: brightness(1.5);
-      outline: 1px solid currentColor;
-    }
-
-    &__titulo {
-      font-family: 'Space Mono', monospace;
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: #39ff14;
-    }
-
-    &__lab {
-      display: block;
-      font-family: 'Space Mono', monospace;
-      font-size: 9px;
-      color: #6b6b6b;
-      margin-top: 2px;
-    }
-
-    &__docente {
-      display: block;
-      font-size: 10px;
-      color: #4a4a4a;
-      margin-top: 1px;
-    }
+    &.cal-cell--today:hover { background: rgba(57, 255, 20, 0.04); }
   }
 
   .field-disabled {
@@ -1291,290 +1288,94 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
     cursor: not-allowed;
     pointer-events: none;
   }
+}
+  // ── Vista mes ──
+// ── Vista mes ──
+.cal-mes {
+  &__header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    margin-bottom: 4px;
 
-  /* Vista mes */
-  .cal-mes {
-    &__header {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 2px;
-      margin-bottom: 4px;
-
-      > div {
-        text-align: center;
-        font-family: 'Space Mono', monospace;
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: .1em;
-        color: #4a4a4a;
-        padding: 6px 0;
-        text-transform: uppercase;
-      }
-    }
-
-    &__grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 3px;
-    }
-
-    &__dia {
-      min-height: 90px;
-      background: #1e1e1e;
-      border: 1px solid #2a2a2a;
-      border-radius: 6px;
-      padding: 6px;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      transition: border-color .2s;
-
-      &:hover {
-        border-color: #3a3a3a;
-      }
-
-      &--vacio {
-        background: transparent;
-        border-color: transparent;
-
-        &:hover {
-          border-color: transparent;
-        }
-      }
-
-      &--hoy {
-        border-color: rgba(57, 255, 20, 0.25) !important;
-        background: rgba(57, 255, 20, 0.07);
-
-        .cal-mes__dia-num {
-          color: #39ff14;
-          font-weight: 700;
-        }
-      }
-    }
-
-    &__dia-num {
+    > div {
+      text-align: center;
       font-family: 'Space Mono', monospace;
-      font-size: .78rem;
-      font-weight: 500;
-      color: #6b6b6b;
-      margin-bottom: 2px;
-    }
-
-    &__evento {
-      font-size: .72rem;
-      padding: 2px 5px;
-      border-radius: 3px;
-      border-left: 3px solid;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      cursor: pointer;
-      line-height: 1.4;
-
-      &:hover {
-        opacity: .85;
-      }
-    }
-
-    &__mas {
-      font-size: .7rem;
-      color: #4a4a4a;
-      margin-top: 2px;
-      cursor: default;
-      font-family: 'Space Mono', monospace;
-    }
-  }
-
-
-
-  @keyframes slideIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  .cal-legend-bottom {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    padding: 12px 16px;
-    border: 1px solid #2a2a2a;
-    border-radius: 10px;
-    margin-top: 14px;
-    background: #1a1a1a;
-
-    &__titulo {
-      font-family: 'Space Mono', monospace;
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 700;
-      letter-spacing: 0.2em;
+      letter-spacing: .1em;
+      color: #4a4a4a;
+      padding: 6px 0;
       text-transform: uppercase;
-      color: #39ff14;
-      flex-shrink: 0;
-      padding-right: 12px;
-      border-right: 1px solid #2a2a2a;
-    }
-
-    &__items {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
     }
   }
 
-  .cal-legend__item {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    background: #111;
-    border: 1px solid #2a2a2a;
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+  }
+
+  &__dia {
+    min-height: 90px;
+    background: #131313;
+    border: 0.5px solid rgba(255,255,255,0.05);
     border-radius: 6px;
-    padding: 4px 10px;
-  }
-
-  .cal-legend__dot {
-    width: 8px; height: 8px;
-    border-radius: 2px;
-    flex-shrink: 0;
-  }
-
-  .cal-legend__name {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: #a0a0a0;
-  }
-  /* ── Modal confirmación reserva desde calendario ────────────────────────── */
-  .modal-reserva-confirm {
-    max-width: 420px;
-  }
-
-  .modal-header-cal {
+    padding: 6px;
     display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    background: rgba(57, 255, 20, 0.06) !important;
-    border-bottom-color: rgba(57, 255, 20, 0.18) !important;
-    border-radius: 14px 14px 0 0;
+    flex-direction: column;
+    gap: 3px;
+    transition: border-color .2s;
 
-    &__icon {
-      font-size: 26px;
-      line-height: 1;
-      margin-top: 2px;
-      flex-shrink: 0;
+    &:hover { border-color: rgba(255,255,255,0.1); }
+
+    &--vacio {
+      background: transparent;
+      border-color: transparent;
+      &:hover { border-color: transparent; }
     }
 
-    &__sub {
-      font-size: 12px;
-      color: #6b6b6b;
-      margin: 3px 0 0;
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 400;
-    }
-
-    /* Empujar btn-close al extremo derecho */
-    .btn-close {
-      margin-left: auto;
-      flex-shrink: 0;
-    }
-
-    h2 {
-      color: #39ff14 !important;
-      font-size: 15px;
-      margin: 0;
+    &--hoy {
+      border-color: rgba(57, 255, 20, 0.25) !important;
+      background: rgba(57, 255, 20, 0.05);
+      .cal-mes__dia-num { color: #39ff14; font-weight: 700; }
     }
   }
 
-  /* Info rows dentro del modal */
-  .cal-confirm-info {
-    background: #111;
-    border: 1px solid #2a2a2a;
-    border-radius: 10px;
+  &__dia-num {
+    font-family: 'Space Mono', monospace;
+    font-size: .78rem;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 2px;
+  }
+
+  &__evento {
+    font-size: .72rem;
+    padding: 2px 5px;
+    border-radius: 3px;
+    border-left: 2.5px solid;
+    white-space: nowrap;
     overflow: hidden;
-    margin-bottom: 16px;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    line-height: 1.4;
+    &:hover { opacity: .85; }
   }
 
-  .cal-confirm-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 11px 16px;
-    border-bottom: 1px solid #1e1e1e;
-
-    &:last-child {
-      border-bottom: none;
-    }
-  }
-
-  .cal-confirm-label {
-    font-size: 12px;
-    color: #6b6b6b;
+  &__mas {
+    font-size: .7rem;
+    color: #4a4a4a;
+    margin-top: 2px;
+    cursor: default;
     font-family: 'Space Mono', monospace;
-    display: flex;
-    align-items: center;
-    gap: 7px;
   }
+}
 
-  .cal-confirm-value {
-    font-size: 13px;
-    font-weight: 600;
-    color: #39ff14;
-    font-family: 'Space Mono', monospace;
-    text-align: right;
-    max-width: 60%;
-    word-break: break-word;
-  }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes spin    { to { transform: rotate(360deg); } }
 
-  .cal-confirm-desc {
-    font-size: 12px;
-    color: #6b6b6b;
-    line-height: 1.6;
-    text-align: center;
-    padding: 0 4px;
-
-    strong {
-      color: #f0f0f0;
-      font-weight: 600;
-    }
-  }
-
-  /* Botón "Sí, Reservar" con glow verde */
-  .btn-confirm-reserva {
-    background: rgba(57, 255, 20, 0.15) !important;
-    color: #39ff14 !important;
-    border: 1px solid rgba(57, 255, 20, 0.4) !important;
-    font-size: 13px !important;
-    letter-spacing: 0.03em;
-    position: relative;
-    overflow: hidden;
-
-    &::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(57, 255, 20, 0.08), transparent);
-      pointer-events: none;
-    }
-
-    &:hover {
-      background: rgba(57, 255, 20, 0.25) !important;
-      box-shadow: 0 0 20px rgba(57, 255, 20, 0.25), 0 6px 20px rgba(57, 255, 20, 0.12) !important;
-      transform: translateY(-2px) !important;
-    }
-  }
-
+  // ── Time picker ──
   .time-picker-wrap {
     position: relative;
     width: 100%;
@@ -1582,11 +1383,9 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
     &::after {
       content: '';
       position: absolute;
-      right: 10px;
-      top: 50%;
+      right: 10px; top: 50%;
       transform: translateY(-50%);
-      width: 14px;
-      height: 14px;
+      width: 14px; height: 14px;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b6b6b' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolyline points='12 6 12 12 16 14'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-size: contain;
@@ -1594,14 +1393,10 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
     }
   }
 
-  .time-display {
-    cursor: pointer !important;
-    padding-right: 12px !important;
-  }
-
+  .time-display { cursor: pointer !important; padding-right: 12px !important; }
 
   .time-picker-dropdown {
-    position: fixed; // ← fixed en lugar de absolute
+    position: fixed;
     z-index: 9999;
     background: #1a1a1a;
     border: 1px solid #333;
@@ -1612,31 +1407,10 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
   }
 
   .tp-scroll {
-    max-height: 200px;
-    overflow-y: auto;
-
-    &::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: #333;
-      border-radius: 2px;
-    }
-  }
-
-  .tp-scroll {
     max-height: 220px;
     overflow-y: auto;
-
-    &::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: #333;
-      border-radius: 2px;
-    }
+    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
   }
 
   .tp-option {
@@ -1646,11 +1420,7 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
     color: #ccc;
     cursor: pointer;
     transition: background 0.15s;
-
-    &:hover {
-      background: rgba(57, 255, 20, 0.1);
-      color: #39ff14;
-    }
+    &:hover { background: rgba(57, 255, 20, 0.1); color: #39ff14; }
   }
 
   .tp-selected {
@@ -1658,12 +1428,12 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
     color: #39ff14 !important;
     font-weight: 700;
   }
-}
-/* ── Panel detalle reserva — FUERA de .cal-grid ──────────────────────── */
+
+
+// ── Panel detalle reserva ──
 .cal-detail {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: 24px; right: 24px;
   background: #1a1a1a;
   border: 1px solid;
   border-radius: 12px;
@@ -1676,221 +1446,106 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
   &__badge {
     display: block;
     font-family: 'Space Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    margin-bottom: 12px;
-    font-weight: 700;
+    font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+    margin-bottom: 12px; font-weight: 700;
   }
-
-  &__titulo {
-    margin: 0 0 6px;
-    font-size: 15px;
-    font-weight: 700;
-    color: #f0f0f0;
-  }
-
-  &__meta {
-    margin: 0 0 3px;
-    font-size: 12px;
-    color: #6b6b6b;
-  }
-
-  &__horario {
-    margin: 8px 0 0;
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-  }
+  &__titulo { margin: 0 0 6px; font-size: 15px; font-weight: 700; color: #f0f0f0; }
+  &__meta   { margin: 0 0 3px; font-size: 12px; color: #6b6b6b; }
+  &__horario { margin: 8px 0 0; font-family: 'Space Mono', monospace; font-size: 11px; }
 
   &__estado {
-    display: inline-block;
-    margin: 8px 0;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: .72rem;
-    font-weight: 700;
-    letter-spacing: .08em;
-    font-family: 'Space Mono', monospace;
+    display: inline-block; margin: 8px 0; padding: 3px 10px;
+    border-radius: 20px; font-size: .72rem; font-weight: 700;
+    letter-spacing: .08em; font-family: 'Space Mono', monospace;
 
-    &.badge--aprobada {
-      background: rgba(34, 197, 94, .15);
-      color: #22c55e;
-      border: 1px solid rgba(34, 197, 94, .3);
-    }
-    &.badge--pendiente {
-      background: rgba(245, 158, 11, .15);
-      color: #f59e0b;
-      border: 1px solid rgba(245, 158, 11, .3);
-    }
-    &.badge--otro {
-      background: rgba(57, 255, 20, 0.12);
-      color: #6b6b6b;
-      border: 1px solid #2a2a2a;
-    }
+    &.badge--aprobada  { background: rgba(34,197,94,.15);  color: #22c55e; border: 1px solid rgba(34,197,94,.3); }
+    &.badge--pendiente { background: rgba(245,158,11,.15); color: #f59e0b; border: 1px solid rgba(245,158,11,.3); }
+    &.badge--otro      { background: rgba(57,255,20,0.12); color: #6b6b6b; border: 1px solid #2a2a2a; }
   }
 
   &__close {
-    margin-top: 14px;
-    width: 100%;
-    background: transparent;
-    border: 1px solid;
-    padding: 7px 0;
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    cursor: pointer;
-    border-radius: 6px;
-    transition: opacity 0.15s;
+    margin-top: 14px; width: 100%;
+    background: transparent; border: 1px solid;
+    padding: 7px 0; font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+    cursor: pointer; border-radius: 6px; transition: opacity 0.15s;
     &:hover { opacity: 0.7; }
   }
 }
 
-/* ── Leyenda laboratorios — FUERA de .cal-grid ─────────────────────── */
+// ── Leyenda laboratorios ──
 .cal-legend-bottom {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
-  padding: 12px 16px;
-  border: 1px solid #2a2a2a;
-  border-radius: 10px;
+  padding: 10px 14px;
+  border: 0.5px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
   margin-top: 14px;
-  background: #1a1a1a;
+  background: #131313;
 
   &__titulo {
     font-family: 'Space Mono', monospace;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: #39ff14;
-    flex-shrink: 0;
-    padding-right: 12px;
-    border-right: 1px solid #2a2a2a;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.15em;
+    text-transform: uppercase; color: #555;
+    flex-shrink: 0; padding-right: 10px;
+    border-right: 0.5px solid rgba(255,255,255,0.06);
   }
 
-  &__items {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
+  &__items { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 }
 
 .cal-legend__item {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  background: #111;
-  border: 1px solid #2a2a2a;
-  border-radius: 6px;
-  padding: 4px 10px;
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.03);
+  border: 0.5px solid rgba(255,255,255,0.07);
+  border-radius: 5px; padding: 3px 9px;
 }
+.cal-legend__dot  { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.cal-legend__name { font-family: 'Space Mono', monospace; font-size: 10px; color: #888; }
 
-.cal-legend__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  flex-shrink: 0;
-}
-
-.cal-legend__name {
-  font-family: 'Space Mono', monospace;
-  font-size: 10px;
-  color: #a0a0a0;
-}
-
-/* ── Modal confirmación reserva desde calendario — FUERA de .cal-grid ── */
-.modal-reserva-confirm {
-  max-width: 420px;
-}
+// ── Modal confirmación reserva ──
+.modal-reserva-confirm { max-width: 420px; }
 
 .modal-header-cal {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
+  display: flex; align-items: flex-start; gap: 14px;
   background: rgba(57, 255, 20, 0.06) !important;
   border-bottom: 1px solid rgba(57, 255, 20, 0.18) !important;
   border-radius: 14px 14px 0 0;
 
-  &__icon {
-    font-size: 26px;
-    line-height: 1;
-    margin-top: 2px;
-    flex-shrink: 0;
-  }
-
-  &__sub {
-    font-size: 12px;
-    color: #6b6b6b;
-    margin: 3px 0 0;
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 400;
-  }
-
-  .btn-close {
-    margin-left: auto;
-    flex-shrink: 0;
-  }
-
-  h2 {
-    color: #39ff14 !important;
-    font-size: 15px;
-    margin: 0;
-  }
+  &__icon { font-size: 26px; line-height: 1; margin-top: 2px; flex-shrink: 0; }
+  &__sub  { font-size: 12px; color: #6b6b6b; margin: 3px 0 0; font-family: 'Space Grotesk', sans-serif; font-weight: 400; }
+  .btn-close { margin-left: auto; flex-shrink: 0; }
+  h2 { color: #39ff14 !important; font-size: 15px; margin: 0; }
 }
 
 .cal-confirm-info {
-  background: #111;
-  border: 1px solid #2a2a2a;
-  border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 16px;
+  background: #111; border: 1px solid #2a2a2a;
+  border-radius: 10px; overflow: hidden; margin-bottom: 16px;
 }
 
 .cal-confirm-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 11px 16px;
-  border-bottom: 1px solid #1e1e1e;
-
-  &:last-child {
-    border-bottom: none;
-  }
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 16px; border-bottom: 1px solid #1e1e1e;
+  &:last-child { border-bottom: none; }
 }
 
 .cal-confirm-label {
-  font-size: 12px;
-  color: #6b6b6b;
-  font-family: 'Space Mono', monospace;
-  display: flex;
-  align-items: center;
-  gap: 7px;
+  font-size: 12px; color: #6b6b6b; font-family: 'Space Mono', monospace;
+  display: flex; align-items: center; gap: 7px;
 }
 
 .cal-confirm-value {
-  font-size: 13px;
-  font-weight: 600;
-  color: #39ff14;
-  font-family: 'Space Mono', monospace;
-  text-align: right;
-  max-width: 60%;
-  word-break: break-word;
+  font-size: 13px; font-weight: 600; color: #39ff14;
+  font-family: 'Space Mono', monospace; text-align: right;
+  max-width: 60%; word-break: break-word;
 }
 
 .cal-confirm-desc {
-  font-size: 12px;
-  color: #6b6b6b;
-  line-height: 1.6;
-  text-align: center;
-  padding: 0 4px;
-
-  strong {
-    color: #f0f0f0;
-    font-weight: 600;
-  }
+  font-size: 12px; color: #6b6b6b; line-height: 1.6;
+  text-align: center; padding: 0 4px;
+  strong { color: #f0f0f0; font-weight: 600; }
 }
 
 .btn-confirm-reserva {
@@ -1904,8 +1559,7 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
 
   &::after {
     content: '';
-    position: absolute;
-    inset: 0;
+    position: absolute; inset: 0;
     background: linear-gradient(135deg, rgba(57, 255, 20, 0.08), transparent);
     pointer-events: none;
   }
@@ -1916,8 +1570,8 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
     transform: translateY(-2px) !important;
   }
 }
-// ══ TIME PICKER — fuera de .cal-grid para que aplique en el modal ════════════
 
+// ── Time picker global ──
 .time-picker-wrap {
   position: relative;
   width: 100%;
@@ -1925,11 +1579,9 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
   &::after {
     content: '';
     position: absolute;
-    right: 12px;
-    top: 50%;
+    right: 12px; top: 50%;
     transform: translateY(-50%);
-    width: 14px;
-    height: 14px;
+    width: 14px; height: 14px;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b6b6b' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolyline points='12 6 12 12 16 14'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-size: contain;
@@ -1968,9 +1620,7 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
   border: 1px solid #2a2a2a;
   border-radius: 10px;
   width: 140px;
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.7),
-    0 0 0 1px rgba(57, 255, 20, 0.08);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(57,255,20,0.08);
   overflow: hidden;
   animation: fadeIn 0.15s ease;
 
@@ -1979,7 +1629,7 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
     position: absolute;
     top: 0; left: 15%; right: 15%;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(57, 255, 20, 0.3), transparent);
+    background: linear-gradient(90deg, transparent, rgba(57,255,20,0.3), transparent);
   }
 }
 
@@ -1992,7 +1642,7 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
   &::-webkit-scrollbar-thumb {
     background: #2a2a2a;
     border-radius: 3px;
-    &:hover { background: rgba(57, 255, 20, 0.2); }
+    &:hover { background: rgba(57,255,20,0.2); }
   }
 }
 
@@ -2003,7 +1653,7 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
   color: #6b6b6b;
   cursor: pointer;
   transition: all 0.12s ease;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.03);
   letter-spacing: 0.05em;
 
   &:last-child { border-bottom: none; }
@@ -2023,10 +1673,7 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
   padding-left: 14px !important;
 }
 
-.btn-editar:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
+.btn-editar:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .stat-card {
   transition: all 0.2s;
@@ -2038,7 +1685,7 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
     box-shadow: 0 0 0 1px rgba(57,255,20,0.25), 0 8px 24px rgba(57,255,20,0.1);
     transform: translateY(-2px);
 
-    .stat-num { text-shadow: 0 0 12px rgba(57,255,20,0.5); }
+    .stat-num   { text-shadow: 0 0 12px rgba(57,255,20,0.5); }
     .stat-label { color: rgba(57,255,20,0.7); }
   }
 }
@@ -2046,6 +1693,7 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
 .toggle-tipo {
   display: flex;
   gap: 8px;
+
   .btn-toggle {
     flex: 1;
     padding: 10px 0;
@@ -2058,15 +1706,9 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
     cursor: pointer;
     transition: all 0.2s;
     font-family: 'Space Grotesk', sans-serif;
-    &--active {
-      border-color: $neon-border;
-      background: $neon-dim;
-      color: $neon;
-    }
-    &:hover:not(.btn-toggle--active) {
-      border-color: $border-h;
-      color: $text;
-    }
+
+    &--active { border-color: $neon-border; background: $neon-dim; color: $neon; }
+    &:hover:not(.btn-toggle--active) { border-color: $border-h; color: $text; }
   }
 }
 
@@ -2074,6 +1716,7 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+
   .btn-dia {
     padding: 8px 14px;
     border: 1px solid $border;
@@ -2086,41 +1729,102 @@ $blue-dim:    rgba(59, 130, 246, 0.10);
     letter-spacing: 1px;
     cursor: pointer;
     transition: all 0.2s;
-    &--active {
-      border-color: $neon-border;
-      background: $neon-dim;
-      color: $neon;
-      box-shadow: 0 0 10px rgba(57,255,20,0.15);
-    }
-    &:hover:not(.btn-dia--active) {
-      border-color: $border-h;
-      color: $text;
-    }
+
+    &--active { border-color: $neon-border; background: $neon-dim; color: $neon; box-shadow: 0 0 10px rgba(57,255,20,0.15); }
+    &:hover:not(.btn-dia--active) { border-color: $border-h; color: $text; }
   }
 }
 
-.form-hint {
-  font-size: 11px;
-  color: $muted;
-  margin-top: 6px;
-  font-family: 'Space Mono', monospace;
-}
+.form-hint { font-size: 11px; color: $muted; margin-top: 6px; font-family: 'Space Mono', monospace; }
 
-.fila-grupo {
-  background: rgba(57, 255, 20, 0.03);
-  border-left: 2px solid $neon-border;
-}
+.fila-grupo { background: rgba(57, 255, 20, 0.03); border-left: 2px solid $neon-border; }
+.badge-recurrente { font-size: 11px; font-weight: 700; color: $neon; font-family: 'Space Mono', monospace; }
+.grupo-periodo { font-size: 10px; color: $muted; margin-top: 3px; font-family: 'Space Mono', monospace; }
 
-.badge-recurrente {
-  font-size: 11px;
-  font-weight: 700;
-  color: $neon;
-  font-family: 'Space Mono', monospace;
-}
+// ── Bloque reserva REDISEÑADO ──
+.cal-block {
+  position: absolute;
+  top: 4px;
+  border-left: 2.5px solid;
+  border-radius: 0 6px 6px 0;
+  padding: 7px 9px;
+  cursor: pointer;
+  z-index: 2;
+  transition: all 0.15s;
+  overflow: hidden;
+  background: rgba(57,255,20,0.07);
+  border-top: 0.5px solid rgba(57,255,20,0.2);
+  border-right: 0.5px solid rgba(57,255,20,0.2);
+  border-bottom: 0.5px solid rgba(57,255,20,0.2);
 
-.grupo-periodo {
-  font-size: 10px;
-  color: $muted;
-  margin-top: 3px;
-  font-family: 'Space Mono', monospace;
+  &:hover {
+    background: rgba(57,255,20,0.13);
+    transform: translateX(1px);
+    border-left-width: 3px;
+  }
+
+  &--selected {
+    background: rgba(57,255,20,0.16) !important;
+    box-shadow: 0 0 0 1px rgba(57,255,20,0.35);
+  }
+
+  &--ajena {
+    cursor: default !important;
+    background: rgba(255,255,255,0.03) !important;
+    border-color: #333 !important;
+    &:hover { transform: none !important; background: rgba(255,255,255,0.03) !important; }
+  }
+
+  &__time {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: rgba(57,255,20,0.45);
+    letter-spacing: 0.04em;
+    margin-bottom: 3px;
+  }
+
+  &__top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 4px; min-width: 0; }
+
+  &__titulo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: #d4ffc8;
+    line-height: 1.3;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__badge {
+    font-size: 8px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    background: rgba(57,255,20,0.12);
+    color: #39ff14;
+    border: 0.5px solid rgba(57,255,20,0.3);
+    font-family: 'Space Mono', monospace;
+    white-space: nowrap;
+    letter-spacing: 0.03em;
+  }
+
+  &__meta {
+    font-size: 10px;
+    color: rgba(200,255,180,0.4);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+    margin-top: 2px;
+  }
+
+  // mantener compatibilidad con clases viejas
+  &__inner { display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+  &__divider { display: none; }
+  &__lab { display: none; }
+  &__docente { display: none; }
 }
